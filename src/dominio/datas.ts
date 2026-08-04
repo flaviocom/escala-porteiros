@@ -96,18 +96,6 @@ export function formatarBR(d: DataISO): string {
   return `${p(dia)}/${p(m)}/${a}`
 }
 
-const NOMES_MES = [
-  'janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho',
-  'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro',
-] as const
-
-/** `2026-08` → `Agosto 2026`. */
-export function formatarMesBR(mes: string): string {
-  const [a, m] = mes.split('-').map(Number)
-  const nome = NOMES_MES[m - 1]
-  return `${nome.charAt(0).toUpperCase()}${nome.slice(1)} ${a}`
-}
-
 /**
  * Mês (`AAAA-MM`) de um `Date`, lido no fuso LOCAL.
  *

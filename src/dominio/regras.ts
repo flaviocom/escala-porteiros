@@ -291,24 +291,46 @@ const D7: Regra = {
   },
 }
 
+/**
+ * 🔴 Confere DUAS coisas — e a segunda foi achada por auditoria adversarial em 04/08/2026.
+ *
+ * A primeira versão só olhava `bloco.elenco`. Uma pessoa **desativada** cujo id continuasse no
+ * elenco do bloco passava batido, e a escala com ela era **aprovada**.
+ *
+ * Por que não aparecia: o gerador consulta `podeAssumir`, que já barra quem está inativo, então a
+ * escala *gerada* nunca continha o caso. O buraco só se abre pelo **ajuste manual**, por um bloco
+ * **importado**, ou por alguém desativado **depois** de a escala ter sido gerada — que é exatamente
+ * o cenário deste projeto: *"sempre acontece de saírem pessoas da escala"*.
+ *
+ * É a diferença entre provar a REGRA e provar o CAMINHO: o gerador estava certo, e a validação —
+ * que é a última linha antes de publicar — não cobria a porta que sobrou.
+ */
 const D8: Regra = {
   id: 'D8',
-  titulo: 'Elenco — só quem está no elenco do bloco',
+  titulo: 'Elenco — só quem está no elenco do bloco, e ativo',
   familia: 'DURA',
   avaliar(ctx) {
     const v: Violacao[] = []
     const elenco = new Set(ctx.bloco.elenco)
-    const fora = new Set<string>()
+    const inativos = new Set(ctx.pessoas.filter((p) => !p.ativo).map((p) => p.id))
+    const jaAcusados = new Set<string>()
     for (const t of turnosComGente(ctx.bloco)) {
       for (const id of t.pessoas) {
-        if (!elenco.has(id) && !fora.has(id)) {
-          fora.add(id)
+        if (jaAcusados.has(id)) continue
+        if (!elenco.has(id)) {
+          jaAcusados.add(id)
           v.push({ pessoaId: id, mensagem: `${nomeDe(ctx, id)} aparece na escala mas não está no elenco deste bloco` })
+        } else if (inativos.has(id)) {
+          jaAcusados.add(id)
+          v.push({ pessoaId: id, mensagem: `${nomeDe(ctx, id)} foi tirado da escala, mas continua escalado` })
         }
       }
     }
     return ok(
-      { id: D8.id, titulo: D8.titulo, familia: 'DURA', medida: `${elenco.size} pessoa(s) no elenco` },
+      {
+        id: D8.id, titulo: D8.titulo, familia: 'DURA',
+        medida: `${elenco.size} no elenco, ${inativos.size} fora da escala`,
+      },
       v,
     )
   },

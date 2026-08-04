@@ -197,6 +197,28 @@ describe('D8 — elenco', () => {
     const r = rodar('D8', ctxDe([turno('2026-09-06', 'NOITE', ['ana', 'bia', 'caio'])], TRES))
     expect(r.status).toBe('ok')
   })
+
+  /**
+   * 🔴 Achado da auditoria adversarial de 04/08/2026.
+   *
+   * A regra só olhava `bloco.elenco`. Quem fosse DESATIVADO mas continuasse no elenco do bloco
+   * passava — e é justamente o caso que este projeto existe para tratar: *"sempre acontece de
+   * saírem pessoas da escala"*. O gerador já barrava; a validação, que é a última linha antes de
+   * publicar, não.
+   */
+  it('🔴 reprova quem foi TIRADO da escala e continua escalado', () => {
+    const comInativo = [pessoa('ana'), pessoa('bia'), pessoa('caio', { ativo: false })]
+    const r = rodar('D8', ctxDe([turno('2026-09-06', 'NOITE', ['ana', 'bia', 'caio'])], comInativo))
+    expect(r.status).toBe('falha')
+    expect(r.violacoes[0].mensagem).toContain('tirado da escala')
+  })
+
+  it('e a escala inteira é reprovada por causa disso', () => {
+    const comInativo = [pessoa('ana'), pessoa('bia'), pessoa('caio', { ativo: false })]
+    const rel = validar(ctxDe([turno('2026-09-06', 'NOITE', ['ana', 'bia', 'caio'])], comInativo))
+    expect(rel.aprovada).toBe(false)
+    expect(rel.falhasDuras.map((f) => f.id)).toContain('D8')
+  })
 })
 
 describe('D9 — Santa Ceia', () => {
