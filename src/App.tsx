@@ -7,7 +7,7 @@ import { StatsView } from './components/StatsView';
 import { ValidationView } from './components/ValidationView';
 import { MultiSelect } from './components/MultiSelect';
 import { DateSearch } from './components/DateSearch';
-import { Calendar, Filter, X, LayoutGrid, BarChart3, ShieldCheck, SlidersHorizontal, MessageCircle, User, ChevronRight, Search, Loader2 } from 'lucide-react';
+import { Calendar, Filter, X, LayoutGrid, BarChart3, ShieldCheck, SlidersHorizontal, MessageCircle, User, ChevronRight, Search, Loader2, Settings } from 'lucide-react';
 import { format, parseISO, addDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfDay, endOfDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { clsx } from 'clsx';
@@ -318,6 +318,19 @@ function App({ shifts, dados }: AppProps) {
             </>
           )}
         </button>
+
+        {/* Engrenagem discreta: só quem sabe que ela existe clica. A proteção de verdade é o
+            cofre atrás dela — sem a senha, o token guardado no navegador é ruído. */}
+        <div className="flex justify-center mt-4">
+          <a
+            href="#/admin"
+            title="Área administrativa"
+            aria-label="Área administrativa"
+            className="hide-on-export p-2 rounded-full text-gray-300 hover:text-gray-500 hover:bg-gray-100 transition-colors"
+          >
+            <Settings className="h-4 w-4" />
+          </a>
+        </div>
       </div>
     </div>
   );

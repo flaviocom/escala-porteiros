@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
 import { carregarDados, paraShifts, type DadosPublicados } from './dados/carregar'
+import { Admin } from './admin/Admin'
 
 /**
  * Os dados são carregados ANTES de montar a tela.
@@ -38,12 +39,27 @@ function mostrarErro(erro: unknown) {
   )
 }
 
+/**
+ * Roteamento por hash, em 6 linhas, em vez de uma biblioteca.
+ *
+ * São duas telas. `react-router` traria ~10 kB e uma API inteira para resolver uma decisão que cabe
+ * num `if` — e o GitHub Pages não sabe reescrever URL, então rota por caminho (`/admin`) devolveria
+ * 404 ao recarregar a página. O hash não tem esse problema.
+ */
+function ehAdmin(): boolean {
+  return location.hash.replace(/^#/, '').replace(/^\//, '') === 'admin'
+}
+
 carregarDados()
   .then((dados: DadosPublicados) => {
-    raiz.render(
-      <StrictMode>
-        <App shifts={paraShifts(dados.turnos)} dados={dados} />
-      </StrictMode>,
-    )
+    const pintar = () => {
+      raiz.render(
+        <StrictMode>
+          {ehAdmin() ? <Admin dados={dados} /> : <App shifts={paraShifts(dados.turnos)} dados={dados} />}
+        </StrictMode>,
+      )
+    }
+    window.addEventListener('hashchange', pintar)
+    pintar()
   })
   .catch(mostrarErro)
