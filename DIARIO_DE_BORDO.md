@@ -202,3 +202,50 @@ no GATE. Logo depois, o gate **recusou** um commit meu — dessa vez antes do pu
 
 Cada item é um commit próprio. Os tooltips são atributos `title`: removê-los não muda
 comportamento, só derruba o portão de 100% para abaixo do piso.
+
+---
+
+## DB-005 · 04/08/2026 — conferir o passado contra a TELA, não contra o código
+
+**Solicitação:** [S-007](docs/solicitacoes/INDICE_DE_SOLICITACOES.md) — quinto "go", backlog vazio,
+ordem do assistente. **Handoff:** [parte 5](docs/handoff/HANDOFF_2026-08-04-e.md).
+
+### O que se perguntou
+
+Sem tarefa na lista, a pergunta deixou de ser *"o que falta fazer?"* e virou **"qual afirmação deste
+projeto nunca foi testada de verdade?"**. A resposta: o histórico congelado foi montado rodando o
+**gerador antigo a partir do código-fonte** — fidelidade ao código, nunca à tela. E é a tela que os
+irmãos têm na memória.
+
+### Decisões
+
+| # | Decisão | Por quê |
+|---|---|---|
+| 1 | Conferir os **66 dias**, não uma amostra | "sem divergência sistemática" não é "conferido": o defeito que importa pode estar no dia que não foi sorteado |
+| 2 | Conferir pela **busca** do site antigo | é o único caminho que traz uma data passada à tela — o site não lista o passado |
+| 3 | **Não** pôr esta checagem no GATE | depende do Pages do repositório antigo estar no ar; portão que quebra por causa alheia é portão que alguém desliga. Fica sob demanda, com o resultado datado no handoff |
+
+### O resultado
+
+**66 de 66 dias · 282 nomes · 0 divergências.** A promessa *"o passado continua"* passou de
+presumida a medida.
+
+### Os dois achados
+
+**O site antigo não mostra o passado.** Ele lista do dia de hoje em diante. Quem abrir aquele link
+hoje não vê março a julho. Virou P1.3 — não tem correção lá (o repositório não é tocado); some
+quando o link novo for divulgado.
+
+**Régua errada se lê como divergência total.** A varredura deu **"0 de 66"** duas vezes. Um número
+vermelho dramático convence tão bem quanto um verde falso, e leva à conclusão oposta ao fato — quase
+virou "o histórico congelado está todo errado". O guard procurava `01/03`; o site escreve `MAR`,
+`01`, `DOMINGO` **em linhas separadas**. Corrigido depois de **medir** o texto renderizado, não de
+supor o formato pela terceira vez.
+
+O guard fez o trabalho dele: sem ele, "nenhum nome faltando" num texto vazio teria produzido
+**"✅ 66 dias conferidos"** sem conferir nada.
+
+### Como reverter
+
+`scripts/conferir-historico-contra-site-antigo.mjs` é um script de verificação: não é chamado por
+nada e apagá-lo não muda comportamento — só perde a prova.

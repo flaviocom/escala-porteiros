@@ -165,3 +165,21 @@ build) exit 0 · órfãos 0 · site e área administrativa validados **ao vivo**
 **vermelho** por encadear com `;`. O site não caiu por sorte. Os dois viraram portão.
 
 **GATE agora tem 8 passos**, com `regras-mestras` incluído.
+
+---
+
+## [04/08/2026] Sessão 1, parte 5 — conferir o passado contra a tela
+
+**Gatilho.** Quinto "go" (S-007), backlog técnico vazio pela segunda vez.
+
+- **Histórico congelado conferido contra o site antigo AO VIVO:** 66/66 dias, **282 nomes**,
+  **0 divergências**. Antes, a fidelidade era ao código-fonte; agora é à tela que os irmãos viram.
+- 🔴 **Achado:** o **site antigo não mostra o passado** — lista do dia de hoje em diante. Quem abre
+  aquele link hoje não vê março a julho. Virou P1.3.
+- 🔴 **Erro meu, pego pelo portão:** o guard procurava a data em `01/03` e deu **"0 de 66"** duas
+  vezes. O site escreve `MAR` / `01` / `DOMINGO` em linhas separadas. **Formato se mede, não se
+  supõe** — e "0 de 66" quase foi lido como divergência catastrófica quando era régua errada.
+- **Decisão declarada:** esta conferência **fica fora do GATE** (depende do Pages do repositório
+  antigo). Roda sob demanda; o resultado fica datado no handoff.
+
+**Skills acionadas:** `engineering-loop`, `loop-autonomo`, `documentacao-auditavel`, `ponytail`.

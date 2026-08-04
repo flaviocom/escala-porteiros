@@ -5,7 +5,7 @@
 > **Última atualização:** 04/08/2026 · **Fuso:** America/São_Paulo
 >
 > **Cadeia de navegação, nesta ordem:**
-> **`ESTADO.md` (você está aqui)** → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-04-d.md) → [`BACKLOG.md`](BACKLOG.md)
+> **`ESTADO.md` (você está aqui)** → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-04-e.md) → [`BACKLOG.md`](BACKLOG.md)
 > *onde estamos · o que aconteceu na última sessão e por quê · o que fazer a seguir*
 >
 > **Roteador do projeto:** [`AGENTS.md`](AGENTS.md) ·
@@ -17,9 +17,9 @@
 
 ## Em uma frase
 
-**O site está no ar com a área administrativa funcionando**, a escala de 05/08 a 30/12 já gerada com
-o distanciamento consertado e a Santa Ceia na data certa — falta o motor de sugestão e a auditoria
-adversarial.
+**O produto está pronto e no ar**: site, área administrativa, motor, histórico com reversão, 15
+regras com portão dos dois lados, e o passado congelado **conferido contra a tela do site antigo**.
+Falta o que só o Flavio pode fazer — as duas credenciais e um auditor independente.
 
 ## Onde roda
 
@@ -98,6 +98,22 @@ comentário). Consertados, com os casos reais virando teste permanente.
 
 ## O que está em curso
 
+**Nada em execução.** O backlog técnico está vazio pela segunda vez.
+
+**Na quinta parte**, sem tarefa na lista, a ordem foi conferir a afirmação mais consequente que
+nunca tinha sido testada: o histórico congelado foi montado a partir do **código** do site antigo,
+nunca contra o que ele **mostra na tela**. Conferido dia a dia:
+**66 de 66 dias, 282 nomes, 0 divergências.** A promessa *"você não vai apagar o passado"* está
+medida, não presumida.
+
+🔴 **E apareceu um achado de lado:** o **site antigo não mostra o passado**. Ele lista do dia de hoje
+em diante — um irmão que abra aquele link hoje **não vê março a julho**, só digitando a data na
+busca. O site novo mostra, porque ali o passado é dado congelado. Virou P1.3.
+
+**Na quarta parte** entraram a Regra Mestra 3 (tooltips 17%→100%), o README, a validação em celular
+(alvo de toque de 16px corrigido para 44px) e a decisão declarada de **não** implementar
+arrastar-e-soltar.
+
 **Na terceira parte** entraram os dois últimos itens: **P3.10** (histórico com reversão — que
 revelou `historicoPublicacoes()` sem consumidor, o ERRO 12 no código desta própria sessão) e
 **P2.10** (auditoria adversarial: 17 checagens, **2 achados corrigidos**).
@@ -108,8 +124,6 @@ deste projeto. Corrigido, com teste.
 
 ⚠️ **A auditoria foi feita por quem escreveu o código.** O método diz que isso não basta.
 **Auditor independente continua pendente.**
-
-Nada em execução.
 
 ## O que bloqueia
 

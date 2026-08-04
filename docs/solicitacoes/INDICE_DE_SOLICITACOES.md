@@ -6,13 +6,14 @@
 > **Cadeia de navegação:** [`ESTADO.md`](../../ESTADO.md) → [`handoff mais recente`](../handoff/INDICE.md) → [`BACKLOG.md`](../../BACKLOG.md)
 > **Roteador do projeto:** [`AGENTS.md`](../../AGENTS.md) · **Por quê de cada decisão:** [`DIARIO_DE_BORDO.md`](../../DIARIO_DE_BORDO.md)
 
-**Próximo identificador livre: S-007** — calculado sobre **todas** as fatias, nunca lido da última
+**Próximo identificador livre: S-008** — calculado sobre **todas** as fatias, nunca lido da última
 linha visível (é o ERRO 28 do catálogo de anteparos: após uma rotação, o maior ID some de vista).
 
 ---
 
 | ID | Data | Solicitação | Onde foi parar |
 |---|---|---|---|
+| **S-007** | 04/08/2026 | Quinto **"go"**, backlog técnico vazio pela segunda vez — ordem do assistente | Conferência do histórico congelado contra a **tela** do site antigo: 66/66 dias, 282 nomes, 0 divergências · [handoff da parte 5](../handoff/HANDOFF_2026-08-04-e.md) · [DB-005](../../DIARIO_DE_BORDO.md) |
 | **S-001** | 04/08/2026 | Identificar o projeto da escala nas pastas e no GitHub; levantar **regras, dias, escala e restrições por participante**; criar **projeto novo** (pasta + repositório) com **área administrativa** que permita tirar e acrescentar pessoas, com restrições próprias, e **gerar nova escala sem tirar o site do ar** | [Desenho](../superpowers/specs/2026-08-04-area-administrativa-escala-design.md) · [DB-001](../../DIARIO_DE_BORDO.md) · [Handoff 04/08](../handoff/HANDOFF_2026-08-04.md) |
 | **S-002** | 04/08/2026 | *"É necessário que, antes de codar, você tome ciência e ingira todo esse material"* — os padrões globais em `D:\Antigravity\_padroes-globais` | §15 e §16 do [desenho](../superpowers/specs/2026-08-04-area-administrativa-escala-design.md) · esqueleto do método na raiz |
 | **S-006** | 04/08/2026 | Quarto **"go"**, com o backlog técnico já vazio | Regra Mestra 3 medida e cumprida · README · validação em celular · decisão declarada sobre arrastar-e-soltar · [handoff da parte 4](../handoff/HANDOFF_2026-08-04-d.md) |

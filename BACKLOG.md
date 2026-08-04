@@ -6,7 +6,7 @@
 > **Última atualização:** 04/08/2026
 >
 > **Cadeia de navegação, nesta ordem:**
-> [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-04-d.md) → **`BACKLOG.md` (você está aqui)**
+> [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-04-e.md) → **`BACKLOG.md` (você está aqui)**
 >
 > **Roteador do projeto:** [`AGENTS.md`](AGENTS.md) ·
 > **Solicitações:** [`docs/solicitacoes/INDICE_DE_SOLICITACOES.md`](docs/solicitacoes/INDICE_DE_SOLICITACOES.md) ·
@@ -45,6 +45,12 @@ noite** num dia em que ninguém deve ser escalado (irmãos de outra igreja atend
 
 ⚠️ **Armadilha:** o Flavio decidiu que o repositório antigo **não é tocado**. Logo, a correção vem
 pelo projeto novo entrando no ar antes de 16/08 — ou por uma decisão dele em contrário.
+
+### P1.3 🟠 O site antigo não mostra o passado 🤖
+Medido em 04/08/2026: o site antigo lista **do dia de hoje em diante**. Um irmão que abra o link
+hoje **não vê março a julho** — só digitando a data na busca. O site novo mostra, porque o passado
+ali é dado congelado, não recálculo.
+- Não tem correção no antigo (não é tocado). Some quando o link novo for divulgado — decisão 👤.
 
 ### P1.2 🟠 Distanciamento não é regra no gerador atual 🤖
 Medido: Williams com **7 intervalos de 1 dia**, **18 pares com ≤3 dias**, 6 ocorrências de
