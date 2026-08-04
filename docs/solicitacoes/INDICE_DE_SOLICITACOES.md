@@ -6,7 +6,7 @@
 > **Cadeia de navegação:** [`ESTADO.md`](../../ESTADO.md) → [`handoff mais recente`](../handoff/INDICE.md) → [`BACKLOG.md`](../../BACKLOG.md)
 > **Roteador do projeto:** [`AGENTS.md`](../../AGENTS.md) · **Por quê de cada decisão:** [`DIARIO_DE_BORDO.md`](../../DIARIO_DE_BORDO.md)
 
-**Próximo identificador livre: S-005** — calculado sobre **todas** as fatias, nunca lido da última
+**Próximo identificador livre: S-006** — calculado sobre **todas** as fatias, nunca lido da última
 linha visível (é o ERRO 28 do catálogo de anteparos: após uma rotação, o maior ID some de vista).
 
 ---
@@ -15,6 +15,7 @@ linha visível (é o ERRO 28 do catálogo de anteparos: após uma rotação, o m
 |---|---|---|---|
 | **S-001** | 04/08/2026 | Identificar o projeto da escala nas pastas e no GitHub; levantar **regras, dias, escala e restrições por participante**; criar **projeto novo** (pasta + repositório) com **área administrativa** que permita tirar e acrescentar pessoas, com restrições próprias, e **gerar nova escala sem tirar o site do ar** | [Desenho](../superpowers/specs/2026-08-04-area-administrativa-escala-design.md) · [DB-001](../../DIARIO_DE_BORDO.md) · [Handoff 04/08](../handoff/HANDOFF_2026-08-04.md) |
 | **S-002** | 04/08/2026 | *"É necessário que, antes de codar, você tome ciência e ingira todo esse material"* — os padrões globais em `D:\Antigravity\_padroes-globais` | §15 e §16 do [desenho](../superpowers/specs/2026-08-04-area-administrativa-escala-design.md) · esqueleto do método na raiz |
+| **S-005** | 04/08/2026 | Terceiro **"go"**, mesma instrução: workflow completo em loop, ordem do assistente | P3.10 e P2.10 — os dois últimos itens · [handoff da parte 3](../handoff/HANDOFF_2026-08-04-c.md) |
 | **S-004** | 04/08/2026 | Segundo **"go"**: *"workflow completo item a item, solicitação por solicitação, achados, pesquisas… e no padrão-ouro. Em loop, sem parar! Sempre expandir, mapeando todas as ligações em Documentos e Código antes de mexer. (…) quem determina a ordem é você, sempre."* | P3.13, P3.12, P3.9, P2.9 e P2.7 nesta ordem · [handoff da parte 2](../handoff/HANDOFF_2026-08-04-b.md) |
 | **S-003** | 04/08/2026 | *"Go workflow completo item a item... e no padrão-ouro. Em loop, sem parar! Sempre expandir... Documentos ligando o handoff ao roteador do projeto e ao índice de solicitações, para nada ficar órfão"* — autorização-guarda-chuva, ordem do assistente | Cadeia documental (este arquivo, [handoff](../handoff/INDICE.md), [histórico](../historico/INDICE.md)) · execução do [BACKLOG](../../BACKLOG.md) |
 

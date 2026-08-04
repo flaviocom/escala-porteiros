@@ -4,7 +4,7 @@
 > como reverter.** Documento **append-only**, fatiado por período ao estourar o teto. **Nada é
 > excluído, nunca.**
 >
-> **Cadeia de navegação:** [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-04-b.md) → [`BACKLOG.md`](BACKLOG.md)
+> **Cadeia de navegação:** [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-04-c.md) → [`BACKLOG.md`](BACKLOG.md)
 > **Roteador:** [`AGENTS.md`](AGENTS.md) ·
 > **Solicitações:** [`docs/solicitacoes/INDICE_DE_SOLICITACOES.md`](docs/solicitacoes/INDICE_DE_SOLICITACOES.md) ·
 > **Histórico:** [`docs/historico/INDICE.md`](docs/historico/INDICE.md)
@@ -126,3 +126,45 @@ a disciplina.
 
 Cada item é um commit próprio, com o porquê na mensagem. Reverter um não derruba os outros. Os
 dados publicados não mudaram nesta parte — só código, portões e documentação.
+
+---
+
+## DB-003 · 04/08/2026 · A auditoria que achou o que os testes não achavam
+
+### Solicitação
+
+S-005: terceiro **"go"**, mesma instrução — workflow completo em loop, ordem do assistente.
+
+### O achado que importa, e por que ele escapou de 71 testes
+
+A validação **aprovava** uma escala com pessoa **desativada**. D8 conferia `bloco.elenco` e não o
+campo `ativo`.
+
+Escapou porque o gerador consulta `podeAssumir`, que já barra inativo — então **a escala gerada
+nunca continha o caso**, e nenhum teste do gerador poderia encontrá-lo. O buraco só se abre por
+três caminhos que os testes não exercitavam: ajuste manual, bloco importado, e alguém desativado
+**depois** de a escala ser gerada.
+
+Esse terceiro caminho é literalmente o motivo de o projeto existir: *"sempre acontece de saírem
+pessoas da escala"*.
+
+**A lição:** provar a REGRA não é provar o CAMINHO. Testar o gerador prova que ele não produz o
+defeito; não prova que a validação o pegaria se viesse de outro lugar. A validação é a última
+linha antes de publicar, e precisa cobrir portas que o gerador nunca abre.
+
+### O segundo achado, e o que ele ensina sobre réguas
+
+O detector de código morto acusou 8 funções; 7 eram inocentes — ele ignorava o próprio arquivo e
+os testes como consumidores. **Régua frouxa não é conservadora: é ruidosa.** E ruído em portão é o
+que faz alguém desligá-lo, levando junto a proteção. Afinado, sobrou uma de verdade.
+
+### Como reverter
+
+Cada item é um commit próprio. A correção do D8 tem 2 testes que ficam vermelhos se alguém a
+desfizer. Os dados publicados não mudaram nesta parte.
+
+### Limite declarado
+
+**A auditoria foi feita por quem escreveu o código.** O método é explícito: *"quem escreveu
+carrega os mesmos pontos cegos ao testá-lo"*. Os 2 achados provam que o ataque valeu; **não**
+provam que não há mais nada. Auditor independente continua pendente no backlog.

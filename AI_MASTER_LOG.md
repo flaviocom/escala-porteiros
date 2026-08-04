@@ -4,7 +4,7 @@
 > O **porquê** de cada decisão vive no [`DIARIO_DE_BORDO.md`](DIARIO_DE_BORDO.md); aqui fica o
 > registro do que foi feito, passo a passo.
 >
-> **Cadeia de navegação:** [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-04-b.md) → [`BACKLOG.md`](BACKLOG.md)
+> **Cadeia de navegação:** [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-04-c.md) → [`BACKLOG.md`](BACKLOG.md)
 > **Roteador:** [`AGENTS.md`](AGENTS.md) ·
 > **Solicitações:** [`docs/solicitacoes/INDICE_DE_SOLICITACOES.md`](docs/solicitacoes/INDICE_DE_SOLICITACOES.md) ·
 > **Fatias arquivadas:** [`docs/historico/INDICE.md`](docs/historico/INDICE.md)
@@ -129,3 +129,21 @@ P3.13 → P3.12 → P3.9 → P2.9 → P2.7.
 build) exit 0 · órfãos 0 · site e área administrativa validados **ao vivo** no navegador.
 
 **Pendente:** P3.10 (histórico com reversão pela tela) e P2.10 (auditoria adversarial).
+
+---
+
+## [04/08/2026] Sessão 1, parte 3 — os dois últimos itens do backlog
+
+**Gatilho.** Terceiro "go" (S-005).
+
+1. **P3.10** — histórico com reversão. O mapa feito antes de mexer achou `historicoPublicacoes()`
+   **sem consumidor**: o ERRO 12 no código desta própria sessão. Ligado, com leitura do arquivo
+   num commit específico e reversão que **não apaga nada** — publica de novo.
+2. **P2.10** — auditoria adversarial: 17 checagens em 5 frentes, com infrator injetado.
+   🔴 **Achado 1:** pessoa desativada escalada era aprovada (D8 olhava só o elenco do bloco).
+   🔴 **Achado 2:** o detector de código morto era frouxo — 8 acusados, 7 inocentes. Afinado,
+   sobrou `formatarMesBR`, removida.
+
+**GATE final:** typecheck + 73 testes × 2 fusos + denominação + fontes + auditoria + build.
+
+**Pendente:** auditor **independente** (o limite estrutural da autoauditoria) e as credenciais.

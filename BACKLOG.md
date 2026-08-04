@@ -6,7 +6,7 @@
 > **Última atualização:** 04/08/2026
 >
 > **Cadeia de navegação, nesta ordem:**
-> [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-04-b.md) → **`BACKLOG.md` (você está aqui)**
+> [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-04-c.md) → **`BACKLOG.md` (você está aqui)**
 >
 > **Roteador do projeto:** [`AGENTS.md`](AGENTS.md) ·
 > **Solicitações:** [`docs/solicitacoes/INDICE_DE_SOLICITACOES.md`](docs/solicitacoes/INDICE_DE_SOLICITACOES.md) ·
@@ -65,7 +65,7 @@ Medido: Williams com **7 intervalos de 1 dia**, **18 pares com ≤3 dias**, 6 oc
 | P2.7 | `docs/INVENTARIO_DE_FONTES.md` **gerado por script** | ✅ 04/08 — 2 hosts medidos, 3 declarados |
 | P2.8 | GATE: typecheck + suíte completa + build | ✅ 04/08 — `npm run gate`, exit 0 |
 | P2.9 | Portão de denominação provando as duas pontas | ✅ 04/08 — 9 acusações + 13 absolvições, 0 vazamentos |
-| P2.10 | Auditoria adversarial, 2 auditores em frentes disjuntas | ⏳ ao fim |
+| P2.10 | Auditoria adversarial | ⚠️ 04/08 — **17 checagens em 5 frentes, 2 achados corrigidos**. Mas quem auditou escreveu o código: **auditor INDEPENDENTE continua pendente** 👤 |
 | P2.11 | 🔴 **Disco `D:` a 0,8 s por arquivo** — build roda numa cópia em `C:` | 👤 contornado; a causa é do Flavio |
 | P2.12 | ⚠️ **O pré-voo fica vermelho em `D:`** por `node_modules` ausente — ausência *proposital*, já que o build vive em `C:`. Exceção declarada aqui e em [`ESTADO.md`](ESTADO.md); o script do método não tem chave para afrouxar esse item | 👤 decidir se vale acrescentar `deps: {bloqueia:false}` ao método |
 
@@ -84,7 +84,7 @@ Medido: Williams com **7 intervalos de 1 dia**, **18 pares com ≤3 dias**, 6 oc
 | P3.7 | Telas administrativas: elenco, gerar, conferir | ✅ 04/08 |
 | P3.8 | Publicação por commit via API do GitHub + baixar JSON | ✅ 04/08 — código pronto; **falta o Flavio colar o token** |
 | P3.9 | **Motor**: proposta, placar, explicação, arbitragem e auditoria | ✅ 04/08 — portão entre a proposta e a publicação |
-| P3.10 | Histórico de publicações com reversão pela tela | ⏳ **próximo** — a leitura já está em `src/admin/github.ts`, falta a tela |
+| P3.10 | Histórico de publicações com reversão pela tela | ✅ 04/08 — e ligou `historicoPublicacoes()`, que estava sem consumidor |
 | P3.11 | Primeira geração real 05/08 → 30/12, com Santa Ceia em 16/08 | ✅ 04/08 — publicada |
 | P3.12 | **Ajuste manual** turno a turno, com o motivo antes do clique | ✅ 04/08 |
 | P3.13 | Mês lido em UTC (3 pontos) | ✅ 04/08 — portão de fuso provado nas duas pontas |

@@ -5,7 +5,7 @@
 > **Última atualização:** 04/08/2026 · **Fuso:** America/São_Paulo
 >
 > **Cadeia de navegação, nesta ordem:**
-> **`ESTADO.md` (você está aqui)** → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-04-b.md) → [`BACKLOG.md`](BACKLOG.md)
+> **`ESTADO.md` (você está aqui)** → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-04-c.md) → [`BACKLOG.md`](BACKLOG.md)
 > *onde estamos · o que aconteceu na última sessão e por quê · o que fazer a seguir*
 >
 > **Roteador do projeto:** [`AGENTS.md`](AGENTS.md) ·
@@ -98,8 +98,18 @@ comentário). Consertados, com os casos reais virando teste permanente.
 
 ## O que está em curso
 
-Nada em execução. Próximos: **P3.10** (histórico com reversão pela tela — a leitura da API já está
-escrita, falta a tela) e **P2.10** (auditoria adversarial independente).
+**Na terceira parte** entraram os dois últimos itens: **P3.10** (histórico com reversão — que
+revelou `historicoPublicacoes()` sem consumidor, o ERRO 12 no código desta própria sessão) e
+**P2.10** (auditoria adversarial: 17 checagens, **2 achados corrigidos**).
+
+🔴 O achado mais sério: **pessoa desativada escalada era APROVADA** pela validação. O gerador já
+barrava, mas o ajuste manual e os blocos importados abriam a porta — que é exatamente o cenário
+deste projeto. Corrigido, com teste.
+
+⚠️ **A auditoria foi feita por quem escreveu o código.** O método diz que isso não basta.
+**Auditor independente continua pendente.**
+
+Nada em execução.
 
 ## O que bloqueia
 
