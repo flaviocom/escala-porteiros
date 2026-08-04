@@ -1056,8 +1056,23 @@ const Campo: React.FC<{
           onKeyDown={(e) => e.key === 'Enter' && aoEnter?.()}
           className="w-full px-4 py-2.5 pr-11 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
         />
+        {/*
+          🔴 O tamanho do botão aqui não é estética — é alcance de dedo.
+
+          A primeira versão era só o ícone de 16px, sem área em volta, e a validação em celular
+          mediu exatamente isso: alvo de toque de 16px. A recomendação da Apple é 44px e a do
+          Material, 48. E o campo em questão é o do TOKEN — errar o toque e digitar por cima do que
+          já está lá é caro.
+
+          `w-11 h-11` dá 44px de alvo com o mesmo ícone de 16px no meio.
+        */}
         {tipo === 'senha' && (
-          <button title="Mostrar ou esconder o que você digitou" type="button" onClick={() => setVisivel(!visivel)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+          <button
+            title="Mostrar ou esconder o que você digitou"
+            type="button"
+            onClick={() => setVisivel(!visivel)}
+            className="absolute right-1 top-1/2 -translate-y-1/2 w-11 h-11 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+          >
             {visivel ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
           </button>
         )}
