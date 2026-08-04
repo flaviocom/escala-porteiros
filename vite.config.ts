@@ -12,6 +12,7 @@ export default defineConfig({
     port: 5173,
   },
   build: {
+    outDir: 'docs', // GitHub Pages serve deste diretorio (modo branch, main /docs)
     sourcemap: false,
   },
   test: {

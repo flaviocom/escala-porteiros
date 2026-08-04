@@ -1,0 +1,130 @@
+{
+  "versao": 1,
+  "pessoas": [
+    {
+      "id": "adilson",
+      "nome": "Adilson",
+      "ativo": true,
+      "restricoes": {
+        "diasPermitidos": [
+          0
+        ],
+        "turnosPermitidos": [
+          "NOITE"
+        ]
+      }
+    },
+    {
+      "id": "carlos_henrique",
+      "nome": "Carlos Henrique",
+      "ativo": true,
+      "restricoes": {
+        "diasProibidos": [
+          3
+        ]
+      }
+    },
+    {
+      "id": "donizete",
+      "nome": "Donizete",
+      "ativo": true,
+      "restricoes": {}
+    },
+    {
+      "id": "eduardo",
+      "nome": "Eduardo",
+      "ativo": true,
+      "restricoes": {
+        "diasProibidos": [
+          3
+        ]
+      }
+    },
+    {
+      "id": "elson",
+      "nome": "Elson",
+      "ativo": true,
+      "restricoes": {
+        "diasProibidos": [
+          3
+        ]
+      }
+    },
+    {
+      "id": "flavio",
+      "nome": "Flavio",
+      "ativo": true,
+      "restricoes": {}
+    },
+    {
+      "id": "isac",
+      "nome": "Isac",
+      "ativo": true,
+      "restricoes": {}
+    },
+    {
+      "id": "leandro",
+      "nome": "Leandro",
+      "ativo": true,
+      "restricoes": {}
+    },
+    {
+      "id": "lucas",
+      "nome": "Lucas",
+      "ativo": true,
+      "restricoes": {}
+    },
+    {
+      "id": "luis_henrique",
+      "nome": "Luis Henrique",
+      "ativo": true,
+      "restricoes": {}
+    },
+    {
+      "id": "luiz_felipe",
+      "nome": "Luiz Felipe",
+      "ativo": true,
+      "restricoes": {}
+    },
+    {
+      "id": "luiz_cezar",
+      "nome": "Luíz Cezar",
+      "ativo": true,
+      "restricoes": {}
+    },
+    {
+      "id": "marcos",
+      "nome": "Marcos",
+      "ativo": true,
+      "restricoes": {}
+    },
+    {
+      "id": "thiago",
+      "nome": "Thiago",
+      "ativo": true,
+      "restricoes": {
+        "diasPermitidos": [
+          3
+        ],
+        "turnosPermitidos": [
+          "NOITE"
+        ],
+        "tetoMensal": 2
+      }
+    },
+    {
+      "id": "vicente",
+      "nome": "Vicente",
+      "ativo": true,
+      "restricoes": {}
+    },
+    {
+      "id": "williams",
+      "nome": "Williams",
+      "ativo": true,
+      "restricoes": {
+        "tetoMensal": 3
+      }
+    }
+  ]
+}

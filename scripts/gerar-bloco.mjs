@@ -122,7 +122,10 @@ const ceia = r.bloco.turnos.filter((t) => t.santaCeia)
 console.log(`\nSANTA CEIA: ${ceia.length} dia(s) — ${ceia.map((t) => `${formatarBR(t.data)} com ${t.pessoas.length} pessoa(s)`).join(', ')}`)
 
 if (ESCREVER) {
-  const truncado = { ...historico, fim: DE, turnos: historico.turnos.filter((t) => diferencaEmDias(t.data, DE) > 0) }
+  // O bloco anterior termina na VÉSPERA do novo. Deixar `fim` igual a `DE` criaria um dia
+  // governado por dois blocos — resolvível, mas é o tipo de ambiguidade que vira defeito depois.
+  const vespera = dominio.somarDias(DE, -1)
+  const truncado = { ...historico, fim: vespera, turnos: historico.turnos.filter((t) => diferencaEmDias(t.data, DE) > 0) }
   const novo = { versao: 1, blocos: [truncado, r.bloco] }
   writeFileSync(join(RAIZ, 'public/dados/blocos.json'), JSON.stringify(novo, null, 2) + '\n', 'utf8')
   console.log('\n✅ blocos.json atualizado (histórico truncado + bloco novo)')

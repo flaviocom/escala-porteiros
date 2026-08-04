@@ -1,20 +1,25 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { generateSchedule } from './utils/scheduler';
+import { useState, useEffect, useMemo } from 'react';
 import { exportToImage } from './utils/export';
 import { Shift, BROTHERS } from './types/scheduler';
+import type { DadosPublicados } from './dados/carregar';
 import { ScheduleTable } from './components/ScheduleTable';
 import { StatsView } from './components/StatsView';
 import { ValidationView } from './components/ValidationView';
 import { MultiSelect } from './components/MultiSelect';
 import { DateSearch } from './components/DateSearch';
-import { Calendar, Download, Filter, X, LayoutGrid, BarChart3, ShieldCheck, Menu, SlidersHorizontal, ChevronDown, MessageCircle, User, ChevronRight, Search, Loader2 } from 'lucide-react';
+import { Calendar, Filter, X, LayoutGrid, BarChart3, ShieldCheck, SlidersHorizontal, MessageCircle, User, ChevronRight, Search, Loader2 } from 'lucide-react';
 import { format, parseISO, addDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfDay, endOfDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { clsx } from 'clsx';
 import logo from './assets/logo-ccb-light.png';
 
-function App() {
-  const [shifts, setShifts] = useState<Shift[]>([]);
+interface AppProps {
+  /** A escala já publicada, vinda dos arquivos de dados — não mais gerada no navegador. */
+  shifts: Shift[];
+  dados: DadosPublicados;
+}
+
+function App({ shifts, dados }: AppProps) {
   const [selectedBrotherIds, setSelectedBrotherIds] = useState<string[]>([]);
   const [selectedMonthStrs, setSelectedMonthStrs] = useState<string[]>([]);
   const [dateSearchQuery, setDateSearchQuery] = useState('');
@@ -37,11 +42,6 @@ function App() {
   useEffect(() => {
     localStorage.setItem('showMyShiftsOnly', showMyShiftsOnly.toString());
   }, [showMyShiftsOnly]);
-
-  useEffect(() => {
-    const newShifts = generateSchedule();
-    setShifts(newShifts);
-  }, []);
 
   // 🆕 Quando "Minha Escala" está ativo, filtra pelo meu irmão
   useEffect(() => {
@@ -539,7 +539,7 @@ function App() {
           )}
 
           {view === 'validation' && (
-            <ValidationView shifts={shifts} />
+            <ValidationView dados={dados} />
           )}
         </div>
       </main>

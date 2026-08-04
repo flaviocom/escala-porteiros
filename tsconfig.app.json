@@ -15,12 +15,16 @@
     "noEmit": true,
     "jsx": "react-jsx",
 
-    /* Linting */
-    // "strict": true
-    // "noUnusedLocals": true,
-    // "noUnusedParameters": true,
-    // "noFallthroughCasesInSwitch": true,
-    // "noUncheckedSideEffectImports": true
+    /* Verificação — LIGADA de propósito.
+       O template de origem vinha com `strict` COMENTADO. Sem `strictNullChecks`, o TypeScript
+       deixa de estreitar união discriminada: `if (!r.ok) return r.motivo` passava a acusar erro
+       porque o compilador não distinguia o ramo de sucesso do de falha. Foi assim que o defeito
+       apareceu — e o custo real de ficar desligado é maior: num projeto que decide quem serve na
+       porta, `undefined` chegando na tela é escala errada, não tela feia. */
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true
   },
   "include": ["src"]
 }

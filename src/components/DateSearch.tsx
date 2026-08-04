@@ -1,7 +1,6 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Calendar as CalendarIcon, Search, X } from 'lucide-react';
-import { startOfWeek, endOfWeek, startOfMonth, endOfMonth, isSameDay, format, addDays } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { isSameDay, format } from 'date-fns';
 import { clsx } from 'clsx';
 
 interface DateSearchProps {
@@ -23,7 +22,7 @@ export const DateSearch: React.FC<DateSearchProps> = ({ value, onChange, onDateR
     }
   }, [dateRange]);
 
-  const [activeFilter, setActiveFilter] = useState<'15days' | 'week' | 'month' | null>(null);
+  const [, setActiveFilter] = useState<'15days' | 'week' | 'month' | null>(null);
 
   // Clear active filter when dateRange is null
   useEffect(() => {
@@ -41,29 +40,8 @@ export const DateSearch: React.FC<DateSearchProps> = ({ value, onChange, onDateR
     }
   };
 
-  const handleQuickAction = (type: '15days' | 'week' | 'month') => {
-    const today = new Date();
-    let start: Date, end: Date;
-
-    switch (type) {
-      case '15days':
-        start = today;
-        end = addDays(today, 14);
-        break;
-      case 'week':
-        start = startOfWeek(today, { locale: ptBR });
-        end = endOfWeek(today, { locale: ptBR });
-        break;
-      case 'month':
-        start = startOfMonth(today);
-        end = endOfMonth(today);
-        break;
-    }
-
-    setActiveFilter(type);
-    onDateRangeChange({ start, end });
-    // Query update handled by useEffect
-  };
+  // Os atalhos rápidos (15 dias / semana / mês) vivem no App, não aqui — este componente
+  // ficou só com a busca por texto e por data. A cópia local estava morta desde então.
 
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.value) {

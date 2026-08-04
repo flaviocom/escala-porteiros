@@ -1,5 +1,5 @@
 import React, { useMemo, useEffect, useRef } from 'react';
-import { format, isSameMonth, parseISO, startOfMonth, isWithinInterval, isSameDay, startOfToday, isAfter, startOfDay, addDays } from 'date-fns';
+import { format, isSameMonth, parseISO, startOfMonth, isWithinInterval, isSameDay, startOfToday, isAfter } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Shift, BROTHERS } from '../types/scheduler';
 import { clsx } from 'clsx';
