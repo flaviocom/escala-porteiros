@@ -17,3 +17,7 @@ Desktop.ini
 .DS_Store
 *.swp
 node_modules*
+
+# cache do script de geracao
+node_modules/
+.cache-dominio*
