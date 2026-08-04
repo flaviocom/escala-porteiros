@@ -155,7 +155,7 @@ function App({ shifts, dados }: AppProps) {
               </div>
               <ChevronRight className={clsx("h-5 w-5 transition-transform", showMyShiftsOnly ? "rotate-90" : "")} />
             </button>
-            <button title="Escolher outro irmão para o filtro "Minha Escala""
+            <button title="Escolher outro irmão para o filtro Minha Escala"
               onClick={() => setShowBrotherPicker(true)}
               className="text-xs text-gray-400 hover:text-gray-600 text-right pr-1 underline"
             >

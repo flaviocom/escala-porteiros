@@ -56,6 +56,17 @@ const TEM_TOOLTIP = /\b(title|aria-label)\s*=/
 const TEM_HOVER = /hover:/
 const TEM_DESABILITADO = /\bdisabled\b/
 
+/**
+ * 🔴 Dica com ASPAS DUPLAS dentro quebra o atributo — e quebra o arquivo inteiro.
+ *
+ * Aconteceu em 04/08/2026: a dica `Escolher outro irmão para o filtro "Minha Escala"` virou
+ * `title="… o filtro "Minha Escala""` e o TypeScript acusou 4 erros de JSX em cascata, três deles
+ * em linhas que não tinham defeito nenhum — o que faz procurar no lugar errado.
+ *
+ * O portão passa a pegar isto, porque é uma classe inteira de defeito, não um caso.
+ */
+const TITULO_MAL_FORMADO = /\btitle\s*=\s*"[^"]*"[A-Za-zÀ-ÿ]/
+
 // ---------------------------------------------------------------------------
 
 function autoteste() {
@@ -78,6 +89,12 @@ function autoteste() {
     },
     { nome: 'botão SEM tooltip é detectado', codigo: '<button onClick={f}>Salvar</button>', tooltip: false },
     {
+      nome: '🔴 dica com ASPAS DUPLAS dentro é acusada',
+      codigo: '<button title="use o filtro "Minha Escala"">z</button>',
+      tooltip: true,
+      malFormado: true,
+    },
+    {
       nome: 'botão multilinha SEM tooltip é detectado',
       codigo: '<button\n  onClick={f}\n  className="x"\n>\n  Publicar\n</button>',
       tooltip: false,
@@ -89,7 +106,8 @@ function autoteste() {
   for (const c of casos) {
     const bs = extrairBotoes(c.codigo)
     const achou = bs.length === 1 && TEM_TOOLTIP.test(bs[0].texto)
-    const ok = achou === c.tooltip
+    const malFormado = bs.length === 1 && TITULO_MAL_FORMADO.test(bs[0].texto)
+    const ok = achou === c.tooltip && malFormado === Boolean(c.malFormado)
     if (!ok) falhas++
     console.log(`  ${ok ? '✅' : '🔴'} ${c.nome}`)
     if (!ok) console.log(`       leu: ${JSON.stringify(bs[0]?.texto ?? '(nenhum)')}`)
@@ -116,6 +134,7 @@ let total = 0
 let comTooltip = 0
 let comHover = 0
 const semTooltip = []
+const malFormados = []
 
 for (const caminho of arquivos(join(RAIZ, 'src'))) {
   const codigo = readFileSync(caminho, 'utf8')
@@ -124,6 +143,9 @@ for (const caminho of arquivos(join(RAIZ, 'src'))) {
     if (TEM_TOOLTIP.test(b.texto)) comTooltip++
     else semTooltip.push({ arquivo: relative(RAIZ, caminho).replace(/\\/g, '/'), linha: b.linha, trecho: b.texto.replace(/\s+/g, ' ').slice(0, 80) })
     if (TEM_HOVER.test(b.texto)) comHover++
+    if (TITULO_MAL_FORMADO.test(b.texto)) {
+      malFormados.push(`${relative(RAIZ, caminho).replace(/\\/g, '/')}:${b.linha}`)
+    }
   }
 }
 
@@ -146,6 +168,12 @@ if (semTooltip.length) {
   console.log(`\n${semTooltip.length} botão(ões) sem tooltip:\n`)
   for (const s of semTooltip.slice(0, 40)) console.log(`  ${s.arquivo}:${s.linha}\n    ${s.trecho}`)
   if (semTooltip.length > 40) console.log(`  (+${semTooltip.length - 40})`)
+}
+
+if (malFormados.length) {
+  console.error(`\n🔴 ${malFormados.length} dica(s) com ASPAS DUPLAS dentro — isso quebra o JSX:`)
+  malFormados.forEach((m) => console.error('   ·', m))
+  process.exit(1)
 }
 
 if (proporcao < PISO_TOOLTIP) {
