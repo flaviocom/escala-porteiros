@@ -24,8 +24,9 @@ import { gerar } from '../dominio/gerador'
 import { validar, resumir } from '../dominio/validacao'
 import { menorIntervalo } from '../dominio/regras'
 import { diferencaEmDias, formatarBR, hojeSaoPaulo, NOMES_DIA_CURTO, somarDias } from '../dominio/datas'
+import { AbaAjustar } from './AbaAjustar'
 
-type Aba = 'elenco' | 'gerar' | 'publicar'
+type Aba = 'elenco' | 'gerar' | 'ajustar' | 'publicar'
 
 // ===========================================================================
 // PORTA — login
@@ -125,6 +126,8 @@ export const Admin: React.FC<{ dados: DadosPublicados }> = ({ dados }) => {
   const [aba, setAba] = useState<Aba>('elenco')
   const [pessoas, setPessoas] = useState<Pessoa[]>(() => dados.pessoas.map((p) => ({ ...p, restricoes: { ...p.restricoes } })))
   const [blocoNovo, setBlocoNovo] = useState<Bloco | null>(null)
+  /** O bloco como o gerador o entregou — a referência para o "desfazer tudo" do ajuste manual. */
+  const [blocoOriginal, setBlocoOriginal] = useState<Bloco | null>(null)
   const [relatoGeracao, setRelatoGeracao] = useState<string>('')
 
   if (!segredos) {
@@ -135,11 +138,23 @@ export const Admin: React.FC<{ dados: DadosPublicados }> = ({ dados }) => {
     )
   }
 
-  const abas: { id: Aba; texto: string }[] = [
+  const abas: { id: Aba; texto: string; travada?: boolean }[] = [
     { id: 'elenco', texto: 'Elenco' },
     { id: 'gerar', texto: 'Gerar escala' },
+    { id: 'ajustar', texto: 'Ajustar', travada: !blocoNovo },
     { id: 'publicar', texto: 'Publicar' },
   ]
+
+  // A fronteira com os blocos anteriores — quem trabalhou na véspera não pode entrar no dia 1.
+  const fronteira: Record<string, string> = {}
+  if (blocoNovo) {
+    for (const b of dados.blocos) {
+      for (const t of b.turnos) {
+        if (diferencaEmDias(t.data, blocoNovo.inicio) <= 0) continue
+        for (const id of t.pessoas) if (!fronteira[id] || t.data > fronteira[id]) fronteira[id] = t.data
+      }
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -166,10 +181,16 @@ export const Admin: React.FC<{ dados: DadosPublicados }> = ({ dados }) => {
           {abas.map((a) => (
             <button
               key={a.id}
-              onClick={() => setAba(a.id)}
+              onClick={() => !a.travada && setAba(a.id)}
+              disabled={a.travada}
+              title={a.travada ? 'Gere uma escala primeiro' : undefined}
               className={clsx(
                 'px-4 py-3 text-sm font-semibold border-b-2 -mb-px transition-colors',
-                aba === a.id ? 'border-indigo-600 text-indigo-700' : 'border-transparent text-gray-500 hover:text-gray-800',
+                a.travada
+                  ? 'border-transparent text-gray-300 cursor-not-allowed'
+                  : aba === a.id
+                    ? 'border-indigo-600 text-indigo-700'
+                    : 'border-transparent text-gray-500 hover:text-gray-800',
               )}
             >
               {a.texto}
@@ -186,7 +207,16 @@ export const Admin: React.FC<{ dados: DadosPublicados }> = ({ dados }) => {
             pessoas={pessoas}
             blocoNovo={blocoNovo}
             relato={relatoGeracao}
-            aoGerar={(b, r) => { setBlocoNovo(b); setRelatoGeracao(r) }}
+            aoGerar={(b, r) => { setBlocoNovo(b); setBlocoOriginal(b); setRelatoGeracao(r) }}
+          />
+        )}
+        {aba === 'ajustar' && blocoNovo && blocoOriginal && (
+          <AbaAjustar
+            bloco={blocoNovo}
+            blocoOriginal={blocoOriginal}
+            pessoas={pessoas}
+            fronteira={fronteira}
+            aoAlterar={setBlocoNovo}
           />
         )}
         {aba === 'publicar' && (
