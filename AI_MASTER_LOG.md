@@ -68,3 +68,36 @@ para 10 casos, provado contra a versão anterior, commitado e conferido **no rem
 deste projeto, e por isso aqui fica só o ponteiro.
 
 **Pendente.** Aprovação do desenho (P0.1 do backlog). **Nenhuma linha de código de produto escrita.**
+
+---
+
+## [04/08/2026] Sessão 1 — continuação: o produto no ar
+
+**Gatilho.** O Flavio deu o "go": workflow completo no padrão-ouro, em loop, ordem do assistente.
+
+**Feito, na ordem em que aconteceu:**
+
+1. Repositório `flaviocom/escala-porteiros` criado, público, conferido **no remoto**.
+2. Cadeia documental ligada: `ESTADO → handoff → BACKLOG`, mais roteador, índice de solicitações e
+   índice do histórico. Portão de órfãos: **10 documentos, 0 órfãos, 0 links quebrados**.
+3. 🔴 **O disco `D:` inviabilizou o build.** Medido em repouso: **79.844 ms para 100 arquivos
+   pequenos**, contra **45 ms em `C:`** — 0,8 s por arquivo. Junção (`mklink /J`) não resolve: o npm
+   apaga `node_modules` que não seja diretório real. Contornado clonando em `C:`, onde o
+   `npm install` levou **14 segundos**.
+4. Núcleo do domínio: datas locais em texto, tipos, malha como dado, catálogo de 15 regras,
+   validação e gerador. **55 testes verdes**, cada regra provada nas duas pontas.
+5. Carga inicial conferida contra a fonte: **184 turnos, 549 vagas, 549 preenchidas**.
+6. Geração real de 05/08 a 30/12: **piso 6 descoberto** (tentou 9, 8, 7), **0 pares com ≤3 dias**
+   (eram 18), Santa Ceia em **16/08 com ninguém escalado**.
+7. 🔴 **`"strict"` estava comentado no `tsconfig` herdado.** Ligar resolveu 12 erros de estreitamento
+   e revelou 9 trechos de código morto.
+8. Site publicado no GitHub Pages (`main` + `/docs`) e **validado ao vivo no navegador**.
+9. Área administrativa no ar: cofre (PBKDF2 + AES-GCM), elenco, geração, conferência e publicação
+   por commit. **Validada ao vivo**, incluindo a prova de que a cifragem morde.
+
+**Portões rodados:** `pre-voo` exit 0 · `checar-orfaos-doc` exit 0 · `checar-tamanho-docs` exit 0 ·
+`npm run gate` exit 0 (typecheck 0 erros, 55 testes, build 2,46 s) · validação ao vivo do site e da
+área administrativa, ambas aprovadas.
+
+**Pendente:** o motor (P3.9), o ajuste manual (P3.12), o histórico com reversão pela tela (P3.10) e a
+auditoria adversarial (P2.10). E, do lado do Flavio, colar as duas credenciais.

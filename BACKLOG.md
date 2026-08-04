@@ -56,36 +56,37 @@ Medido: Williams com **7 intervalos de 1 dia**, **18 pares com ≤3 dias**, 6 oc
 
 | # | Item | Estado |
 |---|---|---|
-| P2.1 | `AGENTS.md` + `ESTADO.md` + `BACKLOG.md` na raiz | ✅ 04/08/2026 |
-| P2.2 | `docs/pre-voo.json` e `docs/regimes-documentos.json` | ✅ 04/08/2026 |
-| P2.3 | Pré-voo verde | ⏳ falta o repositório git |
-| P2.4 | Criar `flaviocom/escala-porteiros` e `git init` local | ⏳ após P0.1 |
-| P2.5 | `.gitignore` excluindo `.claude/` e `.agents/` (ERRO 26) | ⏳ |
-| P2.6 | `AI_MASTER_LOG.md` + `DIARIO_DE_BORDO.md` | ⏳ |
+| P2.1 | `AGENTS.md` + `ESTADO.md` + `BACKLOG.md` na raiz | ✅ 04/08 |
+| P2.2 | `docs/pre-voo.json` e `docs/regimes-documentos.json` | ✅ 04/08 |
+| P2.3 | Pré-voo verde | ✅ 04/08 — exit 0 |
+| P2.4 | Criar `flaviocom/escala-porteiros` + repositório local | ✅ 04/08 — conferido no remoto |
+| P2.5 | `.gitignore` excluindo `.claude/` e `.agents/` (ERRO 26) | ✅ 04/08 |
+| P2.6 | `AI_MASTER_LOG.md` + `DIARIO_DE_BORDO.md` | ✅ 04/08 |
 | P2.7 | `docs/INVENTARIO_DE_FONTES.md` **gerado por script** | ⏳ |
-| P2.8 | GATE: typecheck + suíte completa + build | ⏳ |
+| P2.8 | GATE: typecheck + suíte completa + build | ✅ 04/08 — `npm run gate`, exit 0 |
 | P2.9 | Portão `medir-denominacao-sem-ia` provando as duas pontas | ⏳ |
 | P2.10 | Auditoria adversarial, 2 auditores em frentes disjuntas | ⏳ ao fim |
+| P2.11 | 🔴 **Disco `D:` a 0,8 s por arquivo** — build roda numa cópia em `C:` | 👤 contornado; a causa é do Flavio |
 
 ---
 
 ## P3 — Produto ⚪
 
-Ordem de construção proposta pelo assistente (a ordem é dele, conforme o método):
-
-| # | Item |
-|---|---|
-| P3.1 | Modelo de dados: `pessoas.json`, `blocos.json`, `config.json` |
-| P3.2 | Catálogo de regras executável — 9 duras + 5 de qualidade, **cada uma com teste das duas pontas** |
-| P3.3 | Carga inicial: congelar 01/03 → 04/08/2026 como bloco histórico, **contando as duas pontas** (ERRO 23) |
-| P3.4 | Algoritmo de distribuição com piso descoberto por busca |
-| P3.5 | Site público lendo os JSON (herda filtros, "Minha Escala", estatísticas, exportação) |
-| P3.6 | Engrenagem discreta + login que **descriptografa** as credenciais |
-| P3.7 | Telas administrativas: elenco, gerar, conferir, ajustar |
-| P3.8 | Publicação por commit via API do GitHub + botão "baixar JSON" como rede |
-| P3.9 | Motor: proposta, explicação, arbitragem e auditoria — degradável sem crédito |
-| P3.10 | Histórico de publicações com reversão |
-| P3.11 | Primeira geração real: 05/08 → 30/12/2026, já com a Santa Ceia em 16/08 |
+| # | Item | Estado |
+|---|---|---|
+| P3.1 | Modelo de dados: `pessoas.json`, `blocos.json`, `config.json` | ✅ 04/08 |
+| P3.2 | Catálogo de regras executável — **10 duras + 5 de qualidade**, cada uma com teste das duas pontas | ✅ 04/08 — 55 testes |
+| P3.3 | Carga inicial: congelar 01/03 → 04/08, **contando as duas pontas** (ERRO 23) | ✅ 04/08 — 184/549/549 |
+| P3.4 | Algoritmo com piso **descoberto** por busca | ✅ 04/08 — piso 6, tentou 9/8/7 |
+| P3.5 | Site público lendo os JSON | ✅ 04/08 — validado ao vivo |
+| P3.6 | Engrenagem discreta + login que **descriptografa** | ✅ 04/08 — cifragem provada no navegador |
+| P3.7 | Telas administrativas: elenco, gerar, conferir | ✅ 04/08 |
+| P3.8 | Publicação por commit via API do GitHub + baixar JSON | ✅ 04/08 — código pronto; **falta o Flavio colar o token** |
+| P3.9 | **Motor**: proposta, explicação, arbitragem e auditoria — degradável sem crédito | ⏳ **próximo** |
+| P3.10 | Histórico de publicações com reversão pela tela | ⏳ (a API já lê o histórico) |
+| P3.11 | Primeira geração real 05/08 → 30/12, com Santa Ceia em 16/08 | ✅ 04/08 — publicada |
+| P3.12 | **Ajuste manual**: trocar uma pessoa num turno, com validação na hora | ⏳ |
+| P3.13 | Mês da lista de filtros ainda usa `toISOString()` (UTC) em `App.tsx:56` | ⏳ resto do defeito que o domínio já corrigiu |
 
 ---
 
