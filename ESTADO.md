@@ -3,7 +3,14 @@
 > **Onde o projeto está agora.** Documento **vivo**: sobrescrito, não acumulado.
 >
 > **Última atualização:** 04/08/2026 · **Fuso:** America/São_Paulo
-> **Cadeia:** este arquivo → [`AGENTS.md`](AGENTS.md) → [`BACKLOG.md`](BACKLOG.md)
+>
+> **Cadeia de navegação, nesta ordem:**
+> **`ESTADO.md` (você está aqui)** → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-04.md) → [`BACKLOG.md`](BACKLOG.md)
+> *onde estamos · o que aconteceu na última sessão e por quê · o que fazer a seguir*
+>
+> **Roteador do projeto:** [`AGENTS.md`](AGENTS.md) ·
+> **Solicitações:** [`docs/solicitacoes/INDICE_DE_SOLICITACOES.md`](docs/solicitacoes/INDICE_DE_SOLICITACOES.md) ·
+> **Histórico:** [`docs/historico/INDICE.md`](docs/historico/INDICE.md)
 
 ---
 

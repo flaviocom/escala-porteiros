@@ -4,9 +4,17 @@
 > Gemini CLI, Copilot e outros assistentes. Ele é autossuficiente: **você não precisa perguntar ao
 > Flavio onde paramos, o que fazer ou o que faltava.**
 >
-> **Ordem de leitura:** este arquivo → [`ESTADO.md`](ESTADO.md) → [`BACKLOG.md`](BACKLOG.md).
-> O desenho completo está em
-> [`docs/superpowers/specs/2026-08-04-area-administrativa-escala-design.md`](docs/superpowers/specs/2026-08-04-area-administrativa-escala-design.md).
+> **Este arquivo é o ROTEADOR do projeto.** Ordem de leitura, e ela importa:
+>
+> **1.** este arquivo (como se trabalha) → **2.** [`ESTADO.md`](ESTADO.md) (onde estamos) →
+> **3.** [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-04.md) (o que aconteceu e por quê) →
+> **4.** [`BACKLOG.md`](BACKLOG.md) (o que fazer a seguir)
+>
+> Só depois, e só o trecho de que precisar, os índices:
+> [`solicitações`](docs/solicitacoes/INDICE_DE_SOLICITACOES.md) ·
+> [`handoffs`](docs/handoff/INDICE.md) ·
+> [`histórico`](docs/historico/INDICE.md) ·
+> [`o desenho`](docs/superpowers/specs/2026-08-04-area-administrativa-escala-design.md)
 
 ---
 
@@ -101,10 +109,13 @@ comando vermelho. Use sem pipe, ou `${PIPESTATUS[0]}`.
 | Vou mexer em… | Leia antes |
 |---|---|
 | Estado atual | [`ESTADO.md`](ESTADO.md) |
+| O que aconteceu na última sessão, e por quê | [`docs/handoff/HANDOFF_2026-08-04.md`](docs/handoff/HANDOFF_2026-08-04.md) · [índice](docs/handoff/INDICE.md) |
 | O que falta | [`BACKLOG.md`](BACKLOG.md) |
-| Regras da escala, modelo de dados, motor | [`docs/superpowers/specs/2026-08-04-area-administrativa-escala-design.md`](docs/superpowers/specs/2026-08-04-area-administrativa-escala-design.md) |
+| Regras da escala, modelo de dados, motor | [`o desenho`](docs/superpowers/specs/2026-08-04-area-administrativa-escala-design.md) |
 | **Por que** uma decisão foi tomada, e como revertê-la | [`DIARIO_DE_BORDO.md`](DIARIO_DE_BORDO.md) |
 | O que já foi feito, passo a passo | [`AI_MASTER_LOG.md`](AI_MASTER_LOG.md) |
+| **O que o Flavio pediu**, e onde cada pedido foi parar | [`docs/solicitacoes/INDICE_DE_SOLICITACOES.md`](docs/solicitacoes/INDICE_DE_SOLICITACOES.md) |
+| Fatias arquivadas dos logs | [`docs/historico/INDICE.md`](docs/historico/INDICE.md) |
 | Método de trabalho | `D:\Antigravity\_padroes-globais\` |
 
 ## 8. Como se trabalha

@@ -3,8 +3,14 @@
 > **O que falta fazer, em ordem.** Lugar único: item que não está aqui não existe como pendência.
 > Documento **vivo** — item concluído sai daqui e vira registro no histórico.
 >
-> **Última atualização:** 04/08/2026 · Estado atual em [`ESTADO.md`](ESTADO.md) · Como se trabalha em
-> [`AGENTS.md`](AGENTS.md)
+> **Última atualização:** 04/08/2026
+>
+> **Cadeia de navegação, nesta ordem:**
+> [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-04.md) → **`BACKLOG.md` (você está aqui)**
+>
+> **Roteador do projeto:** [`AGENTS.md`](AGENTS.md) ·
+> **Solicitações:** [`docs/solicitacoes/INDICE_DE_SOLICITACOES.md`](docs/solicitacoes/INDICE_DE_SOLICITACOES.md) ·
+> **Histórico:** [`docs/historico/INDICE.md`](docs/historico/INDICE.md)
 
 **Legenda:** 🔴 bloqueia o próximo marco · 🟠 defeito em produção · 🔵 método/infra · ⚪ produto
 **Dono da decisão:** 👤 só o Flavio · 🤖 autônomo (o assistente executa sem perguntar)
