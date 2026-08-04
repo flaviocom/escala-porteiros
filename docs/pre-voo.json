@@ -1,0 +1,26 @@
+{
+  "_comentario": "Manifesto do PRÉ-VOO (_padroes-globais/PREVOO_CONECTORES.md). Rode `node D:/Antigravity/_padroes-globais/scripts/pre-voo.mjs .` ANTES de iniciar qualquer tarefa. Obrigatório = sem isto a tarefa trava no meio. Opcional = degrada uma funcionalidade, não o projeto. NENHUM VALOR de segredo entra aqui — só nomes.",
+
+  "cli": {
+    "obrigatorios": ["node", "npm", "git"],
+    "opcionais": ["npx", "gh"]
+  },
+
+  "_nota_env": "As duas credenciais deste projeto vivem no NAVEGADOR do administrador (localStorage, cifradas pela senha dele), não no ambiente de build — por isso NÃO são obrigatórias aqui. Ficam como opcionais para o pré-voo lembrar que existem e onde procurá-las: D:\\Antigravity\\Meus-Projetos\\.credenciais.env. Sem GITHUB_PAT_ESCALA_PORTEIROS a área administrativa gera e valida mas não publica; sem ANTHROPIC_API_KEY_ESCALA o algoritmo continua gerando, só sem a proposta e a explicação do motor.",
+  "env": {
+    "obrigatorias": [],
+    "opcionais": ["GITHUB_PAT_ESCALA_PORTEIROS", "ANTHROPIC_API_KEY_ESCALA"]
+  },
+
+  "git": {
+    "remoto": true,
+    "autor": "Flavio Oliveira <brflaviooliveira@gmail.com>"
+  },
+
+  "_nota_arquivos": "Os três arquivos abaixo são o PORTÃO da regra de portabilidade entre IAs. Sem eles, quem assumir o projeto precisa que o Flavio explique tudo — que é exatamente o que a regra proíbe. Não os remova desta lista.",
+  "arquivos": [
+    "AGENTS.md",
+    "ESTADO.md",
+    "BACKLOG.md"
+  ]
+}

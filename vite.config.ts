@@ -12,7 +12,23 @@ export default defineConfig({
     port: 5173,
   },
   build: {
-    outDir: 'docs', // GitHub Pages serve deste diretorio (modo branch, main /docs)
+    outDir: 'docs',
+    /**
+     * 🔴 `emptyOutDir: false` NÃO é preferência — é a correção de um defeito real.
+     *
+     * O GitHub Pages, em modo branch, só aceita servir de `/` ou de `/docs`. E `docs/` também é onde
+     * o método guarda `pre-voo.json`, `regimes-documentos.json`, o handoff, o índice de solicitações
+     * e o índice do histórico — caminhos que os portões do método têm CRAVADOS no código.
+     *
+     * Com a limpeza automática ligada (o padrão do Vite), o primeiro build **apagou os cinco
+     * documentos** e a remoção entrou num commit sem ninguém notar: o site continuou funcionando, e
+     * a cadeia documental inteira deixou de existir. Quem pegou foi o portão de órfãos, três passos
+     * depois, com 19 links quebrados.
+     *
+     * Aqui o build convive com a documentação. Em troca, `assets/` é limpo à mão antes de gerar
+     * (script `prebuild`), senão sobra arquivo antigo a cada build.
+     */
+    emptyOutDir: false,
     sourcemap: false,
   },
   test: {
