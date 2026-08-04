@@ -131,18 +131,95 @@ export async function conferirToken(token: string): Promise<{ ok: boolean; detal
 }
 
 /** Últimas publicações de dados, para a tela de histórico. */
-export async function historicoPublicacoes(token: string, limite = 20) {
+export interface Publicacao {
+  sha: string
+  shaCurto: string
+  quando: string
+  mensagem: string
+  /** Quais arquivos de dados esta publicação tocou. Sem isto não dá para reverter o certo. */
+  arquivos: string[]
+}
+
+/** Últimas publicações de dados, para a tela de histórico. */
+export async function historicoPublicacoes(token: string, limite = 15): Promise<Publicacao[]> {
   const r = await fetch(
     `https://api.github.com/repos/${DONO}/${REPO}/commits?path=docs/dados&per_page=${limite}`,
     { headers: cabecalhos(token), cache: 'no-store' },
   )
-  if (!r.ok) throw new Error(`Não consegui ler o histórico (HTTP ${r.status})`)
+  if (!r.ok) throw new Error(`Não consegui ler o histórico (HTTP ${r.status}).`)
   const j = (await r.json()) as { sha: string; commit: { message: string; author: { date: string } } }[]
-  return j.map((c) => ({
-    sha: c.sha.slice(0, 7),
-    quando: c.commit.author.date,
-    mensagem: c.commit.message.split('\n')[0],
-  }))
+
+  // Quais arquivos cada commit tocou. Uma chamada por commit — por isso o limite é baixo.
+  return Promise.all(
+    j.map(async (c) => {
+      let arquivos: string[] = []
+      try {
+        const d = await fetch(`https://api.github.com/repos/${DONO}/${REPO}/commits/${c.sha}`, {
+          headers: cabecalhos(token),
+          cache: 'no-store',
+        })
+        if (d.ok) {
+          const det = (await d.json()) as { files?: { filename: string }[] }
+          arquivos = (det.files ?? [])
+            .map((f) => f.filename)
+            .filter((f) => f.startsWith('docs/dados/'))
+            .map((f) => f.replace('docs/dados/', ''))
+        }
+      } catch {
+        // Falhar aqui não pode derrubar o histórico inteiro: a lista vale mesmo sem os arquivos.
+      }
+      return {
+        sha: c.sha,
+        shaCurto: c.sha.slice(0, 7),
+        quando: c.commit.author.date,
+        mensagem: c.commit.message.split('\n')[0],
+        arquivos,
+      }
+    }),
+  )
+}
+
+/**
+ * Lê um arquivo de dados **como ele era** num commit específico.
+ *
+ * É a metade que faltava para a reversão significar alguma coisa: sem poder ler o passado, o
+ * histórico seria uma lista bonita e inútil.
+ */
+export async function lerDadosNoCommit(token: string, nome: string, sha: string): Promise<unknown> {
+  const r = await fetch(
+    `https://api.github.com/repos/${DONO}/${REPO}/contents/docs/dados/${nome}?ref=${sha}`,
+    { headers: cabecalhos(token), cache: 'no-store' },
+  )
+  if (!r.ok) throw new Error(`Não consegui ler ${nome} na versão ${sha.slice(0, 7)} (HTTP ${r.status}).`)
+  const j = (await r.json()) as RespostaConteudo
+  if (!j.content) throw new Error(`A versão ${sha.slice(0, 7)} de ${nome} veio vazia.`)
+  // O GitHub devolve base64 com quebras de linha; e o conteúdo é UTF-8 (há "Luíz" nos dados).
+  const bytes = Uint8Array.from(atob(j.content.replace(/\s/g, '')), (c) => c.charCodeAt(0))
+  return JSON.parse(new TextDecoder().decode(bytes))
+}
+
+/**
+ * Volta um arquivo de dados para como ele estava num commit.
+ *
+ * 🔴 A reversão é uma PUBLICAÇÃO NOVA, não um apagamento.
+ *
+ * Poderia ser um `git revert`, mas restaurar o conteúdo como um commit novo é melhor aqui por três
+ * razões: o histórico **nada perde** (o erro continua registrado, e saber que ele existiu é o que
+ * impede repeti-lo); a operação usa o mesmo caminho já provado da publicação; e é o que "voltar para
+ * como estava em tal dia" significa para quem administra.
+ */
+export async function reverterPara(
+  token: string,
+  nome: string,
+  sha: string,
+  quando: string,
+): Promise<ResultadoPublicacao> {
+  try {
+    const conteudo = await lerDadosNoCommit(token, nome, sha)
+    return await publicarDados(token, nome, conteudo, `volta ${nome} para a versão de ${quando}`)
+  } catch (e) {
+    return { ok: false, commits: [], erro: e instanceof Error ? e.message : String(e) }
+  }
 }
 
 /** Baixar o JSON — a rede para o dia em que o token expirar ou a API falhar. */

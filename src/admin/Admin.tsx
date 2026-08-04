@@ -11,11 +11,11 @@
 import React, { useMemo, useState } from 'react'
 import {
   AlertTriangle, CheckCircle, Download, Eye, EyeOff, KeyRound, Loader2, LogOut, Plus, RefreshCw,
-  Save, ShieldCheck, Trash2, Upload, X, XCircle,
+  History, RotateCcw, Save, ShieldCheck, Trash2, Upload, X, XCircle,
 } from 'lucide-react'
 import { clsx } from 'clsx'
 import { abrirCofre, apagarCofre, cofreExiste, gravarCofre, type Segredos } from './cofre'
-import { baixarJSON, conferirToken, publicarDados } from './github'
+import { baixarJSON, conferirToken, historicoPublicacoes, publicarDados, reverterPara, type Publicacao } from './github'
 import type { DadosPublicados } from '../dados/carregar'
 import type { Bloco, Pessoa, TipoTurno } from '../dominio/tipos'
 import { ROTULO_TURNO } from '../dominio/tipos'
@@ -874,8 +874,151 @@ const AbaPublicar: React.FC<{
           </div>
         )}
       </Cartao>
+
+      <Historico segredos={segredos} />
     </>
   )
+}
+
+// ===========================================================================
+// HISTÓRICO E REVERSÃO
+// ===========================================================================
+
+/**
+ * Toda publicação é um commit — e é por isso que este painel existe sem ter dado trabalho.
+ *
+ * 🔴 Reverter aqui NÃO apaga nada. Ele lê o arquivo como estava naquele dia e o publica de novo,
+ * como uma publicação nova. O erro continua registrado no histórico — e saber que ele existiu é o
+ * que impede repeti-lo. Um "desfazer" que apaga o rastro rouba justamente a informação mais útil.
+ */
+const Historico: React.FC<{ segredos: Segredos }> = ({ segredos }) => {
+  const [lista, setLista] = useState<Publicacao[] | null>(null)
+  const [carregando, setCarregando] = useState(false)
+  const [erro, setErro] = useState('')
+  const [revertendo, setRevertendo] = useState<string>('')
+  const [aviso, setAviso] = useState<{ ok: boolean; texto: string } | null>(null)
+
+  const carregar = async () => {
+    setCarregando(true)
+    setErro('')
+    try {
+      setLista(await historicoPublicacoes(segredos.tokenGitHub))
+    } catch (e) {
+      setErro(e instanceof Error ? e.message : String(e))
+    } finally {
+      setCarregando(false)
+    }
+  }
+
+  const voltar = async (p: Publicacao, arquivo: string) => {
+    const quando = formatarQuando(p.quando)
+    if (!confirm(
+      `Voltar "${arquivo}" para como estava em ${quando}?\n\n` +
+      'Isto não apaga nada: entra como uma publicação nova, e o histórico continua inteiro.\n' +
+      'O site mostra a versão restaurada em cerca de um minuto.'
+    )) return
+
+    setRevertendo(`${p.sha}|${arquivo}`)
+    setAviso(null)
+    const r = await reverterPara(segredos.tokenGitHub, arquivo, p.sha, quando)
+    setRevertendo('')
+    setAviso(
+      r.ok
+        ? { ok: true, texto: `"${arquivo}" voltou para a versão de ${quando}. O site atualiza em cerca de um minuto.` }
+        : { ok: false, texto: r.erro ?? 'Não foi possível reverter.' },
+    )
+    if (r.ok) carregar()
+  }
+
+  return (
+    <Cartao titulo="Histórico de publicações" subtitulo="Cada publicação é um commit. Dá para ver o que mudou e voltar atrás.">
+      {!lista && !carregando && (
+        <button
+          onClick={carregar}
+          className="px-4 py-2.5 border border-gray-300 rounded-xl text-sm font-semibold text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+        >
+          <History className="w-4 h-4" /> Ver o histórico
+        </button>
+      )}
+
+      {carregando && (
+        <p className="text-sm text-gray-600 flex items-center gap-2">
+          <Loader2 className="w-4 h-4 animate-spin" /> Lendo o histórico…
+        </p>
+      )}
+
+      {erro && <Aviso tom="erro">{erro}</Aviso>}
+
+      {aviso && (
+        <div className={clsx('mb-4 p-3 rounded-xl border text-sm', aviso.ok ? 'bg-green-50 border-green-200 text-green-900' : 'bg-red-50 border-red-200 text-red-900')}>
+          {aviso.texto}
+        </div>
+      )}
+
+      {lista && lista.length === 0 && (
+        <p className="text-sm text-gray-500">Nenhuma publicação ainda — a primeira será a sua.</p>
+      )}
+
+      {lista && lista.length > 0 && (
+        <div className="space-y-2">
+          {lista.map((p, i) => (
+            <div key={p.sha} className={clsx('rounded-xl border p-3', i === 0 ? 'border-green-300 bg-green-50/50' : 'border-gray-200')}>
+              <div className="flex items-start justify-between gap-3 flex-wrap">
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-gray-900">
+                    {p.mensagem}
+                    {i === 0 && (
+                      <span className="ml-2 text-[10px] uppercase tracking-wider bg-green-600 text-white px-1.5 py-0.5 rounded">
+                        no ar
+                      </span>
+                    )}
+                  </p>
+                  <p className="text-xs text-gray-500 mt-0.5">
+                    {formatarQuando(p.quando)} · <span className="font-mono">{p.shaCurto}</span>
+                    {p.arquivos.length > 0 && ` · ${p.arquivos.join(', ')}`}
+                  </p>
+                </div>
+                {i > 0 && p.arquivos.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 shrink-0">
+                    {p.arquivos.map((a) => (
+                      <button
+                        key={a}
+                        onClick={() => voltar(p, a)}
+                        disabled={revertendo !== ''}
+                        className="px-2.5 py-1.5 text-xs font-semibold border border-amber-300 text-amber-800 bg-amber-50 rounded-lg hover:bg-amber-100 disabled:opacity-50 flex items-center gap-1.5"
+                      >
+                        {revertendo === `${p.sha}|${a}` ? (
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        ) : (
+                          <RotateCcw className="w-3.5 h-3.5" />
+                        )}
+                        voltar {a.replace('.json', '')}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+          <button onClick={carregar} className="text-xs text-gray-500 hover:text-gray-800 underline mt-2">
+            Atualizar a lista
+          </button>
+        </div>
+      )}
+    </Cartao>
+  )
+}
+
+/** `2026-08-04T22:31:00Z` → `04/08/2026 às 19:31`, no fuso de São Paulo. */
+function formatarQuando(iso: string): string {
+  const d = new Date(iso)
+  const data = new Intl.DateTimeFormat('pt-BR', {
+    timeZone: 'America/Sao_Paulo', day: '2-digit', month: '2-digit', year: 'numeric',
+  }).format(d)
+  const hora = new Intl.DateTimeFormat('pt-BR', {
+    timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit',
+  }).format(d)
+  return `${data} às ${hora}`
 }
 
 // ===========================================================================
