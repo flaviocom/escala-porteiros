@@ -1,0 +1,18 @@
+# Segredos — NUNCA versionados. Espelho central em ..\.credenciais.env
+.env
+.env.local
+.env.*.local
+
+# Dependências e build
+node_modules/
+
+# Ferramenta de quem desenvolve não atravessa a rede (ERRO 26 dos anteparos:
+# um symlink em .claude/skills derrubou um empacotamento de deploy inteiro).
+.claude/
+.agents/
+
+# Sistema operacional / editor
+Thumbs.db
+Desktop.ini
+.DS_Store
+*.swp

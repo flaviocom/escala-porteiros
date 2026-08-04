@@ -1,0 +1,142 @@
+# AGENTS.md — escala-porteiros
+
+> **Você está assumindo este projeto.** Este arquivo é o padrão aberto lido por Codex, Cursor,
+> Gemini CLI, Copilot e outros assistentes. Ele é autossuficiente: **você não precisa perguntar ao
+> Flavio onde paramos, o que fazer ou o que faltava.**
+>
+> **Ordem de leitura:** este arquivo → [`ESTADO.md`](ESTADO.md) → [`BACKLOG.md`](BACKLOG.md).
+> O desenho completo está em
+> [`docs/superpowers/specs/2026-08-04-area-administrativa-escala-design.md`](docs/superpowers/specs/2026-08-04-area-administrativa-escala-design.md).
+
+---
+
+## 1. O que é este projeto
+
+Site da **escala de porteiros da Congregação Cristã no Brasil — Jardim São Luiz, Barueri/SP**, com
+uma **área administrativa** que gera, valida e publica a escala sem tirar o site do ar. Substitui o
+site atual (`flaviocom/escala-irmaos-2026-mar`), que é só de visualização e exige mexer no
+código-fonte para trocar uma pessoa de lugar.
+
+**A inversão que nunca pode acontecer:** **o algoritmo determinístico distribui e o portão decide se
+publica; o motor explica, arbitra e propõe — jamais o contrário.** São 549 vagas, 16 pessoas e 4
+famílias de restrição: um modelo de linguagem acerta quase sempre e erra em silêncio, e erro em
+silêncio numa escala é o pior defeito possível, porque ninguém audita 549 linhas.
+
+**Estágio atual:** desenho aprovado em revisão; **nenhum código de produto escrito ainda.**
+
+## 2. Idioma e formatação
+
+**Tudo em pt-BR**: respostas, comentários, commits, documentação, interface.
+
+- Datas: `DD/MM/AAAA`
+- Fuso: **America/Sao_Paulo**. Toda data de turno é **data local** — nunca `toISOString()` para
+  derivar dia ou mês. O site antigo usa `toISOString()` para a chave de mês; medido nos fusos
+  `America/Sao_Paulo` e `Europe/Lisbon` sem divergência **nesta escala**, mas é frágil por
+  construção e não se repete aqui.
+- Dinheiro: não se aplica a este projeto.
+
+## 3. Regras que não se violam
+
+1. **Bloco publicado não é reescrito.** Só pode ser **truncado** numa data. O trecho que permanece é
+   imutável. *Por quê:* o passado já foi divulgado aos irmãos; reescrevê-lo faz o site desmentir o
+   que as pessoas viram.
+2. **Pessoa sai da escala sendo desativada, nunca apagada.** *Por quê:* os blocos passados a
+   referenciam por `id`; apagar o registro deixa o histórico com nomes órfãos.
+3. **Toda regra do catálogo tem validação executável.** *Por quê:* o site antigo promete na
+   especificação que valida espaçamento e capacidade, e o código não valida nem um nem outro. Regra
+   escrita e não executada é o defeito que este projeto existe para não repetir.
+4. **O portão prova as duas pontas** — reprova a escala com infrator injetado **e** aprova a limpa.
+   *Por quê:* portão que nasce sempre-verde é indistinguível de portão que não funciona.
+5. **Quando a escala não fecha, o sistema declara que não fechou.** Nunca entrega escala ruim em
+   silêncio. *Por quê:* decisão explícita do Flavio em 04/08/2026.
+6. **Na tela, jamais "IA", "prompt", "chatbot".** Diz-se **"motor"**. No código, o nome técnico é
+   mantido. *Por quê:* `_padroes-globais/DENOMINACAO_SEM_JARGAO_DE_IA.md` — e renomear no código
+   criaria dialeto privado que quebra a portabilidade.
+
+## 4. Convenções de domínio já pesquisadas
+
+| Assunto | Convenção | Por quê |
+|---|---|---|
+| **Distanciamento entre escalas** | **Não há número fixo.** O motor tenta o maior piso possível e desce até caber; informa o piso alcançado | Decisão do Flavio: número fixo pode inviabilizar a escala quando o elenco encolhe |
+| **Piso de distanciamento** | Calculado **por pessoa**, não global | Quem só pode aos domingos tem teto natural menor; cobrar o mesmo dos outros seria injusto |
+| **Cota mensal** | **Teto**, com aviso se ficar abaixo | O site antigo trata como teto no gerador e cobra como exato na validação — contradição ativa |
+| **Santa Ceia** | **1× por ano**, sem porteiros, dia **pulado** na distribuição; data cadastrável e pode estar vazia | Irmãos de outra igreja atendem nesse dia; os daqui participam |
+| **Data da Santa Ceia** | **16/08/2026** | O site antigo tem `2026-06-07`, que está errado |
+| **1º sábado do mês** | Tem turno de **Tarde (Ensaio)** além da Noite | Malha vigente da escala `mar` |
+| **Malha de dias** | **Configurável por bloco**, nunca em código | Já mudou uma vez: a versão da reforma usa ter+sex noite e domingos de manhã a cada 14 dias |
+
+## 5. Comandos
+
+```bash
+npm install
+npm run dev
+```
+
+**O GATE — nenhuma mudança significativa passa sem:**
+
+```bash
+npm run typecheck
+npm test          # a suíte COMPLETA, nunca escopada
+npm run build
+```
+
+⚠️ Cuidado com pipe mascarando o código de saída: `comando | head && echo OK` imprime OK mesmo com o
+comando vermelho. Use sem pipe, ou `${PIPESTATUS[0]}`.
+
+> ⚠️ **Estes comandos ainda NÃO existem** — o `package.json` do projeto não foi criado. Esta seção
+> descreve o contrato que o projeto deve cumprir, não uma garantia vigente. Ao criar o
+> `package.json`, remova este aviso.
+
+## 6. Git
+
+- **Autor obrigatório:** `Flavio Oliveira <brflaviooliveira@gmail.com>`
+- **Nunca force-push** — é pare-e-pergunte.
+- Mensagem longa: `git commit -F arquivo`.
+- Ao commitar, **leia o `--stat` inteiro** e confirme que `main` mudou. `push` respondendo
+  "Everything up-to-date" com trabalho novo no disco significa que o commit caiu noutra branch.
+- ⚠️ **Ainda não é repositório git** (medido pelo pré-voo em 04/08/2026).
+
+## 7. Onde ler o quê
+
+| Vou mexer em… | Leia antes |
+|---|---|
+| Estado atual | [`ESTADO.md`](ESTADO.md) |
+| O que falta | [`BACKLOG.md`](BACKLOG.md) |
+| Regras da escala, modelo de dados, motor | [`docs/superpowers/specs/2026-08-04-area-administrativa-escala-design.md`](docs/superpowers/specs/2026-08-04-area-administrativa-escala-design.md) |
+| **Por que** uma decisão foi tomada, e como revertê-la | [`DIARIO_DE_BORDO.md`](DIARIO_DE_BORDO.md) |
+| O que já foi feito, passo a passo | [`AI_MASTER_LOG.md`](AI_MASTER_LOG.md) |
+| Método de trabalho | `D:\Antigravity\_padroes-globais\` |
+
+## 8. Como se trabalha
+
+**Ciclo:** Orientar → Planejar → Executar → **Verificar** → Registrar → Decidir.
+
+- **Antes de afirmar ou mexer, mapeie todas as ligações** — consumidores, chamadores, rotas, telas,
+  documentos. Criar a função única não conserta nada se os chamadores seguirem na cópia antiga.
+- **Nada é fato até a fonte provar.** Cite `arquivo:linha`.
+- **"Pronto" exige reprodução ao vivo**, com dados reais e console limpo. Suíte verde não substitui.
+- **Teste que não morde é pior que teste ausente.** Prove que a trava reprova, injetando um infrator.
+- **Antes de começar, rode o pré-voo:**
+  `node D:/Antigravity/_padroes-globais/scripts/pre-voo.mjs .`
+
+## 9. Nunca faça
+
+1. Criar conta, fazer login, autenticar ou digitar senha/credencial/token em nome do Flavio — nem
+   com autorização. Entregue **um arquivo que ele clica**, não um comando que ele monta.
+2. Mover dinheiro ou executar ordem real.
+3. Force-push, apagar dado irreversível, ou reescrever bloco publicado.
+4. Escrever segredo em arquivo versionado. Variáveis por **nome**, nunca por valor.
+5. Mexer no repositório `flaviocom/escala-irmaos-2026-mar` — ele **fica no ar como está** (decisão do
+   Flavio em 04/08/2026).
+6. Escrever "IA", "prompt" ou "chatbot" em texto que alguém lê na tela.
+
+## 10. Só o Flavio faz
+
+- Colar o valor de `GITHUB_PAT_ESCALA_PORTEIROS` e `ANTHROPIC_API_KEY_ESCALA`.
+- Decidir o intervalo de datas de cada geração e quem entra ou sai do elenco.
+- Aprovar a publicação de uma escala nova.
+- Recarregar crédito da API quando acabar.
+
+---
+
+**Método completo:** `D:\Antigravity\_padroes-globais\`
