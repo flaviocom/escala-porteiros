@@ -120,7 +120,7 @@ console.log('\nCONSOLE (ignorando o 401 esperado do token de mentira)')
 if (relevantes.length) relevantes.slice(0, 8).forEach((e) => console.log('  🔴', e))
 else console.log('  ✅ sem erros inesperados')
 
-await pagina.screenshot({ path: 'ao-vivo-admin.png' })
+await pagina.screenshot({ path: 'capturas/ao-vivo-admin.png' })
 await navegador.close()
 
 const falhou = checagens.some((c) => !c.ok) || relevantes.length > 0

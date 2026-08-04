@@ -99,7 +99,7 @@ const relevantes = erros.filter((e) => !/401|Failed to load resource|api\.github
 console.log('\nCONSOLE')
 console.log(relevantes.length ? relevantes.slice(0, 6).map((e) => '  🔴 ' + e).join('\n') : '  ✅ sem erros inesperados')
 
-await pagina.screenshot({ path: 'ao-vivo-celular.png' })
+await pagina.screenshot({ path: 'capturas/ao-vivo-celular.png' })
 await navegador.close()
 
 const falhou = checagens.some((c) => !c.ok) || relevantes.length > 0

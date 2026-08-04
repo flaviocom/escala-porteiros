@@ -94,8 +94,8 @@ console.log('\nREDE')
 if (falhasRede.length) falhasRede.slice(0, 10).forEach((e) => console.log('  🔴', e))
 else console.log('  ✅ nenhuma requisição falhou')
 
-await pagina.screenshot({ path: 'ao-vivo.png', fullPage: false })
-console.log('\nCaptura salva em ao-vivo.png')
+await pagina.screenshot({ path: 'capturas/ao-vivo.png', fullPage: false })
+console.log('\nCaptura salva em capturas/ao-vivo.png')
 
 await navegador.close()
 

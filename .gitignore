@@ -22,5 +22,10 @@ node_modules*
 node_modules/
 .cache-dominio*
 dist/
-ao-vivo.png
-ao-vivo-admin.png
+
+# Capturas de tela dos scripts de validação ao vivo.
+#
+# 🔴 Antes eram nomes ENUMERADOS um a um — e duas capturas entraram no repositório
+# porque cada script novo acrescenta um nome que ninguém lembra de listar. Pasta
+# cobre a CLASSE: script novo escreve aqui e já está coberto, sem editar este arquivo.
+capturas/

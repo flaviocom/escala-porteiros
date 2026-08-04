@@ -79,7 +79,7 @@ const doSiteAntigo = await pagina.evaluate(() => {
   return texto
 })
 
-await pagina.screenshot({ path: 'site-antigo.png', fullPage: false })
+await pagina.screenshot({ path: 'capturas/site-antigo.png', fullPage: false })
 
 /**
  * VARREDURA COMPLETA — os 66 dias, um a um, pela BUSCA do site antigo.
@@ -144,7 +144,7 @@ for (const data of datas) {
 }
 process.stdout.write('\n\n')
 
-await pagina.screenshot({ path: 'site-antigo.png' })
+await pagina.screenshot({ path: 'capturas/site-antigo.png' })
 await navegador.close()
 
 console.log('VARREDURA COMPLETA\n')
