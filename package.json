@@ -11,9 +11,10 @@
     "typecheck": "tsc --noEmit -p tsconfig.app.json",
     "test": "vitest run",
     "test:watch": "vitest",
-    "gate": "npm run typecheck && npm run test && npm run test:fuso:berlim && npm run build",
+    "gate": "npm run typecheck && npm run test && npm run test:fuso:berlim && npm run denominacao && npm run build",
     "prebuild": "node -e \"require('node:fs').rmSync('docs/assets',{recursive:true,force:true})\"",
-    "test:fuso:berlim": "node scripts/testar-em-outro-fuso.mjs"
+    "test:fuso:berlim": "node scripts/testar-em-outro-fuso.mjs",
+    "denominacao": "node scripts/medir-denominacao-sem-ia.mjs"
   },
   "dependencies": {
     "clsx": "^2.1.1",

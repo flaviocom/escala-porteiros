@@ -25,6 +25,8 @@ import { validar, resumir } from '../dominio/validacao'
 import { menorIntervalo } from '../dominio/regras'
 import { diferencaEmDias, formatarBR, hojeSaoPaulo, NOMES_DIA_CURTO, somarDias } from '../dominio/datas'
 import { AbaAjustar } from './AbaAjustar'
+import { arbitrar, auditar, medir, pedirProposta, type Placar, type ProgressoMotor } from './motor'
+import { Sparkles } from 'lucide-react'
 
 type Aba = 'elenco' | 'gerar' | 'ajustar' | 'publicar'
 
@@ -207,6 +209,8 @@ export const Admin: React.FC<{ dados: DadosPublicados }> = ({ dados }) => {
             pessoas={pessoas}
             blocoNovo={blocoNovo}
             relato={relatoGeracao}
+            segredos={segredos}
+            fronteira={fronteira}
             aoGerar={(b, r) => { setBlocoNovo(b); setBlocoOriginal(b); setRelatoGeracao(r) }}
           />
         )}
@@ -463,13 +467,20 @@ const AbaGerar: React.FC<{
   pessoas: Pessoa[]
   blocoNovo: Bloco | null
   relato: string
+  segredos: Segredos
+  fronteira: Record<string, string>
   aoGerar: (b: Bloco | null, relato: string) => void
-}> = ({ dados, pessoas, blocoNovo, relato, aoGerar }) => {
+}> = ({ dados, pessoas, blocoNovo, relato, segredos, aoGerar }) => {
   const proximoDia = useMemo(() => somarDias(hojeSaoPaulo(), 1), [])
   const [de, setDe] = useState(proximoDia)
   const [ate, setAte] = useState(`${new Date().getFullYear()}-12-31`)
   const [ocupado, setOcupado] = useState(false)
   const [falha, setFalha] = useState<string>('')
+  const [motorOcupado, setMotorOcupado] = useState<ProgressoMotor | null>(null)
+  const [motorErro, setMotorErro] = useState<string>('')
+  const [propostaMotor, setPropostaMotor] = useState<{ bloco: Bloco; explicacao: string } | null>(null)
+  const [auditoria, setAuditoria] = useState<string>('')
+  const [arbitragem, setArbitragem] = useState<string>('')
 
   const fronteira = useMemo(() => {
     const f: Record<string, string> = {}
@@ -544,6 +555,29 @@ const AbaGerar: React.FC<{
       {falha && (
         <Cartao titulo="Não foi possível gerar" tom="erro">
           <pre className="text-sm text-gray-700 whitespace-pre-wrap font-sans leading-relaxed">{falha}</pre>
+          {segredos.chaveMotor && !arbitragem && (
+            <button
+              onClick={async () => {
+                setMotorOcupado({ fase: 'Arbitragem', detalhe: 'pensando em como destravar…' })
+                try {
+                  setArbitragem(await arbitrar(segredos.chaveMotor!, falha, pessoas))
+                } catch (e) {
+                  setMotorErro(e instanceof Error ? e.message : String(e))
+                } finally {
+                  setMotorOcupado(null)
+                }
+              }}
+              className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-semibold hover:bg-indigo-700 flex items-center gap-2"
+            >
+              <Sparkles className="w-4 h-4" /> Perguntar ao motor como destravar
+            </button>
+          )}
+          {arbitragem && (
+            <div className="mt-4 p-4 bg-indigo-50 border border-indigo-200 rounded-xl">
+              <p className="text-xs font-bold text-indigo-700 uppercase tracking-wider mb-2">Caminhos possíveis</p>
+              <p className="text-sm text-indigo-950 whitespace-pre-wrap leading-relaxed">{arbitragem}</p>
+            </div>
+          )}
         </Cartao>
       )}
 
@@ -558,6 +592,110 @@ const AbaGerar: React.FC<{
               <Numero rotulo="piso (dias)" valor={blocoNovo.pisoAlcancado ?? '-'} />
               <Numero rotulo="regras conferidas" valor={`${relatorio.avaliadas}/${relatorio.totalNoCatalogo}`} />
             </div>
+          </Cartao>
+
+          <Cartao titulo="Proposta do motor" subtitulo="O algoritmo já entregou uma escala válida. O motor propõe a dele, e o portão julga as duas.">
+            {!segredos.chaveMotor ? (
+              <Aviso tom="atencao">
+                Não há chave do motor guardada neste navegador. A escala do algoritmo continua válida
+                e publicável — o que falta é só a proposta alternativa e os textos de explicação.
+              </Aviso>
+            ) : motorOcupado ? (
+              <p className="text-sm text-gray-600 flex items-center gap-2">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <strong>{motorOcupado.fase}</strong> — {motorOcupado.detalhe}
+              </p>
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={async () => {
+                    setMotorErro('')
+                    setPropostaMotor(null)
+                    try {
+                      const r = await pedirProposta(segredos.chaveMotor!, blocoNovo, pessoas, fronteira, setMotorOcupado)
+                      if (r.ok) setPropostaMotor({ bloco: r.proposta.bloco, explicacao: r.proposta.explicacao })
+                      else setMotorErro(r.motivo)
+                    } catch (e) {
+                      setMotorErro(e instanceof Error ? e.message : String(e))
+                    } finally {
+                      setMotorOcupado(null)
+                    }
+                  }}
+                  className="px-4 py-2.5 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 flex items-center gap-2"
+                >
+                  <Sparkles className="w-4 h-4" /> Pedir proposta ao motor
+                </button>
+                <button
+                  onClick={async () => {
+                    setMotorOcupado({ fase: 'Auditoria', detalhe: 'procurando o que a regra não pega…' })
+                    setMotorErro('')
+                    try {
+                      setAuditoria(await auditar(segredos.chaveMotor!, blocoNovo, pessoas))
+                    } catch (e) {
+                      setMotorErro(e instanceof Error ? e.message : String(e))
+                    } finally {
+                      setMotorOcupado(null)
+                    }
+                  }}
+                  className="px-4 py-2.5 border border-indigo-300 text-indigo-700 rounded-xl text-sm font-semibold hover:bg-indigo-50 flex items-center gap-2"
+                >
+                  <ShieldCheck className="w-4 h-4" /> Auditar esta escala
+                </button>
+              </div>
+            )}
+
+            {motorErro && <div className="mt-4"><Aviso tom="erro">{motorErro}</Aviso></div>}
+
+            {auditoria && (
+              <div className="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-xl">
+                <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Segunda opinião</p>
+                <p className="text-sm text-gray-800 whitespace-pre-wrap leading-relaxed">{auditoria}</p>
+              </div>
+            )}
+
+            {propostaMotor && (
+              <>
+                <div className="mt-5 overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="text-left text-xs uppercase tracking-wider text-gray-500 border-b border-gray-200">
+                        <th className="py-2 pr-3 font-semibold">Comparação</th>
+                        <th className="py-2 px-3 font-semibold">Algoritmo</th>
+                        <th className="py-2 px-3 font-semibold">Motor</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {linhasDoPlacar(
+                        medir('Algoritmo', blocoNovo, pessoas, fronteira),
+                        medir('Motor', propostaMotor.bloco, pessoas, fronteira),
+                      ).map((l) => (
+                        <tr key={l.rotulo}>
+                          <td className="py-2 pr-3 text-gray-600">{l.rotulo}</td>
+                          <td className={clsx('py-2 px-3 font-semibold', l.melhor === 'a' && 'text-green-700')}>{l.a}</td>
+                          <td className={clsx('py-2 px-3 font-semibold', l.melhor === 'b' && 'text-green-700')}>{l.b}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                {propostaMotor.explicacao && (
+                  <div className="mt-4 p-4 bg-indigo-50 border border-indigo-200 rounded-xl max-h-56 overflow-y-auto">
+                    <p className="text-xs font-bold text-indigo-700 uppercase tracking-wider mb-2">O que o motor considerou</p>
+                    <p className="text-sm text-indigo-950 whitespace-pre-wrap leading-relaxed">{propostaMotor.explicacao}</p>
+                  </div>
+                )}
+                <button
+                  onClick={() => { aoGerar(propostaMotor.bloco, 'Escala do motor, aprovada no portão determinístico.'); setPropostaMotor(null) }}
+                  className="mt-4 px-4 py-2.5 bg-green-600 text-white rounded-xl text-sm font-bold hover:bg-green-700"
+                >
+                  Usar a proposta do motor
+                </button>
+                <p className="text-xs text-gray-400 mt-2">
+                  A escala do motor só chegou até aqui porque passou nas mesmas regras obrigatórias da
+                  do algoritmo. Escolher é seu.
+                </p>
+              </>
+            )}
           </Cartao>
 
           <Cartao titulo="Conferência regra a regra">
@@ -819,5 +957,21 @@ const Numero: React.FC<{ rotulo: string; valor: React.ReactNode }> = ({ rotulo, 
     <div className="text-[11px] text-gray-500 uppercase tracking-wider">{rotulo}</div>
   </div>
 )
+
+/** Traduz dois placares em linhas comparáveis, marcando qual lado está melhor. */
+function linhasDoPlacar(a: Placar, b: Placar) {
+  const maiorMelhor = (x: number | null, y: number | null): 'a' | 'b' | undefined =>
+    x == null || y == null ? undefined : x > y ? 'a' : y > x ? 'b' : undefined
+  const menorMelhor = (x: number, y: number): 'a' | 'b' | undefined =>
+    x < y ? 'a' : y < x ? 'b' : undefined
+
+  return [
+    { rotulo: 'Menor intervalo (dias) — maior é melhor', a: a.menorIntervalo ?? '-', b: b.menorIntervalo ?? '-', melhor: maiorMelhor(a.menorIntervalo, b.menorIntervalo) },
+    { rotulo: 'Intervalo médio (dias) — maior é melhor', a: a.intervaloMedio, b: b.intervaloMedio, melhor: maiorMelhor(a.intervaloMedio, b.intervaloMedio) },
+    { rotulo: 'Diferença de carga — menor é melhor', a: a.amplitudeCarga, b: b.amplitudeCarga, melhor: menorMelhor(a.amplitudeCarga, b.amplitudeCarga) },
+    { rotulo: 'Grupos repetidos 3+ vezes — menor é melhor', a: a.gruposRepetidos, b: b.gruposRepetidos, melhor: menorMelhor(a.gruposRepetidos, b.gruposRepetidos) },
+    { rotulo: 'Turnos completos', a: a.turnosCompletos, b: b.turnosCompletos, melhor: undefined },
+  ] as { rotulo: string; a: React.ReactNode; b: React.ReactNode; melhor?: 'a' | 'b' }[]
+}
 
 export { Save }
