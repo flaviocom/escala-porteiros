@@ -10,7 +10,8 @@
 >
 > **Roteador do projeto:** [`AGENTS.md`](AGENTS.md) ·
 > **Solicitações:** [`docs/solicitacoes/INDICE_DE_SOLICITACOES.md`](docs/solicitacoes/INDICE_DE_SOLICITACOES.md) ·
-> **Histórico:** [`docs/historico/INDICE.md`](docs/historico/INDICE.md)
+> **Histórico:** [`docs/historico/INDICE.md`](docs/historico/INDICE.md) ·
+> **Fontes de dados:** [`docs/INVENTARIO_DE_FONTES.md`](docs/INVENTARIO_DE_FONTES.md)
 
 ---
 
