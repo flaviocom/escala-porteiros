@@ -67,6 +67,7 @@ Medido: Williams com **7 intervalos de 1 dia**, **18 pares com ≤3 dias**, 6 oc
 | P2.9 | Portão `medir-denominacao-sem-ia` provando as duas pontas | ⏳ |
 | P2.10 | Auditoria adversarial, 2 auditores em frentes disjuntas | ⏳ ao fim |
 | P2.11 | 🔴 **Disco `D:` a 0,8 s por arquivo** — build roda numa cópia em `C:` | 👤 contornado; a causa é do Flavio |
+| P2.12 | ⚠️ **O pré-voo fica vermelho em `D:`** por `node_modules` ausente — ausência *proposital*, já que o build vive em `C:`. Exceção declarada aqui e em [`ESTADO.md`](ESTADO.md); o script do método não tem chave para afrouxar esse item | 👤 decidir se vale acrescentar `deps: {bloqueia:false}` ao método |
 
 ---
 
