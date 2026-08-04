@@ -5,7 +5,7 @@
 > **Última atualização:** 04/08/2026 · **Fuso:** America/São_Paulo
 >
 > **Cadeia de navegação, nesta ordem:**
-> **`ESTADO.md` (você está aqui)** → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-04.md) → [`BACKLOG.md`](BACKLOG.md)
+> **`ESTADO.md` (você está aqui)** → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-04-b.md) → [`BACKLOG.md`](BACKLOG.md)
 > *onde estamos · o que aconteceu na última sessão e por quê · o que fazer a seguir*
 >
 > **Roteador do projeto:** [`AGENTS.md`](AGENTS.md) ·
@@ -67,6 +67,7 @@ relatou: *"Piso alcançado: 6 dias. Tentei 9, 8, 7 — não foi possível cobrir
 | Quarta → sábado | 6 casos | **0** |
 | Santa Ceia | 07/06 errada; 16/08 com 6 escalados | **16/08 correta, 0 escalados** |
 | Validação | 6 regras, nenhuma de espaçamento ou capacidade | **15 de 15** |
+| Testes | nenhum | **71**, verdes em 2 fusos |
 | Equilíbrio | — | 16–17 turnos, diferença de **1** |
 
 **A área administrativa está no ar**: elenco com X para tirar e + para acrescentar, as quatro
@@ -81,10 +82,24 @@ falsos. Ligar o `strict` resolveu todos e revelou 9 trechos de código morto, re
 16/08 mostra SANTA CEIA sem ninguém, as 15 regras aparecem na aba Validação, o cofre cifra de
 verdade (senha errada não abre) e um token inválido é recusado antes de ser guardado.
 
+**Depois disso, na segunda parte da sessão**, entraram quatro itens do backlog:
+
+- **P3.13** — o mês era lido em UTC (invisível em UTC−3). Corrigido em 3 pontos, com um portão que
+  roda a suíte inteira em `Europe/Berlin` **depois de provar que a troca de fuso surtiu efeito**.
+- **P3.12** — ajuste manual turno a turno, com o **motivo escrito antes do clique**.
+- **P3.9** — o **motor**: propõe, o portão determinístico julga, e o placar compara os dois lado a
+  lado. Sem chave, tudo o mais segue funcionando.
+- **P2.9 e P2.7** — portões de denominação e de inventário de fontes.
+
+🔴 **Os dois portões novos nasceram mentindo**, e os dois passavam no próprio autoteste: o de
+denominação produziu **9 falsos positivos** na varredura real (`SANTA CEIA` contém "IA"), e o de
+inventário mediu **zero hosts** e disse "toda fonte declarada" (o `//` de `https://` era lido como
+comentário). Consertados, com os casos reais virando teste permanente.
+
 ## O que está em curso
 
-Nada em execução. Próximo item: o **motor** (P3.9 do backlog) — proposta, explicação, arbitragem e
-auditoria, sempre atrás do portão determinístico e degradável quando faltar crédito.
+Nada em execução. Próximos: **P3.10** (histórico com reversão pela tela — a leitura da API já está
+escrita, falta a tela) e **P2.10** (auditoria adversarial independente).
 
 ## O que bloqueia
 

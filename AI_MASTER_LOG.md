@@ -4,7 +4,7 @@
 > O **porquê** de cada decisão vive no [`DIARIO_DE_BORDO.md`](DIARIO_DE_BORDO.md); aqui fica o
 > registro do que foi feito, passo a passo.
 >
-> **Cadeia de navegação:** [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-04.md) → [`BACKLOG.md`](BACKLOG.md)
+> **Cadeia de navegação:** [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-04-b.md) → [`BACKLOG.md`](BACKLOG.md)
 > **Roteador:** [`AGENTS.md`](AGENTS.md) ·
 > **Solicitações:** [`docs/solicitacoes/INDICE_DE_SOLICITACOES.md`](docs/solicitacoes/INDICE_DE_SOLICITACOES.md) ·
 > **Fatias arquivadas:** [`docs/historico/INDICE.md`](docs/historico/INDICE.md)
@@ -101,3 +101,31 @@ deste projeto, e por isso aqui fica só o ponteiro.
 
 **Pendente:** o motor (P3.9), o ajuste manual (P3.12), o histórico com reversão pela tela (P3.10) e a
 auditoria adversarial (P2.10). E, do lado do Flavio, colar as duas credenciais.
+
+---
+
+## [04/08/2026] Sessão 1, parte 2 — quatro itens do backlog, e dois portões que mentiam
+
+**Gatilho.** Segundo "go" do Flavio (S-004): workflow completo, em loop, ordem do assistente.
+
+**Ordem que eu determinei** — maior dano primeiro, depois o que não depende de terceiro:
+P3.13 → P3.12 → P3.9 → P2.9 → P2.7.
+
+1. **P3.13** — mês lido em UTC. Mapeadas **4 ocorrências** antes de mexer; 3 corrigidas, 1
+   (`ScheduleTable:114`) deixada de propósito por ser só chave de agrupamento. Portão novo:
+   `test:fuso:berlim`, que roda a suíte noutro fuso **depois de provar que o fuso mudou**.
+   Provado com infrator injetado: passa em São Paulo, falha em Berlim.
+2. **P3.12** — ajuste manual turno a turno, com o motivo de cada impedimento antes do clique.
+3. **P3.9** — o motor, com o portão determinístico entre a proposta e a publicação, fatiado por
+   mês, e placar determinístico comparando as duas escalas.
+4. **P2.9** — portão de denominação. 🔴 Passou no autoteste (17/17) e produziu **9 falsos**
+   **positivos** reais. Causas: borda de regex só cobria minúscula (`SANTA CEIA` → "IA") e
+   expressão de template lida como texto (`NOMES_DIA`). Os 9 viraram casos permanentes.
+5. **P2.7** — inventário de fontes. 🔴 Nasceu **sempre-verde**: mediu 0 hosts e disse "toda fonte
+   declarada", porque o `//` de `https://` era comido como comentário. Corrigido, com autoteste do
+   medidor e reprovação automática quando medir zero.
+
+**Portões ao fim:** `npm run gate` (typecheck + 71 testes × 2 fusos + denominação + fontes +
+build) exit 0 · órfãos 0 · site e área administrativa validados **ao vivo** no navegador.
+
+**Pendente:** P3.10 (histórico com reversão pela tela) e P2.10 (auditoria adversarial).

@@ -4,7 +4,7 @@
 > como reverter.** Documento **append-only**, fatiado por período ao estourar o teto. **Nada é
 > excluído, nunca.**
 >
-> **Cadeia de navegação:** [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-04.md) → [`BACKLOG.md`](BACKLOG.md)
+> **Cadeia de navegação:** [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-04-b.md) → [`BACKLOG.md`](BACKLOG.md)
 > **Roteador:** [`AGENTS.md`](AGENTS.md) ·
 > **Solicitações:** [`docs/solicitacoes/INDICE_DE_SOLICITACOES.md`](docs/solicitacoes/INDICE_DE_SOLICITACOES.md) ·
 > **Histórico:** [`docs/historico/INDICE.md`](docs/historico/INDICE.md)
@@ -90,3 +90,39 @@ chamada real (`search_repositories`) · `gh` CLI testado com chamada real (`gh a
 ### Pendente
 
 **Aprovação do desenho pelo Flavio** (P0.1). Nenhuma linha de código de produto foi escrita.
+
+---
+
+## DB-002 · 04/08/2026 · Quatro itens do backlog, e a lição dos portões que mentem
+
+### Solicitação
+
+S-004: segundo **"go"** — *"workflow completo item a item (…) sempre expandir, mapeando todas as
+ligações em Documentos e Código antes de mexer (…) quem determina a ordem é você, sempre."*
+
+### Decisões, e o porquê de cada uma
+
+| # | Decisão | Por quê |
+|---|---|---|
+| 1 | Ordem P3.13 → P3.12 → P3.9 → P2.9 → P2.7 | maior dano primeiro (defeito silencioso de fuso), depois o que completa o pedido original, depois os portões |
+| 2 | Não corrigir `ScheduleTable:114` | é chave de agrupamento e `startOfMonth` já é local — mexer seria risco sem ganho |
+| 3 | O portão de fuso **prova que o fuso mudou** antes de rodar | um `TZ` ignorado pelo sistema faria o portão passar sem testar nada |
+| 4 | O motor fatia por mês | ~264 nomes numa resposta só faz a taxa de erro crescer |
+| 5 | O placar é **determinístico** | quem mede é o código. Deixar o motor avaliar a si mesmo seria pedir que o réu presidisse o júri |
+| 6 | Falsos positivos viram caso **permanente** do autoteste | senão o mesmo engano volta na próxima régua |
+| 7 | Inventário **reprova quando mede zero** | zero, num projeto com fontes externas, é medidor quebrado |
+
+### O aprendizado que vale além deste projeto
+
+**Autoteste passando prova os casos que alguém pensou em escrever, não cobertura.** Os dois portões
+novos passaram nos próprios autotestes e estavam errados — um com 9 falsos positivos, outro
+sempre-verde. O que os expôs foi rodar contra **código de verdade**.
+
+E as duas causas já estavam documentadas no método (borda de regex; normalizar em vez de excluir).
+Repeti as duas mesmo com o texto em contexto — que é exatamente a razão de o método preferir portão
+a disciplina.
+
+### Como reverter
+
+Cada item é um commit próprio, com o porquê na mensagem. Reverter um não derruba os outros. Os
+dados publicados não mudaram nesta parte — só código, portões e documentação.
