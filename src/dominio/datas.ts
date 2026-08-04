@@ -1,0 +1,120 @@
+/**
+ * Datas — sempre LOCAIS, sempre `AAAA-MM-DD`.
+ *
+ * 🔴 POR QUE NÃO USAR `Date` COMO CHAVE, NEM `toISOString()`.
+ *
+ * O site anterior derivava o mês com `data.toISOString().slice(0, 7)`, que é **UTC**. Em
+ * `America/Sao_Paulo` (UTC−3) isso funciona por sorte: a meia-noite local vira 03:00 do MESMO dia
+ * em UTC. Num fuso positivo (Europa, por exemplo) a meia-noite local vira o dia ANTERIOR em UTC, e
+ * o turno do dia 1º passa a contar no mês passado — bagunçando cota mensal e estatística.
+ *
+ * Medi nos dois fusos e o resultado não mudou *naquela* escala. Ou seja: era uma fragilidade que
+ * ainda não tinha mordido — o pior tipo, porque some do radar. Aqui a data é **texto** do começo ao
+ * fim, e só vira `Date` para calcular dia da semana. Assim não existe fuso para errar.
+ */
+
+/** Data no formato `AAAA-MM-DD`. É a forma canônica em todo o projeto. */
+export type DataISO = string
+
+const RE_DATA = /^\d{4}-\d{2}-\d{2}$/
+
+export function ehDataValida(d: string): d is DataISO {
+  if (!RE_DATA.test(d)) return false
+  const [a, m, dia] = d.split('-').map(Number)
+  if (m < 1 || m > 12 || dia < 1 || dia > 31) return false
+  const dt = new Date(a, m - 1, dia)
+  // Rejeita 31/02 e afins: o construtor "conserta" para 03/03, e o dia deixa de bater.
+  return dt.getFullYear() === a && dt.getMonth() === m - 1 && dt.getDate() === dia
+}
+
+function partes(d: DataISO): [number, number, number] {
+  const [a, m, dia] = d.split('-').map(Number)
+  return [a, m, dia]
+}
+
+/** `Date` em meia-noite LOCAL. Só para cálculo de dia da semana e aritmética de dias. */
+export function paraData(d: DataISO): Date {
+  const [a, m, dia] = partes(d)
+  return new Date(a, m - 1, dia)
+}
+
+export function deData(dt: Date): DataISO {
+  const p = (n: number) => String(n).padStart(2, '0')
+  return `${dt.getFullYear()}-${p(dt.getMonth() + 1)}-${p(dt.getDate())}`
+}
+
+/** 0 = domingo … 6 = sábado. */
+export function diaDaSemana(d: DataISO): number {
+  return paraData(d).getDay()
+}
+
+/** Mês no formato `AAAA-MM`, derivado do TEXTO — nunca de UTC. */
+export function mesDe(d: DataISO): string {
+  return d.slice(0, 7)
+}
+
+export function diaDoMes(d: DataISO): number {
+  return partes(d)[2]
+}
+
+/** Quantas vezes este dia da semana já ocorreu no mês, contando o próprio dia (1 = a primeira). */
+export function ocorrenciaNoMes(d: DataISO): number {
+  return Math.floor((diaDoMes(d) - 1) / 7) + 1
+}
+
+export function somarDias(d: DataISO, n: number): DataISO {
+  const dt = paraData(d)
+  dt.setDate(dt.getDate() + n)
+  return deData(dt)
+}
+
+/**
+ * Diferença em dias de CALENDÁRIO. Usa UTC internamente de propósito: as duas datas são
+ * normalizadas do mesmo jeito, então o horário de verão não pode deslocar a conta — que é
+ * justamente o defeito clássico de subtrair dois `Date` locais.
+ */
+export function diferencaEmDias(de: DataISO, ate: DataISO): number {
+  const [a1, m1, d1] = partes(de)
+  const [a2, m2, d2] = partes(ate)
+  return Math.round((Date.UTC(a2, m2 - 1, d2) - Date.UTC(a1, m1 - 1, d1)) / 86_400_000)
+}
+
+/** Todas as datas de `inicio` a `fim`, inclusive nas duas pontas. */
+export function intervaloDeDatas(inicio: DataISO, fim: DataISO): DataISO[] {
+  const out: DataISO[] = []
+  for (let d = inicio; diferencaEmDias(d, fim) >= 0; d = somarDias(d, 1)) out.push(d)
+  return out
+}
+
+export const NOMES_DIA = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado'] as const
+export const NOMES_DIA_CURTO = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'] as const
+
+/** `2026-08-16` → `16/08/2026`. Formatação brasileira, como manda a casa. */
+export function formatarBR(d: DataISO): string {
+  const [a, m, dia] = partes(d)
+  const p = (n: number) => String(n).padStart(2, '0')
+  return `${p(dia)}/${p(m)}/${a}`
+}
+
+const NOMES_MES = [
+  'janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho',
+  'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro',
+] as const
+
+/** `2026-08` → `Agosto 2026`. */
+export function formatarMesBR(mes: string): string {
+  const [a, m] = mes.split('-').map(Number)
+  const nome = NOMES_MES[m - 1]
+  return `${nome.charAt(0).toUpperCase()}${nome.slice(1)} ${a}`
+}
+
+/** Data de hoje no fuso America/Sao_Paulo, independente de onde o navegador esteja. */
+export function hojeSaoPaulo(): DataISO {
+  const partesFmt = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/Sao_Paulo',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(new Date())
+  return partesFmt // en-CA já produz AAAA-MM-DD
+}

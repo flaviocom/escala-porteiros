@@ -16,3 +16,4 @@ Thumbs.db
 Desktop.ini
 .DS_Store
 *.swp
+node_modules*
