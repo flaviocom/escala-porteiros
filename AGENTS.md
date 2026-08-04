@@ -25,12 +25,20 @@ uma **área administrativa** que gera, valida e publica a escala sem tirar o sit
 site atual (`flaviocom/escala-irmaos-2026-mar`), que é só de visualização e exige mexer no
 código-fonte para trocar uma pessoa de lugar.
 
-**A inversão que nunca pode acontecer:** **o algoritmo determinístico distribui e o portão decide se
-publica; o motor explica, arbitra e propõe — jamais o contrário.** São 549 vagas, 16 pessoas e 4
-famílias de restrição: um modelo de linguagem acerta quase sempre e erra em silêncio, e erro em
-silêncio numa escala é o pior defeito possível, porque ninguém audita 549 linhas.
+**A inversão que nunca pode acontecer:** **o portão determinístico decide se publica; o motor
+propõe, explica e arbitra — jamais o contrário.** São centenas de vagas, 16 pessoas e 5 famílias de
+restrição: um modelo de linguagem acerta quase sempre e erra em silêncio, e erro em silêncio numa
+escala é o pior defeito possível, porque ninguém confere 549 linhas à mão.
 
-**Estágio atual:** desenho aprovado em revisão; **nenhum código de produto escrito ainda.**
+O motor **distribui também** — foi pedido do Flavio —, mas a proposta dele passa pelas **mesmas**
+regras da do algoritmo antes de chegar à tela de publicação.
+
+**Estágio atual (04/08/2026):** **no ar e funcionando.**
+
+- Site: <https://flaviocom.github.io/escala-porteiros/>
+- Área administrativa: <https://flaviocom.github.io/escala-porteiros/#/admin>
+- Escala publicada: 01/03 → 04/08 (histórico congelado) + 05/08 → 30/12 (piso de 6 dias)
+- Falta: o Flavio colar as duas credenciais para publicar pela tela e ligar o motor.
 
 ## 2. Idioma e formatação
 
@@ -38,9 +46,10 @@ silêncio numa escala é o pior defeito possível, porque ninguém audita 549 li
 
 - Datas: `DD/MM/AAAA`
 - Fuso: **America/Sao_Paulo**. Toda data de turno é **data local** — nunca `toISOString()` para
-  derivar dia ou mês. O site antigo usa `toISOString()` para a chave de mês; medido nos fusos
-  `America/Sao_Paulo` e `Europe/Lisbon` sem divergência **nesta escala**, mas é frágil por
-  construção e não se repete aqui.
+  derivar dia ou mês. Use `mesDeData()` de `src/dominio/datas.ts`.
+  *Por quê:* em UTC−3 os dois concordam, então o defeito é **invisível daqui**; num fuso positivo,
+  o turno do dia 1º passa a contar no mês anterior. O portão `npm run test:fuso:berlim` roda a
+  suíte inteira em `Europe/Berlin` justamente para que isso não volte.
 - Dinheiro: não se aplica a este projeto.
 
 ## 3. Regras que não se violam
@@ -50,7 +59,7 @@ silêncio numa escala é o pior defeito possível, porque ninguém audita 549 li
    que as pessoas viram.
 2. **Pessoa sai da escala sendo desativada, nunca apagada.** *Por quê:* os blocos passados a
    referenciam por `id`; apagar o registro deixa o histórico com nomes órfãos.
-3. **Toda regra do catálogo tem validação executável.** *Por quê:* o site antigo promete na
+3. **Toda regra do catálogo tem validação executável** — hoje são **10 duras + 5 de qualidade**, e o teste `regras.test.ts` fica vermelho se alguém acrescentar regra sem cobertura. *Por quê:* o site antigo promete na
    especificação que valida espaçamento e capacidade, e o código não valida nem um nem outro. Regra
    escrita e não executada é o defeito que este projeto existe para não repetir.
 4. **O portão prova as duas pontas** — reprova a escala com infrator injetado **e** aprova a limpa.
@@ -83,17 +92,25 @@ npm run dev
 **O GATE — nenhuma mudança significativa passa sem:**
 
 ```bash
-npm run typecheck
-npm test          # a suíte COMPLETA, nunca escopada
-npm run build
+npm run gate      # typecheck + testes (2 fusos) + denominação + fontes + build
 ```
+
+O que ele encadeia, e por que cada um existe:
+
+| Passo | O que prova |
+|---|---|
+| `npm run typecheck` | `strict` ligado — sem ele o TypeScript nem estreita união discriminada |
+| `npm test` | a suíte **completa**, nunca escopada |
+| `npm run test:fuso:berlim` | a mesma suíte noutro fuso, **depois de provar que o fuso mudou** |
+| `npm run denominacao` | nenhum jargão em texto que alguém lê (autoteste 9 + 13) |
+| `npm run fontes` | nenhuma fonte externa chamada e não declarada |
+| `npm run build` | compila e gera em `docs/` |
 
 ⚠️ Cuidado com pipe mascarando o código de saída: `comando | head && echo OK` imprime OK mesmo com o
 comando vermelho. Use sem pipe, ou `${PIPESTATUS[0]}`.
 
-> ⚠️ **Estes comandos ainda NÃO existem** — o `package.json` do projeto não foi criado. Esta seção
-> descreve o contrato que o projeto deve cumprir, não uma garantia vigente. Ao criar o
-> `package.json`, remova este aviso.
+🔴 **`npm install` na pasta `D:` leva HORAS.** Medido: 0,8 s por arquivo pequeno, ~1.775× mais lento
+que `C:`. Clone numa pasta em `C:` para trabalhar, e traga de volta por `git pull` — ver `ESTADO.md`.
 
 ## 6. Git
 
@@ -102,7 +119,9 @@ comando vermelho. Use sem pipe, ou `${PIPESTATUS[0]}`.
 - Mensagem longa: `git commit -F arquivo`.
 - Ao commitar, **leia o `--stat` inteiro** e confirme que `main` mudou. `push` respondendo
   "Everything up-to-date" com trabalho novo no disco significa que o commit caiu noutra branch.
-- ⚠️ **Ainda não é repositório git** (medido pelo pré-voo em 04/08/2026).
+- Remoto: <https://github.com/flaviocom/escala-porteiros> (público, Pages em `main` + `/docs`).
+- ⚠️ O `git fetch` na pasta `D:` cai com `early EOF` por causa do disco. Se acontecer:
+  `git config http.postBuffer 524288000 && git config core.compression 0` e repita.
 
 ## 7. Onde ler o quê
 
