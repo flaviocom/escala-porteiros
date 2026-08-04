@@ -108,6 +108,23 @@ export function formatarMesBR(mes: string): string {
   return `${nome.charAt(0).toUpperCase()}${nome.slice(1)} ${a}`
 }
 
+/**
+ * Mês (`AAAA-MM`) de um `Date`, lido no fuso LOCAL.
+ *
+ * 🔴 Existe para substituir `data.toISOString().slice(0, 7)`, que lê em UTC.
+ *
+ * A diferença só aparece no **dia 1º** e só em fuso positivo — e é exatamente aí que ela é pior:
+ * num navegador em Berlim (UTC+2), a meia-noite local de 01/08 é 31/07 às 22h em UTC, então o turno
+ * do dia 1º passa a contar no mês anterior. O filtro de mês perde o dia, e a coluna das estatísticas
+ * mostra o número errado — sem erro, sem aviso, sem nada que denuncie.
+ *
+ * Em `America/Sao_Paulo` (UTC−3) os dois concordam, o que torna o defeito invisível daqui. É o tipo
+ * de fragilidade que só morde quando alguém viaja — e aí ninguém liga o sintoma à causa.
+ */
+export function mesDeData(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+}
+
 /** Data de hoje no fuso America/Sao_Paulo, independente de onde o navegador esteja. */
 export function hojeSaoPaulo(): DataISO {
   const partesFmt = new Intl.DateTimeFormat('en-CA', {

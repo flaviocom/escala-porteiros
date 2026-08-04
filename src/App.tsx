@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { exportToImage } from './utils/export';
 import { Shift, BROTHERS } from './types/scheduler';
 import type { DadosPublicados } from './dados/carregar';
+import { mesDeData } from './dominio/datas';
 import { ScheduleTable } from './components/ScheduleTable';
 import { StatsView } from './components/StatsView';
 import { ValidationView } from './components/ValidationView';
@@ -53,7 +54,7 @@ function App({ shifts, dados }: AppProps) {
   }, [showMyShiftsOnly, myBrotherId]);
 
   const months = useMemo(() => {
-    return Array.from(new Set(shifts.map(s => s.date.toISOString().slice(0, 7)))).sort();
+    return Array.from(new Set(shifts.map(s => mesDeData(s.date)))).sort();
   }, [shifts]);
 
   const brotherOptions = useMemo(() => BROTHERS.map(b => ({ value: b.id, label: b.name })), []);

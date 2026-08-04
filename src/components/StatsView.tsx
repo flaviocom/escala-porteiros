@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { Shift, BROTHERS } from '../types/scheduler';
+import { mesDeData } from '../dominio/datas';
 import { clsx } from 'clsx';
 import { BarChart3 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
@@ -18,7 +19,7 @@ export const StatsView: React.FC<StatsViewProps> = ({ shifts }) => {
     });
 
     shifts.forEach(shift => {
-      const monthKey = shift.date.toISOString().slice(0, 7); // YYYY-MM
+      const monthKey = mesDeData(shift.date); // mes LOCAL, nunca UTC
       shift.assignedBrothers.forEach(bId => {
         if (counts[bId]) {
           counts[bId].total++;
@@ -33,7 +34,7 @@ export const StatsView: React.FC<StatsViewProps> = ({ shifts }) => {
 
   const months = useMemo(() => {
     const m = new Set<string>();
-    shifts.forEach(s => m.add(s.date.toISOString().slice(0, 7)));
+    shifts.forEach(s => m.add(mesDeData(s.date)));
     return Array.from(m).sort();
   }, [shifts]);
 
