@@ -4,7 +4,7 @@
 > O **porquê** de cada decisão vive no [`DIARIO_DE_BORDO.md`](DIARIO_DE_BORDO.md); aqui fica o
 > registro do que foi feito, passo a passo.
 >
-> **Cadeia de navegação:** [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-04-c.md) → [`BACKLOG.md`](BACKLOG.md)
+> **Cadeia de navegação:** [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-04-d.md) → [`BACKLOG.md`](BACKLOG.md)
 > **Roteador:** [`AGENTS.md`](AGENTS.md) ·
 > **Solicitações:** [`docs/solicitacoes/INDICE_DE_SOLICITACOES.md`](docs/solicitacoes/INDICE_DE_SOLICITACOES.md) ·
 > **Fatias arquivadas:** [`docs/historico/INDICE.md`](docs/historico/INDICE.md)
@@ -147,3 +147,21 @@ build) exit 0 · órfãos 0 · site e área administrativa validados **ao vivo**
 **GATE final:** typecheck + 73 testes × 2 fusos + denominação + fontes + auditoria + build.
 
 **Pendente:** auditor **independente** (o limite estrutural da autoauditoria) e as credenciais.
+
+---
+
+## [04/08/2026] Sessão 1, parte 4 — a Regra Mestra 3, que era regra sem portão
+
+**Gatilho.** Quarto "go" (S-006), com o backlog técnico já vazio.
+
+- **Tooltips: 17% → 100%.** O grep ingênuo dizia 0%; o número real era 8 de 46. Medir errado
+  quase me fez escrever 38 dicas sobre diagnóstico falso.
+- **README** escrito — o repositório não tinha porta de entrada.
+- **Celular validado ao vivo**: achou alvo de toque de **16px** nos botões de senha. Corrigido
+  para 44px.
+- **Arrastar-e-soltar:** não implementado, por decisão declarada (ver handoff).
+
+🔴 **Dois erros meus:** quebrei o JSX com aspas duplas numa dica, e **publiquei com o gate**
+**vermelho** por encadear com `;`. O site não caiu por sorte. Os dois viraram portão.
+
+**GATE agora tem 8 passos**, com `regras-mestras` incluído.

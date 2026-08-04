@@ -4,7 +4,7 @@
 > como reverter.** Documento **append-only**, fatiado por período ao estourar o teto. **Nada é
 > excluído, nunca.**
 >
-> **Cadeia de navegação:** [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-04-c.md) → [`BACKLOG.md`](BACKLOG.md)
+> **Cadeia de navegação:** [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-04-d.md) → [`BACKLOG.md`](BACKLOG.md)
 > **Roteador:** [`AGENTS.md`](AGENTS.md) ·
 > **Solicitações:** [`docs/solicitacoes/INDICE_DE_SOLICITACOES.md`](docs/solicitacoes/INDICE_DE_SOLICITACOES.md) ·
 > **Histórico:** [`docs/historico/INDICE.md`](docs/historico/INDICE.md)
@@ -168,3 +168,37 @@ desfizer. Os dados publicados não mudaram nesta parte.
 **A auditoria foi feita por quem escreveu o código.** O método é explícito: *"quem escreveu
 carrega os mesmos pontos cegos ao testá-lo"*. Os 2 achados provam que o ataque valeu; **não**
 provam que não há mais nada. Auditor independente continua pendente no backlog.
+
+---
+
+## DB-004 · 04/08/2026 · A regra que não tinha régua, e dois erros meus
+
+### Solicitação
+
+S-006: quarto **"go"**. Com o backlog fechado, a ordem foi achar o que ainda faltava.
+
+### Decisões
+
+| # | Decisão | Por quê |
+|---|---|---|
+| 1 | Atacar a **Regra Mestra 3** | era a única regra do Flavio sem portão, portanto sem medida |
+| 2 | Cada dica **escrita à mão** | dica que repete o rótulo é ruído; o script falha para botão sem dica em vez de inventar |
+| 3 | Validar em **celular** | é o aparelho que está com ele quando alguém avisa que não pode ir |
+| 4 | **NÃO** implementar arrastar-e-soltar | o ajuste manual mostra o motivo ANTES do clique; arrastar só descobre a violação depois de soltar. Convenção de casa, declarada — e reversível se ele quiser |
+
+### Os dois erros, registrados porque o valor está neles
+
+**Quebrei o JSX** com aspas duplas dentro de uma dica. O TypeScript acusou 4 erros, três em linhas
+sem defeito — o que faz procurar no lugar errado.
+
+**Publiquei com o gate vermelho**, por encadear `npm run gate ; git commit`. O site não quebrou
+porque o build faz parte do gate e `docs/` não foi regerado. **Sorte não é processo.** É a mesma
+família do pipe que engole o exit code: o veredito existia e foi ignorado.
+
+Os dois viraram portão: `title` com aspas duplas é reprovado, e o portão das Regras Mestras entrou
+no GATE. Logo depois, o gate **recusou** um commit meu — dessa vez antes do push.
+
+### Como reverter
+
+Cada item é um commit próprio. Os tooltips são atributos `title`: removê-los não muda
+comportamento, só derruba o portão de 100% para abaixo do piso.

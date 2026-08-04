@@ -6,7 +6,7 @@
 > **Última atualização:** 04/08/2026
 >
 > **Cadeia de navegação, nesta ordem:**
-> [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-04-c.md) → **`BACKLOG.md` (você está aqui)**
+> [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-04-d.md) → **`BACKLOG.md` (você está aqui)**
 >
 > **Roteador do projeto:** [`AGENTS.md`](AGENTS.md) ·
 > **Solicitações:** [`docs/solicitacoes/INDICE_DE_SOLICITACOES.md`](docs/solicitacoes/INDICE_DE_SOLICITACOES.md) ·
@@ -72,6 +72,14 @@ Medido: Williams com **7 intervalos de 1 dia**, **18 pares com ≤3 dias**, 6 oc
 ---
 
 ## P3 — Produto ⚪
+
+| # | Item | Estado |
+|---|---|---|
+| P3.14 | Regra Mestra 3 — tooltips em 100% dos botões, com portão no GATE | ✅ 04/08 — era 17% |
+| P3.15 | `README.md` — porta de entrada do repositório | ✅ 04/08 |
+| P3.16 | Validação ao vivo em **celular** | ✅ 04/08 — achou alvo de toque de 16px, corrigido |
+| P3.17 | **Arrastar-e-soltar** (Regra Mestra 3) | ⚖️ **NÃO implementado, por decisão declarada** — pioraria o ajuste manual, que mostra o motivo *antes* do clique. Ver [handoff](docs/handoff/HANDOFF_2026-08-04-d.md). 👤 o Flavio pode decidir o contrário |
+
 
 | # | Item | Estado |
 |---|---|---|
