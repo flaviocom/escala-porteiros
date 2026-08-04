@@ -109,7 +109,7 @@ const Entrar: React.FC<{ aoAbrir: (s: Segredos) => void }> = ({ aoAbrir }) => {
       <Campo rotulo="Senha" tipo="senha" valor={senha} aoMudar={setSenha} aoEnter={entrar} />
       {erro && <Aviso tom="erro">{erro}</Aviso>}
       <Botao aoClicar={entrar} ocupado={ocupado} icone={KeyRound}>Entrar</Botao>
-      <button
+      <button title="Apaga o token deste navegador para configurar de novo. Não revoga o token no GitHub"
         onClick={() => { if (confirm('Isto apaga o token guardado neste navegador. Continuar?')) { apagarCofre(); location.reload() } }}
         className="w-full mt-3 text-xs text-gray-400 hover:text-gray-600 underline"
       >
@@ -264,7 +264,7 @@ const AbaElenco: React.FC<{ pessoas: Pessoa[]; aoMudar: (p: Pessoa[]) => void }>
             placeholder="Nome de quem está entrando"
             className="flex-1 px-4 py-2.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
           />
-          <button
+          <button title="Acrescenta ao elenco. Só entra na escala quando você gerar de novo"
             onClick={acrescentar}
             className="px-4 py-2.5 bg-indigo-600 text-white rounded-xl text-sm font-semibold hover:bg-indigo-700 flex items-center gap-2"
           >
@@ -319,7 +319,7 @@ const CartaoPessoa: React.FC<{ pessoa: Pessoa; aoAlterar: (m: (p: Pessoa) => Pes
   return (
     <div className={clsx('border rounded-2xl overflow-hidden', pessoa.ativo ? 'border-gray-200 bg-white' : 'border-gray-200 bg-gray-50 opacity-60')}>
       <div className="flex items-center gap-3 p-4">
-        <button onClick={() => setAberto(!aberto)} className="flex-1 text-left min-w-0">
+        <button title="Clique para ver quem pode substituir esta pessoa neste turno" onClick={() => setAberto(!aberto)} className="flex-1 text-left min-w-0">
           <div className="font-semibold text-gray-900 flex items-center gap-2">
             {pessoa.nome}
             {!pessoa.ativo && <span className="text-[10px] uppercase tracking-wider bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full">fora</span>}
@@ -345,7 +345,7 @@ const CartaoPessoa: React.FC<{ pessoa: Pessoa; aoAlterar: (m: (p: Pessoa) => Pes
             <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Só pode nestes turnos</p>
             <div className="flex gap-2">
               {(['MANHA', 'TARDE', 'NOITE'] as TipoTurno[]).map((t) => (
-                <button
+                <button title="Clique para ver quem pode substituir esta pessoa neste turno"
                   key={t}
                   onClick={() => alternarTurno(t)}
                   className={clsx(
@@ -389,7 +389,7 @@ const LinhaDias: React.FC<{ titulo: string; selecionados: number[]; aoAlternar: 
     <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">{titulo}</p>
     <div className="flex gap-1.5 flex-wrap">
       {NOMES_DIA_CURTO.map((n, d) => (
-        <button
+        <button title="Clique para ver quem pode substituir esta pessoa neste turno"
           key={d}
           onClick={() => aoAlternar(d)}
           className={clsx(
@@ -421,7 +421,7 @@ const Ausencias: React.FC<{ pessoa: Pessoa; aoAlterar: (m: (p: Pessoa) => Pessoa
             {formatarBR(a.inicio)} a {formatarBR(a.fim)}
             {a.motivo && <span className="text-gray-500"> · {a.motivo}</span>}
           </span>
-          <button
+          <button title="Remover esta ausência"
             onClick={() => aoAlterar((p) => ({ ...p, restricoes: { ...p.restricoes, ausencias: (p.restricoes.ausencias ?? []).filter((_, j) => j !== i) } }))}
             className="text-red-500 hover:bg-red-100 p-1 rounded"
           >
@@ -439,7 +439,7 @@ const Ausencias: React.FC<{ pessoa: Pessoa; aoAlterar: (m: (p: Pessoa) => Pessoa
           <input type="date" value={ate} onChange={(e) => setAte(e.target.value)} className="block px-2 py-1.5 border border-gray-300 rounded-lg text-sm" />
         </label>
         <input value={motivo} onChange={(e) => setMotivo(e.target.value)} placeholder="motivo (opcional)" className="px-2 py-1.5 border border-gray-300 rounded-lg text-sm flex-1 min-w-[8rem]" />
-        <button
+        <button title="Acrescenta ao elenco. Só entra na escala quando você gerar de novo"
           onClick={() => {
             if (!de || !ate) return alert('Informe as duas datas.')
             if (diferencaEmDias(de, ate) < 0) return alert('A data final é anterior à inicial.')
@@ -537,7 +537,7 @@ const AbaGerar: React.FC<{
             Até
             <input type="date" value={ate} onChange={(e) => setAte(e.target.value)} className="block mt-1 px-3 py-2 border border-gray-300 rounded-xl text-sm" />
           </label>
-          <button
+          <button title="Monta a escala buscando o maior espaçamento possível entre as escalas de cada um"
             onClick={executar}
             disabled={ocupado}
             className="px-5 py-2.5 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 disabled:bg-gray-400 flex items-center gap-2"
@@ -556,7 +556,7 @@ const AbaGerar: React.FC<{
         <Cartao titulo="Não foi possível gerar" tom="erro">
           <pre className="text-sm text-gray-700 whitespace-pre-wrap font-sans leading-relaxed">{falha}</pre>
           {segredos.chaveMotor && !arbitragem && (
-            <button
+            <button title="Sugere o que afrouxar, em que ordem, e o que cada caminho custa"
               onClick={async () => {
                 setMotorOcupado({ fase: 'Arbitragem', detalhe: 'pensando em como destravar…' })
                 try {
@@ -607,7 +607,7 @@ const AbaGerar: React.FC<{
               </p>
             ) : (
               <div className="flex flex-wrap gap-2">
-                <button
+                <button title="O motor monta a própria versão. Ela só chega ao placar se passar nas mesmas regras"
                   onClick={async () => {
                     setMotorErro('')
                     setPropostaMotor(null)
@@ -625,7 +625,7 @@ const AbaGerar: React.FC<{
                 >
                   <Sparkles className="w-4 h-4" /> Pedir proposta ao motor
                 </button>
-                <button
+                <button title="Segunda opinião sobre o que a regra não pega: mesmo grupo repetido, alguém sempre no mesmo dia"
                   onClick={async () => {
                     setMotorOcupado({ fase: 'Auditoria', detalhe: 'procurando o que a regra não pega…' })
                     setMotorErro('')
@@ -684,7 +684,7 @@ const AbaGerar: React.FC<{
                     <p className="text-sm text-indigo-950 whitespace-pre-wrap leading-relaxed">{propostaMotor.explicacao}</p>
                   </div>
                 )}
-                <button
+                <button title="Substitui a escala do algoritmo pela do motor"
                   onClick={() => { aoGerar(propostaMotor.bloco, 'Escala do motor, aprovada no portão determinístico.'); setPropostaMotor(null) }}
                   className="mt-4 px-4 py-2.5 bg-green-600 text-white rounded-xl text-sm font-bold hover:bg-green-700"
                 >
@@ -840,7 +840,7 @@ const AbaPublicar: React.FC<{
         )}
 
         <div className="flex flex-wrap gap-2">
-          <button
+          <button title="Grava a escala no repositório. O site atualiza em cerca de um minuto, sem sair do ar"
             onClick={publicar}
             disabled={ocupado || impedido}
             className="px-5 py-2.5 bg-green-600 text-white rounded-xl text-sm font-bold hover:bg-green-700 disabled:bg-gray-300 flex items-center gap-2"
@@ -848,14 +848,14 @@ const AbaPublicar: React.FC<{
             {ocupado ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
             {ocupado ? 'Publicando…' : 'Publicar'}
           </button>
-          <button
+          <button title="Salva o elenco em arquivo — a rede para o dia em que o token expirar"
             onClick={() => baixarJSON('pessoas.json', { versao: 1, pessoas })}
             className="px-4 py-2.5 border border-gray-300 rounded-xl text-sm font-semibold text-gray-700 hover:bg-gray-50 flex items-center gap-2"
           >
             <Download className="w-4 h-4" /> Baixar elenco
           </button>
           {blocoNovo && (
-            <button
+            <button title="Salva a escala em arquivo — a rede para o dia em que o token expirar"
               onClick={() => baixarJSON('blocos.json', { versao: 1, blocos: blocosParaPublicar })}
               className="px-4 py-2.5 border border-gray-300 rounded-xl text-sm font-semibold text-gray-700 hover:bg-gray-50 flex items-center gap-2"
             >
@@ -933,7 +933,7 @@ const Historico: React.FC<{ segredos: Segredos }> = ({ segredos }) => {
   return (
     <Cartao titulo="Histórico de publicações" subtitulo="Cada publicação é um commit. Dá para ver o que mudou e voltar atrás.">
       {!lista && !carregando && (
-        <button
+        <button title="Lista as publicações anteriores, com data e o que mudou"
           onClick={carregar}
           className="px-4 py-2.5 border border-gray-300 rounded-xl text-sm font-semibold text-gray-700 hover:bg-gray-50 flex items-center gap-2"
         >
@@ -981,7 +981,7 @@ const Historico: React.FC<{ segredos: Segredos }> = ({ segredos }) => {
                 {i > 0 && p.arquivos.length > 0 && (
                   <div className="flex flex-wrap gap-1.5 shrink-0">
                     {p.arquivos.map((a) => (
-                      <button
+                      <button title="Restaura este arquivo como estava nesta data. Não apaga nada: entra como publicação nova"
                         key={a}
                         onClick={() => voltar(p, a)}
                         disabled={revertendo !== ''}
@@ -1000,7 +1000,7 @@ const Historico: React.FC<{ segredos: Segredos }> = ({ segredos }) => {
               </div>
             </div>
           ))}
-          <button onClick={carregar} className="text-xs text-gray-500 hover:text-gray-800 underline mt-2">
+          <button title="Busca as publicações mais recentes" onClick={carregar} className="text-xs text-gray-500 hover:text-gray-800 underline mt-2">
             Atualizar a lista
           </button>
         </div>
@@ -1057,7 +1057,7 @@ const Campo: React.FC<{
           className="w-full px-4 py-2.5 pr-11 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
         />
         {tipo === 'senha' && (
-          <button type="button" onClick={() => setVisivel(!visivel)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+          <button title="Mostrar ou esconder o que você digitou" type="button" onClick={() => setVisivel(!visivel)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
             {visivel ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
           </button>
         )}
@@ -1068,7 +1068,7 @@ const Campo: React.FC<{
 }
 
 const Botao: React.FC<{ aoClicar: () => void; ocupado?: boolean; icone: React.ComponentType<{ className?: string }>; children: React.ReactNode }> = ({ aoClicar, ocupado, icone: Icone, children }) => (
-  <button
+  <button title="Confirmar"
     onClick={aoClicar}
     disabled={ocupado}
     className="w-full mt-2 px-4 py-3 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 disabled:bg-gray-400 flex items-center justify-center gap-2"

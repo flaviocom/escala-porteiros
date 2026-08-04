@@ -132,7 +132,7 @@ export const AbaAjustar: React.FC<Props> = ({ bloco, pessoas, fronteira, aoAlter
             </p>
           </div>
           {alterados.size > 0 && (
-            <button
+            <button title="Descarta as trocas manuais e volta à escala que o gerador entregou"
               onClick={desfazerTudo}
               className="shrink-0 px-3 py-1.5 text-xs font-semibold text-gray-600 border border-gray-300 rounded-lg hover:bg-white flex items-center gap-1.5"
             >
@@ -223,7 +223,7 @@ const LinhaTurno: React.FC<{
         </span>
         <div className="flex flex-wrap gap-1.5 flex-1 justify-end">
           {turno.pessoas.map((id) => (
-            <button
+            <button title="Clique para ver quem pode substituir esta pessoa neste turno"
               key={id}
               onClick={() => aoSelecionar(id)}
               className={clsx(

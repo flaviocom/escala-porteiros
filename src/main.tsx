@@ -28,7 +28,7 @@ function mostrarErro(erro: unknown) {
         Verifique sua conexão e tente de novo. Se o problema continuar, avise o Flavio — a escala
         pode estar em publicação neste momento.
       </p>
-      <button
+      <button title="Recarrega a página"
         onClick={() => location.reload()}
         style={{ padding: '0.6rem 1.1rem', borderRadius: 10, border: '1px solid #cbd5e1', background: '#fff', fontWeight: 600, cursor: 'pointer' }}
       >

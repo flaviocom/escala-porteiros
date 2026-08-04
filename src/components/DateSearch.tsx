@@ -95,7 +95,7 @@ export const DateSearch: React.FC<DateSearchProps> = ({ value, onChange, onDateR
               onChange={handleDateChange}
               title="Selecionar data"
             />
-            <button className="p-1.5 text-gray-400 hover:text-black bg-white hover:bg-gray-50 rounded-lg transition-colors">
+            <button title="Escolher uma data no calendário" className="p-1.5 text-gray-400 hover:text-black bg-white hover:bg-gray-50 rounded-lg transition-colors">
               <CalendarIcon className="h-5 w-5" />
             </button>
           </div>

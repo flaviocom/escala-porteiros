@@ -134,7 +134,7 @@ function App({ shifts, dados }: AppProps) {
       <div className="mb-5">
         {myBrother ? (
           <div className="flex flex-col gap-2">
-            <button
+            <button title="Liga e desliga o filtro que mostra só os seus turnos"
               onClick={() => setShowMyShiftsOnly(!showMyShiftsOnly)}
               className={clsx(
                 "w-full flex items-center gap-3 px-4 py-4 rounded-2xl text-base font-bold transition-all duration-200 shadow-sm border-2",
@@ -155,7 +155,7 @@ function App({ shifts, dados }: AppProps) {
               </div>
               <ChevronRight className={clsx("h-5 w-5 transition-transform", showMyShiftsOnly ? "rotate-90" : "")} />
             </button>
-            <button
+            <button title="Escolher outro irmão para o filtro "Minha Escala""
               onClick={() => setShowBrotherPicker(true)}
               className="text-xs text-gray-400 hover:text-gray-600 text-right pr-1 underline"
             >
@@ -163,7 +163,7 @@ function App({ shifts, dados }: AppProps) {
             </button>
           </div>
         ) : (
-          <button
+          <button title="Escolha o seu nome para ver só os seus turnos"
             onClick={() => setShowBrotherPicker(true)}
             className="w-full flex items-center gap-3 px-4 py-4 rounded-2xl text-base font-bold bg-indigo-50 text-indigo-700 border-2 border-indigo-200 hover:bg-indigo-100 transition-all duration-200"
           >
@@ -183,7 +183,7 @@ function App({ shifts, dados }: AppProps) {
 
         {/* 1. ESCALA */}
         <div>
-          <button
+          <button title="Ver a escala completa, dia a dia"
             onClick={() => { setView('schedule'); setIsMobileMenuOpen(false); }}
             className={clsx(
               "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200",
@@ -209,7 +209,7 @@ function App({ shifts, dados }: AppProps) {
               { label: '📆 Esta Semana', type: 'week' as const },
               { label: '🗓️ Este Mês', type: 'month' as const },
             ].map(({ label, type }) => (
-              <button
+              <button title="Clique para ver quem pode substituir esta pessoa neste turno"
                 key={type}
                 onClick={() => handleQuickFilter(type)}
                 className="w-full text-left px-4 py-3 rounded-xl text-base font-semibold text-gray-700 bg-gray-50 hover:bg-blue-50 hover:text-blue-700 border border-gray-200 hover:border-blue-200 transition-all duration-200"
@@ -228,7 +228,7 @@ function App({ shifts, dados }: AppProps) {
               Filtros
             </h2>
             {activeFiltersCount > 0 && (
-              <button
+              <button title="Remove todos os filtros e volta a mostrar a escala inteira"
                 onClick={clearFilters}
                 className="text-[11px] font-bold text-red-500 hover:text-red-700 bg-red-50 px-2 py-1 rounded-md transition-colors"
               >
@@ -265,7 +265,7 @@ function App({ shifts, dados }: AppProps) {
 
         {/* 3. ESTATÍSTICAS */}
         <div>
-          <button
+          <button title="Quantos turnos cada irmão tem, mês a mês"
             onClick={() => { setView('stats'); setIsMobileMenuOpen(false); }}
             className={clsx(
               "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200",
@@ -281,7 +281,7 @@ function App({ shifts, dados }: AppProps) {
 
         {/* 4. VALIDAÇÃO */}
         <div>
-          <button
+          <button title="Confere a escala contra todas as regras e mostra o resultado de cada uma"
             onClick={() => { setView('validation'); setIsMobileMenuOpen(false); }}
             className={clsx(
               "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200",
@@ -299,7 +299,7 @@ function App({ shifts, dados }: AppProps) {
 
       {/* Ações (Exportar) */}
       <div className="pt-6 mt-6 border-t border-gray-100">
-        <button
+        <button title="Gera uma imagem da escala pronta para enviar no WhatsApp"
           onClick={handleExport}
           disabled={isGenerating}
           className={clsx(
@@ -360,7 +360,7 @@ function App({ shifts, dados }: AppProps) {
             </div>
             <div className="overflow-y-auto flex-1 px-4 py-2">
               {filteredBrothers.map(b => (
-                <button
+                <button title="Clique para ver quem pode substituir esta pessoa neste turno"
                   key={b.id}
                   onClick={() => handleSelectMyBrother(b.id)}
                   className={clsx(
@@ -381,7 +381,7 @@ function App({ shifts, dados }: AppProps) {
               ))}
             </div>
             <div className="px-6 py-4 border-t border-gray-100">
-              <button
+              <button title="Fecha sem escolher"
                 onClick={() => { setShowBrotherPicker(false); setBrotherSearch(''); }}
                 className="w-full py-3 text-gray-500 text-sm font-semibold hover:bg-gray-50 rounded-xl transition-colors"
               >
@@ -460,7 +460,7 @@ function App({ shifts, dados }: AppProps) {
               </button>
 
               {/* Filtros */}
-              <button
+              <button title="Abre os filtros por irmão, mês e data"
                 onClick={() => setIsMobileMenuOpen(true)}
                 className="flex items-center gap-1 text-action-primary text-xs font-bold whitespace-nowrap hover:bg-blue-50 px-2.5 py-2 rounded-xl transition-colors border border-blue-200"
               >
@@ -477,7 +477,7 @@ function App({ shifts, dados }: AppProps) {
               { label: 'Esta Semana', type: 'week' as const },
               { label: 'Este Mês', type: 'month' as const },
             ].map(({ label, type }) => (
-              <button
+              <button title="Clique para ver quem pode substituir esta pessoa neste turno"
                 key={type}
                 onClick={() => handleQuickFilter(type)}
                 className="shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-600 hover:bg-blue-100 hover:text-blue-700 transition-all whitespace-nowrap"
@@ -486,7 +486,7 @@ function App({ shifts, dados }: AppProps) {
               </button>
             ))}
             {(activeFiltersCount > 0 || showMyShiftsOnly) && (
-              <button
+              <button title="Remove todos os filtros e volta a mostrar a escala inteira"
                 onClick={clearFilters}
                 className="shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold bg-red-100 text-red-600 hover:bg-red-200 transition-all whitespace-nowrap"
               >
