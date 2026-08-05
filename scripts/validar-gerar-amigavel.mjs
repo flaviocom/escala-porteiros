@@ -111,6 +111,33 @@ try {
   conferir('🔴 trocar de aba e voltar NÃO apaga o intervalo', deDepois === '2026-09-01',
     `antes 2026-09-01 → depois ${deDepois}`)
 
+  // ── 1c. ESPELHO: Elenco e Gerar são a MESMA lista, não duas cópias ───────
+  //
+  // *"A parte do elenco replica aqui, correto? É um espelho."* — Flavio, 05/08/2026.
+  //
+  // Provar só que os dois mostram algo não basta: duas cópias sincronizadas na hora do carregamento
+  // também mostrariam. O que distingue é o ESCRITO NUM aparecer no OUTRO, e o APAGADO sumir dos dois.
+  await pagina.getByRole('button', { name: /^Elenco/i }).first().click()
+  await pagina.waitForTimeout(800)
+  const noElenco = await pagina.locator('body').innerText()
+  const linhaDoAusente = noElenco.split('\n').findIndex((l) => l.includes(nomeAusente))
+  const etiquetaNoElenco = noElenco.split('\n').slice(linhaDoAusente, linhaDoAusente + 3).join(' ')
+  conferir('🔴 o que foi marcado em GERAR aparece no ELENCO', /1 ausência\(s\)/.test(etiquetaNoElenco),
+    etiquetaNoElenco.trim().slice(0, 60) || '(sem etiqueta)')
+
+  // E a volta: apagar pela porta de Gerar precisa sumir do Elenco também.
+  await pagina.getByRole('button', { name: /^Gerar escala/i }).first().click()
+  await pagina.waitForTimeout(700)
+  await pagina.getByTitle(`Tirar a ausência de ${nomeAusente}`).click()
+  await pagina.waitForTimeout(600)
+  await pagina.getByRole('button', { name: /^Elenco/i }).first().click()
+  await pagina.waitForTimeout(800)
+  const depoisDeApagar = await pagina.locator('body').innerText()
+  const linha2 = depoisDeApagar.split('\n').findIndex((l) => l.includes(nomeAusente))
+  const etiqueta2 = depoisDeApagar.split('\n').slice(linha2, linha2 + 3).join(' ')
+  conferir('🔴 e o apagado em GERAR some do ELENCO — uma lista só, não duas',
+    !/ausência\(s\)/.test(etiqueta2), etiqueta2.trim().slice(0, 60) || '(sem etiqueta, como esperado)')
+
   // ── 5. histórico de publicações amigável ────────────────────────────────
   await pagina.getByRole('button', { name: /^Publicar/i }).first().click()
   await pagina.waitForTimeout(900)
