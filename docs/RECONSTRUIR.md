@@ -19,6 +19,7 @@
 | [`ARQUITETURA.md`](ARQUITETURA.md) | as camadas, medidas no grafo de importações |
 | [`OPERACAO.md`](OPERACAO.md) | como usar, como conferir, o que fazer quando dá errado |
 | [`INSTALAR.md`](INSTALAR.md) | do zero numa máquina nova, e como publicar para **outro cliente** |
+| [`PORTOES.md`](PORTOES.md) | cada portão **por dentro**: critério, população, e o que ele decidiu não olhar |
 
 Registro histórico: [`handoff/INDICE.md`](handoff/INDICE.md) ·
 [`solicitacoes/INDICE_DE_SOLICITACOES.md`](solicitacoes/INDICE_DE_SOLICITACOES.md) ·
@@ -124,7 +125,7 @@ Reimplementar as regras por **outro caminho**, sem importar o catálogo.
 > **Prova:** testes que exigem que as duas réguas **concordem** sobre a mesma escala.
 
 ### Passo 9 — Os portões
-Ver [`OPERACAO.md`](OPERACAO.md), parte 3.
+Ver [`PORTOES.md`](PORTOES.md) — cada um por dentro — e [`OPERACAO.md`](OPERACAO.md), parte 3, para rodar.
 
 > **Prova:** para cada portão, um autoteste que injeta um infrator e exige que ele **reprove**. Um
 > portão que nunca reprovou é indistinguível de um portão desligado.

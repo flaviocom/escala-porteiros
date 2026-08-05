@@ -45,6 +45,80 @@ se nem com piso 1 couber → DECLARA que não foi possível, e diz onde travou
 Na escala real de 06/08 → 31/12: **piso 7 dias**, tendo tentado 9 e 8. Zero pares com 3 dias ou
 menos — contra 18 pares no site anterior.
 
+### A fórmula do teto inicial
+
+```
+vagas            = soma das capacidades de todos os turnos do período, EXCETO Santa Ceia
+dias             = diferença em dias entre início e fim, INCLUSIVE  (fim − início + 1)
+escalasPorPessoa = vagas / quantidade de pessoas no elenco
+
+se vagas == 0 ou elenco vazio        → teto = 1
+se escalasPorPessoa <= 1             → teto = dias      (cada um serve no máximo uma vez)
+senão                                → teto = max(1, PISO(dias / escalasPorPessoa))
+```
+
+`PISO(...)` é arredondamento **para baixo** (`Math.floor`). A Santa Ceia sai da conta porque é dia
+sem ninguém escalado: contá-la infla `vagas` e derruba o teto artificialmente.
+
+> **Exemplo real** (06/08 → 31/12, 16 pessoas): 258 vagas / 16 = 16,1 escalas por pessoa;
+> 148 dias / 16,1 = 9,18 → **teto 9**. A busca tentou 9, 8, e fechou em **7**.
+
+---
+
+## 🔴 A receita da escolha gulosa
+
+Esta é a parte que faz duas implementações darem a **mesma** escala. Sem ela, tudo o que está acima
+descreve a arquitetura da busca, não a busca.
+
+Para cada turno, em **ordem cronológica** (e, no mesmo dia, na ordem em que a malha emite):
+
+### 1. Quem está fora, e por quê
+
+Uma pessoa é **elegível** para este turno quando passa nas duas peneiras:
+
+| Peneira | O que barra |
+|---|---|
+| `podeAssumir(...)` | as regras duras que dependem da pessoa: já está escalada neste **dia**, dia da semana proibido/não permitido, turno não permitido, ausência, teto mensal já batido, fora do elenco, inativa |
+| **o piso** | `diferençaEmDias(últimaEscala, dataDoTurno) < piso` — quem serviu recentemente demais |
+
+A "última escala" começa na **fronteira**: a última data de cada pessoa no bloco **anterior**,
+considerando só turnos com data **antes** do início deste bloco. Ignorar esse filtro contamina tudo
+— foi um defeito real aqui.
+
+Se `elegíveis < capacidade`, este piso **falha inteiro**: o gerador não tenta outra combinação, desce
+o piso e recomeça o período do zero.
+
+### 2. A ordenação — quatro critérios, em cascata
+
+```
+1. MENOS turnos até aqui          (crescente)   → equilíbrio de carga
+2. MAIS tempo desde a última      (decrescente) → maximiza o distanciamento
+   (quem nunca serviu conta como 9999 dias — vai para a frente)
+3. MAIOR folga no teto do mês     (decrescente) → a cota precisa caber no mês
+   (folga = tetoMensal − escalas já feitas naquele mês; quem não tem teto conta 0)
+4. o `id`, em ordem alfabética    (crescente)   → desempate ESTÁVEL
+```
+
+**O critério 4 não é detalhe.** Sem um desempate determinístico, duas execuções com a mesma entrada
+podem divergir conforme a ordem em que o interpretador percorreu uma estrutura — e a promessa
+"mesma entrada, mesma escala" cai por terra.
+
+### 3. A escolha, com ou sem sorteio
+
+```
+k = max(1, min(candidatos, quantidade de elegíveis))
+enquanto faltar gente no turno:
+    lista = os k primeiros dos que ainda restam
+    se k > 1 e há semente → sorteia um dentro da lista
+    senão                 → pega o primeiro
+    remove o escolhido dos restantes
+```
+
+`candidatos = 1` (o padrão sem semente) é **exatamente o guloso puro**. `candidatos = 3` é o GRASP.
+
+⚠️ A lista restrita é recalculada **a cada vaga do mesmo turno**, sobre quem ainda não foi escolhido
+para ele — não é sorteio de `capacidade` nomes de uma vez.
+
 ### ⚠️ O que esse número NÃO é
 
 Cada piso é tentado **uma vez**, com escolha gulosa em ordem cronológica. No primeiro turno sem

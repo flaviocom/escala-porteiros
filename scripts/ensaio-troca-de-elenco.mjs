@@ -15,13 +15,21 @@
  * mesmo código do produto (compilado na hora, sem cópia paralela). E ele não confia no "não deu
  * erro": mede cada promessa e falha com o número na mão.
  *
- * As 6 promessas verificadas:
- *   1. quem saiu tem ZERO escalas depois do corte
- *   2. quem entrou é escalado, respeitando as QUATRO famílias de restrição
- *   3. as 15 regras passam — nenhuma dura violada
- *   4. o passado (antes do corte) fica byte a byte idêntico
- *   5. o distanciamento não desaba: o piso continua ≥ 4 dias
- *   6. a carga continua equilibrada entre quem ficou
+ * As 11 promessas verificadas:
+ *    1. quem saiu tem ZERO escalas depois do corte
+ *    2. quem entrou é escalado
+ *  3–6. as restrições dele são respeitadas, uma família por promessa:
+ *         dia da semana · turno · teto mensal · ausência
+ *    7. o catálogo inteiro passa — nenhuma regra dura violada
+ *    8. o passado (antes do corte) fica byte a byte idêntico
+ *    9. o distanciamento não desaba: o piso continua ≥ 4 dias
+ *   10. a carga continua equilibrada entre quem não tem restrição (amplitude ≤ 2)
+ *   11. quem tem teto é aproveitado (≥ 80% da cota)
+ *
+ * ⚠️ Este cabeçalho dizia **6** e o script media **11** — e dizia "as 15 regras" para um catálogo
+ *    de 16. Achado em 05/08/2026, quando o teste de portabilidade apontou que os portões deste
+ *    projeto são descritos por fora e nunca por dentro. Documentação de script apodrece igual à
+ *    dos documentos: aqui a lista das promessas passou a sair na SAÍDA, que não tem como mentir.
  *
  * Uso: node scripts/ensaio-troca-de-elenco.mjs
  */

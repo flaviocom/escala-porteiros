@@ -92,6 +92,9 @@ está errada** — e é melhor descobrir antes da congregação descobrir.
 
 ### O GATE — nada passa sem isto
 
+> Aqui está **como rodar**. Cada portão **por dentro** — critério, população, o que ele decidiu não
+> olhar — está em [`PORTOES.md`](PORTOES.md).
+
 ```bash
 npm run gate
 ```

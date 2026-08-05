@@ -51,10 +51,10 @@ ninguém notar.
 
 | # | O que confere | O que isso quer dizer, em português |
 |---|---|---|
-| **Q1** | Distanciamento — cada um o mais longe possível da própria escala anterior | Cada pessoa o mais longe possível da própria escala anterior. É o defeito que originou este projeto: alguém servindo quarta e voltando no sábado. |
-| **Q2** | Equilíbrio de carga dentro do bloco | A carga fica parecida entre quem não tem limite próprio. Quem tem teto mensal fica fora da comparação, porque joga outro jogo. |
-| **Q3** | Variedade de dia da semana — ninguém preso sempre no mesmo dia | Ninguém preso sempre no mesmo dia da semana — quem sempre pega sábado acaba nunca indo ao culto de domingo com a família. |
-| **Q4** | Variedade de companhia — evitar o mesmo grupo se repetindo | Evita que o mesmo trio se repita muitas vezes. Não impede publicar; é para você saber. |
+| **Q1** | Distanciamento — cada um o mais longe possível da própria escala anterior | Cada pessoa o mais longe possível da própria escala anterior. É o defeito que originou este projeto: alguém servindo quarta e voltando no sábado. Avisa quando alguém fica com **3 dias ou menos** entre duas escalas. |
+| **Q2** | Equilíbrio de carga dentro do bloco | A carga fica parecida entre quem não tem limite próprio. Quem tem teto mensal fica fora da comparação, porque joga outro jogo. Avisa quando a diferença entre quem mais pegou e quem menos pegou passa de **2 turnos**. |
+| **Q3** | Variedade de dia da semana — ninguém preso sempre no mesmo dia | Ninguém preso sempre no mesmo dia da semana — quem sempre pega sábado acaba nunca indo ao culto de domingo com a família. Avisa quando **mais de 70%** das escalas de alguém caem no mesmo dia da semana; só avalia quem tem **4 escalas ou mais**, porque abaixo disso a proporção não significa nada. |
+| **Q4** | Variedade de companhia — evitar o mesmo grupo se repetindo | Evita que a mesma companhia se repita demais. Avisa quando uma formação (o conjunto de quem divide o turno) aparece **3 vezes ou mais** no período; lista as 10 mais frequentes. Não impede publicar; é para você saber. |
 | **Q5** | Piso mensal — quem tem teto e ficou MUITO abaixo dele | O teto é um máximo, nunca uma meta: ficar abaixo dele não é falha. Este aviso só aparece quando alguém fica 2 ou mais abaixo do próprio teto, num mês INTEIRO. Aí pode ser injustiça de distribuição, ou pode ser a restrição dele funcionando. Mês cortado pela metade — o primeiro e o último de qualquer escala — não conta, porque não dá para cobrar uma conta mensal de quem só teve meio mês. |
 
 ---

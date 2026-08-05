@@ -200,6 +200,7 @@ aqui. Escrito para quem **não participou de nada** — inclusive outra intelig�
 | As camadas, medidas no grafo de importações | [`docs/ARQUITETURA.md`](docs/ARQUITETURA.md) |
 | Como usar, conferir, e o que fazer quando dá errado | [`docs/OPERACAO.md`](docs/OPERACAO.md) |
 | Instalar do zero, e publicar para **outro cliente** | [`docs/INSTALAR.md`](docs/INSTALAR.md) |
+| Cada portão **por dentro**: critério, população, isenções | [`docs/PORTOES.md`](docs/PORTOES.md) |
 
 ### O registro do que aconteceu
 
