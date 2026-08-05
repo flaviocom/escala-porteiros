@@ -121,6 +121,35 @@ npm run build      # copia public/ → docs/ e compila
 🔴 **As duas pastas.** `public/dados/` é a origem; `docs/dados/` é o que o GitHub Pages serve.
 Gravar em uma só é o erro que não avisa — o site continua no ar mostrando o dado antigo.
 
+### 🔴 `emptyOutDir: false` — e por que isso NÃO é preferência
+
+O GitHub Pages, em modo branch, só serve de `/` ou de `/docs`. Então `docs/` é ao mesmo tempo a
+**saída do build** e o lugar onde vivem **a documentação** (`docs/*.md`), **o dado publicado**
+(`docs/dados/`) e os índices.
+
+Com a limpeza automática ligada — que é o **padrão do Vite** — o primeiro build **apagou cinco
+documentos**, e a remoção entrou num commit sem ninguém notar: o site continuou funcionando, e a
+cadeia documental inteira deixou de existir.
+
+Em `vite.config.ts`:
+
+```ts
+outDir: 'docs',
+emptyOutDir: false,   // 🔴 não é preferência, é a correção de um defeito real
+```
+
+Em troca, `assets/` precisa ser limpo **à mão** antes de gerar, senão sobra arquivo de build antigo a
+cada vez. É o que o script `prebuild` faz — e ele remove **só** `docs/assets`, nada mais.
+
+⚠️ **Quem reconstruir vai ser tentado a "consertar" isso.** Não conserte: o build precisa conviver
+com a documentação.
+
+### Sobre o Jekyll
+
+Este projeto **não** tem `.nojekyll`, e funciona — nenhum arquivo servido começa com `_`, que é o
+que o Jekyll do Pages ignora. Se um dia o build gerar algo assim, crie `docs/.nojekyll` (arquivo
+vazio); o sintoma seria um **404 num arquivo que existe no repositório**.
+
 ### 7. Conferir antes de publicar
 
 ```bash
