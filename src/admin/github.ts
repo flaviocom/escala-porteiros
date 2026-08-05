@@ -47,14 +47,52 @@ function paraBase64Utf8(texto: string): string {
   return btoa(s)
 }
 
+/**
+ * A mensagem que a pessoa lê quando o GitHub recusa — e ela precisa dizer O QUE CONSERTAR.
+ *
+ * 🔴 P4.2, achado pela auditoria independente de 04/08/2026 e corrigido em 05/08 antes da primeira
+ * publicação real: a frase amigável sobre token expirado existia só no caminho do PUT, e o PUT nunca
+ * era alcançado quando o problema era o token — porque o GET vem antes e falha primeiro. Resultado:
+ * quem tivesse um token revogado lia *"Não consegui ler public/dados/pessoas.json (HTTP 401)"* e ia
+ * procurar defeito no arquivo, não na credencial.
+ *
+ * E 403 tinha o problema oposto: era rotulado como "token recusado" mesmo quando a causa era limite
+ * de requisições do GitHub, mandando a pessoa trocar um token que estava perfeito.
+ */
+function recusaDoGitHub(status: number, caminho: string, corpo = ''): string {
+  if (status === 401)
+    return `${caminho}: o GitHub recusou o token (HTTP 401). Ele expirou, foi revogado, ou o valor foi colado incompleto. Configure o acesso de novo com um token novo.`
+  if (status === 403 && /rate limit|secondary/i.test(corpo))
+    return `${caminho}: o GitHub pediu para esperar (limite de requisições, HTTP 403). O token está bom — tente de novo em alguns minutos.`
+  if (status === 403)
+    return `${caminho}: o token não tem permissão de escrita aqui (HTTP 403). Confira em Repository permissions → Contents: Read and write, e se o repositório escala-porteiros está marcado.`
+  if (status === 404)
+    return `${caminho}: o GitHub respondeu que não existe (HTTP 404). Num token fine-grained isso quase sempre é o REPOSITÓRIO não marcado, não erro de digitação no caminho.`
+  if (status >= 500)
+    return `${caminho}: o GitHub está com problema no servidor dele (HTTP ${status}). Não é o seu token. Tente de novo em alguns minutos.`
+  return `${caminho}: o GitHub recusou (HTTP ${status}).${corpo ? ` ${corpo.slice(0, 160)}` : ''}`
+}
+
+/** Lê JSON sem deixar vazar `SyntaxError` em inglês quando a resposta não é JSON (P4.4). */
+async function lerJSON<T>(r: Response, caminho: string): Promise<T> {
+  const texto = await r.text()
+  try {
+    return JSON.parse(texto) as T
+  } catch {
+    throw new Error(
+      `${caminho}: o GitHub respondeu algo que não é JSON. Costuma ser página de erro de rede ou de proxy no caminho. Tente de novo.`,
+    )
+  }
+}
+
 async function shaAtual(token: string, caminho: string): Promise<string | undefined> {
   const r = await fetch(`https://api.github.com/repos/${DONO}/${REPO}/contents/${caminho}?ref=${RAMO}`, {
     headers: cabecalhos(token),
     cache: 'no-store',
   })
   if (r.status === 404) return undefined // arquivo novo
-  if (!r.ok) throw new Error(`Não consegui ler ${caminho} (HTTP ${r.status})`)
-  const j = (await r.json()) as RespostaConteudo
+  if (!r.ok) throw new Error(recusaDoGitHub(r.status, caminho, await r.text()))
+  const j = await lerJSON<RespostaConteudo>(r, caminho)
   return j.sha
 }
 
@@ -80,11 +118,11 @@ async function gravarArquivo(token: string, caminho: string, conteudo: string, m
         `${caminho}: a escala mudou no repositório desde que esta tela carregou. ` +
           'Recarregue a página para não sobrescrever uma publicação feita de outro aparelho.',
       )
-    if (r.status === 401 || r.status === 403)
-      throw new Error(`${caminho}: o token foi recusado (HTTP ${r.status}). Confira se ele expirou ou foi revogado.`)
-    throw new Error(`${caminho}: HTTP ${r.status} — ${corpo.slice(0, 200)}`)
+    // Uma fonte só para o texto das recusas: o GET e o PUT diziam coisas diferentes para o mesmo
+    // erro, e era o GET que a pessoa via primeiro.
+    throw new Error(recusaDoGitHub(r.status, caminho, corpo))
   }
-  const j = await r.json()
+  const j = await lerJSON<{ commit?: { sha?: string } }>(r, caminho)
   return j.commit?.sha ?? '?'
 }
 

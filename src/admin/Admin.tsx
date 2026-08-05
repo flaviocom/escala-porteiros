@@ -1427,6 +1427,22 @@ const AbaGerar: React.FC<{
 // PUBLICAR
 // ===========================================================================
 
+/**
+ * 🔴 P4.1 — UMA PUBLICAÇÃO POR VEZ, e a trava mora FORA do componente.
+ *
+ * Achado pela auditoria independente de 04/08/2026, corrigido em 05/08 antes da primeira
+ * publicação real: `AbaPublicar` é montada por condição, então **trocar de aba a desmonta** — mas
+ * a promessa que já está na rede continua correndo. Ao voltar, uma instância nova nascia com
+ * `ocupado = false` e deixava clicar Publicar de novo. Medido ao vivo: duas chamadas independentes
+ * à API, e a tela mostrando só o resultado da segunda — a primeira sumia sem confirmação nem erro.
+ *
+ * Num commit de escala, isso é publicação duplicada ou fora de ordem sem ninguém perceber.
+ *
+ * ⚠️ A trava é MODULAR de propósito: `useState` e `useRef` morrem com o componente, e é justamente
+ * a morte do componente que abre a porta. Um módulo sobrevive à troca de aba.
+ */
+let publicacaoEmVoo = false
+
 const AbaPublicar: React.FC<{
   dados: DadosPublicados
   pessoas: Pessoa[]
@@ -1463,6 +1479,11 @@ const AbaPublicar: React.FC<{
 
   const publicar = async () => {
     if (relatorio && !relatorio.aprovada) return
+    if (publicacaoEmVoo) {
+      setResultado({ ok: false, texto: 'Já há uma publicação em andamento. Espere ela terminar — publicar duas vezes pode gravar fora de ordem.' })
+      return
+    }
+    publicacaoEmVoo = true
     setOcupado(true)
     setResultado(null)
     const passos: string[] = []
@@ -1514,6 +1535,7 @@ const AbaPublicar: React.FC<{
       tudoOk = tudoOk && rb.ok
     }
 
+    publicacaoEmVoo = false
     setOcupado(false)
     setResultado({
       ok: tudoOk,

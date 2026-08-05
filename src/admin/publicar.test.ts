@@ -175,3 +175,42 @@ describe('publicar — quando dá errado no meio', () => {
     expect(r.erro).toBeTruthy()
   })
 })
+
+describe('🔴 as recusas dizem O QUE CONSERTAR — P4.2 e P4.4, fechados em 05/08/2026', () => {
+  it('401 no GET (o caminho mais comum) fala em TOKEN, não em "não consegui ler o arquivo"', async () => {
+    vi.stubGlobal('fetch', async () => new Response('unauthorized', { status: 401 }))
+    const r = await publicarDados(TOKEN_FALSO, 'blocos.json', ESCALA, 'escala')
+    expect(r.ok).toBe(false)
+    expect(r.erro).toMatch(/token/i)
+    expect(r.erro).toMatch(/expirou|revogado|incompleto/i)
+    expect(r.erro).not.toMatch(/não consegui ler/i)
+  })
+
+  it('403 por LIMITE DE REQUISIÇÕES não manda trocar um token que está bom', async () => {
+    vi.stubGlobal('fetch', async () => new Response('You have exceeded a secondary rate limit', { status: 403 }))
+    const r = await publicarDados(TOKEN_FALSO, 'blocos.json', ESCALA, 'escala')
+    expect(r.erro).toMatch(/limite de requisições/i)
+    expect(r.erro).toMatch(/token está bom/i)
+  })
+
+  it('403 por PERMISSÃO nomeia a caixa a marcar no GitHub', async () => {
+    vi.stubGlobal('fetch', async () => new Response('forbidden', { status: 403 }))
+    const r = await publicarDados(TOKEN_FALSO, 'blocos.json', ESCALA, 'escala')
+    expect(r.erro).toMatch(/Contents: Read and write/i)
+  })
+
+  it('500 diz que NÃO é o token — senão a pessoa troca uma credencial boa', async () => {
+    vi.stubGlobal('fetch', async () => new Response('boom', { status: 500 }))
+    const r = await publicarDados(TOKEN_FALSO, 'blocos.json', ESCALA, 'escala')
+    expect(r.erro).toMatch(/não é o seu token/i)
+  })
+
+  it('🔴 resposta 200 que NÃO é JSON vira frase em português, não SyntaxError em inglês', async () => {
+    vi.stubGlobal('fetch', async () =>
+      new Response('<html><body>502 Bad Gateway</body></html>', { status: 200, headers: { 'Content-Type': 'text/html' } }))
+    const r = await publicarDados(TOKEN_FALSO, 'blocos.json', ESCALA, 'escala')
+    expect(r.ok).toBe(false)
+    expect(r.erro).toMatch(/não é JSON/i)
+    expect(r.erro).not.toMatch(/Unexpected token|SyntaxError/i)
+  })
+})
