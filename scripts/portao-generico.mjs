@@ -78,7 +78,22 @@ function conferirAsProprias(termos) {
 
 const TERMOS = [
   { re: /JD\.?\s*S[ÃA]O\s*LUIZ/i, nome: 'JD. São Luiz' },
-  { re: /Congrega[çc][ãa]o\s+Crist[ãa]/i, nome: 'Congregação Cristã' },
+  {
+    re: /Congrega[çc][ãa]o\s+Crist[ãa]/i,
+    nome: 'Congregação Cristã',
+    /*
+      🔴 O README É EXCEÇÃO DECLARADA PARA ESTE TERMO — sexta auditoria externa, 05/08/2026.
+
+      Ele diz, em citação destacada: *"**Esta instalação** atende a Congregação Cristã no Brasil —
+      Jardim São Luiz. Tudo o que é dela está em `public/dados/`; o código não sabe o nome de cliente
+      nenhum."* Isso não é vazamento: é a **declaração da fronteira**, escrita para quem chega. Acusá-la
+      empurraria alguém a apagar justamente o texto que explica a regra.
+
+      O que continua proibido ali é o nome do cliente no LUGAR DO PRODUTO — "Escala de Porteiros",
+      "JD. São Luiz", "CCB" —, que é o que a auditoria injetou como infrator.
+    */
+    excetoEm: /^README\.md$/,
+  },
   // A sigla da instituição, que aparecia no `alt` do emblema ("Logo CCB") e no nome do arquivo.
   //    ⚠️ Escrito SEM barra invertida nenhuma, de propósito: a borda vem de classe de
   //    caracteres, não de `\b`. É a terceira vez que um `\b` gerado por script vira byte de
@@ -103,7 +118,14 @@ const TERMOS = [
   //    arquivo nenhum, e o cabeçalho continuou anunciando "5 termos procurados" como se medisse.
   //    Construído por `RegExp` + `String.raw`, o escape sobrevive a qualquer script que reescreva
   //    este arquivo — e o autoteste ao lado prova que ele morde.
-  { re: new RegExp(String.raw`\birm[ãa]os?\b`, 'i'), nome: 'vocabulário de congregação ("irmão")' },
+  {
+    re: new RegExp(String.raw`\birm[ãa]os?\b`, 'i'),
+    nome: 'vocabulário de congregação ("irmão")',
+    // No README a palavra aparece na LISTA de vocabulários possíveis — "Irmão", "Funcionário",
+    // "Plantonista" —, que é a demonstração da configurabilidade, o oposto de um vazamento. E na
+    // linha que conta de qual projeto este é sucessor, que é história.
+    excetoEm: /^README\.md$/,
+  },
   /*
     🔴 "ENSAIO" — terceiro achado que escapa deste portão e vira termo dele, 05/08/2026.
 
@@ -205,11 +227,25 @@ const html = join(RAIZ, 'index.html')
   para lá. Fronteira de portão é onde o defeito se esconde.
 */
 const pacote = join(RAIZ, 'package.json')
+/*
+  🔴 E O `README.md` FICOU DE FORA — sexta auditoria externa, 05/08/2026.
+
+  O argumento escrito acima para incluir o `package.json` é *"a vitrine de um repositório PÚBLICO de
+  um produto com intenção de comercialização"*. O README é **a vitrine maior desse mesmo
+  repositório**: é o que o GitHub renderiza na primeira tela, antes de qualquer arquivo.
+
+  Medido: `## Escala de Porteiros da Congregação Cristã — JD. São Luiz` injetado no README passava os
+  20 passos do gate com `achados 0`. A fronteira do portão é onde o defeito mora — sétima vez.
+
+  ⚠️ Só o README, e não `docs/`: os documentos de lá contam a HISTÓRIA deste cliente, e é para isso
+  que existem. Varrê-los transformaria o portão em censor do próprio registro.
+*/
+const leiame = join(RAIZ, 'README.md')
 // 🔴 Uma varredura só. A primeira versão chamava `arquivos()` duas vezes — aqui e no laço dos
 //    emblemas — e `pulados` acumulava as duas, imprimindo "20 testes pulados" onde havia 10. O
 //    número que existe para denunciar cobertura perdida estava ele próprio errado.
 const naPasta = arquivos(join(RAIZ, 'src'))
-const alvos = [...naPasta, ...(existsSync(html) ? [html] : []), ...(existsSync(pacote) ? [pacote] : [])]
+const alvos = [...naPasta, ...(existsSync(html) ? [html] : []), ...(existsSync(pacote) ? [pacote] : []), ...(existsSync(leiame) ? [leiame] : [])]
 const achados = []
 
 /*
@@ -245,6 +281,9 @@ for (const abs of alvos) {
       // `apenas` é a fronteira DECLARADA de um termo. Sem ela, vale em toda parte — que é o padrão
       // certo: um termo só ganha fronteira quando se provou que ela é necessária, com o motivo ao lado.
       if (t.apenas && !t.apenas.test(rel)) continue
+      // `excetoEm` é o simétrico de `apenas`: o termo vale em toda parte MENOS onde está declarado,
+      // sempre com o motivo escrito ao lado. Exceção sem motivo é buraco com outro nome.
+      if (t.excetoEm && t.excetoEm.test(rel)) continue
       if (t.re.test(linha)) achados.push({ arquivo: rel, linha: i + 1, termo: t.nome, texto: linha.trim().slice(0, 110) })
     }
   })

@@ -24,7 +24,7 @@ import { gerarVariasVersoes } from '../dominio/gerador'
 import { validar, resumir } from '../dominio/validacao'
 import { CATALOGO, menorIntervalo } from '../dominio/regras'
 import { conferirPorFora } from '../dominio/conferencia-independente'
-import { conferirPassadoPreservado, conferirReversao, montarBlocosParaPublicar } from '../dominio/blocos'
+import { conferirPassadoPreservado, conferirReversao, montarBlocosParaPublicar, publicacaoImpedida, travaDeDataRetroativa } from '../dominio/blocos'
 import { diferencaEmDias, formatarBR, hojeSaoPaulo, NOMES_DIA, NOMES_DIA_CURTO, somarDias } from '../dominio/datas'
 import { AbaAjustar } from './AbaAjustar'
 import { arbitrar, auditar, medir, pedirProposta, type Placar, type ProgressoMotor } from './motor'
@@ -1253,11 +1253,11 @@ const AbaGerar: React.FC<{
      * com data retroativa REESCREVE turno já divulgado, que é a primeira regra inviolável deste
      * projeto. Uma trava que só existe no atributo é uma trava que não existe.
      */
-    if (diferencaEmDias(de, hojeSaoPaulo()) > 0) {
+    // A regra vive no domínio, onde há teste: desligá-la aqui passava nos 20 passos do gate.
+    if (travaDeDataRetroativa(de, hojeSaoPaulo())) {
       setFalha(
-        `A data inicial (${formatarBR(de)}) é anterior a hoje (${formatarBR(hojeSaoPaulo())}).
-
-` +
+        `A data inicial (${formatarBR(de)}) é anterior a hoje (${formatarBR(hojeSaoPaulo())}).` +
+          String.fromCharCode(10, 10) +
           `Gerar para trás reescreveria turnos que ${config.identidade.pessoa.plural} já viram — e o passado ` +
           'divulgado não se reescreve. Escolha hoje ou uma data à frente.'
       )
@@ -1987,7 +1987,9 @@ const AbaPublicar: React.FC<{
     [dados.blocos, blocosParaPublicar, blocoNovo],
   )
 
-  const impedido = (relatorio ? !relatorio.aprovada : false) || (perda ? !perda.ok : false)
+  // Uma resposta só, vinda do domínio — recompor o julgamento aqui foi o que deixou o guarda
+  // do passado ser desligado sem o gate piscar.
+  const impedido = publicacaoImpedida(relatorio, perda)
   /** Sem token, publicar pela tela não existe — e o motivo aparece, em vez de um botão morto. */
   const semToken = !segredos.tokenGitHub
 

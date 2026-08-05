@@ -164,7 +164,18 @@ const semTooltip = []
  * subentendido.
  */
 const clicaveisNaoBotao = []
-const TAGS_CLICAVEIS = ['div', 'span', 'li', 'section', 'article']
+/*
+  🔴 A LISTA COBRIA CINCO TAGS E A FRASE PROMETIA TODAS — sexta auditoria externa, 05/08/2026.
+
+  O relatório imprime "clicáveis fora de `<button>` ..... 0", que se lê como *"não há elemento
+  clicável inacessível"*. Era 0 entre `div|span|li|section|article`. Medido: `<a onClick>` sem papel
+  e `<tr onClick>` sem papel passavam com `0`, EXIT=0.
+
+  `<a>` sem `href` não é focável; `<tr>`, `<td>`, `<label>` e `<img>` nunca são. Todos aparecem em
+  tabela de escala, que é a tela inteira deste produto. Medir um subconjunto e afirmar sobre o todo é
+  o mesmo defeito que gerou a generalização de `extrairElementos` em 04/08.
+*/
+const TAGS_CLICAVEIS = ['div', 'span', 'li', 'section', 'article', 'a', 'tr', 'td', 'th', 'label', 'img', 'p', 'h1', 'h2', 'h3', 'svg', 'path']
 const TEM_ONCLICK = /\bonClick\s*=/
 const ACESSIVEL = /\b(role|aria-hidden|aria-label|title)\s*=/
 const malFormados = []
@@ -199,13 +210,24 @@ const temCarregando = (codigoTodo.match(/animate-spin/g) ?? []).length
 console.log('─'.repeat(70))
 console.log('REGRA MESTRA 3 — tooltips, micro-interações, arrastar-e-soltar\n')
 console.log(`  botões medidos ................. ${total}`)
-console.log(`  clicáveis fora de <button> ..... ${clicaveisNaoBotao.length}  (div/span/li/section/article com onClick e sem papel declarado)`)
+console.log(`  clicáveis fora de <button> ..... ${clicaveisNaoBotao.length}  (${TAGS_CLICAVEIS.length} tags com onClick e sem papel declarado)`)
 console.log(`  com tooltip (title/aria-label) . ${comTooltip}  (${Math.round((comTooltip / total) * 100)}%)`)
 console.log(`  com hover ...................... ${comHover}  (${Math.round((comHover / total) * 100)}%)`)
 console.log(`  estados de desabilitado ........ ${temDesabilitado}`)
 console.log(`  indicadores de carregando ...... ${temCarregando}`)
 
-const PISO_TOOLTIP = 0.9
+/*
+  🔴 O PISO ERA 90%, E A REGRA MESTRA DIZ "TOOLTIPS EM TUDO" — sexta auditoria externa, 05/08/2026.
+
+  Medido: com 7 botões sem dica o portão imprimia "90% · ✅ acima do piso" e saía EXIT=0. Sete botões
+  mudos é uma tela inteira sem explicação, aprovada por uma régua que o próprio projeto declara como
+  "em tudo".
+
+  Noventa por cento é o número que se escolhe quando não se quer consertar os últimos casos. Se
+  algum botão de fato não precisar de dica, o jeito de dizer isso é `aria-label` ou `aria-hidden` —
+  declarado, como em todo o resto deste projeto —, não uma folga de 10% que ninguém revisita.
+*/
+const PISO_TOOLTIP = 1
 const proporcao = comTooltip / total
 
 if (clicaveisNaoBotao.length) {

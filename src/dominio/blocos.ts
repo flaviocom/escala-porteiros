@@ -209,3 +209,40 @@ export function conferirReversao(
 
   return { ok: unicos.length === 0 && nomesQueSumiriam.length === 0, passadoReescrito: unicos, futuroAlterado, nomesQueSumiriam, avisos }
 }
+
+/**
+ * 🔴 AS DUAS TRAVAS QUE VIVIAM SÓ NA TELA — sexta auditoria externa, 05/08/2026.
+ *
+ * O auditor desligou cada uma com um mutante e rodou os **20 passos do gate**: `EXIT=0` nas duas.
+ * Não por descuido dos portões — por fronteira: `vite.config.ts` restringe o vitest a
+ * `src/**` + `.test.ts`, **não há um único teste de componente**, e nenhum passo do gate executa uma
+ * linha de `Admin.tsx`. O gate cobre o domínio até o osso e não toca na camada onde o Flavio clica.
+ *
+ *     mutante `if (false && diferencaEmDias(de, hojeSaoPaulo()) > 0)`  → gate EXIT=0
+ *     mutante `const impedido = (relatorio ? !relatorio.aprovada : false)` → gate EXIT=0
+ *
+ * A segunda é literalmente o defeito dos 73 turnos apagados, com o conserto de volta ao ponto de
+ * partida e o portão verde ao lado.
+ *
+ * A correção não é escrever teste de componente: é **tirar a decisão da tela**. Regra que decide se
+ * publica ou não é domínio — a tela só pergunta e pinta. Aqui elas ficam, com teste, e a tela passa a
+ * ter uma linha em vez de uma condição.
+ */
+export function travaDeDataRetroativa(de: DataISO, hoje: DataISO): string | null {
+  if (diferencaEmDias(de, hoje) <= 0) return null
+  return (
+    `A data inicial (${de}) é anterior a hoje (${hoje}).` +
+    ' Gerar para trás reescreveria turnos que já foram vistos — e o passado divulgado não se' +
+    ' reescreve. Escolha hoje ou uma data à frente.'
+  )
+}
+
+/** Publicar está impedido? Uma resposta só, para a tela não recompor o julgamento. */
+export function publicacaoImpedida(
+  relatorio: { aprovada: boolean } | null,
+  perda: { ok: boolean } | null,
+): boolean {
+  if (relatorio && !relatorio.aprovada) return true
+  if (perda && !perda.ok) return true
+  return false
+}

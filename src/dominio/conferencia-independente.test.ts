@@ -206,3 +206,48 @@ describe('🔴 as duas réguas precisam concordar — divergência é o sinal qu
     })
   }
 })
+
+// ---------------------------------------------------------------------------
+// O portão do portão da SEGUNDA RÉGUA
+// ---------------------------------------------------------------------------
+
+/**
+ * 🔴 A SEGUNDA RÉGUA NÃO TINHA PORTÃO DO PORTÃO — sexta auditoria externa, 05/08/2026.
+ *
+ * `regras.test.ts` trava quando uma regra nova entra no `CATALOGO` sem teste. Aqui não havia nada
+ * equivalente. Medido pelo auditor: acrescentar uma promessa nova a `conferirPorFora`, **sem teste
+ * nenhum**, saía `npm run test` EXIT=0.
+ *
+ * As promessas que existem hoje têm teste, uma a uma — o que faltava era a trava para a PRÓXIMA. E
+ * esta régua é a que a tela vende como maker–checker: uma promessa que ninguém prova é uma segunda
+ * opinião que ninguém conferiu.
+ *
+ * ⚠️ A lista abaixo é escrita À MÃO de propósito. Derivá-la da saída da própria função faria o teste
+ * concordar com qualquer coisa que ela devolvesse — que é exatamente o defeito que ele existe para
+ * pegar.
+ */
+describe('cobertura das promessas da segunda régua', () => {
+  const COM_TESTE = [
+    'O bloco não está vazio, e o que está nele é do período que ele declara',
+    'Cada turno tem o número de pessoas que pede',
+    'Ninguém serve dois turnos no mesmo dia',
+    'Dias, turnos e ausências de cada pessoa são respeitados',
+    'Ninguém passa do próprio teto mensal',
+    'Só entra quem está no elenco e ativo',
+    'Os dias sem escala ficam vazios e marcados',
+    'O espaçamento declarado é o espaçamento real',
+  ]
+
+  it('🔒 TODA promessa tem teste — promessa nova sem teste deixa isto vermelho', () => {
+    // Um bloco qualquer, só para a régua rodar e listar TODAS as promessas que ela faz.
+    const r = conferirPorFora(
+      bloco([turno('2026-09-06', 'NOITE', ['ana', 'bia', 'caio'])], IDS, { inicio: '2026-09-01', fim: '2026-09-30' }),
+      TRES,
+      CONFIG,
+    )
+    const todas = r.achados.map((a) => a.promessa)
+    expect(todas.filter((p) => !COM_TESTE.includes(p))).toEqual([])
+    // E o contrário: nenhuma promessa listada aqui pode ter sumido da régua.
+    expect(COM_TESTE.filter((p) => !todas.includes(p))).toEqual([])
+  })
+})

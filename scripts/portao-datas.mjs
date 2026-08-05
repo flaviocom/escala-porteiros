@@ -60,6 +60,57 @@ const RE_QUALQUER = /toISOString\s*\(/
  */
 const RE_GET_UTC = /\.\s*getUTC(FullYear|Month|Date|Day|Hours)\s*\(/
 
+/**
+ * 🔴 `Date.UTC(...)` — A FORMA QUE O DEFEITO REAL TINHA, e a régua não a procurava.
+ *
+ * Sexta auditoria externa, 05/08/2026. O defeito de 05/08 que devolvia o **penúltimo** dia de todo
+ * mês era `deData(new Date(Date.UTC(ano, m, 0)))`: constrói o instante em UTC e lê com getters
+ * locais. Este portão procurava `toISOString().slice` e `.getUTC*` — e `Date.UTC(` não estava na
+ * lista.
+ *
+ * Medido: `new Date(Date.UTC(2026, 12, 0)).getDate()` injetado em código sai `achados 0`, EXIT=0.
+ * Quem matava esse mutante era **um teste de uma função específica** (`ultimo-dia-do-mes.test.ts`),
+ * e ele é cego em fuso positivo — a CLASSE continuava aberta para a próxima função que alguém
+ * escrevesse.
+ */
+const RE_DATE_UTC = new RegExp(String.raw`(?<![-\w])Date\s*\.\s*UTC\s*\(`)
+
+/**
+ * 🔒 SINAL DE VIDA DAS PRÓPRIAS RÉGUAS — nasceu por necessidade, não por zelo.
+ *
+ * A régua de `Date.UTC` foi escrita, na primeira tentativa, por um script cujo escape virou um byte
+ * de **backspace (0x08)** dentro da expressão. O portão continuou imprimindo "achados 0" com o
+ * infrator injetado na frente dele — QUARTA vez que este projeto vê exatamente essa falha.
+ *
+ * Caractere de controle no meio de uma expressão regular é sempre defeito, nunca intenção. Isto roda
+ * antes de qualquer varredura e mata o processo: régua corrompida que devolve verde é pior que régua
+ * ausente, porque ocupa o lugar dela.
+ */
+/**
+ * `Date.UTC` NÃO é sempre errado — e o portão precisa saber a diferença.
+ *
+ * ✅ **ARITMÉTICA entre dois instantes** é o uso CERTO: `Date.UTC(a2,…) - Date.UTC(a1,…)` conta dias
+ *    de calendário sem que horário de verão some ou tire uma hora no meio. Nenhum campo é lido de
+ *    volta, então não há o que sair em fuso errado.
+ *
+ * 🔴 **CONSTRUIR e depois LER com getter local** é o defeito: `new Date(Date.UTC(ano, m, 0)).getDate()`
+ *    foi exatamente o que fez `ultimoDiaDoMes` devolver o penúltimo dia de todo mês.
+ *
+ * Cada permissão vem com o motivo escrito — permissão sem motivo é permissão que ninguém revisita.
+ */
+const UTC_PERMITIDO = new Map([
+  ['src/dominio/datas.ts', 'diferença entre duas datas: subtrai dois instantes, e nenhum campo é lido de volta'],
+  ['scripts/carga-inicial.mjs', 'a mesma aritmética de diferença, na ferramenta de carga'],
+])
+
+for (const [nome, re] of Object.entries({ RE_FATIA, RE_QUALQUER, RE_GET_UTC, RE_DATE_UTC })) {
+  if ([...re.source].some((c) => c.charCodeAt(0) < 32)) {
+    console.error(`🔴 A régua ${nome} tem caractere de controle na expressão — ela está INERTE.`)
+    console.error(`   fonte: ${JSON.stringify(re.source)}`)
+    process.exit(2)
+  }
+}
+
 function semComentarios(texto) {
   return texto
     .replace(/\/\*[\s\S]*?\*\//g, (m) => m.replace(/[^\n]/g, ' '))
@@ -126,6 +177,15 @@ for (const abs of alvos) {
       **"campo de data não se lê em UTC"**. `d.getUTCMonth()` erra exatamente igual, e passava
       direto. Nomear a regra pelo sintoma mais famoso deixa o resto da classe descoberto.
     */
+    if (RE_DATE_UTC.test(linha) && !UTC_PERMITIDO.has(rel)) {
+      achados.push({
+        arquivo: rel, linha: i + 1, gravidade: 'Date.UTC',
+        detalhe: 'constrói o instante em UTC — lido depois com getter local, devolve o dia errado (foi assim que `ultimoDiaDoMes` deu o penúltimo dia de todo mês)',
+        texto: linha.trim().slice(0, 100),
+      })
+      return
+    }
+
     if (RE_GET_UTC.test(linha)) {
       achados.push({
         arquivo: rel, linha: i + 1, gravidade: 'getUTC',
@@ -168,7 +228,8 @@ if (process.argv.includes('--json')) {
     console.log(`     ${a.texto}`)
   }
   if (!achados.length) {
-    console.log('  ✅ Nenhuma data ou mês é extraído de `toISOString()`.')
+    console.log('  ✅ Nenhuma data ou mês é extraído de `toISOString()`, e nenhum `Date.UTC` é lido com getter local.')
+    for (const [arq, motivo] of UTC_PERMITIDO) console.log(`     · ${arq} — Date.UTC: ${motivo}`)
     for (const [arq, motivo] of PERMITIDOS) console.log(`     · ${arq} — ${motivo}`)
   }
 }

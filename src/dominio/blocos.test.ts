@@ -15,7 +15,7 @@
  * A regra, uma só: **o bloco novo manda no período dele, e só nele.**
  */
 import { describe, expect, it } from 'vitest'
-import { conferirPassadoPreservado, conferirReversao, montarBlocosParaPublicar } from './blocos'
+import { conferirPassadoPreservado, conferirReversao, montarBlocosParaPublicar, publicacaoImpedida, travaDeDataRetroativa } from './blocos'
 import type { Bloco, Turno } from './tipos'
 
 const turno = (data: string): Turno => ({
@@ -200,5 +200,80 @@ describe('conferirReversao — o guarda que faltava no botão Voltar', () => {
     const atual = { blocos: [bloco([t('2026-09-20', ['ana'])])], pessoas: ELENCO }
     expect(conferirReversao('blocos.json', { lixo: 1 }, atual, HOJE).ok).toBe(false)
     expect(conferirReversao('pessoas.json', null, atual, HOJE).ok).toBe(false)
+  })
+})
+
+/**
+ * 🔴 AS DUAS TRAVAS QUE O GATE NÃO ALCANÇAVA — sexta auditoria externa, 05/08/2026.
+ *
+ * O auditor desligou cada uma na tela e rodou os 20 passos: `EXIT=0` nas duas. Elas vieram para o
+ * domínio para que estes testes existam. E `conferirPassadoPreservado.ok` ganhou aqui a prova da
+ * segunda metade — `depois.length >= antes.length` —, que também passava com mutante.
+ */
+describe('travaDeDataRetroativa', () => {
+  it('🔴 data ANTERIOR a hoje é recusada, com o motivo', () => {
+    const m = travaDeDataRetroativa('2026-08-04', '2026-08-05')
+    expect(m).not.toBeNull()
+    expect(m).toContain('não se')
+  })
+  it('hoje é permitido — é a borda, e ela vale', () => {
+    expect(travaDeDataRetroativa('2026-08-05', '2026-08-05')).toBeNull()
+  })
+  it('amanhã é permitido', () => {
+    expect(travaDeDataRetroativa('2026-08-06', '2026-08-05')).toBeNull()
+  })
+  it('🔴 véspera por UM dia também é recusada — a borda do lado errado', () => {
+    expect(travaDeDataRetroativa('2026-12-31', '2027-01-01')).not.toBeNull()
+  })
+})
+
+describe('publicacaoImpedida', () => {
+  it('🔴 escala reprovada impede', () => {
+    expect(publicacaoImpedida({ aprovada: false }, { ok: true })).toBe(true)
+  })
+  it('🔴 perda de escala publicada impede — era o defeito dos 73 turnos', () => {
+    expect(publicacaoImpedida({ aprovada: true }, { ok: false })).toBe(true)
+  })
+  it('os dois problemas juntos impedem', () => {
+    expect(publicacaoImpedida({ aprovada: false }, { ok: false })).toBe(true)
+  })
+  it('a outra ponta: tudo certo NÃO impede', () => {
+    expect(publicacaoImpedida({ aprovada: true }, { ok: true })).toBe(false)
+  })
+  it('sem escala gerada ainda, publicar só o elenco é permitido', () => {
+    expect(publicacaoImpedida(null, null)).toBe(false)
+  })
+})
+
+describe('conferirPassadoPreservado — a SEGUNDA metade do veredito', () => {
+  const b = (id: string, inicio: string, fim: string, turnos: Turno[]): Bloco => ({
+    id, inicio, fim, geradoEm: '2026-08-05', origem: 'algoritmo',
+    pisoAlcancado: null, elenco: [], malha: { regras: [] }, turnos,
+  })
+  const t = (data: string, tipo: Turno['tipo'], pessoas: string[]): Turno => ({ data, tipo, pessoas, capacidade: 3 })
+
+  it('🔴 turno DUPLICADO perdido derruba o veredito, mesmo com `perdidos` vazio', () => {
+    // A chave é `data|tipo` num Set: dois blocos sobrepostos trazendo o MESMO turno somam 2 em
+    // `antes` e 1 em `depois`, sem nenhuma chave sumir. `ok` julgava só por `perdidos`.
+    const anteriores = [
+      b('a', '2026-09-01', '2026-09-30', [t('2026-09-06', 'NOITE', ['ana'])]),
+      b('b', '2026-09-01', '2026-09-30', [t('2026-09-06', 'NOITE', ['ana'])]),
+    ]
+    const montados = [b('a', '2026-09-01', '2026-09-30', [t('2026-09-06', 'NOITE', ['ana'])])]
+    const r = conferirPassadoPreservado(anteriores, montados, { inicio: '2026-10-01', fim: '2026-10-31' })
+    expect(r.antes).toBe(2)
+    expect(r.depois).toBe(1)
+    expect(r.perdidos).toEqual([])   // a primeira metade não vê
+    expect(r.ok).toBe(false)         // a segunda vê
+  })
+
+  it('a outra ponta: acrescentar turnos fora do bloco novo continua permitido', () => {
+    const anteriores = [b('a', '2026-09-01', '2026-09-30', [t('2026-09-06', 'NOITE', ['ana'])])]
+    const montados = [b('a', '2026-09-01', '2026-09-30', [
+      t('2026-09-06', 'NOITE', ['ana']),
+      t('2026-09-13', 'NOITE', ['bia']),
+    ])]
+    const r = conferirPassadoPreservado(anteriores, montados, { inicio: '2026-10-01', fim: '2026-10-31' })
+    expect(r.ok).toBe(true)
   })
 })

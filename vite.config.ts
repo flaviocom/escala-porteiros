@@ -33,6 +33,17 @@ export default defineConfig({
   },
   test: {
     environment: 'node',
-    include: ['src/**/*.test.ts'],
+    /*
+      🔴 `.test.tsx` ERA IGNORADO EM SILÊNCIO — sexta auditoria externa, 05/08/2026.
+
+      O padrão cobria só a extensão `.test.ts`, e `.tsx` não casa. Hoje não há nenhum, então nada estava sendo
+      pulado — mas os dois achados mais graves daquela auditoria são justamente o que um teste de
+      componente pegaria, e **o primeiro teste de componente deste projeto seria naturalmente um
+      `.tsx`**. Ele nasceria inerte, verde e mudo.
+
+      Medido: o MESMO conteúdo com `expect(1).toBe(2)` sai `EXIT=0` como `.test.tsx` e `EXIT=1` como
+      `.test.ts`. Um teste que não roda é pior que teste ausente — ele conta como cobertura.
+    */
+    include: ['src/**/*.test.{ts,tsx}'],
   },
 })

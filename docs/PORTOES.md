@@ -95,12 +95,28 @@ vem antes de `HANDOFF_2026-08-05-b.md` no alfabeto e é o mais **antigo** dos do
 esteja fora de uma linha que se diz "mais recente".
 
 ### 8. `generico` — nenhum nome de cliente cravado (§0)
-**População:** 31 arquivos (`src/` + `index.html` + `package.json`) · **17 testes pulados**, contados
+**População:** 32 arquivos (`src/` + `index.html` + `package.json` + `README.md`) · **20 testes pulados**, contados
 e impressos.
-**Os 7 termos:** `JD. São Luiz` · `Congregação Cristã` · `CCB` (com borda por classe de caracteres,
+**Os 8 termos:** `JD. São Luiz` · `Congregação Cristã` · `CCB` (com borda por classe de caracteres,
 sem barra invertida) · `Escala (de) Porteiros` · o prompt do motor cravado · `porteiro(s)` como
 **palavra em prosa** (a borda `(?<![-\w])…(?![-\w])` deixa passar o slug `escala-porteiros`, que é
-identidade de infraestrutura) · `irmão/irmãos`.
+identidade de infraestrutura) · `irmão/irmãos` · `ensaio` **só em `.tsx`** (em dado a palavra é
+legítima: `rotulo: 'ENSAIO'` é o exemplo do campo configurável).
+
+> 🔴 **Estes dois números estavam errados** — sexta auditoria externa, 05/08/2026.
+>
+> O documento afirmava valores antigos para os termos e para os testes pulados, enquanto o portão
+> imprimia outros. O fato `termos do portão genérico` já existia em `medir-fatos.mjs`, mas o padrão
+> dele exigia a forma «N termos, M achados» numa linha só — e a forma natural de documentar, com dois
+> pontos e a lista embaixo, não casava. Para os testes pulados não havia fato nenhum.
+>
+> O documento que descreve os portões é o que alguém lê para saber o que está protegido. Os dois
+> números agora são **medidos**, e o padrão aceita as duas formas de escrever.
+
+**Duas fronteiras declaradas, com o motivo ao lado:** `apenas` restringe um termo (o `ensaio` só vale
+onde renderiza) e `excetoEm` o isenta (o `README.md` declara *"esta instalação atende…"* de propósito,
+e lista "Irmão / Funcionário / Plantonista" como demonstração da configurabilidade — acusar isso
+empurraria alguém a apagar o texto que explica a regra).
 **Mais uma varredura estrutural:** `import … from './assets/…'` — emblema empacotado. Um `import` de
 imagem **não tem texto** para varrer, e foi assim que o logotipo do cliente viveu no cabeçalho do
 site inteiro sob "0 achados".

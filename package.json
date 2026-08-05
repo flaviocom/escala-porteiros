@@ -8,7 +8,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "typecheck": "tsc --noEmit -p tsconfig.app.json",
+    "typecheck": "tsc --noEmit -p tsconfig.app.json && tsc --noEmit -p tsconfig.node.json",
     "test": "vitest run",
     "test:watch": "vitest",
     "gate": "npm run typecheck && npm run test && npm run test:fuso:berlim && npm run denominacao && npm run fontes && npm run contagem && npm run cadeia && npm run generico && npm run generico:autoteste && npm run doc:regras:conferir && npm run doc:comandos && npm run arquitetura && npm run fatos:conferir && npm run datas && npm run citacoes && npm run crescimento && npm run tamanho-docs && npm run auditoria && npm run regras-mestras && npm run build",

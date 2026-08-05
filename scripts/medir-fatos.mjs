@@ -32,18 +32,27 @@ const ler = (p) => readFileSync(join(RAIZ, p), 'utf8')
 const json = (p) => JSON.parse(ler(p))
 
 /** Roda um script e devolve a saída, mesmo quando ele sai diferente de 0 (portão vermelho fala). */
+/**
+ * Tira os códigos de cor ANSI.
+ *
+ * 🔴 Sem isto, o fato "testes na suíte" saía como `?`: o vitest imprime `Tests` e o número com
+ * escapes de cor no meio, e a expressão não casava. Um fato que não mede é um fato que sempre
+ * concorda — pior que fato ausente, porque conta como cobertura.
+ */
+const semCor = (t) => t.replace(new RegExp(String.fromCharCode(27) + String.raw`\[[0-9;]*m`, 'g'), '')
+
 function saidaDe(args) {
   try {
-    return execFileSync(process.execPath, args.map((a) => (a.startsWith('scripts/') ? join(RAIZ, a) : a)), {
+    return semCor(execFileSync(process.execPath, args.map((a) => (a.startsWith('scripts/') ? join(RAIZ, a) : a)), {
       encoding: 'utf8',
       cwd: RAIZ,
       // 🔴 stderr silenciado DE PROPÓSITO. O autoteste do portão genérico injeta a corrupção do
       //    escape num clone, para provar que a autodefesa morde — e o grito dela vazava para cá,
       //    parecendo que o portão de verdade estava quebrado. Custou uma investigação.
       stdio: ['ignore', 'pipe', 'ignore'],
-    })
+    }))
   } catch (e) {
-    return String(e.stdout ?? '')
+    return semCor(String(e.stdout ?? ''))
   }
 }
 
@@ -74,6 +83,19 @@ const congelado = blocos.find((b) => b.origem === 'importado') ?? blocos[0]
  * ⚠️ Os padrões são deliberadamente ESPECÍFICOS. Um padrão largo casaria com qualquer frase e
  * encheria o portão de ruído — e portão ruidoso é portão que alguém desliga.
  */
+/**
+ * 🔴 NÚMERO ENTRE ASPAS É CITAÇÃO, NÃO AFIRMAÇÃO — mesma régua do portão de contagem, 05/08/2026.
+ *
+ * O `PORTOES.md` registra, em citação, que *"o documento dizia «17 testes pulados» e «os 7 termos»"*.
+ * Esse texto é o registro do defeito, e é o que impede repeti-lo. Acusá-lo empurraria alguém a apagar
+ * a lição para calar o portão — que é a pior troca possível.
+ */
+function dentroDeAspas(texto, indice) {
+  const inicio = texto.lastIndexOf(String.fromCharCode(10), indice) + 1
+  const antes = texto.slice(inicio, indice)
+  return ((antes.match(/["“”«»]/g) ?? []).length) % 2 === 1
+}
+
 const FATOS = [
   {
     chave: 'passos do gate',
@@ -134,7 +156,24 @@ const FATOS = [
   {
     chave: 'termos do portão genérico',
     valor: numeroEm(generico, /termos procurados \.+ (\d+)/),
-    padroes: [/(\d+) termos(?: de cliente)?, \d+ achados/gi],
+    /*
+      🔴 O PADRÃO EXIGIA "N termos, M achados" NA MESMA LINHA — sexta auditoria externa, 05/08/2026.
+      O `PORTOES.md` escreve **"Os 7 termos:"** e depois lista, que é a forma natural de documentar.
+      O fato existia, o documento mentia, e o portão dava verde. Oitava vez que a fronteira do portão
+      é onde o defeito mora.
+    */
+    padroes: [/(\d+) termos(?: de cliente)?,? \d* ?achados/gi, /os\s+\*{0,2}(\d+)\*{0,2}\s+termos/gi],
+    fonte: 'node scripts/portao-generico.mjs',
+  },
+  {
+    /*
+      Não existia fato nenhum para este número, e o `PORTOES.md` afirmava um valor errado. O portão
+      pula os testes de propósito (as fixtures usam o nome do cliente), e o NÚMERO de pulados é a
+      única defesa contra ele passar a pular o que não devia.
+    */
+    chave: 'testes pulados pelo portão genérico',
+    valor: numeroEm(generico, /testes pulados \.+ (\d+)/),
+    padroes: [/\*{0,2}(\d+)\*{0,2}\s+testes pulados/gi],
     fonte: 'node scripts/portao-generico.mjs',
   },
   {
@@ -183,6 +222,38 @@ const FATOS = [
     padroes: [/(\d+) (?:regras )?duras/gi],
     fonte: 'src/dominio/regras.ts',
   },
+  /*
+    🔴 O NÚMERO MAIS CITADO DO PROJETO NÃO ERA MEDIDO POR NADA — sexta auditoria externa, 05/08/2026.
+
+    "175 testes", "232 testes", "263 testes" aparecem em dezenas de frases — em `ESTADO.md`, em
+    `ARQUITETURA.md`, no índice de solicitações — e os onze fatos medidos não incluíam este. Medido
+    naquele dia: `ESTADO.md` dizia **175**, `ARQUITETURA.md` dizia **232**, e a suíte tinha **263**.
+    `fatos:conferir` saía com "0 contradições".
+
+    É o número que alguém usa para julgar se o projeto está coberto. Ele agora vem do vitest.
+  */
+  {
+    chave: 'testes na suíte',
+    valor: numeroEm(saidaDe(['node_modules/vitest/vitest.mjs', 'run', '--reporter=basic']), /Tests\s+(\d+) passed/),
+    /*
+      ⚠️ O padrão exige que a frase se declare como TOTAL DE HOJE — "N testes na suíte", "N testes no
+      total", "N testes hoje", ou a linha de tabela `| Testes | … | N |`.
+
+      A primeira versão era `(\d+) testes` e acusou oito linhas, das quais SETE eram legítimas: "5
+      testes" sobre uma correção específica, "17 testes pulados" pelo portão genérico, e — as mais
+      instrutivas — *"passavam nos 232 testes"*, que **conta o tamanho da suíte no momento em que o
+      defeito foi medido**. Esse texto é o registro, e apagá-lo para calar o portão seria perder a
+      medição.
+
+      Mesma régua da contagem de regras: narrativa não é afirmação. Quem quer a garantia escreve a
+      frase que a pede.
+    */
+    padroes: [
+      /(\d+)\s+testes\s+(?:verdes\s+)?(?:na suíte|no total|hoje)/gi,
+      /\|\s*Testes\s*\|[^|]*\|\s*\*{0,2}(\d+)\*{0,2}[^|]*\|/gi,
+    ],
+    fonte: 'npx vitest run',
+  },
 ]
 
 // ---------------------------------------------------------------------------
@@ -215,6 +286,8 @@ for (const rel of documentos) {
         for (const m of linha.matchAll(re)) {
           conferidas++
           if (Number(m[1]) === fato.valor) continue
+          // Citação de um número antigo é registro, não afirmação. Ver `dentroDeAspas`.
+          if (dentroDeAspas(linha, m.index)) continue
           // Dois padrões podem casar a MESMA afirmação (ex.: uma frase que cita o portão e o verbo
           // "morde"). Relatar duas vezes o mesmo defeito faz o número de achados mentir para cima.
           const jaTem = achados.some((a) => a.arquivo === rel && a.linha === i + 1 && a.fato === fato.chave)
