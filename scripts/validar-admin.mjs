@@ -71,96 +71,81 @@ await conferir('🔒 o cofre CIFRA: senha errada não abre', async () => {
   }
 })
 
-await conferir('a tela de primeiro acesso pede senha e token', async () => {
-  const senhas = await pagina.locator('input[type="password"]').count()
-  return { ok: senhas >= 3, detalhe: `${senhas} campos protegidos (senha, repetir, token, chave)` }
-})
+/*
+  🔴 AS CHECAGENS ABAIXO FORAM REESCRITAS EM 05/08/2026 — a régua tinha ficado para trás.
 
-await conferir('🔴 recusa senha curta antes de tocar na rede', async () => {
-  const campos = pagina.locator('input[type="password"]')
-  await campos.nth(0).fill('123')
-  await campos.nth(1).fill('123')
-  await pagina.getByRole('button', { name: /Conferir o token|Entrar sem token/i }).click()
-  await pagina.waitForTimeout(600)
-  const texto = await pagina.locator('#root').innerText()
-  return { ok: /ao menos 8 caracteres/i.test(texto), detalhe: texto.includes('8 caracteres') ? 'avisou corretamente' : 'não avisou' }
-})
+  Elas testavam o fluxo antigo: a tela de primeiro acesso EXIGIA senha + repetir senha + token, e o
+  script conferia `input[type="password"] >= 3`. Em 05/08 (S-013) o Flavio pediu que entrar virasse
+  **um clique**, e a tela passou a mostrar os campos de senha **só quando há segredo a guardar**.
 
-await conferir('🔴 recusa senhas diferentes', async () => {
-  const campos = pagina.locator('input[type="password"]')
-  await campos.nth(0).fill('senha-boa-123')
-  await campos.nth(1).fill('outra-coisa-456')
-  await pagina.getByRole('button', { name: /Conferir o token|Entrar sem token/i }).click()
-  await pagina.waitForTimeout(600)
-  const texto = await pagina.locator('#root').innerText()
-  return { ok: /não são iguais/i.test(texto), detalhe: 'avisou' }
-})
+  A partir daí `npm run vivo:admin` ficou **vermelho todo dia**, testando um fluxo que não existe
+  mais. Ninguém notou porque ele está **fora do GATE** — e portão fora do gate é portão que só é
+  lido quando alguém desconfia.
 
-/**
- * 🔴 ENTRAR SEM TOKEN — e por que esta checagem existe.
- *
- * A tela **exigia** token para passar do primeiro acesso. Com isso, o caminho de "publicar à mão",
- * construído justamente para quem não quer cadastrar token, ficava **inalcançável para essa
- * pessoa** — recurso presente no código e ausente na prática.
- *
- * Aqui se prova o par inteiro: entrar sem token **funciona**, e o que ele custa aparece — o botão
- * Publicar desabilitado e o caminho manual aberto, não um botão morto sem explicação.
- */
-await conferir('🔴 dá para ENTRAR SEM TOKEN, e o caminho manual aparece', async () => {
-  await pagina.goto(`${BASE.replace(/\/$/, '')}/#/admin`, { waitUntil: 'networkidle' })
+  ⚠️ **A lição: mudou o fluxo, a régua muda no MESMO passo.** Régua velha não é neutra: ela grita
+  vermelho sobre um produto certo, e o vermelho crônico ensina a ignorar o vermelho.
+*/
+await conferir('🔴 ENTRAR é UM CLIQUE — sem senha, sem token (S-013)', async () => {
+  // 🔒 Começa LIMPO. A checagem anterior cria um cofre para provar que a cifra funciona, e um
+  //    aparelho com cofre mostra a tela de senha — que é o comportamento certo, e não o que
+  //    este caso mede. O próprio arquivo já avisava: teste que suja o ambiente derruba o
+  //    próximo e manda procurar defeito no produto.
   await pagina.evaluate(() => localStorage.clear())
   await pagina.reload({ waitUntil: 'networkidle' })
   await pagina.waitForTimeout(900)
+  /*
+    🔴 MEDIR POR RÓTULO, não por `input[type="password"]`.
 
-  const campos = pagina.locator('input[type="password"]')
-  await campos.nth(0).fill('senha-boa-123')
-  await campos.nth(1).fill('senha-boa-123')
-  // 🔒 O campo do token fica VAZIO de propósito: é o cenário inteiro do teste.
-  await pagina.getByRole('button', { name: /Entrar sem token/i }).click()
-  await pagina.waitForTimeout(2500)
-
-  const entrou = !/Configurar o acesso/i.test(await pagina.locator('#root').innerText())
-
-  // A seção de publicação vive na ABA Publicar — olhar a aba inicial não prova nada sobre ela.
-  if (entrou) {
-    await pagina.getByRole('button', { name: /^Publicar$/i }).first().click().catch(() => {})
-    await pagina.waitForTimeout(800)
-  }
-  const texto = await pagina.locator('#root').innerText()
-  const mostraCaminho = /publique assim|duas paradas/i.test(texto)
-  const publicarMorto = await pagina.locator('button[title*="entrou sem token"]').first().isDisabled().catch(() => null)
-
-  // 🔒 Devolve a página ao estado em que a encontrou: apaga o cofre que ESTE caso gravou E
-  // recarrega. Limpar sem recarregar não basta — o cofre sai do armazenamento e a tela continua
-  // aberta em memória, e a checagem seguinte não acha os campos de senha. Teste que suja o
-  // ambiente derruba o próximo e manda procurar defeito no produto.
-  await pagina.evaluate(() => localStorage.clear())
-  await pagina.reload({ waitUntil: 'networkidle' })
-  await pagina.waitForTimeout(800)
-
+    A primeira versão contava campos mascarados e achou 2 — mas os 2 são o **token** e a **chave
+    do motor**, que são mascarados por serem segredos, não por serem senha. O produto estava
+    certo; a régua é que media a coisa errada. É a mesma armadilha que já custou caro aqui: tipo
+    de campo descreve como o navegador o pinta, não o que ele significa.
+  */
+  const rotulos = await pagina.locator('label').allInnerTexts()
+  const deSenha = rotulos.filter((r) => /senha/i.test(r))
+  const botao = pagina.getByRole('button', { name: /Entrar agora/i })
+  const existe = (await botao.count()) > 0
   return {
-    ok: entrou && mostraCaminho && publicarMorto !== false,
-    detalhe: !entrou
-      ? '🔴 não passou do primeiro acesso — o caminho sem token continua inalcançável'
-      : !mostraCaminho
-        ? '🔴 entrou, mas não diz como publicar à mão'
-        : `entrou · caminho manual visível · Publicar desabilitado: ${publicarMorto}`,
+    ok: existe && deSenha.length === 0,
+    detalhe: `botão "Entrar agora": ${existe ? 'sim' : 'NÃO'} · campos de SENHA: ${deSenha.length} (esperado 0) ${deSenha.length ? '→ ' + deSenha.join(' / ') : ''}`,
   }
 })
 
-await conferir('🔴 não guarda nada sem token válido — o GitHub é consultado antes', async () => {
-  const campos = pagina.locator('input[type="password"]')
-  await campos.nth(0).fill('senha-boa-123')
-  await campos.nth(1).fill('senha-boa-123')
-  await campos.nth(2).fill('token_de_mentira_para_teste')
-  await pagina.getByRole('button', { name: /Conferir o token|Entrar sem token/i }).click()
-  await pagina.waitForTimeout(4000)
-  const guardou = await pagina.evaluate(() => localStorage.getItem('escala-porteiros:cofre') !== null)
+await conferir('🔴 e entrar de fato ABRE a área administrativa', async () => {
+  await pagina.getByRole('button', { name: /Entrar agora/i }).first().click()
+  await pagina.waitForTimeout(1500)
   const texto = await pagina.locator('#root').innerText()
+  const abas = ['Elenco', 'Gerar escala', 'Ajustar', 'Conferir por fora', 'Publicar'].filter((a) => texto.includes(a))
+  return { ok: abas.length === 5, detalhe: `abas visíveis: ${abas.join(', ') || 'nenhuma'}` }
+})
+
+await conferir('🔴 quem entrou sem token vê o caminho manual, não um botão morto', async () => {
+  await pagina.getByRole('button', { name: /^Publicar$/i }).first().click().catch(() => {})
+  await pagina.waitForTimeout(900)
+  const texto = await pagina.locator('#root').innerText()
+  const mostraCaminho = /publique assim|duas paradas|sem token/i.test(texto)
   return {
-    ok: !guardou,
-    detalhe: guardou ? 'GUARDOU um token inválido (falha)' : `recusou: "${(texto.match(/recusou o token[^\n]*/i) ?? ['aviso exibido'])[0]}"`,
+    ok: mostraCaminho,
+    detalhe: mostraCaminho ? 'a aba Publicar explica como publicar à mão' : '🔴 não diz como publicar sem token',
   }
+})
+
+await conferir('🔴 nada foi guardado no navegador — entrar sem token não cria cofre', async () => {
+  const temCofre = await pagina.evaluate(() => localStorage.getItem('escala-porteiros:cofre') !== null)
+  return {
+    ok: !temCofre,
+    detalhe: temCofre ? '🔴 criou cofre sem ninguém pedir' : 'localStorage limpo, como deve ser',
+  }
+})
+
+await conferir('🔴 o caminho de GUARDAR o token continua existindo, para quem quiser', async () => {
+  await pagina.evaluate(() => localStorage.clear())
+  await pagina.reload({ waitUntil: 'networkidle' })
+  await pagina.waitForTimeout(900)
+  const texto = await pagina.locator('#root').innerText()
+  // Não é obrigatório, mas tem de estar ACESSÍVEL — foi o defeito que 33fc736 consertou ao contrário.
+  const oferece = /guardar|token|senha/i.test(texto)
+  return { ok: oferece, detalhe: oferece ? 'a tela oferece guardar o token neste aparelho' : '🔴 o caminho sumiu' }
 })
 
 console.log('CHECAGENS')
