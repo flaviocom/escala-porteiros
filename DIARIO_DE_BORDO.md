@@ -400,3 +400,42 @@ qualquer outra checagem. Provado com divergência injetada.
 
 > **Toda trava que eu remover exige rodar o caso que a motivou. E "esperar um pouco" nunca é
 > verificação — comparar é.**
+
+---
+
+## DB-010 · 04/08/2026 — "deixa o token embutido" e o cofre portátil
+
+**Solicitação:** [S-010](docs/solicitacoes/INDICE_DE_SOLICITACOES.md).
+**Handoff:** [parte 7](docs/handoff/HANDOFF_2026-08-04-g.md).
+
+### O pedido, e por que não foi atendido como veio
+
+*"Deixa esse token embutido, eu só coloco a senha."* O repositório **é público** — conferido, não
+presumido. Embutir significa publicar o token para todo visitante **e** ter o GitHub revogando-o
+automaticamente, o que quebraria o botão Publicar sozinho, repetidamente. Cifrar não salva: o texto
+cifrado ficaria público e atacável offline.
+
+### O que ele queria de verdade
+
+*"Só a senha"* — legítimo. O obstáculo real era o cofre ser **por navegador**: cada aparelho pedia o
+token de novo.
+
+### Decisões
+
+| # | Decisão | Por quê |
+|---|---|---|
+| 1 | **Não** embutir | fato técnico, não preferência: repositório público + revogação automática |
+| 2 | Transportar o cofre **cifrado** | pode ir por qualquer canal; a senha viaja na cabeça dele, o único canal sem cópia |
+| 3 | Recusar código truncado **antes** de gravar | instalar cofre quebrado trocaria "cole de novo" por "senha incorreta" eterno |
+| 4 | Declarar `github.com` no inventário | o portão reprovou antes do commit — e é o único host da lista que **não busca dado** |
+
+### O que quase me pegou
+
+O inventário de fontes é **gerado** a partir de uma constante no script. Editei o markdown à mão e o
+portão continuou vermelho — corretamente: a próxima geração desfaria a edição. **A fonte de verdade
+não era o documento.**
+
+### Como reverter
+
+`exportarCofre`/`importarCofre` em `cofre.ts` e dois componentes na tela. Remover não afeta quem já
+está configurado.

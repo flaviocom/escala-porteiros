@@ -6,13 +6,14 @@
 > **Cadeia de navegação:** [`ESTADO.md`](../../ESTADO.md) → [`handoff mais recente`](../handoff/INDICE.md) → [`BACKLOG.md`](../../BACKLOG.md)
 > **Roteador do projeto:** [`AGENTS.md`](../../AGENTS.md) · **Por quê de cada decisão:** [`DIARIO_DE_BORDO.md`](../../DIARIO_DE_BORDO.md)
 
-**Próximo identificador livre: S-010** — calculado sobre **todas** as fatias, nunca lido da última
+**Próximo identificador livre: S-011** — calculado sobre **todas** as fatias, nunca lido da última
 linha visível (é o ERRO 28 do catálogo de anteparos: após uma rotação, o maior ID some de vista).
 
 ---
 
 | ID | Data | Solicitação | Onde foi parar |
 |---|---|---|---|
+| **S-010** | 04/08/2026 | *"Onde está esse token do GitHub? Acho que isso não é necessário, né?"* → escolheu reusar o `GITHUB_PAT` existente → *"o melhor é você já deixar esse token embutido. Eu só coloco a senha"* | **Embutir é inviável** (repositório público + revogação automática do GitHub) · entregue o **cofre portátil**, que dá o mesmo conforto · [handoff da parte 7](../handoff/HANDOFF_2026-08-04-g.md) · [DB-010](../../DIARIO_DE_BORDO.md) |
 | **S-009** | 04/08/2026 | *"O arquivo da imagem da escala tem que ser como esse gerado neste caminho"* — `D:\Documentos\CCB_Escalas\Porteiros\escalaagosto2026.png`. Uma imagem, sem mais instrução: ela é a especificação | Layout próprio de exportação (`src/export/`), filtro unificado, corte de 5 dias removido · [handoff da parte 7](../handoff/HANDOFF_2026-08-04-g.md) · [DB-008](../../DIARIO_DE_BORDO.md) |
 | **S-008** | 04/08/2026 | Sexto **"go"** — e, no meio dele, um pedido direto de panorama: *"Você está a horas programando… Em qual passo você está? Quais são as dificuldades?"* | Grafo de importações mapeado · 🔴 **quem sai do elenco perdia o passado na tela**, corrigido e provado ao vivo · frente "camada de tela" na auditoria · [handoff da parte 6](../handoff/HANDOFF_2026-08-04-f.md) · [DB-007](../../DIARIO_DE_BORDO.md) |
 | **S-007** | 04/08/2026 | Quinto **"go"**, backlog técnico vazio pela segunda vez — ordem do assistente | Conferência do histórico congelado contra a **tela** do site antigo: 66/66 dias, 282 nomes, 0 divergências · [handoff da parte 5](../handoff/HANDOFF_2026-08-04-e.md) · [DB-005](../../DIARIO_DE_BORDO.md) |

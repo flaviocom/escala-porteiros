@@ -106,3 +106,60 @@ export async function abrirCofre(senha: string): Promise<Segredos | null> {
 export function apagarCofre(): void {
   localStorage.removeItem(CHAVE_ARMAZENAMENTO)
 }
+
+// ---------------------------------------------------------------------------
+// LEVAR O COFRE PARA OUTRO APARELHO
+// ---------------------------------------------------------------------------
+/**
+ * 🔴 O PROBLEMA QUE ISTO RESOLVE, e por que a solução é segura.
+ *
+ * O cofre vive no `localStorage` — ou seja, **por navegador**. Configurar no computador não
+ * configura no celular. O caminho óbvio seria mandar o token para si mesmo por WhatsApp e colar no
+ * telefone; e aí o token fica **em texto claro** num histórico de conversa, para sempre.
+ *
+ * O que se transporta aqui é o cofre **já cifrado** — `sal`, `iv` e o bloco AES-GCM. Sem a senha,
+ * isto é ruído: pode ir por WhatsApp, e-mail, bloco de notas, o que for. A senha viaja **na sua
+ * cabeça**, que é o único canal que não deixa cópia.
+ *
+ * Vantagem prática, além da segurança: ninguém digita 40 caracteres de token num teclado de celular.
+ *
+ * ⚠️ O que isto NÃO faz: não protege se alguém tiver o código **e** a senha. E, como o cofre é o
+ * mesmo, revogar o token no GitHub derruba todos os aparelhos de uma vez — que é o comportamento
+ * desejado quando um deles se perde.
+ */
+const MARCA = 'ESCALA-PORTEIROS-COFRE-V1'
+
+/** O cofre deste navegador, pronto para ser copiado. `null` se não houver cofre aqui. */
+export function exportarCofre(): string | null {
+  const bruto = localStorage.getItem(CHAVE_ARMAZENAMENTO)
+  if (!bruto) return null
+  // A marca no começo faz o outro lado reconhecer o que foi colado — e recusar com clareza um
+  // texto qualquer, em vez de falhar depois com "senha incorreta" e mandar procurar no lugar errado.
+  return `${MARCA}.${btoa(bruto)}`
+}
+
+export type ResultadoImportacao =
+  | { ok: true }
+  | { ok: false; motivo: string }
+
+/** Recebe o código de outro aparelho. Não abre o cofre: só o instala. A senha é pedida depois. */
+export function importarCofre(codigo: string): ResultadoImportacao {
+  const limpo = codigo.trim().replace(/\s+/g, '')
+  if (!limpo) return { ok: false, motivo: 'Cole o código copiado do outro aparelho.' }
+  if (!limpo.startsWith(`${MARCA}.`)) {
+    return { ok: false, motivo: 'Este texto não é um código de cofre — copie o bloco inteiro, do começo ao fim.' }
+  }
+  try {
+    const bruto = atob(limpo.slice(MARCA.length + 1))
+    const g = JSON.parse(bruto) as CofreGravado
+    // Confere a FORMA antes de gravar. Gravar um cofre quebrado trocaria "código inválido" — que se
+    // resolve colando de novo — por "senha incorreta" para sempre, que manda procurar no lugar errado.
+    if (g.versao !== 1 || !g.sal || !g.iv || !g.dados) {
+      return { ok: false, motivo: 'O código veio incompleto ou de uma versão diferente.' }
+    }
+    localStorage.setItem(CHAVE_ARMAZENAMENTO, bruto)
+    return { ok: true }
+  } catch {
+    return { ok: false, motivo: 'O código está corrompido — copie de novo, do começo ao fim.' }
+  }
+}
