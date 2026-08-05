@@ -9,6 +9,7 @@
 
 | Data | Handoff | O que aconteceu |
 |---|---|---|
+| 05/08/2026 | [`HANDOFF_2026-08-05-c.md`](HANDOFF_2026-08-05-c.md) | **Sessão 2, parte 3** — a escala nova desmentia o site vigente em **87 turnos** (o Flavio pegou, nenhum portão pegou), trava de data retroativa, e a **configuração morta**: `identidade` existia desde o começo e nunca era lida. Portão de escopo + autoteste de 15 casos. |
 | 05/08/2026 | [`HANDOFF_2026-08-05-b.md`](HANDOFF_2026-08-05-b.md) | **Sessão 2, parte 2** — o projeto virou **produto genérico** (regra máxima no §0 do roteador). O furo do "fora da escala" no relatório, a **segunda régua** que existe para discordar, e o ambiente de teste do publicar. |
 | 05/08/2026 | [`HANDOFF_2026-08-05.md`](HANDOFF_2026-08-05.md) | **Sessão 2, parte 1** — entrar na administração virou **um clique**: a tela cobrava senha para cifrar um cofre VAZIO. E o campo de senha não tinha `autocomplete`, então o Chrome nunca oferecia lembrá-la. |
 | 04/08/2026 | [`HANDOFF_2026-08-04-j.md`](HANDOFF_2026-08-04-j.md) | **Sessão 1, parte 10** — o caminho do token saiu de um `.cmd` não testado e foi **para dentro da tela**, e cada recusa passou a nomear o campo a corrigir. |
@@ -24,7 +25,7 @@
 
 ---
 
-**Handoff mais recente:** [`HANDOFF_2026-08-05-b.md`](HANDOFF_2026-08-05-b.md)
+**Handoff mais recente:** [`HANDOFF_2026-08-05-c.md`](HANDOFF_2026-08-05-c.md)
 
 Ligações: [`../solicitacoes/INDICE_DE_SOLICITACOES.md`](../solicitacoes/INDICE_DE_SOLICITACOES.md) ·
 [`../historico/INDICE.md`](../historico/INDICE.md) ·

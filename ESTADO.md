@@ -2,10 +2,10 @@
 
 > **Onde o projeto está agora.** Documento **vivo**: sobrescrito, não acumulado.
 >
-> **Última atualização:** 04/08/2026 · **Fuso:** America/São_Paulo
+> **Última atualização:** 05/08/2026 · **Fuso:** America/São_Paulo
 >
 > **Cadeia de navegação, nesta ordem:**
-> **`ESTADO.md` (você está aqui)** → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-05-b.md) → [`BACKLOG.md`](BACKLOG.md)
+> **`ESTADO.md` (você está aqui)** → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-05-c.md) → [`BACKLOG.md`](BACKLOG.md)
 > *onde estamos · o que aconteceu na última sessão e por quê · o que fazer a seguir*
 >
 > **Roteador do projeto:** [`AGENTS.md`](AGENTS.md) ·
@@ -88,7 +88,7 @@ relatou: *"Piso alcançado: 6 dias. Tentei 9, 8, 7 — não foi possível cobrir
 | Quarta → sábado | 6 casos | **0** |
 | Santa Ceia | 07/06 errada; 16/08 com 6 escalados | **16/08 correta, 0 escalados** |
 | Validação | 6 regras, nenhuma de espaçamento ou capacidade | **15 de 15** |
-| Testes | nenhum | **71**, verdes em 2 fusos |
+| Testes | nenhum | **175** hoje (eram 71 em 04/08), verdes em 2 fusos |
 | Equilíbrio | — | 16–17 turnos, diferença de **1** |
 
 **A área administrativa está no ar**: elenco com X para tirar e + para acrescentar, as quatro

@@ -3,10 +3,10 @@
 > **O que falta fazer, em ordem.** Lugar único: item que não está aqui não existe como pendência.
 > Documento **vivo** — item concluído sai daqui e vira registro no histórico.
 >
-> **Última atualização:** 04/08/2026
+> **Última atualização:** 05/08/2026
 >
 > **Cadeia de navegação, nesta ordem:**
-> [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-05-b.md) → **`BACKLOG.md` (você está aqui)**
+> [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-05-c.md) → **`BACKLOG.md` (você está aqui)**
 >
 > **Roteador do projeto:** [`AGENTS.md`](AGENTS.md) ·
 > **Solicitações:** [`docs/solicitacoes/INDICE_DE_SOLICITACOES.md`](docs/solicitacoes/INDICE_DE_SOLICITACOES.md) ·
@@ -88,7 +88,7 @@ Medido: Williams com **7 intervalos de 1 dia**, **18 pares com ≤3 dias**, 6 oc
 
 | # | Item | Onde | Como reproduzir |
 |---|---|---|---|
-| P4.1 | 🟠 **Publicação concorrente entre abas.** `AbaPublicar` é desmontada ao trocar de aba, mas a promessa em voo não é cancelada; ao voltar, uma instância nova nasce com `ocupado=false` e permite clicar de novo. O resultado da primeira some sem confirmação nem erro | `src/admin/Admin.tsx:226-228`, `:758-759` | ✅ **FECHADO 05/08** — trava modular (sobrevive à troca de aba, que era a causa) |
+| P4.1 | 🟠 **Publicação concorrente entre abas.** `AbaPublicar` é desmontada ao trocar de aba, mas a promessa em voo não é cancelada; ao voltar, uma instância nova nasce com `ocupado=false` e permite clicar de novo. O resultado da primeira some sem confirmação nem erro | `src/admin/Admin.tsx:1529` (`publicacaoEmVoo`), `:1567` | ✅ **FECHADO 05/08** — trava modular (sobrevive à troca de aba, que era a causa). ⚠️ as linhas citadas antes (`226-228`, `758-759`) envelheceram no mesmo dia: **citação de linha em documento vivo apodrece**, e a auditoria externa pegou |
 | P4.2 | 🟠 **A mensagem amigável do token é código morto no caso mais comum.** `gravarArquivo` sempre faz um GET antes do PUT; `shaAtual` só trata 404 como especial, então um 401 sai como *"Não consegui ler … (HTTP 401)"* e a frase *"confira se ele expirou ou foi revogado"* nunca é alcançada. E 403 de limite de requisições e 500 do GitHub são rotulados como "token recusado" | `src/admin/github.ts:50-59`, `:61-89`, `:117-131` | ✅ **FECHADO 05/08** — fonte única de recusa; 401 no GET agora fala em token. 5 testes |
 | P4.3 | 🟠 **`validar-admin.mjs` dá falso vermelho fora do build de produção.** Procura `assets/index-*.js`; em `npm run dev` o script é `/src/main.tsx`, o `.find()` volta `undefined` e o teste da criptografia quebra **antes** de rodar — parecendo que a cifra falhou | `scripts/validar-admin.mjs:44-45` | `npm run vivo:admin http://localhost:5173` |
 | P4.4 | ⚪ **Corpo não-JSON em HTTP 200 vaza erro em inglês.** Todo `await r.json()` sem guarda: uma página de erro de intermediário vira `Unexpected token in JSON…` na tela, quebrando a convenção pt-BR | `src/admin/github.ts` (5 pontos) | ✅ **FECHADO 05/08** — `lerJSON` devolve frase em pt-BR, não SyntaxError |
@@ -96,6 +96,7 @@ Medido: Williams com **7 intervalos de 1 dia**, **18 pares com ≤3 dias**, 6 oc
 | P4.6 | 🟠 **`npm run imagem` está fora do GATE.** É o único que renderiza o pixel; os 11 testes da imagem cobrem só as funções puras. Cor trocada, nome cortado ou cartão sobreposto passariam pelo GATE inteiro | `package.json` · `src/export/EscalaImagem.test.ts` | Trocar a cor de MANHÃ por NOITE e rodar `npm run gate` |
 | P4.7 | ⚪ **`carga-inicial.mjs` usa `new Date().toISOString().slice(0,10)`** — o antipadrão que o cabeçalho de `datas.ts` denuncia. Script de carga única, já rodado; só morde se for rerodado perto da meia-noite | `scripts/carga-inicial.mjs:193` | Rodar com `TZ=Europe/Berlin` às 23h BRT |
 | P4.8 | ⚪ **Falha de leitura da resposta do motor descarta a proposta inteira.** JSON malformado aborta sem as 3 tentativas que uma falha de validação recebe; num bloco de vários meses, o trabalho já aceito se perde | `src/admin/motor.ts:218-221` | Devolver JSON truncado no 2º mês |
+| P4.10 | 🔴 **O padrão da configuração só vale quando o download FALHA.** `buscarJSON<Configuracao>('config.json', PADRAO)` devolve o arquivo como veio: um `config.json` de versão anterior entrega `undefined` num campo que o TypeScript jura ser `string`. Com `identidade.pessoa` nascendo em 05/08, a primeira abertura mostraria *"Total de turnos por undefined e mês"* | `src/dados/carregar.ts` (`completarConfig`) · `src/dados/carregar.test.ts` | ✅ **FECHADO 05/08** — mescla campo a campo (a rasa devolveria `identidade` inteira do arquivo e o defeito passaria). 7 testes; **3 ficam vermelhos** contra implementação rasa injetada |
 | P4.9 | ⚪ **O piso não é um máximo comprovado.** A busca é gulosa e **sem retrocesso**: é o maior que esta busca conseguiu, não o maior que existe. Já está declarado no docstring; trocar por busca com retrocesso é o que tornaria o número um máximo de fato | `src/dominio/gerador.ts` | Medido: piso 7 falha em 03/10/2026 |
 
 ---

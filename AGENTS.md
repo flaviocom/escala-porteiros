@@ -7,7 +7,7 @@
 > **Este arquivo é o ROTEADOR do projeto.** Ordem de leitura, e ela importa:
 >
 > **1.** este arquivo (como se trabalha) → **2.** [`ESTADO.md`](ESTADO.md) (onde estamos) →
-> **3.** [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-05-b.md) (o que aconteceu e por quê) →
+> **3.** [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-05-c.md) (o que aconteceu e por quê) →
 > **4.** [`BACKLOG.md`](BACKLOG.md) (o que fazer a seguir)
 >
 > Só depois, e só o trecho de que precisar, os índices:
@@ -41,6 +41,18 @@ não o escopo.
 ⚠️ **Onde ainda há dívida de escopo,** declarada em vez de escondida: os rótulos de turno
 (`MANHÃ/TARDE/NOITE`) e a malha de dias são dado, mas **a malha ainda não tem tela** — muda-se por
 `config.json`. Está no [`BACKLOG.md`](BACKLOG.md).
+
+✅ **Paga em 05/08/2026, e a forma como estava escondida vale registrar:** o nome do cliente, o
+bairro, a instituição e o vocabulário ("Irmão") estavam **cravados em oito lugares** — cabeçalho
+do site, cabeçalho da administração, tela de entrada, imagem do WhatsApp, nome do arquivo baixado,
+título da aba e os três prompts do motor. E `config.identidade` **já existia** no tipo, no dado e
+no padrão de carregamento: nunca era lido. **Configuração morta é pior que configuração ausente —
+ela parece que resolve.** Quem lesse só o tipo concluiria que o produto já era configurável.
+
+🔒 **O portão que impede a volta:** `npm run generico` varre `src/` e o `index.html` atrás de nome
+de cliente fora de comentário, e `npm run generico:autoteste` prova que ele morde (15 casos, as
+duas pontas). Os dois estão dentro do `npm run gate`. *Regra sem portão é disciplina, e disciplina
+falha* — um dos termos deste portão nasceu inerte e só o autoteste mostrou.
 
 ---
 
@@ -163,7 +175,7 @@ que `C:`. Clone numa pasta em `C:` para trabalhar, e traga de volta por `git pul
 | Vou mexer em… | Leia antes |
 |---|---|
 | Estado atual | [`ESTADO.md`](ESTADO.md) |
-| O que aconteceu na última sessão, e por quê | [`docs/handoff/HANDOFF_2026-08-05-b.md`](docs/handoff/HANDOFF_2026-08-05-b.md) · [índice](docs/handoff/INDICE.md) |
+| O que aconteceu na última sessão, e por quê | [`docs/handoff/HANDOFF_2026-08-05-c.md`](docs/handoff/HANDOFF_2026-08-05-c.md) · [índice](docs/handoff/INDICE.md) |
 | O que falta | [`BACKLOG.md`](BACKLOG.md) |
 | Regras da escala, modelo de dados, motor | [`o desenho`](docs/superpowers/specs/2026-08-04-area-administrativa-escala-design.md) |
 | **Por que** uma decisão foi tomada, e como revertê-la | [`DIARIO_DE_BORDO.md`](DIARIO_DE_BORDO.md) |

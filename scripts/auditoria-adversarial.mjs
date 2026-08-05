@@ -456,7 +456,12 @@ if (achados.length) {
   console.log('⚠️ NENHUM ACHADO — e um relatório de auditoria sem achados é SUSPEITO.')
   console.log('   Ou a instrução foi frouxa, ou o auditor não procurou direito. Aqui há um motivo')
   console.log('   estrutural: quem auditou escreveu o código, e carrega os mesmos pontos cegos.')
-  console.log('   Auditor independente continua PENDENTE no backlog (P2.10).')
+  // 🔴 Esta mensagem anunciou uma pendência JÁ FECHADA por um dia inteiro. P2.10 virou
+  //    `src/dominio/conferencia-independente.ts` + a aba "Conferir por fora" em 05/08/2026 — e o
+  //    script seguiu imprimindo "PENDENTE", que é a forma mais barata de um projeto mentir sobre si.
+  console.log('   A segunda régua independente EXISTE desde 05/08/2026 (`conferencia-independente.ts`,')
+  console.log('   aba "Conferir por fora"): ela reimplementa as regras por outro caminho, sem importar')
+  console.log('   `regras.ts`. Rode-a também — este arquivo aqui não a substitui.')
 }
 
 process.exit(achados.length ? 1 : 0)

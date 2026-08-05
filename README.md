@@ -65,17 +65,20 @@ Sem chave do motor, tudo o mais continua funcionando.
 ```bash
 npm install
 npm run dev      # http://127.0.0.1:5173
-npm run gate     # typecheck · testes (2 fusos) · denominação · fontes · auditoria · build
+npm run gate     # typecheck · testes (2 fusos) · denominação · fontes · contagem · cadeia · genérico · auditoria · regras-mestras · build
 ```
 
-O GATE encadeia seis passos. Os mais incomuns, e o porquê:
+O GATE encadeia **doze** passos. Os mais incomuns, e o porquê:
 
 | Passo | O que prova |
 |---|---|
 | `test:fuso:berlim` | a suíte inteira noutro fuso, **depois de provar que o fuso mudou** — em UTC−3 um defeito de fuso é invisível |
 | `denominacao` | nenhum jargão comoditizado em texto que alguém lê |
 | `fontes` | nenhuma fonte externa chamada e não declarada no inventário |
-| `auditoria` | 17 ataques ao próprio código, com infrator injetado |
+| `auditoria` | **20** ataques ao próprio código, com infrator injetado |
+| `generico` | nenhum nome de cliente cravado — o produto é genérico (§0 do `AGENTS.md`) |
+| `generico:autoteste` | prova que o portão acima **morde**: 15 casos, infratores e limpos |
+| `contagem` · `cadeia` | o catálogo de regras e a cadeia de documentos batem com o que se afirma |
 
 ## Onde ler mais
 
