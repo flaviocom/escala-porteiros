@@ -62,6 +62,19 @@ voluntário, não um time de plantão.
 **🔴 A regra que segura tudo:** `src/dominio/` **não importa nada de fora dele**. Medido, não
 suposto — o grafo de importações confirma. Ele não sabe que existe React, navegador ou GitHub.
 
+🔒 **E agora tem portão:** `npm run arquitetura`, dentro do `npm run gate`. Ele confere as duas
+invariantes que este documento afirma:
+
+1. o domínio ser uma **ilha** — no dia em que alguém importar React lá dentro, para um `useMemo` "só
+   neste caso", o domínio deixa de rodar fora do navegador e metade dos scripts para;
+2. a segunda régua **não importar o catálogo** — se alguém "aproveitar" uma função de `regras.ts`
+   ali, ela vira espelho: continua verde, continua concordando, e para de valer qualquer coisa.
+   Seria a pior falha possível — uma segunda opinião que é a primeira disfarçada.
+
+As duas eram verdade quando foram escritas, e nenhuma tinha nada que as cobrasse. Provado nas duas
+pontas: com React injetado no domínio e o catálogo injetado na segunda régua, ele acusa as duas;
+limpo, passa.
+
 Por isso:
 - as regras podem ser testadas sem montar tela nenhuma;
 - os scripts fora do navegador usam **o mesmo código** que o produto, via `scripts/lib/dominio.mjs`;
