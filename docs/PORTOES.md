@@ -167,6 +167,12 @@ credencial: uma pessoa sai do elenco, outra entra com as cinco restrições, e a
 partir de um corte. **11 promessas medidas**, entre elas *"o passado antes do corte fica byte a byte
 idêntico"* (128 turnos) e *"quem tem teto é aproveitado em ≥ 80% da cota"*.
 
+**`npm run vivo:caminho`** — a SEQUÊNCIA, não as peças. Os outros portões cobrem cada parte
+isolada; este percorre o que a pessoa faz de verdade, do começo ao fim, uma vez. Nasceu em
+05/08/2026 de uma pergunta simples: *o caminho inteiro já foi andado alguma vez?* Não tinha. E
+o primeiro trecho dele é o **site público** — porque mexer no administrativo pode quebrar o que os
+irmãos abrem, e o inverso também.
+
 **`npm run vivo:divulgado`** — o portão que **faltava**, e que o dono achou sozinho. Compara o site
 novo com o que **já foi divulgado**, dia a dia. Nenhum outro portão pegava a divergência de 87
 turnos, porque todos comparavam o site novo com o **dado** do site novo.

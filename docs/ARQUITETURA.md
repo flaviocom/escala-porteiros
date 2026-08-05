@@ -116,6 +116,7 @@ Nenhuma seta aponta para dentro do domínio a partir de baixo. Nenhum ciclo.
 | `regras.ts` | As 16 regras | Ver [`CATALOGO_DE_REGRAS.md`](CATALOGO_DE_REGRAS.md) |
 | `gerador.ts` | Monta a escala | Ver [`ALGORITMO.md`](ALGORITMO.md) |
 | `validacao.ts` | Roda o catálogo e resume | Separado das regras para o resumo não virar regra |
+| `blocos.ts` | Como os blocos se encaixam quando entra escala nova | 🔴 Estava escrito **duas vezes à mão** — na tela e no script —, e as duas divergiam. Fonte única, com teste |
 | `conferencia-independente.ts` | 🔴 **A segunda régua** | Reimplementa as regras por outro caminho e **não importa `regras.ts`** — medido |
 
 ### `src/dados/` — a fronteira com o mundo
