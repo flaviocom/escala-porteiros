@@ -70,10 +70,37 @@ describe('a imagem desenha o que promete', () => {
     expect(html).toContain('#fef2f2') // pílula da SANTA CEIA
   })
 
-  it('🔴 o rodapé diz quando foi gerado e quantos por turno, com o vocabulário do cliente', () => {
-    const html = desenhar(CHEIA, 2)
+  /*
+    🔴 ESTE TESTE AFIRMAVA O DEFEITO — sexta auditoria externa, 05/08/2026.
+
+    Ele passava `porTurno = 2` sobre uma escala de **3 nomes por turno** e exigia que o rodapé
+    dissesse *"2 plantonistas por turno"*. Ou seja: exigia que a legenda contradissesse o desenho.
+
+    O caminho real: "pessoas por turno" é editável na tela e vai para o `config.json` na publicação
+    seguinte, **mesmo sem escala nova** — mas os turnos publicados têm a capacidade gravada em cada
+    um e não mudam. Medido pelo auditor com `capacidadePadrao = 4` sobre setembro: a imagem saía
+    dizendo "4 irmãos por turno" com três nomes em cada dia, e ainda abria uma quarta coluna vazia
+    nos 18 dias. O irmão recebe isso no WhatsApp e pergunta quem está faltando.
+
+    **Dado real vale mais que configuração.** O rodapé agora conta o que está na imagem.
+  */
+  it('🔴 o rodapé conta o que está DESENHADO, e uma configuração que discorda não vence', () => {
+    const html = desenhar(CHEIA, 4)
     expect(html).toContain('05/08/2026')
+    expect(html).toMatch(/3 plantonistas por turno/)
+    expect(html).not.toMatch(/4 plantonistas por turno/)
+  })
+
+  it('sem turno nenhum, aí sim `porTurno` vale — não há dado do qual derivar', () => {
+    const html = desenhar([], 2)
     expect(html).toMatch(/2 plantonistas por turno/)
+  })
+
+  it('🔴 e nenhuma coluna vazia sobra: a grade acompanha o turno mais cheio', () => {
+    // Com `porTurno = 4` sobre turnos de 3, a versão anterior abria uma 4ª coluna vazia em TODO dia.
+    const html = desenhar(CHEIA, 4)
+    expect(html).toContain('repeat(3, 1fr)')
+    expect(html).not.toContain('repeat(4, 1fr)')
   })
 
   it('🔴 dia com manhã E noite sai num cartão só — não em dois', () => {

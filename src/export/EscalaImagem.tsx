@@ -138,7 +138,24 @@ export function EscalaImagem({ shifts, geradoEm, porTurno = 3, identidade }: Dad
    * Uma contagem de colunas para a imagem inteira — a do turno mais cheio. É isto que alinha os
    * nomes verticalmente de um cartão para o outro, em vez de cada linha se arranjar sozinha.
    */
-  const colunas = Math.max(porTurno, ...shifts.map((s) => s.assignedBrothers.length), 1)
+  /*
+    🔴 O RODAPÉ DIZIA A CONFIGURAÇÃO, NÃO A ESCALA — sexta auditoria externa, 05/08/2026.
+
+    "Pessoas por turno" é editável na tela e vai para o `config.json` na publicação seguinte, mesmo
+    sem escala nova. Mas os turnos JÁ PUBLICADOS têm a capacidade gravada em cada um e não mudam.
+    Medido: com `capacidadePadrao = 4` sobre a escala real de setembro, a imagem saía dizendo
+    *"4 irmãos por turno"* com **três** nomes em cada dia — e `colunas` abria uma quarta coluna
+    **vazia** nos 18 dias.
+
+    O irmão recebe isso no WhatsApp e pergunta quem está faltando.
+
+    A regra do projeto é clara: **dado real vale mais que configuração**. O que a imagem mostra é o
+    que está NELA — a maior lotação entre os turnos desenhados. `porTurno` fica só como reserva para
+    o caso de não haver turno nenhum, onde não há dado do qual derivar.
+  */
+  const maiorLotacao = Math.max(0, ...shifts.filter((s) => s.type !== 'SANTA_CEIA').map((s) => s.assignedBrothers.length))
+  const porTurnoReal = maiorLotacao || porTurno
+  const colunas = Math.max(porTurnoReal, 1)
   const { inicio, fim, presentes, resumo, titulo } = resumirPeriodo(shifts)
 
   return (
@@ -275,7 +292,8 @@ export function EscalaImagem({ shifts, geradoEm, porTurno = 3, identidade }: Dad
       })}
 
       <div style={{ textAlign: 'center', fontSize: 17, fontWeight: 700, color: '#64748b', padding: '14px 0 6px' }}>
-        Gerado em {br(geradoEm)} · {porTurno} {identidade.pessoa.plural} por turno
+        {/* O número vem da escala desenhada, não da configuração — ver `porTurnoReal` acima. */}
+        Gerado em {br(geradoEm)} · {porTurnoReal} {identidade.pessoa.plural} por turno
       </div>
     </div>
   )

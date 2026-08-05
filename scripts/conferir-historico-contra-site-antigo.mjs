@@ -39,18 +39,34 @@ if (!historico) {
   process.exit(1)
 }
 
-/** Mapa data → conjunto de nomes, do NOSSO histórico. */
+/**
+ * Mapa data → conjunto de nomes, do NOSSO histórico.
+ *
+ * 🔴 O DIA DA SANTA CEIA ERA PULADO — sexta auditoria externa, 05/08/2026.
+ *
+ * O bloco histórico tem **68** dias; este script conferia **67** e imprimia *"67 de 67 · 0
+ * divergências"*, que se lê como "o passado inteiro está provado". O único dia de fora era
+ * **07/06/2026** — justamente aquele que a `observacao` do bloco declara como dado que veio errado
+ * do site antigo. O portão feito para provar a fidelidade do passado era cego exatamente onde o
+ * passado é conhecido por ser esquisito.
+ *
+ * O dado está certo (o auditor foi ao site antigo e leu: entre "SANTA CEIA" e o dia seguinte não há
+ * nome nenhum). O que faltava era **medir**. Agora o dia entra com o conjunto VAZIO de nomes, que é
+ * o que ele deve ter — e uma Santa Ceia com gente escalada passa a ser divergência, como qualquer
+ * outra.
+ */
 const nosso = new Map()
+const ceias = []
 for (const t of historico.turnos) {
-  if (t.santaCeia) continue
   const chave = t.data
   if (!nosso.has(chave)) nosso.set(chave, new Set())
+  if (t.santaCeia) { ceias.push(t.data); continue } // entra no mapa, sem nomes
   for (const id of t.pessoas) nosso.get(chave).add(nomeDe(id))
 }
 
 console.log('CONFERÊNCIA DO HISTÓRICO CONGELADO CONTRA O SITE ANTIGO\n')
 console.log(`  bloco histórico ..... ${historico.inicio} a ${historico.fim}`)
-console.log(`  dias com escala ..... ${nosso.size}`)
+console.log(`  dias com escala ..... ${nosso.size} (inclui ${ceias.length} de Santa Ceia, que devem vir SEM nome)`)
 console.log(`  site antigo ......... ${SITE_ANTIGO}\n`)
 
 // ---------------------------------------------------------------------------

@@ -15,7 +15,7 @@ import {
 } from 'lucide-react'
 import { clsx } from 'clsx'
 import { abrirCofre, apagarCofre, cofreExiste, exportarCofre, gravarCofre, importarCofre, type Segredos } from './cofre'
-import { baixarPacoteManual, COMO_CRIAR_O_TOKEN, conferirToken, DESTINOS, historicoPublicacoes, publicarDados, reverterPara, type Publicacao } from './github'
+import { baixarPacoteManual, COMO_CRIAR_O_TOKEN, conferirToken, DESTINOS, historicoPublicacoes, lerDadosNoCommit, publicarDados, reverterPara, type Publicacao } from './github'
 import { completarConfig, retratoPublicado, type ConfigLida, type DadosPublicados } from '../dados/carregar'
 import type { ArquivoBlocos, ArquivoPessoas, Bloco, Configuracao, Pessoa, TipoTurno } from '../dominio/tipos'
 import { ROTULO_TURNO } from '../dominio/tipos'
@@ -24,7 +24,7 @@ import { gerarVariasVersoes } from '../dominio/gerador'
 import { validar, resumir } from '../dominio/validacao'
 import { CATALOGO, menorIntervalo } from '../dominio/regras'
 import { conferirPorFora } from '../dominio/conferencia-independente'
-import { conferirPassadoPreservado, montarBlocosParaPublicar } from '../dominio/blocos'
+import { conferirPassadoPreservado, conferirReversao, montarBlocosParaPublicar } from '../dominio/blocos'
 import { diferencaEmDias, formatarBR, hojeSaoPaulo, NOMES_DIA, NOMES_DIA_CURTO, somarDias } from '../dominio/datas'
 import { AbaAjustar } from './AbaAjustar'
 import { arbitrar, auditar, medir, pedirProposta, type Placar, type ProgressoMotor } from './motor'
@@ -2098,6 +2098,52 @@ const Historico: React.FC<{
 
     setRevertendo(`${p.sha}|${arquivo}`)
     setAviso(null)
+
+    /*
+      🔴 REVERTER PASSAVA POR CIMA DE TODOS OS GUARDAS — sexta auditoria externa, 05/08/2026.
+
+      O botão Publicar ganhou guarda de manhã. Este, na mesma tela, gravava direto: sem `validar`,
+      sem `conferirPorFora`, sem `conferirPassadoPreservado`, sem `conferirEsquema` — só um
+      `confirm()` de texto, e a mensagem de sucesso saía verde.
+
+      E é o caminho de UM CLIQUE, porque cada publicação é um commit por arquivo: o histórico só
+      oferece "voltar pessoas" OU "voltar blocos", um de cada vez. Medido sobre commits que a tela
+      oferece hoje: voltar só o elenco deixaria **120 de 543 nomes saindo como id cru em 70 dias**;
+      voltar só a escala trocaria **70 turnos, um deles no passado já divulgado**.
+
+      Então lê-se ANTES de gravar, e julga-se o efeito. Passado reescrito **impede**; futuro alterado
+      **avisa com o número**, porque desfazer escala futura é exatamente para o que reverter existe.
+    */
+    let conteudoPrevio: unknown
+    try {
+      conteudoPrevio = await lerDadosNoCommit(segredos.tokenGitHub, arquivo, p.sha)
+    } catch (e) {
+      soltarGravacao()
+      setRevertendo('')
+      setAviso({ ok: false, texto: e instanceof Error ? e.message : String(e) })
+      return
+    }
+
+    const efeito = conferirReversao(arquivo, conteudoPrevio, dados, hojeSaoPaulo())
+    if (!efeito.ok) {
+      soltarGravacao()
+      setRevertendo('')
+      setAviso({
+        ok: false,
+        texto:
+          `Não dá para voltar "${arquivo}" para ${quando} — nada foi gravado.\n\n` +
+          efeito.avisos.map((a) => `🔴 ${a}`).join('\n'),
+      })
+      return
+    }
+    if (efeito.futuroAlterado && !confirm(
+      `Confirma?\n\n${efeito.avisos.join('\n\n')}\n\nO passado divulgado NÃO seria tocado — isso já foi conferido.`
+    )) {
+      soltarGravacao()
+      setRevertendo('')
+      return
+    }
+
     const r = await reverterPara(segredos.tokenGitHub, arquivo, p.sha, quando)
     setRevertendo('')
 

@@ -18,7 +18,7 @@
  *
  * Uso: node scripts/conferir-arquitetura.mjs [--json]
  */
-import { readdirSync, readFileSync, statSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -99,12 +99,37 @@ for (const imp of importacoes(SEGUNDA_REGUA)) {
   }
 }
 
+/*
+  🔴 INVARIANTE 3 — O SITE É SERVIDO SEM JEKYLL. Sexta auditoria externa, 05/08/2026.
+
+  `docs/.nojekyll` foi criado no primeiro commit e **apagado** em `7078186`, sem uma linha de
+  registro em lugar nenhum. Sem ele, o GitHub Pages roda **Jekyll sobre `docs/` a cada push** — e
+  `docs/` tem 30 arquivos Markdown, entre eles handoffs e specs cheios de crase, chave e cifrão.
+
+  O modo de falha é o pior que este projeto pode ter: se o Jekyll engasgar (um `{%`, um `---` no topo
+  de um handoff), **o deploy inteiro falha e o site ANTERIOR continua no ar** — enquanto a tela de
+  publicação já disse *"✅ escala publicada · o site mostra a escala nova em cerca de um minuto"*.
+  Ninguém no painel fica sabendo, porque `AbaPublicar` não busca a URL pública depois de gravar. O
+  irmão ficaria com a escala do mês passado por tempo indeterminado.
+
+  Um arquivo vazio de 0 byte elimina a classe inteira. E ele já sumiu uma vez sem ninguém ver — que
+  é exatamente o argumento para ter portão em vez de disciplina.
+*/
+if (!existsSync(path.join(RAIZ, 'docs', '.nojekyll'))) {
+  achados.push({
+    invariante: 'o site é servido sem Jekyll',
+    arquivo: 'docs/.nojekyll',
+    linha: 0,
+    detalhe: 'o arquivo sumiu — sem ele o Pages roda Jekyll sobre os 30 .md de docs/, e uma falha desse build deixa o site ANTIGO no ar com a tela dizendo que publicou',
+  })
+}
+
 if (process.argv.includes('--json')) {
   console.log(JSON.stringify({ arquivosDoDominio: doDominio.length, achados }, null, 2))
 } else {
   console.log('ARQUITETURA — as invariantes que a documentação afirma\n')
   console.log(`  arquivos em src/dominio/ .......... ${doDominio.length}`)
-  console.log(`  invariantes conferidas ............ 2`)
+  console.log(`  invariantes conferidas ............ 3`)
   console.log(`  violações ......................... ${achados.length}\n`)
   for (const a of achados) {
     console.log(`  🔴 ${a.invariante}`)
@@ -113,6 +138,7 @@ if (process.argv.includes('--json')) {
   if (!achados.length) {
     console.log('  ✅ O domínio não importa nada de fora dele.')
     console.log('  ✅ A conferência independente não importa o catálogo de regras.')
+    console.log('  ✅ `docs/.nojekyll` existe — o Pages serve os arquivos como estão.')
   }
 }
 

@@ -15,7 +15,7 @@
  * A regra, uma só: **o bloco novo manda no período dele, e só nele.**
  */
 import { describe, expect, it } from 'vitest'
-import { conferirPassadoPreservado, montarBlocosParaPublicar } from './blocos'
+import { conferirPassadoPreservado, conferirReversao, montarBlocosParaPublicar } from './blocos'
 import type { Bloco, Turno } from './tipos'
 
 const turno = (data: string): Turno => ({
@@ -135,5 +135,70 @@ describe('conferirPassadoPreservado — nada publicado FORA do novo pode sumir',
       const montados = montarBlocosParaPublicar([publicado], novo)
       expect(conferirPassadoPreservado([publicado], montados, novo).ok).toBe(true)
     }
+  })
+})
+
+/**
+ * 🔴 REVERTER TAMBÉM PODE APAGAR ESCALA DIVULGADA — sexta auditoria externa, 05/08/2026.
+ *
+ * O botão Publicar ganhou guarda de manhã; `Voltar a esta versão`, na mesma tela, gravava direto.
+ * Medido pelo auditor sobre commits que a tela oferece: voltar só o elenco deixaria 120 de 543 nomes
+ * saindo como **id cru** em 70 dias; voltar só a escala trocaria 70 turnos, um deles no passado.
+ */
+describe('conferirReversao — o guarda que faltava no botão Voltar', () => {
+  const HOJE = '2026-09-15'
+  const bloco = (turnos: Turno[], extras: Partial<Bloco> = {}): Bloco => ({
+    id: 'b', inicio: '2026-09-01', fim: '2026-09-30', geradoEm: '2026-09-01', origem: 'algoritmo',
+    pisoAlcancado: 7, elenco: ['ana', 'bia', 'caio'], malha: { regras: [] }, turnos, ...extras,
+  })
+  const t = (data: string, pessoas: string[]): Turno => ({ data, tipo: 'NOITE', pessoas, capacidade: 3 })
+  const ELENCO = [{ id: 'ana', nome: 'Ana' }, { id: 'bia', nome: 'Bia' }, { id: 'caio', nome: 'Caio' }]
+
+  it('🔴 IMPEDE quando a versão antiga reescreve um dia que já passou', () => {
+    const atual = { blocos: [bloco([t('2026-09-06', ['ana', 'bia', 'caio'])])], pessoas: ELENCO }
+    const antigo = { blocos: [bloco([t('2026-09-06', ['caio', 'bia', 'ana'])])] }
+    const r = conferirReversao('blocos.json', antigo, atual, HOJE)
+    expect(r.ok).toBe(false)
+    expect(r.passadoReescrito).toEqual(['2026-09-06'])
+    expect(r.avisos[0]).toContain('JÁ PASSARAM')
+  })
+
+  it('🔴 IMPEDE quando o elenco revertido não tem mais quem está escalado', () => {
+    const atual = { blocos: [bloco([t('2026-09-20', ['ana', 'bia', 'caio'])])], pessoas: ELENCO }
+    const antigo = { pessoas: [{ id: 'ana', nome: 'Ana' }] }
+    const r = conferirReversao('pessoas.json', antigo, atual, HOJE)
+    expect(r.ok).toBe(false)
+    expect(r.nomesQueSumiriam.sort()).toEqual(['bia', 'caio'])
+    expect(r.avisos[0]).toContain('código no lugar do nome')
+  })
+
+  it('mudar só o FUTURO é permitido — mas o número aparece', () => {
+    const atual = { blocos: [bloco([t('2026-09-20', ['ana', 'bia', 'caio']), t('2026-09-27', ['ana', 'bia', 'caio'])])], pessoas: ELENCO }
+    const antigo = { blocos: [bloco([t('2026-09-20', ['caio', 'bia', 'ana']), t('2026-09-27', ['ana', 'bia', 'caio'])])] }
+    const r = conferirReversao('blocos.json', antigo, atual, HOJE)
+    expect(r.ok).toBe(true)
+    expect(r.futuroAlterado).toBe(1)
+    expect(r.passadoReescrito).toEqual([])
+  })
+
+  it('🔴 turno que SOME conta como mudança — não só o que troca de gente', () => {
+    const atual = { blocos: [bloco([t('2026-09-20', ['ana', 'bia', 'caio']), t('2026-09-27', ['ana', 'bia', 'caio'])])], pessoas: ELENCO }
+    const antigo = { blocos: [bloco([t('2026-09-20', ['ana', 'bia', 'caio'])])] }
+    const r = conferirReversao('blocos.json', antigo, atual, HOJE)
+    expect(r.futuroAlterado).toBe(1)
+  })
+
+  it('a outra ponta: reversão idêntica ao que está no ar passa sem aviso nenhum', () => {
+    const atual = { blocos: [bloco([t('2026-09-06', ['ana', 'bia', 'caio']), t('2026-09-20', ['ana', 'bia', 'caio'])])], pessoas: ELENCO }
+    const r = conferirReversao('blocos.json', { blocos: atual.blocos }, atual, HOJE)
+    expect(r.ok).toBe(true)
+    expect(r.futuroAlterado).toBe(0)
+    expect(r.avisos).toEqual([])
+  })
+
+  it('arquivo ilegível não passa por engano', () => {
+    const atual = { blocos: [bloco([t('2026-09-20', ['ana'])])], pessoas: ELENCO }
+    expect(conferirReversao('blocos.json', { lixo: 1 }, atual, HOJE).ok).toBe(false)
+    expect(conferirReversao('pessoas.json', null, atual, HOJE).ok).toBe(false)
   })
 })
