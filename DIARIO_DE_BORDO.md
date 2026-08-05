@@ -249,3 +249,38 @@ O guard fez o trabalho dele: sem ele, "nenhum nome faltando" num texto vazio ter
 
 `scripts/conferir-historico-contra-site-antigo.mjs` é um script de verificação: não é chamado por
 nada e apagá-lo não muda comportamento — só perde a prova.
+
+---
+
+## DB-006 · 04/08/2026 — a ponta simétrica: o site novo contra o dado
+
+**Solicitação:** [S-007](docs/solicitacoes/INDICE_DE_SOLICITACOES.md), continuação.
+**Handoff:** [parte 5](docs/handoff/HANDOFF_2026-08-04-e.md).
+
+### O que se perguntou
+
+Conferir o passado contra o site antigo cobria metade. A outra metade: **o dado publicado chega
+inteiro à tela do site novo?** A validação ao vivo provava que a tela renderizou e que 7 pontos
+estavam certos — não que cada dia aparece com cada nome.
+
+E a conferência do site antigo acabara de provar que uma suposição sobre renderização pode estar
+inteiramente errada (ele não mostra o passado). Não havia razão para confiar nesta sem medir.
+
+### O resultado
+
+**131 dias · 543 escalações · 0 divergências.** Santa Ceia conferida pelos dois lados: o aviso
+aparece e nenhum dos 16 irmãos está na tela. Os dois únicos dias sem gente são os dois de Santa
+Ceia — 07/06 preservado no histórico (o que os irmãos viram) e 16/08 no bloco novo.
+
+### Decisões
+
+| # | Decisão | Por quê |
+|---|---|---|
+| 1 | Conferir os **131** dias, os dois blocos | amostra prova ausência de defeito sistemático, não ausência de defeito |
+| 2 | Checar a Santa Ceia pelos **dois lados** | "ninguém escalado" e "o aviso aparece" são coisas diferentes, e só as duas juntas descrevem a tela certa |
+| 3 | **Fora do GATE**, com nome no `package.json` | depende da rede; mas sem nome no manifesto, ninguém saberia que existe |
+
+### Como reverter
+
+Script de verificação: ninguém o chama, apagá-lo não muda comportamento — só perde a prova.
+Os nomes no `package.json` são atalhos; removê-los não afeta o GATE.

@@ -17,7 +17,14 @@
     "denominacao": "node scripts/medir-denominacao-sem-ia.mjs",
     "fontes": "node scripts/inventariar-fontes.mjs --conferir",
     "auditoria": "node scripts/auditoria-adversarial.mjs",
-    "regras-mestras": "node scripts/medir-regras-mestras.mjs"
+    "regras-mestras": "node scripts/medir-regras-mestras.mjs",
+
+    "_comentario_ao_vivo": "Abrem o site publicado num navegador de verdade. NÃO entram no `gate`: dependem da rede e do GitHub Pages, e portão que quebra por causa alheia é portão que alguém desliga. Rodar depois de publicar.",
+    "vivo": "node scripts/validar-ao-vivo.mjs",
+    "vivo:admin": "node scripts/validar-admin.mjs",
+    "vivo:celular": "node scripts/validar-celular.mjs",
+    "vivo:conferir": "node scripts/conferir-site-contra-dados.mjs",
+    "vivo:conferir-passado": "node scripts/conferir-historico-contra-site-antigo.mjs"
   },
   "dependencies": {
     "clsx": "^2.1.1",

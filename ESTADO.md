@@ -106,6 +106,10 @@ nunca contra o que ele **mostra na tela**. Conferido dia a dia:
 **66 de 66 dias, 282 nomes, 0 divergências.** A promessa *"você não vai apagar o passado"* está
 medida, não presumida.
 
+E a ponta simétrica também foi fechada: **o site novo mostra o que o dado diz** — 131 dias, 543
+escalações, 0 divergências, com a Santa Ceia conferida pelos dois lados (o aviso aparece, e nenhum
+dos 16 irmãos está na tela). `npm run vivo:conferir`.
+
 🔴 **E apareceu um achado de lado:** o **site antigo não mostra o passado**. Ele lista do dia de hoje
 em diante — um irmão que abra aquele link hoje **não vê março a julho**, só digitando a data na
 busca. O site novo mostra, porque ali o passado é dado congelado. Virou P1.3.
