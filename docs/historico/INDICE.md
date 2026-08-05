@@ -33,7 +33,7 @@ apaga a informação mais valiosa que existe: por que se acreditou nele.
 ⚠️ **Efeito colateral conhecido da rotação:** mover um arquivo para `docs/historico/X/` **quebra os
 links relativos dele** — `../BACKLOG.md` vira `docs/historico/BACKLOG.md`, que não existe. Como fatia
 fechada é imutável, esses links **não são reescritos**: ficam como registro do que o documento
-apontava na época, e o portão de órfãos isenta o histórico por isso. Este aviso existe para que o
+apontava na época, e a isenção do histórico é regra do método (o portão de órfãos vive no pré-voo, não neste repositório). Este aviso existe para que o
 próximo leitor não confunda com defeito.
 
 ## Fatias arquivadas
@@ -44,4 +44,12 @@ próximo leitor não confunda com defeito.
 
 ---
 
-**Estado dos tetos** — conferido por `checar-tamanho-docs.mjs` no pré-voo e no GATE.
+**Estado dos tetos** — conferido por `checar-tamanho-docs.mjs`, que vive em
+`_padroes-globais/scripts/` e roda no **pré-voo**.
+
+> ⚠️ **Correção de 05/08/2026** (auditoria externa de documentação): esta linha dizia *"no pré-voo
+> **e no GATE**"*, e o GATE deste projeto **não tem** passo de tamanho de documento. O mesmo vale
+> para o "portão de órfãos" citado acima: ele não existe em `scripts/`. Duas regras afirmadas com
+> portão inexistente — exatamente o padrão de falha que o método nomeia (*"regra sem portão é
+> disciplina, e disciplina falha"*). Fica **declarado** em vez de escondido: quem quiser a garantia
+> tem de rodar o pré-voo, porque `npm run gate` não a dá.

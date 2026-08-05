@@ -65,6 +65,12 @@ function conferirAsProprias(termos) {
 const TERMOS = [
   { re: /JD\.?\s*S[ÃA]O\s*LUIZ/i, nome: 'JD. São Luiz' },
   { re: /Congrega[çc][ãa]o\s+Crist[ãa]/i, nome: 'Congregação Cristã' },
+  // A sigla da instituição, que aparecia no `alt` do emblema ("Logo CCB") e no nome do arquivo.
+  //    ⚠️ Escrito SEM barra invertida nenhuma, de propósito: a borda vem de classe de
+  //    caracteres, não de `\b`. É a terceira vez que um `\b` gerado por script vira byte de
+  //    backspace — e desta vez a autodefesa logo acima o pegou na execução seguinte, que é
+  //    exatamente para o que ela foi feita.
+  { re: /(^|[^A-Za-z])CCB([^A-Za-z]|$)/, nome: 'sigla da instituição ("CCB")' },
   { re: /Escala\s+(de\s+)?[Pp]orteiro/i, nome: 'Escala (de) Porteiros' },
   { re: /escala\s+de\s+porteiros\s+de\s+uma\s+congrega/i, nome: 'prompt do motor cravado' },
   // 🔴 Este termo entrou DEPOIS, e por isso está aqui: a frase "sem porteiros escalados" na imagem
@@ -143,14 +149,51 @@ function arquivos(dir, acc = []) {
       próprio teste que prova a correção — portão que atrapalha é portão que alguém desliga.
     */
     if (/\.test\.(ts|tsx)$/.test(nome)) { pulados.push(relative(RAIZ, p).replace(/\\/g, '/')); continue }
-    if (/\.(ts|tsx|html|css)$/.test(nome)) acc.push(p)
+    if (/\.(ts|tsx|html|css|json)$/.test(nome)) acc.push(p)
   }
   return acc
 }
 
 const html = join(RAIZ, 'index.html')
-const alvos = [...arquivos(join(RAIZ, 'src')), ...(existsSync(html) ? [html] : [])]
+/*
+  🔴 `package.json` ENTROU DEPOIS — achado da auditoria externa, 05/08/2026.
+
+  O campo `description` dizia "Escala de porteiros CCB Jd. São Luiz". É o texto que aparece no
+  cartão do repositório e em qualquer listagem de pacote — a vitrine de um repositório PÚBLICO de um
+  produto "com intenção de comercialização". O portão varria `src/` e o `index.html` e nunca olhou
+  para lá. Fronteira de portão é onde o defeito se esconde.
+*/
+const pacote = join(RAIZ, 'package.json')
+// 🔴 Uma varredura só. A primeira versão chamava `arquivos()` duas vezes — aqui e no laço dos
+//    emblemas — e `pulados` acumulava as duas, imprimindo "20 testes pulados" onde havia 10. O
+//    número que existe para denunciar cobertura perdida estava ele próprio errado.
+const naPasta = arquivos(join(RAIZ, 'src'))
+const alvos = [...naPasta, ...(existsSync(html) ? [html] : []), ...(existsSync(pacote) ? [pacote] : [])]
 const achados = []
+
+/*
+  🔴 A CLASSE QUE O PORTÃO NÃO ENXERGAVA: emblema importado.
+
+  O logotipo desta congregação era `import logo from './assets/logo-ccb-light.png'`, renderizado no
+  cabeçalho do site em desktop e celular. O portão varreu 29 arquivos, deu 0 achados — e estava
+  certo pelo critério dele: **um `import` de imagem não tem texto de cliente nenhum**. O nome do
+  cliente estava no NOME DO ARQUIVO e nos BYTES da imagem.
+
+  Emblema é identidade visual: varia de cliente para cliente mais do que o próprio nome. Agora vive
+  em `dados/`, como os JSON, e `identidade.logo` vazio significa "sem emblema".
+*/
+for (const abs of naPasta) {
+  const rel = relative(RAIZ, abs).replace(/\\/g, '/')
+  const fonte = readFileSync(abs, 'utf8')
+  for (const m of fonte.matchAll(/^\s*import\s+[^'"]*from\s+['"]([^'"]*\/assets\/[^'"]+)['"]/gm)) {
+    achados.push({
+      arquivo: rel,
+      linha: fonte.slice(0, m.index).split('\n').length,
+      termo: 'emblema/asset EMPACOTADO (identidade visual pertence a `dados/`)',
+      texto: m[0].trim().slice(0, 110),
+    })
+  }
+}
 
 for (const abs of alvos) {
   const rel = relative(RAIZ, abs).replace(/\\/g, '/')

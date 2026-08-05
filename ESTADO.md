@@ -17,11 +17,54 @@
 
 ## Em uma frase
 
-**O produto está pronto, no ar e agora auditado por fora**: site, área administrativa, motor,
-histórico com reversão, 16 regras com portão dos dois lados, e o passado congelado **conferido contra
-a tela do site antigo**. Falta só o que depende do Flavio — as duas credenciais.
+**O produto está no ar, auditado por fora, e virou GENÉRICO** — o nome do cliente saiu do código e
+virou dado. Falta uma decisão do Flavio (abaixo) e as duas credenciais.
 
-## O que acabou de entrar: a auditoria independente (P2.10)
+## 🔴 O que aconteceu em 05/08/2026, e o que ainda depende dele
+
+**1. A escala nova desmentia o site que a congregação já tem o link — em TODOS os turnos.**
+O Flavio viu antes de mim: hoje, 05/08, a escala nova trocava uma pessoa sem ninguém ter pedido.
+Medido: **87 de 87 turnos divergiam** de 05/08 em diante. Nenhum portão pegou, porque todos
+comparavam o site novo com o **dado** do site novo — coerência interna impecável enquanto a escala
+inteira contradizia o mundo. *Coerência interna não é verdade; o que foi DIVULGADO é a referência.*
+
+O histórico foi recortado até 05/08 (96 turnos congelados) e a escala nova começa em **06/08**.
+Re-medível a qualquer momento:
+
+```bash
+npm run vivo:divulgado -- --antigo https://flaviocom.github.io/escala-irmaos-2026-mar/
+```
+
+> ⏳ **A decisão que é do Flavio, e a única coisa que trava publicar:** de **06/08 em diante, 84
+> turnos mudam** em relação ao que o site antigo mostra. É o esperado — a escala nova conserta o
+> distanciamento —, mas **amanhã é aviso curto**. Se preferir, ele diz uma data de início mais à
+> frente e o bloco é regerado.
+
+**2. §0: o produto é genérico — e o código dizia o contrário.**
+A regra máxima que ele instituiu (*"é uma escala genérica, configurável, mas genérica, com intenção
+de comercialização"*) tinha, no mesmo dia, oito lugares com o nome deste cliente **cravado**:
+cabeçalho do site, cabeçalho da administração, tela de entrada, imagem do WhatsApp, nome do arquivo
+baixado, título da aba, os três prompts do motor — mais 24 ocorrências de "Irmão" e o **emblema
+importado**. E `config.identidade` **já existia** no tipo, no dado e no padrão: nunca era lido.
+
+> **Configuração morta é pior que configuração ausente: ela parece que resolve.**
+
+Hoje título, subtítulo, vocabulário e emblema são dado, com tela na aba Gerar. O portão
+`npm run generico` (+ autoteste de 21 casos, com autodefesa) impede a volta.
+
+**3. Trava de data retroativa** — o seletor não deixa mais escolher data anterior a hoje, no
+navegador **e** em código. Passado divulgado não se reescreve.
+
+**4. O gerador passou a comparar oito versões de si mesmo antes de mostrar uma** (pedido S-020,
+depois da pesquisa em [`PESQUISA_2026-08-05-gerar-n-versoes.md`](docs/superpowers/specs/PESQUISA_2026-08-05-gerar-n-versoes.md)).
+É GRASP — lista restrita de candidatos com desempate **semeado** —, e a escolha entre as oito usa o
+piso primeiro e o índice de Jain depois. A primeira das oito é sempre a gulosa pura, que é a rede:
+o resultado nunca fica pior do que era. **A semente fica gravada no bloco**, então "gerar outra
+combinação" explora caminho diferente sem que a escala deixe de ser reproduzível.
+
+Detalhe completo em [`HANDOFF_2026-08-05-c.md`](docs/handoff/HANDOFF_2026-08-05-c.md).
+
+## O que entrou em 04/08: a auditoria independente (P2.10)
 
 Era o único item autônomo em aberto, e o método se recusava a dar o projeto por encerrado sem ele:
 *"quem auditou escreveu o código"*. **Seis auditores em frentes disjuntas, mandado adversarial,
@@ -30,7 +73,7 @@ autoverificação, que roda 20 checagens todo dia. Os quatro mais graves:
 
 | O que estava errado | Por que ninguém tinha visto |
 |---|---|
-| **Bloco VAZIO era aprovado "sem ressalvas"** — e é isso que destrava o Publicar | as 15 regras percorriam `turnos`; sem turnos, todas respondiam "nada a apontar" |
+| **Bloco VAZIO era aprovado "sem ressalvas"** — e é isso que destrava o Publicar | as regras de então percorriam `turnos`; sem turnos, todas respondiam "nada a apontar" |
 | **D9 era cega ao calendário da Santa Ceia** — conferia o bloco contra ele mesmo | `Contexto` não carregava a configuração. É o defeito que originou o projeto |
 | **Três portões não mordiam** — o de fontes ignorava `scripts/` inteiro | infrator injetado passava verde; ninguém tinha atacado os portões |
 | **O verde "ao vivo" podia ser de outro código** | o vite ficava órfão no Windows e a execução seguinte falava com ele — chegou a aprovar um **bundle antigo** |
@@ -39,8 +82,9 @@ autoverificação, que roda 20 checagens todo dia. Os quatro mais graves:
 número escrito à mão e ponteiro mantido à mão apodrecem sozinhos — o `AGENTS.md` apontava para a
 parte 4 de 7 como se fosse a última. Detalhe em [`HANDOFF_2026-08-04-i.md`](docs/handoff/HANDOFF_2026-08-04-i.md).
 
-⚠️ **Sete achados menores ficaram abertos**, em P4 do [`BACKLOG.md`](BACKLOG.md), com `arquivo:linha`
-e reprodução. Nenhum bloqueia o uso.
+⚠️ **Cinco achados menores continuam abertos** (P4.3, P4.6, P4.7, P4.8, P4.9), no
+[`BACKLOG.md`](BACKLOG.md), com `arquivo:linha` e reprodução. Nenhum bloqueia o uso. Eram sete;
+P4.1, P4.2, P4.4 e P4.5 fecharam, e P4.10 nasceu e fechou no mesmo dia.
 
 ## Onde roda
 
@@ -87,7 +131,7 @@ relatou: *"Piso alcançado: 6 dias. Tentei 9, 8, 7 — não foi possível cobrir
 | Pares com ≤3 dias | **18** | **0** |
 | Quarta → sábado | 6 casos | **0** |
 | Santa Ceia | 07/06 errada; 16/08 com 6 escalados | **16/08 correta, 0 escalados** |
-| Validação | 6 regras, nenhuma de espaçamento ou capacidade | **15 de 15** |
+| Validação | 6 regras, nenhuma de espaçamento ou capacidade | **16 de 16** (eram 15 em 04/08; D11 nasceu em 05/08) |
 | Testes | nenhum | **175** hoje (eram 71 em 04/08), verdes em 2 fusos |
 | Equilíbrio | — | 16–17 turnos, diferença de **1** |
 
@@ -100,7 +144,7 @@ commit. Publicar fica **bloqueado** enquanto a validação reprovar.
 falsos. Ligar o `strict` resolveu todos e revelou 9 trechos de código morto, removidos.
 
 **Tudo validado ao vivo, no navegador** — não só por `curl`: a tela renderiza, os nomes aparecem, o
-16/08 mostra SANTA CEIA sem ninguém, as 15 regras aparecem na aba Validação, o cofre cifra de
+16/08 mostra SANTA CEIA sem ninguém, as 16 regras aparecem na aba Validação, o cofre cifra de
 verdade (senha errada não abre) e um token inválido é recusado antes de ser guardado.
 
 **Depois disso, na segunda parte da sessão**, entraram quatro itens do backlog:
@@ -124,7 +168,8 @@ comentário). Consertados, com os casos reais virando teste permanente.
 **A imagem que vai para o WhatsApp tem layout próprio** (partes 7 e 8), no modelo do arquivo que o
 Flavio usa — com os nomes em **colunas alinhadas** e um **seletor de meses** antes de gerar. A anterior fotografava a tela e **fatiava em 5 dias** — numa escala de cinco meses, saíam cinco
 dias. Agora o período inteiro cabe, e o filtro é o mesmo da tela. Exemplo em
-`capturas/exemplo-2026-08.png`; regerar com `npm run imagem`.
+`capturas/exemplo-2026-08.png` — ⚠️ `capturas/` está no `.gitignore`, então quem clonar o repositório
+não encontra o arquivo: **regerar com `npm run imagem`**, que é rápido e usa o dado publicado.
 
 🔴 **O achado mais consequente do dia veio de mapear o grafo de importações** (parte 6):
 `definirPessoas` filtrava por `ativo` e, com isso, **quem saísse do elenco perdia o passado na

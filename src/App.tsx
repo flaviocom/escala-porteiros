@@ -14,7 +14,6 @@ import { Calendar, Filter, X, LayoutGrid, BarChart3, ShieldCheck, SlidersHorizon
 import { format, parseISO, addDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfDay, endOfDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { clsx } from 'clsx';
-import logo from './assets/logo-ccb-light.png';
 
 interface AppProps {
   /** A escala já publicada, vinda dos arquivos de dados — não mais gerada no navegador. */
@@ -25,7 +24,16 @@ interface AppProps {
 function App({ shifts, dados }: AppProps) {
   // Como este cliente chama quem é escalado. Um apelido curto porque aparece em oito lugares da
   // tela — e porque `dados.config.identidade.pessoa.singular` no meio de um `title` não se lê.
-  const voc = dados.config.identidade.pessoa;
+  const voc = {
+    ...dados.config.identidade.pessoa,
+    /*
+      O emblema é servido de `dados/`, como os JSON — não empacotado pelo build.
+
+      `BASE_URL` é obrigatório: o GitHub Pages serve este projeto sob `/escala-porteiros/`, e um
+      caminho sem ele apontaria para a raiz do domínio. Vazio = sem emblema, e a tela se arranja.
+    */
+    logo: dados.config.identidade.logo ? `${import.meta.env.BASE_URL}dados/${dados.config.identidade.logo}` : '',
+  };
   const [selectedBrotherIds, setSelectedBrotherIds] = useState<string[]>([]);
   const [selectedMonthStrs, setSelectedMonthStrs] = useState<string[]>([]);
   const [dateSearchQuery, setDateSearchQuery] = useState('');
@@ -172,7 +180,7 @@ function App({ shifts, dados }: AppProps) {
     <div className="flex flex-col h-full px-5 py-2 overflow-y-auto">
       {/* Desktop Logo */}
       <div className="hidden md:flex items-center gap-3 mb-8">
-        <img src={logo} alt="Logo CCB" className="h-10 w-auto object-contain" />
+        {voc.logo && <img src={voc.logo} alt={dados.config.identidade.titulo} className="h-10 w-auto object-contain" />}
         <div>
           {/*
             🔴 O NOME VEM DA CONFIGURAÇÃO — achado da auditoria externa de documentação, 05/08/2026.
@@ -521,7 +529,7 @@ function App({ shifts, dados }: AppProps) {
         <header className="md:hidden bg-white border-b border-gray-100 sticky top-0 z-30 shadow-sm">
           <div className="px-3 h-16 flex items-center justify-between gap-1">
             <div className="flex items-center gap-2 min-w-0 flex-1">
-              <img src={logo} alt="Logo CCB" className="h-8 w-auto object-contain shrink-0" />
+              {voc.logo && <img src={voc.logo} alt={dados.config.identidade.titulo} className="h-8 w-auto object-contain shrink-0" />}
               <div className="flex flex-col min-w-0">
                 <h1 className="text-xs font-bold text-text-primary tracking-tight leading-none uppercase truncate">
                   {dados.config.identidade.titulo}

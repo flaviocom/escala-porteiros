@@ -3,7 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "description": "Escala de porteiros CCB Jd. São Luiz — com área administrativa",
+  "description": "Escala de plantões configurável — gera, confere e publica, com área administrativa",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -34,6 +34,7 @@
     "vivo:gerar": "node scripts/validar-gerar-amigavel.mjs",
     "vivo:quem-saiu": "node scripts/validar-quem-saiu.mjs",
     "vivo:identidade": "node scripts/validar-identidade-configuravel.mjs",
+    "vivo:divulgado": "node scripts/comparar-com-site-divulgado.mjs",
     "vivo:erro": "node scripts/validar-caminho-de-erro.mjs",
     "vivo:acessibilidade": "node scripts/medir-acessibilidade.mjs",
     "vivo:seletor": "node scripts/validar-seletor-de-meses.mjs",

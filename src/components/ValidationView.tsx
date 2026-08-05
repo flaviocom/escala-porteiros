@@ -5,7 +5,7 @@
  * duas que a especificação do site anterior prometia conferir. Ela também procurava as pessoas por
  * nome em texto, então remover alguém da escala a deixaria inerte, sem erro visível.
  *
- * Agora ela roda `validar()` sobre o catálogo único: 10 regras duras e 5 de qualidade, cada uma com
+ * Agora ela roda `validar()` sobre o catálogo único: 11 regras duras e 5 de qualidade, cada uma com
  * a **medida** que apurou — o número aparece mesmo quando está tudo certo, porque "aprovado" sem
  * número não deixa ninguém mais informado.
  */

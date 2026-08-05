@@ -33,7 +33,7 @@ const CONFIG_PADRAO: Configuracao = {
   capacidadePadrao: 3,
   malhaPadrao: { regras: [] },
   santaCeia: [],
-  identidade: { titulo: 'Escala de plantões', subtitulo: '', pessoa: { singular: 'Pessoa', plural: 'pessoas' } },
+  identidade: { titulo: 'Escala de plantões', subtitulo: '', logo: '', pessoa: { singular: 'Pessoa', plural: 'pessoas' } },
 }
 
 /**
@@ -71,6 +71,8 @@ export function completarConfig(lido: ConfigLida | null | undefined): Configurac
       // O subtítulo pode ser vazio DE PROPÓSITO (nem todo cliente tem uma segunda linha), então
       // aqui `??` e não `||`: string vazia é uma escolha, ausência é que não é.
       subtitulo: id.subtitulo ?? CONFIG_PADRAO.identidade.subtitulo,
+      // Vazio é uma ESCOLHA (sem emblema), então `??` e não `||` — mesma razão do subtítulo.
+      logo: id.logo ?? CONFIG_PADRAO.identidade.logo,
       pessoa: {
         singular: pessoa.singular?.trim() || CONFIG_PADRAO.identidade.pessoa.singular,
         plural: pessoa.plural?.trim() || CONFIG_PADRAO.identidade.pessoa.plural,

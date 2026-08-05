@@ -10,6 +10,15 @@
  * Uso: node scripts/validar-ao-vivo.mjs [url]
  */
 import { chromium } from 'playwright'
+import { carregarDominio } from './lib/dominio.mjs'
+
+/*
+  O catálogo REAL, lido do código do produto — não uma lista digitada aqui.
+  Acrescentar uma regra e esquecer a tela passa a reprovar sozinho.
+*/
+const { CATALOGO } = await carregarDominio()
+const IDS_DO_CATALOGO = CATALOGO.map((r) => r.id)
+const TOTAL_DE_REGRAS = IDS_DO_CATALOGO.length
 
 const URL = process.argv[2] ?? 'https://flaviocom.github.io/escala-porteiros/'
 
@@ -107,13 +116,31 @@ await conferir('🔴 16/08 aparece como SANTA CEIA, sem ninguém escalado', asyn
   }
 })
 
-await conferir('a aba Validação abre e mostra as 15 regras', async () => {
+/*
+  🔴 CONTA, não amostra — achado da auditoria externa de 05/08/2026.
+
+  Esta checagem se anunciava como *"mostra as 15 regras"* e conferia CINCO identificadores de
+  amostra. Duas coisas erradas de uma vez: o catálogo tem 16, e uma amostra de 5 aprovaria uma tela
+  que perdeu 11. O rótulo dizia mais do que a medição fazia — e é o rótulo que alguém lê depois.
+
+  Agora o número esperado vem do próprio catálogo, então acrescentar uma regra e esquecer a tela
+  reprova aqui.
+*/
+await conferir(`a aba Validação abre e mostra TODAS as ${TOTAL_DE_REGRAS} regras do catálogo`, async () => {
   await pagina.reload({ waitUntil: 'networkidle' })
   await pagina.getByRole('button', { name: /Valida/i }).first().click()
   await pagina.waitForTimeout(1200)
   const texto = await pagina.locator('#root').innerText()
-  const ids = ['D1', 'D6', 'D10', 'Q1', 'Q5'].filter((id) => texto.includes(id))
-  return { ok: ids.length === 5, detalhe: `regras visíveis: ${ids.join(', ')}` }
+  // Borda por classe de caracteres, sem barra invertida: `\b` dentro de template literal é o
+  // caractere de BACKSPACE, não a borda de palavra — a busca morreria em silêncio (aconteceu três
+  // vezes em 05/08/2026). E sem borda nenhuma, "D1" casaria dentro de "D11" e o portão aprovaria
+  // uma tela que perdeu uma regra.
+  const vistos = IDS_DO_CATALOGO.filter((id) => new RegExp('(^|[^A-Z0-9])' + id + '([^0-9]|$)').test(texto))
+  const faltando = IDS_DO_CATALOGO.filter((id) => !vistos.includes(id))
+  return {
+    ok: vistos.length === TOTAL_DE_REGRAS,
+    detalhe: faltando.length ? `FALTAM na tela: ${faltando.join(', ')}` : `todas as ${TOTAL_DE_REGRAS} visíveis`,
+  }
 })
 
 await conferir('a aba Estatísticas abre', async () => {

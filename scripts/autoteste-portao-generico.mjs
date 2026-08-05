@@ -123,6 +123,24 @@ const CASOS = [
     esperaAchado: false,
   },
   {
+    // 🔴 A classe que o portão não enxergava: um `import` de imagem não tem TEXTO de cliente.
+    //    O emblema desta congregação viveu no cabeçalho do site inteiro sob 0 achados.
+    nome: '🔴 emblema EMPACOTADO (`import … from "./assets/…"`) é achado',
+    arquivos: { 'src/App.tsx': `import logo from './assets/logo-ccb-light.png'\n${LIMPO}` },
+    esperaAchado: true,
+  },
+  {
+    nome: 'emblema vindo de `dados/` (configuração) NÃO é achado',
+    arquivos: { 'src/App.tsx': `const src = \`\${base}dados/\${config.identidade.logo}\`\n${LIMPO}` },
+    esperaAchado: false,
+  },
+  {
+    // 🔴 Fronteira de portão é onde o defeito se esconde: `package.json` era invisível.
+    nome: '🔴 `package.json` com nome de cliente na descrição é achado',
+    arquivos: { 'src/App.tsx': LIMPO, 'package.json': `{\n  "description": "Escala de porteiros CCB Jd. São Luiz"\n}\n` },
+    esperaAchado: true,
+  },
+  {
     nome: '🔴 "sem porteiro escalado" É achado — a frase que escapou de 4 termos',
     arquivos: { 'src/admin/AbaAjustar.tsx': `const t = <span>sem porteiro escalado — não há o que ajustar</span>\n` },
     esperaAchado: true,

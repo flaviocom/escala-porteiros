@@ -29,7 +29,8 @@ export interface Ausencia {
 }
 
 /**
- * As quatro famílias de restrição que o Flavio pediu em 04/08/2026.
+ * As cinco famílias de restrição que o Flavio pediu (as quatro de 04/08/2026 mais as ausências,
+ * que entraram em 05/08 quando ele pediu para marcar férias antes de gerar).
  *
  * Toda lista ausente significa "sem restrição". Lista **vazia** significa "não pode nenhum" — e é
  * por isso que a validação precisa distinguir `undefined` de `[]`: são coisas diferentes, e tratá-las
@@ -183,6 +184,19 @@ export interface Configuracao {
      *
      * O modelo de domínio sempre chamou de `Pessoa`. Era só a TELA que falava outra língua.
      */
+    /**
+     * 🔴 O EMBLEMA — achado da auditoria externa, 05/08/2026, e o mais visível de todos.
+     *
+     * O logotipo desta congregação estava cravado por `import` em `App.tsx`, renderizado no
+     * cabeçalho do site em desktop E celular, com `alt="Logo CCB"` — texto que um leitor de tela
+     * lê em voz alta. Não estava na lista dos oito lugares corrigidos, e o portão de escopo não o
+     * alcançava: ele varre TEXTO, e um `import` de imagem não tem texto de cliente nenhum.
+     *
+     * Agora é um arquivo em `dados/`, como os outros. **Vazio significa sem emblema** — e um
+     * produto genérico tem de abrir bonito sem emblema nenhum, porque a maioria dos compradores
+     * não terá um no primeiro dia.
+     */
+    logo: string
     pessoa: {
       /** Como aparece sozinho, com maiúscula: "Irmão", "Funcionário", "Plantonista". */
       singular: string

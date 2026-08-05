@@ -38,6 +38,7 @@
   "identidade": {
     "titulo": "Escala Porteiros",
     "subtitulo": "JD. São Luiz",
+    "logo": "logo.png",
     "pessoa": {
       "singular": "Irmão",
       "plural": "irmãos"

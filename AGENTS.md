@@ -14,7 +14,8 @@
 > [`solicitações`](docs/solicitacoes/INDICE_DE_SOLICITACOES.md) ·
 > [`handoffs`](docs/handoff/INDICE.md) ·
 > [`histórico`](docs/historico/INDICE.md) ·
-> [`o desenho`](docs/superpowers/specs/2026-08-04-area-administrativa-escala-design.md)
+> [`o desenho`](docs/superpowers/specs/2026-08-04-area-administrativa-escala-design.md) ·
+> [`pesquisa: gerar N versões`](docs/superpowers/specs/PESQUISA_2026-08-05-gerar-n-versoes.md)
 
 ---
 
@@ -64,18 +65,22 @@ site atual (`flaviocom/escala-irmaos-2026-mar`), que é só de visualização e 
 código-fonte para trocar uma pessoa de lugar.
 
 **A inversão que nunca pode acontecer:** **o portão determinístico decide se publica; o motor
-propõe, explica e arbitra — jamais o contrário.** São centenas de vagas, 16 pessoas e 5 famílias de
+propõe, explica e arbitra — jamais o contrário.** São centenas de vagas, 16 pessoas e cinco famílias de
 restrição: um modelo de linguagem acerta quase sempre e erra em silêncio, e erro em silêncio numa
 escala é o pior defeito possível, porque ninguém confere 549 linhas à mão.
 
 O motor **distribui também** — foi pedido do Flavio —, mas a proposta dele passa pelas **mesmas**
 regras da do algoritmo antes de chegar à tela de publicação.
 
-**Estágio atual (04/08/2026):** **no ar e funcionando.**
+**Estágio atual (05/08/2026):** **no ar e funcionando.**
 
 - Site: <https://flaviocom.github.io/escala-porteiros/>
 - Área administrativa: <https://flaviocom.github.io/escala-porteiros/#/admin>
-- Escala publicada: 01/03 → 04/08 (histórico congelado) + 05/08 → 30/12 (piso de 6 dias)
+- Escala publicada: **01/03 → 05/08** (histórico congelado, 96 turnos) + **06/08 → 30/12**
+  (87 turnos, piso de **7** dias)
+- ⚠️ O recorte para 05/08 foi o trabalho de `47fb59f`: a escala nova desmentia, em **todos** os
+  turnos de hoje em diante, o site que a congregação já tem o link. Medível de novo com
+  `npm run vivo:divulgado -- --antigo <url do site anterior>`.
 - Falta: o Flavio colar as duas credenciais para publicar pela tela e ligar o motor.
 
 ## 2. Idioma e formatação
@@ -130,7 +135,7 @@ npm run dev
 **O GATE — nenhuma mudança significativa passa sem:**
 
 ```bash
-npm run gate      # 10 passos: typecheck · testes (2 fusos) · denominação · fontes · contagem · cadeia · auditoria · regras mestras · build
+npm run gate      # 12 passos: typecheck · testes (2 fusos) · denominação · fontes · contagem · cadeia · genérico · autoteste do genérico · auditoria · regras mestras · build
 ```
 
 O que ele encadeia, e por que cada um existe:
@@ -144,6 +149,8 @@ O que ele encadeia, e por que cada um existe:
 | `npm run fontes` | nenhuma fonte externa chamada e não declarada — em `src/` **e** `scripts/` |
 | `npm run contagem` | nenhum documento vivo declara um número de regras que o catálogo desmente |
 | `npm run cadeia` | `AGENTS.md`/`ESTADO.md`/`BACKLOG.md` apontam para o handoff que É o mais recente |
+| `npm run generico` | nenhum nome de cliente cravado — o produto é genérico (§0) |
+| `npm run generico:autoteste` | prova que o portão acima **morde**: 21 casos, infratores e limpos, mais a autodefesa |
 | `npm run auditoria` | 20 ataques ao próprio código, com infrator injetado |
 | `npm run regras-mestras` | tooltip em todo botão, sem aspas duplas quebrando o atributo |
 | `npm run build` | compila e gera em `docs/` |

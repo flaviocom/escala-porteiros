@@ -73,15 +73,26 @@ await conferir('os campos da porta cabem na largura', async () => {
  * 44×44 CSS px é a recomendação da Apple para alvo de toque; o Material usa 48. Abaixo disso o dedo
  * erra, e errar num botão que publica escala é caro.
  */
-await conferir('os botões têm alvo de toque de pelo menos 40px de altura', async () => {
+/*
+  🔴 44, NÃO 40 — P4.5, que estava marcado FECHADO com o defeito intacto (achado da auditoria
+     externa de 05/08/2026).
+
+     A régua media 40 logo abaixo de um comentário que invoca 44 (Apple) e 48 (Material) como
+     justificativa. Um item diferente foi consertado no mesmo dia e o P4.5 foi fechado junto —
+     o `BACKLOG.md` promete *"item que sai sem prova volta"*, e este saiu sem prova.
+
+     Medido antes de subir o número: **todos os botões já passavam de 44px**. A folga não
+     protegia nada; só deixava a régua discordar do próprio comentário.
+*/
+await conferir('os botões têm alvo de toque de pelo menos 44px de altura', async () => {
   const pequenos = await pagina.evaluate(() =>
     [...document.querySelectorAll('button')]
       .filter((b) => b.offsetParent !== null)
       .map((b) => ({ t: (b.textContent ?? '').trim().slice(0, 28), h: Math.round(b.getBoundingClientRect().height) }))
-      .filter((x) => x.h > 0 && x.h < 40))
+      .filter((x) => x.h > 0 && x.h < 44))
   return {
     ok: pequenos.length === 0,
-    detalhe: pequenos.length === 0 ? 'todos com 40px ou mais' : pequenos.map((p) => `"${p.t}" ${p.h}px`).join(' · '),
+    detalhe: pequenos.length === 0 ? 'todos com 44px ou mais' : pequenos.map((p) => `"${p.t}" ${p.h}px`).join(' · '),
   }
 })
 

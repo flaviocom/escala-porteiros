@@ -1,7 +1,13 @@
-# Escala de Porteiros — CCB Jd. São Luiz
+# Escala de plantões — genérica e configurável
 
-Site da escala de porteiros da Congregação Cristã no Brasil, Jardim São Luiz (Barueri/SP), **com
-área administrativa**: gera, valida e publica a escala sem tirar o site do ar.
+Site de escala de plantões **com área administrativa**: gera, valida e publica a escala sem tirar o
+site do ar. Nome, subtítulo, emblema, vocabulário ("Irmão", "Funcionário", "Plantonista"), dias de
+culto/turno, pessoas por turno e datas especiais são **dado configurável** — nada disso vive no
+código (§0 do [`AGENTS.md`](AGENTS.md)).
+
+> **Esta instalação** atende a Congregação Cristã no Brasil — Jardim São Luiz (Barueri/SP). Tudo o
+> que é dela está em `public/dados/`; o código não sabe o nome de cliente nenhum, e
+> `npm run generico` reprova se alguém cravar.
 
 **🔗 <https://flaviocom.github.io/escala-porteiros/>**
 
