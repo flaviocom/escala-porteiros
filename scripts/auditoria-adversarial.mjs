@@ -228,7 +228,27 @@ conferir(F3, 'os dois arquivos de dados (public e docs) são iguais?', () => {
     const pa = join(RAIZ, 'public/dados', nome)
     const pb = join(RAIZ, 'docs/dados', nome)
     if (!existsSync(pa) || !existsSync(pb)) { ausentes.push(nome); continue }
-    if (readFileSync(pa, 'utf8') !== readFileSync(pb, 'utf8')) divergentes.push(nome)
+    /*
+      🔴 COMPARA CONTEÚDO, NÃO BYTES — corrigido em 05/08/2026, depois de um alarme falso REAL.
+
+      A comparação byte a byte acusou `config.json` como divergente: 800 bytes contra 753. O
+      conteúdo era **idêntico** — a diferença eram 47 fins de linha, CRLF de um lado e LF do outro,
+      porque o git normaliza no `checkout` e os scripts gravam com `
+`.
+
+      No Windows, byte-igualdade entre as duas pastas é inalcançável. Um portão que exige o
+      inalcançável fica **cronicamente vermelho** — e vermelho crônico ensina a ignorar vermelho,
+      que é como um dia se ignora a divergência de verdade. Este projeto já pagou por isso hoje
+      (`vivo:admin` gritou por um dia inteiro sobre um produto certo).
+
+      Fim de linha normalizado, o resto comparado inteiro: um `"ativo": true` virando `false` de um
+      lado só continua sendo acusado — é o caso que originou esta checagem.
+    */
+    // Construído por código, sem barra invertida: este arquivo já foi reescrito por script hoje, e
+    // a barra some no caminho — virando quebra de linha de verdade dentro da expressão.
+    const CR = String.fromCharCode(13)
+    const normalizar = (caminho) => readFileSync(caminho, 'utf8').split(CR).join('')
+    if (normalizar(pa) !== normalizar(pb)) divergentes.push(nome)
   }
   if (ausentes.length || divergentes.length)
     return {

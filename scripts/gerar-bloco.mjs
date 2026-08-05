@@ -108,10 +108,26 @@ const CAPACIDADE = config.capacidadePadrao
  * diagnóstico que apontava para o lugar errado: parecia falta de gente, era data contaminada. A tela
  * já filtrava certo (o `useMemo` da fronteira, em `AbaGerar`); era só este script que não.
  */
+/*
+  🔴 TODOS OS BLOCOS, NÃO SÓ O ÚLTIMO — segundo achado da mesma auditoria, 05/08/2026.
+
+  A unificação da manhã pegou a MONTAGEM dos blocos e deixou a FRONTEIRA como fonte dupla, no mesmo
+  arquivo: aqui ela varria só `historico.turnos` — o último bloco anterior —, enquanto a tela varre
+  `dados.blocos` inteiro.
+
+  Com três blocos publicados, quem teve a última escala num bloco do MEIO ficaria sem fronteira, e o
+  gerador poderia escalá-lo no dia seguinte ao turno anterior — que é o defeito de distanciamento
+  que originou este projeto.
+
+  O comentário logo acima já dizia "TODOS OS BLOCOS ANTERIORES, NÃO SÓ O PRIMEIRO". Ele valia para a
+  montagem, e não tinha sido aplicado aqui.
+*/
 const fronteira = {}
-for (const t of historico.turnos) {
-  if (!(t.data < DE)) continue
-  for (const id of t.pessoas) if (!fronteira[id] || t.data > fronteira[id]) fronteira[id] = t.data
+for (const b of blocosArq.blocos) {
+  for (const t of b.turnos) {
+    if (!(t.data < DE)) continue
+    for (const id of t.pessoas) if (!fronteira[id] || t.data > fronteira[id]) fronteira[id] = t.data
+  }
 }
 
 console.log(`GERAÇÃO DO BLOCO ${formatarBR(DE)} → ${formatarBR(ATE)}\n`)
@@ -207,16 +223,17 @@ if (ESCREVER) {
   */
   const novo = { versao: 1, blocos: montarBlocosParaPublicar(blocosArq.blocos, r.bloco) }
 
-  const conta = conferirPassadoPreservado(blocosArq.blocos, novo.blocos, DE)
+  const conta = conferirPassadoPreservado(blocosArq.blocos, novo.blocos, { inicio: DE, fim: ATE })
   if (!conta.ok) {
     console.error(`
-🔴 PERDA DE PASSADO: antes do corte havia ${conta.antes} turno(s); depois de montar, ${conta.depois}.`)
+🔴 PERDA DE ESCALA PUBLICADA: fora do período ${DE}→${ATE} havia ${conta.antes} turno(s); depois de montar, ${conta.depois}.`)
+    console.error(`   Dias que sumiriam: ${conta.perdidos.slice(0, 8).join(', ')}${conta.perdidos.length > 8 ? ` (+${conta.perdidos.length - 8})` : ''}`)
     console.error('   Nada foi gravado. Isto é passado sendo reescrito, e o produto promete que isso não acontece.')
     process.exit(3)
   }
   console.log(`
   blocos no arquivo ............... ${novo.blocos.length}`)
-  console.log(`  passado conferido ............... ${conta.depois} de ${conta.antes} turno(s) antes do corte`)
+  console.log(`  escala publicada preservada ..... ${conta.depois} de ${conta.antes} turno(s) fora do período gerado`)
 
   const conteudo = JSON.stringify(novo, null, 2) + '\n'
   for (const pasta of ['public/dados', 'docs/dados']) {

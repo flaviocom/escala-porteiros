@@ -24,7 +24,7 @@ import { gerarVariasVersoes } from '../dominio/gerador'
 import { validar, resumir } from '../dominio/validacao'
 import { CATALOGO, menorIntervalo } from '../dominio/regras'
 import { conferirPorFora } from '../dominio/conferencia-independente'
-import { montarBlocosParaPublicar } from '../dominio/blocos'
+import { conferirPassadoPreservado, montarBlocosParaPublicar } from '../dominio/blocos'
 import { diferencaEmDias, formatarBR, hojeSaoPaulo, NOMES_DIA, NOMES_DIA_CURTO, somarDias } from '../dominio/datas'
 import { AbaAjustar } from './AbaAjustar'
 import { arbitrar, auditar, medir, pedirProposta, type Placar, type ProgressoMotor } from './motor'
@@ -1724,7 +1724,25 @@ const AbaPublicar: React.FC<{
     })
   }
 
-  const impedido = relatorio ? !relatorio.aprovada : false
+  /*
+    🔴 O GUARDA DO PASSADO, NA TELA — achado da auditoria externa de 05/08/2026.
+
+    `conferirPassadoPreservado` existia e estava ligado **só no `gerar-bloco.mjs`**, cujo próprio
+    cabeçalho diz *"não é ferramenta de produção"*. O botão que o Flavio clica publicava **sem
+    guarda nenhum**.
+
+    E o que ele guarda não é hipótese: gerar um período MENOR que o publicado apagava a cauda.
+    Medido no dado real — gerar `01/09 → 31/10` sobre um bloco que ia até 31/12 sumia com **73
+    turnos** de novembro e dezembro, em silêncio, e o site passava a não ter escala nesses meses.
+
+    Agora a publicação trava, e a mensagem diz **quais datas** sumiriam.
+  */
+  const perda = useMemo(
+    () => (blocoNovo ? conferirPassadoPreservado(dados.blocos, blocosParaPublicar, blocoNovo) : null),
+    [dados.blocos, blocosParaPublicar, blocoNovo],
+  )
+
+  const impedido = (relatorio ? !relatorio.aprovada : false) || (perda ? !perda.ok : false)
   /** Sem token, publicar pela tela não existe — e o motivo aparece, em vez de um botão morto. */
   const semToken = !segredos.tokenGitHub
 
@@ -1737,10 +1755,21 @@ const AbaPublicar: React.FC<{
             as restrições</strong>, sem mexer na escala que está no ar.
           </Aviso>
         )}
-        {impedido && (
+        {relatorio && !relatorio.aprovada && (
           <Aviso tom="erro">
             A escala gerada <strong>não passou na validação</strong>. Publicar está bloqueado — volte
             em "Gerar escala" e veja quais regras foram violadas.
+          </Aviso>
+        )}
+        {perda && !perda.ok && (
+          <Aviso tom="erro">
+            <strong>Publicar apagaria escala que já está no ar.</strong> O período gerado
+            ({formatarBR(blocoNovo!.inicio)} a {formatarBR(blocoNovo!.fim)}) é mais curto que o
+            publicado, e {perda.antes - perda.depois} turno(s) de {perda.perdidos.length} dia(s)
+            ficariam sem ninguém — a partir de <strong>{formatarBR(perda.perdidos[0])}</strong>.
+            <br /><br />
+            Gere de novo com o campo <strong>Até</strong> cobrindo pelo menos o que já foi publicado,
+            ou aceite conscientemente que aqueles dias saiam do ar.
           </Aviso>
         )}
         {blocoNovo && !impedido && (
@@ -1748,7 +1777,8 @@ const AbaPublicar: React.FC<{
             <p>Vai ao ar a escala de <strong>{formatarBR(blocoNovo.inicio)}</strong> a <strong>{formatarBR(blocoNovo.fim)}</strong>.</p>
             <p className="text-gray-500 text-xs">
               {blocosParaPublicar.length} bloco(s) no total · o anterior é cortado em{' '}
-              {formatarBR(somarDias(blocoNovo.inicio, -1))} e o que está antes disso não é tocado.
+              {formatarBR(somarDias(blocoNovo.inicio, -1))}, e o que está fora deste período —
+              antes <em>ou depois</em> — não é tocado.
             </p>
           </div>
         )}

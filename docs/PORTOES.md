@@ -40,7 +40,7 @@ alguma tiver caractere de controle.
 
 ---
 
-## Os 16 passos do `npm run gate`
+## Os 19 passos do `npm run gate`
 
 ### 1. `typecheck` — `tsc --noEmit`, `strict` ligado
 Sem `strict`, o TypeScript nem estreita união discriminada, e metade das garantias de tipo do
@@ -69,7 +69,7 @@ Em UTC−3 um defeito de fuso é invisível: o dia só vira no fim da tarde.
 artificial"*). Os 13 de absolvição são o que impede o portão de virar ruído.
 
 ### 5. `fontes` — nenhuma fonte externa chamada sem estar declarada
-**População:** 71 arquivos em `src/` **e** `scripts/` · 1 isento (o próprio inventário).
+**População:** 83 arquivos em `src/` **e** `scripts/` · 1 isento (o próprio inventário).
 **Critério:** todo host em URL literal tem de estar em `docs/INVENTARIO_DE_FONTES.md`.
 **Fora de escopo, declarado:** laço local (`127.0.0.1`) e domínios reservados pela RFC 2606
 (`example.com`, `.test`, `.invalid`) — é o que permite escrever exemplo em mensagem de ajuda.
@@ -95,7 +95,7 @@ vem antes de `HANDOFF_2026-08-05-b.md` no alfabeto e é o mais **antigo** dos do
 esteja fora de uma linha que se diz "mais recente".
 
 ### 8. `generico` — nenhum nome de cliente cravado (§0)
-**População:** 30 arquivos (`src/` + `index.html` + `package.json`) · **10 testes pulados**, contados
+**População:** 31 arquivos (`src/` + `index.html` + `package.json`) · **17 testes pulados**, contados
 e impressos.
 **Os 7 termos:** `JD. São Luiz` · `Congregação Cristã` · `CCB` (com borda por classe de caracteres,
 sem barra invertida) · `Escala (de) Porteiros` · o prompt do motor cravado · `porteiro(s)` como
@@ -138,19 +138,53 @@ bloco publicado, turnos congelados, fontes declaradas, regras do catálogo, regr
 **Nenhum é digitado.** Achou 4 contradições na primeira execução, e depois **pegou a própria
 mudança**: ao entrar no gate, virou o 16º passo e reprovou os documentos que diziam 15.
 
-### 14. `auditoria` — 20 ataques ao próprio código
+### 14. `datas` — `toISOString()` não decide dia nem mês
+**População:** 83 arquivos de `src/` e `scripts/` · isento `datas.test.ts`, que **cita** o
+antipadrão para provar que ele erra.
+**Critério, em dois níveis:**
+- 🔴 **proibido:** `toISOString().slice(...)` — extrai dia ou mês **em UTC**, e às 21h em São Paulo
+  já é amanhã. É a forma que quebrou o site anterior;
+- ✅ **permitido, e declarado arquivo a arquivo:** usar a cadeia **inteira** como chave opaca, quando
+  ela volta por `parseISO` e é formatada em hora local. Medido nos três fusos (São Paulo −3, Berlim
+  +2, Tóquio +9): o rótulo sai correto nos três.
+**Por que existe:** *"`toISOString()` é proibido"* é a regra mais repetida deste projeto — está em
+`datas.ts`, no `RECONSTRUIR.md`, no `AGENTS.md` e em três comentários de teste. **E não havia nada
+que a cobrasse.** Quando alguém foi olhar, havia 4 usos e o `BACKLOG.md` declarava 1.
+
+### 15. `citacoes` — citação `arquivo:linha` que aponta para o vazio
+**População:** os documentos vivos · isentos os append-only, porque corrigir a citação de um handoff
+seria mentir sobre o que se sabia naquele dia (e o número de pulados é impresso).
+**Critério:** o arquivo existe, e a linha existe.
+**Mais um nível, quando disponível:** se o documento cita um **símbolo** entre crases junto da linha
+— ``src/admin/Admin.tsx:1612 (`publicacaoEmVoo`)`` —
+
+⚠️ **Este exemplo já apodreceu uma vez, em duas horas.** Ele dizia `:1611`, e uma edição no arquivo
+empurrou a linha para 1612 — o portão pegou no `gate` seguinte. É a demonstração mais barata
+possível de por que ele existe: nem o texto que ENSINA a citar consegue guardar uma coordenada., o portão exige que o símbolo esteja **perto** dela. É o
+que transforma a citação de coordenada em afirmação verificável.
+**Limite declarado:** ele não confere se a linha *diz* o que o documento afirma — isso exigiria
+entender a frase. Pega arquivo renomeado, apagado e linha além do fim, que é a maior parte.
+
+### 16. `crescimento` — o dado ainda cabe onde é servido
+**Critério:** nenhum arquivo de `dados/` passa de **60%** do teto de 1 MB da Contents API do GitHub,
+que é a que a área administrativa usa para publicar.
+**Também mede o ritmo**, do próprio dado: bytes por turno × turnos por ano → anos de folga.
+**Por que 60% e não 90%:** sobra ano suficiente para arquivar sem pressa. Alarme que grita cedo
+demais é alarme que alguém desliga.
+
+### 17. `auditoria` — 20 ataques ao próprio código
 Cada ataque **injeta um infrator** e exige que a validação o pegue. Frentes: validação, datas e fuso,
 gerador, dado publicado (inclusive *"os dois arquivos de dados são iguais?"* — que pegou um defeito
 real), e camada de tela.
 ⚠️ **Relatório sem achado é declarado SUSPEITO pelo próprio script**, com o motivo estrutural: quem
 auditou escreveu o código.
 
-### 15. `regras-mestras` — tooltip em todo botão
+### 18. `regras-mestras` — tooltip em todo botão
 **População:** 62 botões medidos.
 **Também mede:** clicáveis fora de `<button>` (div/span com `onClick` e sem papel declarado) — hoje 0
 — e aspas duplas dentro do atributo, que quebram o HTML em silêncio.
 
-### 16. `build` — compila e gera em `docs/`
+### 19. `build` — compila e gera em `docs/`
 
 ---
 

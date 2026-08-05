@@ -78,7 +78,28 @@ const FATOS = [
   {
     chave: 'passos do gate',
     valor: pacote.scripts.gate.split('&&').length,
-    padroes: [/GATE (?:tem|encadeia) (?:\*\*)?(\d+)(?:\*\*)? passos/gi, /npm run gate\s+#\s*(\d+) passos/gi, /encadeia \*\*(\d+)\*\* passos/gi],
+    /*
+      🔴 O NÚMERO PODE VIR ANTES DE "GATE" — quarto buraco de fronteira, achado em 05/08/2026.
+
+      Os três padrões originais exigiam o número **à direita** da palavra `gate`. Quatro documentos
+      vivos afirmavam a contagem, e este portão cobria **um**. O `PORTOES.md` escrevia
+      *"Os 16 passos do `npm run gate`"* — número à ESQUERDA — com o gate em 19, e
+      `fatos:conferir` saía 0 com o defeito na frente dele.
+
+      É o padrão que três auditorias já nomearam neste projeto — *"o portão responde só a pergunta
+      que foi feita"* — repetindo dentro do portão criado para fechar exatamente essa classe.
+
+      ⚠️ Número **por extenso** ("dezenove") continua fora do alcance, e isso é limite declarado:
+      cobrir extenso exigiria um dicionário, e dicionário incompleto é pior que ausência — dá a
+      impressão de cobertura. Quem escrever por extenso escreve também o algarismo ao lado.
+    */
+    padroes: [
+      /GATE (?:tem|encadeia) (?:\*\*)?(\d+)(?:\*\*)? passos/gi,
+      /npm run gate\s+#\s*(\d+) passos/gi,
+      /encadeia \*\*(\d+)\*\* passos/gi,
+      /(?:os\s+)?(\d+)\s+passos\s+do\s+`?npm run gate`?/gi,
+      /^(\d+) passos, \*\*nesta ordem\*\*/gim,
+    ],
     fonte: 'package.json → scripts.gate',
   },
   {

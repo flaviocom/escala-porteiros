@@ -5,7 +5,7 @@
 > **Última atualização:** 05/08/2026 · **Fuso:** America/São_Paulo
 >
 > **Cadeia de navegação, nesta ordem:**
-> **`ESTADO.md` (você está aqui)** → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-05-c.md) → [`BACKLOG.md`](BACKLOG.md)
+> **`ESTADO.md` (você está aqui)** → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-05-d.md) → [`BACKLOG.md`](BACKLOG.md)
 > *onde estamos · o que aconteceu na última sessão e por quê · o que fazer a seguir*
 >
 > **Reconstruir do zero (portabilidade entre IAs):** [`docs/RECONSTRUIR.md`](docs/RECONSTRUIR.md)
@@ -86,7 +86,22 @@ lesse só aquilo concluiria que o produto já está sendo vendido.
 Detalhe, com as palavras dele e o que cada fase reabre:
 [`docs/FINALIDADE_E_FASES.md`](docs/FINALIDADE_E_FASES.md).
 
-Detalhe completo em [`HANDOFF_2026-08-05-c.md`](docs/handoff/HANDOFF_2026-08-05-c.md).
+**8. 🔴 QUATRO auditorias externas no dia — 48 achados, todos fechados.** A última pegou o pior:
+gerar um período **mais curto** que o publicado **apagava escala já divulgada**. Medido no dado
+real: gerar `01/09→31/10` sobre o bloco que vai até 31/12 sumia com **73 turnos** de novembro e
+dezembro — e o conferidor escrito no mesmo dia para impedir isso **aprovava**, porque contava só o
+que vinha antes do corte.
+
+> 🔴 **Um conferidor que prova metade da frase é pior que nenhum: ele dá licença.**
+
+O bloco anterior passou a ser **partido em cabeça e cauda**, o guarda foi **ligado na tela** (vivia
+só num script que se declara "não é ferramenta de produção"), e publicar trava dizendo **quais
+dias** sumiriam.
+
+**9. O caminho inteiro virou portão** (`npm run vivo:caminho`). Os outros cobrem cada peça; a
+sequência que a pessoa faz de verdade não era percorrida por ninguém.
+
+Detalhe completo em [`HANDOFF_2026-08-05-d.md`](docs/handoff/HANDOFF_2026-08-05-d.md).
 
 ## O que entrou em 04/08: a auditoria independente (P2.10)
 
