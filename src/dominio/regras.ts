@@ -21,7 +21,7 @@
  * fora de alguma avaliação, isso é declarado e contado no relatório, nunca silenciado.
  */
 import {
-  diaDaSemana, diferencaEmDias, formatarBR, mesDe, NOMES_DIA, type DataISO,
+  deData, diaDaSemana, diferencaEmDias, formatarBR, mesDe, NOMES_DIA, type DataISO,
 } from './datas'
 import { ROTULO_TURNO, type Bloco, type Configuracao, type Pessoa, type TipoTurno, type Turno } from './tipos'
 import { construirGrade } from './malha'
@@ -792,32 +792,83 @@ const Q4: Regra = {
   },
 }
 
+/**
+ * 🔴 TOLERÂNCIA — convenção de casa, DECLARADA como tal, instituída pelo Flavio em 05/08/2026.
+ *
+ * A fala dele, ao ver Q5 acusando *"Thiago ficou com 1 de 2 em agosto"*: **"elas têm um teto e elas
+ * não podem ultrapassar o teto, mas ficar abaixo, desde que não fiquem muito abaixo, com
+ * tolerância. Tudo bem também."**
+ *
+ * O teto é MÁXIMO, nunca meta — `tipos.ts` já dizia isso, e o site anterior quebrou justamente por
+ * confundir os dois. Mas Q5 estava acusando **qualquer** valor abaixo, o que transforma o aviso em
+ * ruído: aviso que aparece sempre é aviso que ninguém lê — e aí o dia em que houver injustiça de
+ * verdade passa junto com os outros.
+ *
+ * ⚠️ O número 1 é **convenção de casa**, não padrão de mercado: não existe fonte externa para
+ * "quanto abaixo do teto é demais" numa escala de voluntários. Fica declarado aqui, na tela
+ * (`explicacao`) e no `BACKLOG.md`. Com tetos de 2 e 3, ficar 1 abaixo é 50–67% do teto; ficar 2
+ * abaixo já é metade ou menos, e aí vale olhar.
+ */
+const TOLERANCIA_ABAIXO_DO_TETO = 1
+
+/** Último dia do mês `AAAA-MM`. O dia 0 do mês seguinte é o último do atual, e o JS acerta ano. */
+function ultimoDiaDoMes(mes: string): DataISO {
+  const [ano, m] = mes.split('-').map(Number)
+  const d = new Date(Date.UTC(ano, m, 0))
+  return deData(d)
+}
+
 const Q5: Regra = {
   id: 'Q5',
-  titulo: 'Piso mensal — quem tem teto e ficou abaixo dele',
+  titulo: 'Piso mensal — quem tem teto e ficou MUITO abaixo dele',
   familia: 'QUALIDADE',
   explicacao:
-    'Quem tem um teto mensal e ficou bem abaixo dele. Pode ser injustiça de distribuição, ou pode ser a restrição dele funcionando.',
+    'O teto é um máximo, nunca uma meta: ficar abaixo dele não é falha. Este aviso só aparece quando ' +
+    `alguém fica ${TOLERANCIA_ABAIXO_DO_TETO + 1} ou mais abaixo do próprio teto, num mês INTEIRO. ` +
+    'Aí pode ser injustiça de distribuição, ou pode ser a restrição dele funcionando. Mês cortado ' +
+    'pela metade — o primeiro e o último de qualquer escala — não conta, porque não dá para cobrar ' +
+    'uma conta mensal de quem só teve meio mês.',
   avaliar(ctx) {
     const violacoes: Violacao[] = []
     const meses = [...new Set(turnosComGente(ctx.bloco).map((t) => mesDe(t.data)))].sort()
     const contados: Pessoa[] = []
+
+    /**
+     * 🔴 MÊS CORTADO NÃO SE JULGA — e era a origem dos dois avisos de 05/08/2026.
+     *
+     * O bloco começava em 06/08, então agosto entrava com 24 dos 31 dias. Cobrar o teto MENSAL
+     * cheio de quem só teve meio mês disponível é cobrar uma conta que ninguém podia fechar. O
+     * primeiro e o último mês de qualquer escala caem sempre nisso.
+     */
+    const mesInteiro = (m: string) =>
+      diferencaEmDias(ctx.bloco.inicio, `${m}-01` as DataISO) >= 0 &&
+      diferencaEmDias(ultimoDiaDoMes(m), ctx.bloco.fim) >= 0
+
+    const julgados = meses.filter(mesInteiro)
+
     for (const p of pessoasDoBloco(ctx)) {
       const teto = p.restricoes.tetoMensal
       if (teto == null) continue
       contados.push(p)
-      for (const m of meses) {
+      for (const m of julgados) {
         const n = turnosComGente(ctx.bloco).filter(
           (t) => mesDe(t.data) === m && t.pessoas.includes(p.id),
         ).length
-        if (n < teto)
+        if (teto - n > TOLERANCIA_ABAIXO_DO_TETO)
           violacoes.push({ pessoaId: p.id, mensagem: `${p.nome} ficou com ${n} de ${teto} em ${m}` })
       }
     }
+
+    const cortados = meses.length - julgados.length
     return {
       id: Q5.id, titulo: Q5.titulo, familia: 'QUALIDADE',
       status: violacoes.length ? 'aviso' : 'ok',
-      medida: `${contados.length} pessoa(s) com teto nesta escala${comNomes(contados)} · ${meses.length} mês(es)`,
+      // O que NÃO foi julgado aparece no relatório: silêncio sobre mês pulado lê-se como cobertura total.
+      medida:
+        `${contados.length} pessoa(s) com teto nesta escala${comNomes(contados)} · ` +
+        `${julgados.length} mês(es) inteiro(s) julgado(s)` +
+        (cortados ? `, ${cortados} cortado(s) e não julgado(s)` : '') +
+        ` · tolerância de ${TOLERANCIA_ABAIXO_DO_TETO} abaixo do teto (convenção de casa)`,
       violacoes,
     }
   },

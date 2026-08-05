@@ -50,12 +50,16 @@ function ctxDe(
     config?: Partial<Configuracao>
     malha?: Bloco['malha']
     origem?: Bloco['origem']
+    // Q5 passou a julgar só MÊS INTEIRO, então o intervalo do bloco deixou de ser detalhe: um bloco
+    // que vai do primeiro ao último turno quase nunca cobre um mês fechado.
+    inicio?: string
+    fim?: string
   } = {},
 ): Contexto {
   const bloco: Bloco = {
     id: 'teste',
-    inicio: turnos[0]?.data ?? '2026-09-01',
-    fim: turnos[turnos.length - 1]?.data ?? '2026-09-30',
+    inicio: (extras.inicio ?? turnos[0]?.data ?? '2026-09-01') as Bloco['inicio'],
+    fim: (extras.fim ?? turnos[turnos.length - 1]?.data ?? '2026-09-30') as Bloco['fim'],
     geradoEm: '2026-08-04T12:00:00-03:00',
     origem: extras.origem ?? 'algoritmo',
     pisoAlcancado: extras.piso ?? null,
@@ -546,11 +550,74 @@ describe('Q4 — variedade de companhia', () => {
 
 describe('Q5 — piso mensal', () => {
   const teto3 = [pessoa('ana', { restricoes: { tetoMensal: 3 } }), pessoa('bia'), pessoa('caio')]
+
+  /*
+    🔴 O MÊS PRECISA SER INTEIRO — mudança de 05/08/2026, pedida pelo Flavio.
+
+    Antes, `ctxDe` fazia o bloco ir do primeiro ao último turno, e um bloco de um dia era "setembro".
+    Como Q5 passou a julgar só mês fechado, esses testes precisam DECLARAR o mês — e é bom que
+    precisem: a declaração explícita é o que torna visível qual mês está sendo cobrado.
+  */
+  const setembroInteiro = { inicio: '2026-09-01', fim: '2026-09-30' }
+
   it('avisa quem tem teto de 3 e ficou com 1', () => {
-    const r = rodar('Q5', ctxDe([turno('2026-09-02', 'NOITE', ['ana', 'bia', 'caio'])], teto3))
+    const r = rodar('Q5', ctxDe([turno('2026-09-02', 'NOITE', ['ana', 'bia', 'caio'])], teto3, setembroInteiro))
     expect(r.status).toBe('aviso')
     expect(r.violacoes[0].mensagem).toMatch(/\b1 de 3\b/)
   })
+  /*
+    ── A TOLERÂNCIA, E O QUE ELA NÃO PODE VIRAR ──────────────────────────────────────────────────
+
+    🔴 Instituída pelo Flavio em 05/08/2026: *"elas têm um teto e elas não podem ultrapassar o teto,
+    mas ficar abaixo, desde que não fiquem muito abaixo, com tolerância. Tudo bem também."*
+
+    O risco de toda tolerância é virar uma regra que nunca acusa — e uma regra que nunca acusa é
+    indistinguível de uma regra apagada. Por isso os dois lados estão aqui: 1 abaixo passa, 2 abaixo
+    acusa. Se alguém subir a tolerância sem pensar, o segundo teste fica vermelho.
+  */
+  it('🔴 ficar 1 abaixo do teto NÃO acusa — teto é máximo, não meta', () => {
+    const r = rodar('Q5', ctxDe([
+      turno('2026-09-02', 'NOITE', ['ana', 'bia', 'caio']),
+      turno('2026-09-09', 'NOITE', ['ana', 'bia', 'caio']),
+    ], teto3, setembroInteiro))
+    expect(r.status).toBe('ok')
+    expect(r.violacoes).toEqual([])
+  })
+
+  it('🔴 e a outra ponta: 2 abaixo do teto AINDA acusa — a tolerância não pode calar a regra', () => {
+    const r = rodar('Q5', ctxDe([turno('2026-09-02', 'NOITE', ['ana', 'bia', 'caio'])], teto3, setembroInteiro))
+    expect(r.status).toBe('aviso')
+    expect(r.violacoes[0].mensagem).toContain('1 de 3')
+  })
+
+  it('🔴 mês CORTADO não é julgado — não se cobra conta mensal de quem teve meio mês', () => {
+    // Foi a origem dos dois avisos de 05/08/2026: o bloco começava em 06/08 e agosto entrava com
+    // 24 dos 31 dias. Aqui setembro entra pela metade, com alguém a 3 de distância do teto.
+    const r = rodar('Q5', ctxDe(
+      [turno('2026-09-16', 'NOITE', ['bia', 'caio'])],
+      [pessoa('ana', { restricoes: { tetoMensal: 3 } }), pessoa('bia'), pessoa('caio')],
+      { inicio: '2026-09-15', fim: '2026-09-30' },
+    ))
+    expect(r.status).toBe('ok')
+    expect(r.medida).toContain('cortado')
+  })
+
+  it('🔴 o par: o MESMO caso num mês inteiro É julgado', () => {
+    const r = rodar('Q5', ctxDe(
+      [turno('2026-09-16', 'NOITE', ['bia', 'caio'])],
+      [pessoa('ana', { restricoes: { tetoMensal: 3 } }), pessoa('bia'), pessoa('caio')],
+      { inicio: '2026-09-01', fim: '2026-09-30' },
+    ))
+    expect(r.status).toBe('aviso')
+    expect(r.violacoes[0].mensagem).toContain('0 de 3')
+  })
+
+  it('a medida DIZ quantos meses pulou — silêncio sobre mês pulado lê-se como cobertura total', () => {
+    const r = rodar('Q5', ctxDe([turno('2026-09-16', 'NOITE', ['ana'])], teto3, { inicio: '2026-09-15', fim: '2026-09-30' }))
+    expect(r.medida).toMatch(/0 mês\(es\) inteiro\(s\)/)
+    expect(r.medida).toContain('tolerância')
+  })
+
   it('fica ok quando o teto foi atingido', () => {
     const r = rodar('Q5', ctxDe([
       turno('2026-09-02', 'NOITE', ['ana', 'bia', 'caio']),
@@ -580,7 +647,7 @@ describe('Q5 — piso mensal', () => {
     const r = rodar('Q5', ctxDe(
       [turno('2026-09-02', 'NOITE', ['ana', 'bia', 'caio'])],
       teto3,
-      { elenco: ['ana', 'bia', 'caio'] },
+      { elenco: ['ana', 'bia', 'caio'], ...setembroInteiro },
     ))
     expect(r.status).toBe('aviso')
     expect(r.violacoes[0].mensagem).toMatch(/\b1 de 3\b/)

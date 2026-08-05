@@ -119,7 +119,10 @@ regras da do algoritmo antes de chegar à tela de publicação.
 |---|---|---|
 | **Distanciamento entre escalas** | **Não há número fixo.** O motor tenta o maior piso possível e desce até caber; informa o piso alcançado | Decisão do Flavio: número fixo pode inviabilizar a escala quando o elenco encolhe |
 | **Piso de distanciamento** | Calculado **por pessoa**, não global | Quem só pode aos domingos tem teto natural menor; cobrar o mesmo dos outros seria injusto |
-| **Cota mensal** | **Teto**, com aviso se ficar abaixo | O site antigo trata como teto no gerador e cobra como exato na validação — contradição ativa |
+| **Cota mensal** | **Teto = MÁXIMO, nunca meta.** Nunca se ultrapassa; ficar abaixo **não é falha**. Só vira aviso quem fica **2 ou mais** abaixo, e **só em mês inteiro** | O site antigo tratava como teto no gerador e cobrava como exato na validação — contradição ativa. A tolerância é do Flavio (05/08/2026): *"ficar abaixo, desde que não fiquem muito abaixo, com tolerância"* |
+| **Tolerância abaixo do teto** | **1** — 🏠 **convenção de casa, não padrão de mercado** | Não existe fonte externa para "quanto abaixo do teto é demais" numa escala de voluntários. Com tetos de 2 e 3, ficar 1 abaixo é 50–67%; 2 abaixo já é metade ou menos. Declarada no código (`TOLERANCIA_ABAIXO_DO_TETO`), na tela e aqui |
+| **Mês cortado** | **Não se julga cota mensal de mês pela metade** | O primeiro e o último mês de qualquer escala entram incompletos. Cobrar teto mensal cheio de quem teve meio mês é cobrar conta que ninguém podia fechar — foi o que produziu 2 avisos falsos em 05/08/2026 |
+| **Repetição de trio (Q4)** | **Aceita.** Avisa, nunca reprova | Decisão do Flavio em 05/08/2026, vendo 4 trios repetidos 3× em 5 meses: *"tudo bem, não é grave, não infringe nenhuma regra"* |
 | **Santa Ceia** | **1× por ano**, sem porteiros, dia **pulado** na distribuição; data cadastrável e pode estar vazia | Irmãos de outra igreja atendem nesse dia; os daqui participam |
 | **Data da Santa Ceia** | **16/08/2026** | O site antigo tem `2026-06-07`, que está errado |
 | **1º sábado do mês** | Tem turno de **Tarde (Ensaio)** além da Noite | Malha vigente da escala `mar` |
