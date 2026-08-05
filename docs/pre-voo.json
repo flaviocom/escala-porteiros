@@ -17,6 +17,12 @@
     "autor": "Flavio Oliveira <brflaviooliveira@gmail.com>"
   },
 
+  "_nota_deps": "A ausência de node_modules AQUI é PROPOSITAL, não esquecimento. Medido em 04/08/2026 com o disco em repouso: escrever 100 arquivos pequenos leva 79.844 ms em D: contra 45 ms em C: (~1.775x). Um npm install (~30 mil arquivos) levaria HORAS nesta pasta; na cópia em C: levou 14 segundos. Por isso o build e os testes rodam em C:\\Users\\oflav\\build\\escala-porteiros, e o GitHub é a ponte. Sem esta isenção o pré-voo cravaria vermelho em TODA tarefa — e portão cronicamente vermelho é portão que alguém aprende a ignorar, que foi como dois crons parados passaram meses escondidos sob um alarme de disco que soava todo dia. A isenção NÃO desliga a checagem: instalação PARCIAL continua sendo acusada, e o item continua aparecendo no relatório com este motivo ao lado. Para reverter, apague o bloco `deps` — o padrão volta a bloquear. Provado por _padroes-globais/scripts/autoteste-pre-voo-deps.mjs (8 casos; contra a versão anterior do pré-voo, reprova 4).",
+  "deps": {
+    "bloqueia": false,
+    "motivo": "ausência proposital — o build roda na cópia em C:, esta pasta mede 0,8 s por arquivo"
+  },
+
   "_nota_arquivos": "Os três arquivos abaixo são o PORTÃO da regra de portabilidade entre IAs. Sem eles, quem assumir o projeto precisa que o Flavio explique tudo — que é exatamente o que a regra proíbe. Não os remova desta lista.",
   "arquivos": [
     "AGENTS.md",
