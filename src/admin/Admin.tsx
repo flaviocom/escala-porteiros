@@ -2147,6 +2147,22 @@ const Historico: React.FC<{
         com data e o que mudou. Se algo sair errado, <strong>Voltar a esta versão</strong> republica a
         escala como ela estava naquele dia; isso também vira uma publicação nova, então nada se perde
         e dá para desfazer o desfazer.
+        {/*
+          🔴 SEM TOKEN, ESTE PARÁGRAFO PROMETIA UM BOTÃO QUE NÃO EXISTE — 05/08/2026.
+
+          Ler o histórico de um repositório público não precisa de credencial nenhuma (foi por isso
+          que o cabeçalho `Bearer ` vazio saiu daqui: credencial vazia dá 401, credencial nenhuma dá
+          200). **Reverter, sim** — é uma escrita. Quem entra sem token vê a lista inteira, os
+          botões não aparecem, e antes nada dizia por quê. Deixar a pessoa procurar um botão que o
+          texto prometeu é o mesmo defeito de sempre, só que pequeno.
+        */}
+        {!segredos.tokenGitHub && (
+          <p className="mt-2 border-t border-gray-200 pt-2">
+            <strong>Você entrou sem token</strong>, então esta lista é só de leitura — o histórico de
+            um repositório público qualquer um lê. Voltar a uma versão é uma <em>escrita</em>, e
+            precisa do token; sem ele, o caminho é o mesmo do Publicar à mão, ali em cima.
+          </p>
+        )}
       </div>
       {!lista && !carregando && (
         <button title="Lista as publicações anteriores, com data e o que mudou"
@@ -2194,7 +2210,8 @@ const Historico: React.FC<{
                     {p.arquivos.length > 0 && ` · ${p.arquivos.join(', ')}`}
                   </p>
                 </div>
-                {i > 0 && p.arquivos.length > 0 && (
+                {/* Sem token, reverter falharia na API — o botão não aparece, e o texto acima diz por quê. */}
+                {i > 0 && p.arquivos.length > 0 && segredos.tokenGitHub && (
                   <div className="flex flex-wrap gap-1.5 shrink-0">
                     {p.arquivos.map((a) => (
                       <button title="Restaura este arquivo como estava nesta data. Não apaga nada: entra como publicação nova"
