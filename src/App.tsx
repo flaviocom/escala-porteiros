@@ -57,7 +57,14 @@ function App({ shifts, dados }: AppProps) {
     return Array.from(new Set(shifts.map(s => mesDeData(s.date)))).sort();
   }, [shifts]);
 
-  const brotherOptions = useMemo(() => BROTHERS.map(b => ({ value: b.id, label: b.name })), []);
+  // Quem saiu do elenco CONTINUA aqui — o passado dele está na escala e precisa ser filtrável.
+  // Vem marcado e no fim da lista: presente para consulta, sem competir com quem escala hoje.
+  const brotherOptions = useMemo(
+    () => [...BROTHERS]
+      .sort((a, b) => Number(b.ativo) - Number(a.ativo))
+      .map(b => ({ value: b.id, label: b.ativo ? b.name : `${b.name} (saiu da escala)` })),
+    []
+  );
   const monthOptions = useMemo(() => months.map(m => ({
     value: parseISO(m).toISOString(),
     label: format(parseISO(m), 'MMMM yyyy', { locale: ptBR }).replace(/^\w/, c => c.toUpperCase())
@@ -108,7 +115,9 @@ function App({ shifts, dados }: AppProps) {
   };
 
   const filteredBrothers = useMemo(() =>
-    BROTHERS.filter(b => b.name.toLowerCase().includes(brotherSearch.toLowerCase())),
+    BROTHERS
+      .filter(b => b.name.toLowerCase().includes(brotherSearch.toLowerCase()))
+      .sort((a, b) => Number(b.ativo) - Number(a.ativo)),
     [brotherSearch]
   );
 
@@ -377,6 +386,14 @@ function App({ shifts, dados }: AppProps) {
                     {b.name.charAt(0)}
                   </div>
                   <span className="text-base font-semibold">{b.name}</span>
+                  {!b.ativo && (
+                    <span
+                      title="Saiu do elenco. A escala passada dele continua aqui — nada foi apagado."
+                      className="ml-auto text-[11px] font-semibold px-2 py-1 rounded-full bg-gray-100 text-gray-500 shrink-0"
+                    >
+                      saiu
+                    </span>
+                  )}
                 </button>
               ))}
             </div>

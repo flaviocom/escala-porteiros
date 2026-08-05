@@ -21,11 +21,14 @@ export const StatsView: React.FC<StatsViewProps> = ({ shifts }) => {
     shifts.forEach(shift => {
       const monthKey = mesDeData(shift.date); // mes LOCAL, nunca UTC
       shift.assignedBrothers.forEach(bId => {
-        if (counts[bId]) {
-          counts[bId].total++;
-          const m = counts[bId].byMonth;
-          m[monthKey] = (m[monthKey] || 0) + 1;
-        }
+        // 🔴 Sem `if (counts[bId])`. O guard descartava EM SILÊNCIO todo turno de quem não estivesse
+        // na lista — e quem saía do elenco caía exatamente aí: os cultos passados dele sumiam do
+        // total, sem uma linha de aviso. Contar sempre é o certo; se aparecer um id desconhecido,
+        // ele vira uma linha visível em vez de um número menor que ninguém confere.
+        if (!counts[bId]) counts[bId] = { total: 0, byMonth: {} };
+        counts[bId].total++;
+        const m = counts[bId].byMonth;
+        m[monthKey] = (m[monthKey] || 0) + 1;
       });
     });
 
@@ -68,7 +71,12 @@ export const StatsView: React.FC<StatsViewProps> = ({ shifts }) => {
             </tr>
           </thead>
           <tbody className="divide-y divide-border-subtle bg-surface-card">
-            {BROTHERS.map((brother, idx) => {
+            {BROTHERS
+              // Quem está no elenco aparece sempre; quem saiu, só se tiver turno no período em
+              // vista — presente onde o passado dele existe, sem poluir onde não existe.
+              .filter(b => b.ativo || (stats[b.id]?.total ?? 0) > 0)
+              .sort((a, b) => Number(b.ativo) - Number(a.ativo))
+              .map((brother, idx) => {
               const s = stats[brother.id] || { total: 0, byMonth: {} };
               return (
                 <tr key={brother.id} className={clsx(
@@ -80,6 +88,14 @@ export const StatsView: React.FC<StatsViewProps> = ({ shifts }) => {
                     idx % 2 === 0 ? "bg-[#ffffff]" : "bg-[#f9fafb]"
                   )}>
                     {brother.name}
+                    {!brother.ativo && (
+                      <span
+                        title="Saiu do elenco. Os turnos passados dele continuam contando — nada foi apagado."
+                        className="ml-2 text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-500 align-middle"
+                      >
+                        saiu
+                      </span>
+                    )}
                   </td>
                   <td className="px-space-4 py-space-3 text-center font-bold text-action-primary bg-surface-subtle/50">
                     {s.total}

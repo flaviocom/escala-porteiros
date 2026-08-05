@@ -28,9 +28,15 @@ const entrada = join(RAIZ, 'node_modules', '.auditoria-entrada.ts')
 const saida = join(RAIZ, 'node_modules', '.auditoria.mjs')
 require('node:fs').writeFileSync(
   entrada,
-  ['datas', 'malha', 'regras', 'validacao', 'gerador']
-    .map((m) => `export * from '../src/dominio/${m}'`)
-    .join('\n'),
+  [
+    ...['datas', 'malha', 'regras', 'validacao', 'gerador'].map(
+      (m) => `export * from '../src/dominio/${m}'`,
+    ),
+    // A ponte para a interface entra no pacote atacado: foi lá que nasceu o defeito de
+    // 04/08/2026 — uma regra do domínio ("nunca apagar quem saiu") violada três camadas
+    // acima, na tela, onde nenhum teste de domínio alcançava.
+    "export { BROTHERS, definirPessoas } from '../src/types/scheduler'",
+  ].join('\n'),
   'utf8',
 )
 esbuild.buildSync({ entryPoints: [entrada], outfile: saida, format: 'esm', platform: 'node', bundle: true })
@@ -311,8 +317,52 @@ conferir(F5, 'o portão de fontes reprova um host não declarado?', () => {
 
 // ═══ Relatório ═════════════════════════════════════════════════════════════
 console.log('🔍 AUDITORIA ADVERSARIAL — mandado de achar defeito\n')
+// ---------------------------------------------------------------------------
+const F6 = 'camada de tela'
+
+conferir(F6, 'quem SAIU do elenco some da lista que a tela usa?', () => {
+  D.definirPessoas([
+    { id: 'fica', nome: 'Fica', ativo: true, restricoes: {} },
+    { id: 'saiu', nome: 'Saiu', ativo: false, restricoes: {} },
+  ])
+  const achou = D.BROTHERS.find((b) => b.id === 'saiu')
+  return achou
+    ? { detalhe: `quem saiu continua nomeável ("${achou.name}"), marcado com ativo: ${achou.ativo}` }
+    : {
+        defeito: true,
+        detalhe:
+          'quem tem `ativo: false` sumiu de BROTHERS — na tela o passado dele vira id cru, ' +
+          'some das estatísticas e a busca por nome não o encontra',
+      }
+})
+
+conferir(F6, 'a tela consegue distinguir quem saiu de quem está no elenco?', () => {
+  D.definirPessoas([{ id: 'x', nome: 'X', ativo: false, restricoes: {} }])
+  const b = D.BROTHERS[0]
+  return b && b.ativo === false
+    ? { detalhe: 'o campo `ativo` atravessa a ponte' }
+    : { defeito: true, detalhe: 'sem `ativo` na ponte, quem saiu aparece como se ainda escalasse' }
+})
+
+conferir(F6, 'a contagem de estatísticas descarta turno de id desconhecido em silêncio?', () => {
+  const bruto = require('node:fs').readFileSync(join(RAIZ, 'src/components/StatsView.tsx'), 'utf8')
+
+  // 🔴 COMENTÁRIO NÃO É CÓDIGO. A primeira versão desta checagem acusou o próprio comentário que
+  // documenta o defeito — o texto "Sem `if (counts[bId])`" escrito para explicar por que o guard
+  // saiu. É a mesma família do portão de denominação que reprovava "SANTA CEIA" por conter "IA":
+  // régua que lê texto sobre código como se fosse código.
+  //
+  // O `(?<!:)` antes de `//` é deliberado: sem ele, o `//` de uma URL vira início de comentário e
+  // engole o resto da linha — foi assim que o portão de inventário de fontes nasceu sempre-verde.
+  const fonte = bruto.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/(?<!:)\/\/[^\n]*/g, ' ')
+
+  return /if\s*\(\s*counts\[bId\]\s*\)/.test(fonte)
+    ? { defeito: true, detalhe: 'o guard `if (counts[bId])` voltou: turno de id fora da lista some do total' }
+    : { detalhe: 'a contagem cria o contador sob demanda — nada é descartado calado' }
+})
+
 console.log('─'.repeat(74))
-for (const frente of ['validação', 'gerador', 'dados publicados', 'código morto', 'portões']) {
+for (const frente of ['validação', 'gerador', 'dados publicados', 'código morto', 'portões', 'camada de tela']) {
   const doGrupo = [...ok, ...achados].filter((x) => x.frente === frente)
   if (!doGrupo.length) continue
   console.log(`\n${frente.toUpperCase()}`)
