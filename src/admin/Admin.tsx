@@ -17,18 +17,19 @@ import { clsx } from 'clsx'
 import { abrirCofre, apagarCofre, cofreExiste, exportarCofre, gravarCofre, importarCofre, type Segredos } from './cofre'
 import { baixarPacoteManual, COMO_CRIAR_O_TOKEN, conferirToken, DESTINOS, historicoPublicacoes, publicarDados, reverterPara, type Publicacao } from './github'
 import type { DadosPublicados } from '../dados/carregar'
-import type { Bloco, Pessoa, TipoTurno } from '../dominio/tipos'
+import type { Bloco, Configuracao, Pessoa, TipoTurno } from '../dominio/tipos'
 import { ROTULO_TURNO } from '../dominio/tipos'
 import { construirGrade } from '../dominio/malha'
 import { gerar } from '../dominio/gerador'
 import { validar, resumir } from '../dominio/validacao'
 import { CATALOGO, menorIntervalo } from '../dominio/regras'
+import { conferirPorFora } from '../dominio/conferencia-independente'
 import { diferencaEmDias, formatarBR, hojeSaoPaulo, NOMES_DIA_CURTO, somarDias } from '../dominio/datas'
 import { AbaAjustar } from './AbaAjustar'
 import { arbitrar, auditar, medir, pedirProposta, type Placar, type ProgressoMotor } from './motor'
 import { Sparkles } from 'lucide-react'
 
-type Aba = 'elenco' | 'gerar' | 'ajustar' | 'publicar'
+type Aba = 'elenco' | 'gerar' | 'ajustar' | 'conferir' | 'publicar'
 
 // ===========================================================================
 // PORTA — login
@@ -381,6 +382,17 @@ export const Admin: React.FC<{ dados: DadosPublicados }> = ({ dados }) => {
   const [segredos, setSegredos] = useState<Segredos | null>(null)
   const [aba, setAba] = useState<Aba>('elenco')
   const [pessoas, setPessoas] = useState<Pessoa[]>(() => dados.pessoas.map((p) => ({ ...p, restricoes: { ...p.restricoes } })))
+  /**
+   * 🔴 A CONFIGURAÇÃO VIROU EDITÁVEL em 05/08/2026, e a razão é de escopo, não de conforto.
+   *
+   * O Flavio: *"não achei nenhuma configuração de quantas pessoas por turno. É uma escala
+   * GENÉRICA agora, com intenção de comercialização. Posso querer dois, ou apenas um."*
+   *
+   * `capacidadePadrao` sempre existiu no dado — mas só dava para mudá-lo editando `config.json` à
+   * mão, no repositório. Para uma congregação com um administrador técnico ao lado, passava; para
+   * um produto vendido, é um recurso que não existe.
+   */
+  const [config, setConfig] = useState<Configuracao>(() => ({ ...dados.config }))
   const [blocoNovo, setBlocoNovo] = useState<Bloco | null>(null)
   /** O bloco como o gerador o entregou — a referência para o "desfazer tudo" do ajuste manual. */
   const [blocoOriginal, setBlocoOriginal] = useState<Bloco | null>(null)
@@ -420,6 +432,7 @@ export const Admin: React.FC<{ dados: DadosPublicados }> = ({ dados }) => {
     { id: 'elenco', texto: 'Elenco' },
     { id: 'gerar', texto: 'Gerar escala' },
     { id: 'ajustar', texto: 'Ajustar', travada: !blocoNovo },
+    { id: 'conferir', texto: 'Conferir por fora', travada: !blocoNovo },
     { id: 'publicar', texto: 'Publicar' },
   ]
 
@@ -492,6 +505,8 @@ export const Admin: React.FC<{ dados: DadosPublicados }> = ({ dados }) => {
             aoMudarDe={setDe}
             aoMudarAte={setAte}
             aoMudarPessoas={setPessoas}
+            config={config}
+            aoMudarConfig={setConfig}
             aoGerar={(b, r) => { setBlocoNovo(b); setBlocoOriginal(b); setRelatoGeracao(r) }}
           />
         )}
@@ -502,11 +517,14 @@ export const Admin: React.FC<{ dados: DadosPublicados }> = ({ dados }) => {
             pessoas={pessoas}
             fronteira={fronteira}
             aoAlterar={setBlocoNovo}
-            config={dados.config}
+            config={config}
           />
         )}
+        {aba === 'conferir' && blocoNovo && (
+          <AbaConferirPorFora bloco={blocoNovo} pessoas={pessoas} config={config} fronteira={fronteira} />
+        )}
         {aba === 'publicar' && (
-          <AbaPublicar dados={dados} pessoas={pessoas} blocoNovo={blocoNovo} segredos={segredos} />
+          <AbaPublicar dados={dados} pessoas={pessoas} config={config} blocoNovo={blocoNovo} segredos={segredos} />
         )}
       </main>
     </div>
@@ -858,6 +876,117 @@ const AusenciasAntesDeGerar: React.FC<{
   )
 }
 
+/**
+ * CONFERIR POR FORA — a segunda régua na tela.
+ *
+ * 🔴 A dor do Flavio, 05/08/2026: *"quero uma outra forma de conferência, que mostre por auditoria
+ * — de outro agente, que não foi o mesmo que criou — que ele valide as regras e veja se não houve
+ * furo."* É o maker–checker do método dele aplicado ao produto.
+ *
+ * O que esta aba mostra que a conferência normal não mostra: o **cruzamento**. Duas implementações
+ * independentes chegam a um veredito cada uma, e o que importa é se elas CONCORDAM. Concordar é o
+ * esperado e prova pouco; **divergir é ouro**, porque significa que uma das duas está errada.
+ */
+const AbaConferirPorFora: React.FC<{
+  bloco: Bloco
+  pessoas: Pessoa[]
+  config: Configuracao
+  fronteira: Record<string, string>
+}> = ({ bloco, pessoas, config, fronteira }) => {
+  const porFora = useMemo(
+    () => conferirPorFora(bloco, pessoas, config, fronteira),
+    [bloco, pessoas, config, fronteira],
+  )
+  const oficial = useMemo(
+    () => validar({ bloco, pessoas, ultimaEscalaAnterior: fronteira, config }),
+    [bloco, pessoas, fronteira, config],
+  )
+
+  const foraAcusa = porFora.comFuro.length > 0
+  const oficialAcusa = oficial.falhasDuras.length > 0
+  const concordam = foraAcusa === oficialAcusa
+
+  return (
+    <>
+      <Cartao
+        titulo="Conferência independente"
+        subtitulo="Uma segunda régua, escrita do zero, confere a mesma escala por outro caminho."
+        tom={concordam ? undefined : 'erro'}
+      >
+        <div
+          className={clsx(
+            'rounded-xl border p-4',
+            !concordam ? 'border-red-300 bg-red-50' : foraAcusa ? 'border-amber-300 bg-amber-50' : 'border-green-300 bg-green-50',
+          )}
+        >
+          <p className="text-sm font-bold text-gray-900">
+            {!concordam
+              ? '🔴 AS DUAS CONFERÊNCIAS DISCORDAM — não publique até entender por quê'
+              : foraAcusa
+                ? '⚠️ As duas encontraram problema — e concordam no veredito'
+                : '✅ As duas conferências concordam: nenhum furo nesta escala'}
+          </p>
+          <p className="mt-1.5 text-xs leading-relaxed text-gray-600">
+            Conferência normal: <strong>{oficialAcusa ? `${oficial.falhasDuras.length} regra(s) violada(s)` : 'sem violação'}</strong>
+            {' · '}Conferência independente: <strong>{foraAcusa ? `${porFora.comFuro.length} promessa(s) com furo` : 'sem furo'}</strong>
+          </p>
+          {!concordam && (
+            <p className="mt-2 text-xs leading-relaxed text-red-800">
+              Uma das duas está errada. Divergência entre réguas independentes é o sinal mais forte
+              de defeito que este sistema consegue produzir — mais forte que qualquer uma delas
+              sozinha dizendo que está tudo bem.
+            </p>
+          )}
+        </div>
+
+        <div className="mt-4 divide-y divide-gray-100">
+          {porFora.achados.map((a) => (
+            <div key={a.promessa} className="flex items-start gap-3 py-3">
+              <div className="mt-0.5 shrink-0">
+                {a.furos.length === 0
+                  ? <CheckCircle className="h-5 w-5 text-green-600" />
+                  : <XCircle className="h-5 w-5 text-red-600" />}
+              </div>
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-gray-900">{a.promessa}</p>
+                <p className="mt-0.5 text-xs text-gray-500">{a.veredito}</p>
+                {a.furos.slice(0, 5).map((f, i) => (
+                  <p key={i} className="mt-1 text-xs text-red-700">· {f}</p>
+                ))}
+                {a.furos.length > 5 && <p className="mt-1 text-xs text-gray-400">e mais {a.furos.length - 5}</p>}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-4 rounded-xl border border-gray-200 bg-gray-50 p-3 text-xs leading-relaxed text-gray-600">
+          <strong>Números apurados por fora</strong>, sem consultar a outra conferência:{' '}
+          {porFora.numeros.turnos} turno(s) · {porFora.numeros.preenchidas} de {porFora.numeros.vagas} vagas
+          preenchidas · {porFora.numeros.pessoasEscaladas} pessoa(s) · {porFora.numeros.dias} dia(s).
+        </div>
+      </Cartao>
+
+      <Cartao titulo="Até onde esta conferência prova — e onde ela para">
+        <div className="space-y-2 text-sm leading-relaxed text-gray-600">
+          <p>
+            <strong>O que ela garante:</strong> não compartilha <em>uma linha</em> de código com a
+            conferência normal. Ela não usa o catálogo de regras; monta a <strong>linha do tempo de
+            cada pessoa</strong> e confere por aí. Um erro de laço, de fronteira de data, ou uma
+            regra que percorre a lista errada não se repete igual em duas implementações escritas por
+            ângulos opostos — foi um defeito exatamente desse tipo que a auditoria de 04/08 encontrou.
+          </p>
+          <p className="rounded-lg border border-amber-200 bg-amber-50 p-3">
+            <strong>⚠️ O que ela NÃO garante:</strong> as duas réguas foram escritas pelo mesmo autor.
+            Ponto cego comum é possível, e prometer o contrário seria vender confiança que não existe.
+            Independência de verdade vem de auditor externo — e é por isso que ela continua no
+            backlog do projeto, mesmo com esta tela pronta.
+          </p>
+        </div>
+      </Cartao>
+    </>
+  )
+}
+
 // ===========================================================================
 // GERAR
 // ===========================================================================
@@ -875,8 +1004,10 @@ const AbaGerar: React.FC<{
   aoMudarDe: (v: string) => void
   aoMudarAte: (v: string) => void
   aoMudarPessoas: (p: Pessoa[]) => void
+  config: Configuracao
+  aoMudarConfig: (c: Configuracao) => void
   aoGerar: (b: Bloco | null, relato: string) => void
-}> = ({ dados, pessoas, blocoNovo, relato, segredos, de, ate, aoMudarDe, aoMudarAte, aoMudarPessoas, aoGerar }) => {
+}> = ({ dados, pessoas, blocoNovo, relato, segredos, de, ate, aoMudarDe, aoMudarAte, aoMudarPessoas, config, aoMudarConfig, aoGerar }) => {
   const [ocupado, setOcupado] = useState(false)
   const [falha, setFalha] = useState<string>('')
   const [motorOcupado, setMotorOcupado] = useState<ProgressoMotor | null>(null)
@@ -904,12 +1035,12 @@ const AbaGerar: React.FC<{
     setTimeout(() => {
       const grade = construirGrade({
         inicio: de, fim: ate,
-        malha: dados.config.malhaPadrao,
-        capacidadePadrao: dados.config.capacidadePadrao,
-        santaCeia: dados.config.santaCeia,
+        malha: config.malhaPadrao,
+        capacidadePadrao: config.capacidadePadrao,
+        santaCeia: config.santaCeia,
       })
       const elenco = pessoas.filter((p) => p.ativo).map((p) => p.id)
-      const r = gerar({ inicio: de, fim: ate, grade, pessoas, elenco, malha: dados.config.malhaPadrao, ultimaEscalaAnterior: fronteira })
+      const r = gerar({ inicio: de, fim: ate, grade, pessoas, elenco, malha: config.malhaPadrao, ultimaEscalaAnterior: fronteira })
       setOcupado(false)
       if (!r.ok) {
         setFalha(
@@ -924,8 +1055,8 @@ const AbaGerar: React.FC<{
   }
 
   const relatorio = useMemo(
-    () => (blocoNovo ? validar({ bloco: blocoNovo, pessoas, ultimaEscalaAnterior: fronteira, config: dados.config }) : null),
-    [blocoNovo, pessoas, fronteira, dados.config],
+    () => (blocoNovo ? validar({ bloco: blocoNovo, pessoas, ultimaEscalaAnterior: fronteira, config }) : null),
+    [blocoNovo, pessoas, fronteira, config],
   )
 
   return (
@@ -949,6 +1080,29 @@ const AbaGerar: React.FC<{
             {ocupado ? 'Gerando…' : 'Gerar escala'}
           </button>
         </div>
+        {/*
+          🔴 QUANTAS PESSOAS POR TURNO — pedido do Flavio em 05/08/2026, e é regra de ESCOPO:
+          *"é uma escala genérica, configurável, mas genérica, com intenção de comercialização"*.
+          O número sempre existiu no dado; faltava a porta. Numa portaria de prédio pode ser 1.
+        */}
+        <label className="mt-4 flex flex-wrap items-center gap-2 text-sm text-gray-700">
+          <span className="font-semibold">Pessoas por turno:</span>
+          <input
+            type="number"
+            min={1}
+            max={20}
+            value={config.capacidadePadrao}
+            title="Quantas pessoas cada turno precisa. Vale para a próxima geração"
+            onChange={(e) => {
+              const n = Number(e.target.value)
+              if (Number.isInteger(n) && n >= 1 && n <= 20) aoMudarConfig({ ...config, capacidadePadrao: n })
+            }}
+            className="w-20 rounded-xl border border-gray-300 px-3 py-2 text-sm"
+          />
+          <span className="text-xs text-gray-500">
+            vale na próxima geração · hoje a escala no ar usa {dados.config.capacidadePadrao}
+          </span>
+        </label>
         <p className="text-xs text-gray-500 mt-3">
           {pessoas.filter((p) => p.ativo).length} pessoas no elenco ·{' '}
           {Object.keys(fronteira).length} com escala anterior a considerar na fronteira
@@ -1051,7 +1205,7 @@ const AbaGerar: React.FC<{
                     setMotorErro('')
                     setPropostaMotor(null)
                     try {
-                      const r = await pedirProposta(segredos.chaveMotor!, blocoNovo, pessoas, fronteira, dados.config, setMotorOcupado)
+                      const r = await pedirProposta(segredos.chaveMotor!, blocoNovo, pessoas, fronteira, config, setMotorOcupado)
                       if (r.ok) setPropostaMotor({ bloco: r.proposta.bloco, explicacao: r.proposta.explicacao })
                       else setMotorErro(r.motivo)
                     } catch (e) {
@@ -1105,8 +1259,8 @@ const AbaGerar: React.FC<{
                     </thead>
                     <tbody className="divide-y divide-gray-100">
                       {linhasDoPlacar(
-                        medir('Algoritmo', blocoNovo, pessoas, fronteira, dados.config),
-                        medir('Motor', propostaMotor.bloco, pessoas, fronteira, dados.config),
+                        medir('Algoritmo', blocoNovo, pessoas, fronteira, config),
+                        medir('Motor', propostaMotor.bloco, pessoas, fronteira, config),
                       ).map((l) => (
                         <tr key={l.rotulo}>
                           <td className="py-2 pr-3 text-gray-600">{l.rotulo}</td>
@@ -1194,7 +1348,7 @@ const AbaGerar: React.FC<{
           <Cartao titulo="Distanciamento por pessoa" subtitulo="Quantos dias, no mínimo, cada um ficou entre duas escalas">
             <div className="grid sm:grid-cols-2 gap-x-6 gap-y-1">
               {pessoas.filter((p) => p.ativo).map((p) => {
-                const min = menorIntervalo({ bloco: blocoNovo, pessoas, ultimaEscalaAnterior: fronteira, config: dados.config }, p.id)
+                const min = menorIntervalo({ bloco: blocoNovo, pessoas, ultimaEscalaAnterior: fronteira, config }, p.id)
                 const total = blocoNovo.turnos.filter((t) => t.pessoas.includes(p.id)).length
                 return (
                   <div key={p.id} className="flex items-baseline justify-between text-sm py-1 border-b border-gray-50">
@@ -1220,9 +1374,11 @@ const AbaGerar: React.FC<{
 const AbaPublicar: React.FC<{
   dados: DadosPublicados
   pessoas: Pessoa[]
+  /** A configuração EDITADA nesta sessão — publicada junto quando mudou. */
+  config: Configuracao
   blocoNovo: Bloco | null
   segredos: Segredos
-}> = ({ dados, pessoas, blocoNovo, segredos }) => {
+}> = ({ dados, pessoas, config, blocoNovo, segredos }) => {
   const [ocupado, setOcupado] = useState(false)
   const [resultado, setResultado] = useState<{ ok: boolean; texto: string } | null>(null)
 
@@ -1246,8 +1402,8 @@ const AbaPublicar: React.FC<{
       if (diferencaEmDias(t.data, blocoNovo.inicio) <= 0) continue
       for (const id of t.pessoas) if (!f[id] || t.data > f[id]) f[id] = t.data
     }
-    return validar({ bloco: blocoNovo, pessoas, ultimaEscalaAnterior: f, config: dados.config })
-  }, [blocoNovo, dados.blocos, pessoas, dados.config])
+    return validar({ bloco: blocoNovo, pessoas, ultimaEscalaAnterior: f, config })
+  }, [blocoNovo, dados.blocos, pessoas, config])
 
   const publicar = async () => {
     if (relatorio && !relatorio.aprovada) return
@@ -1274,6 +1430,21 @@ const AbaPublicar: React.FC<{
     passos.push(rp.ok ? '✅ elenco publicado' : `🔴 elenco: ${rp.erro}`)
     gravados.push(...rp.commits.map((c) => c.caminho))
     tudoOk = tudoOk && rp.ok
+
+    // 🔴 A CONFIGURAÇÃO TAMBÉM PUBLICA — desde 05/08/2026, quando ela virou editável na tela.
+    //
+    // Sem isto, mudar "pessoas por turno" valeria só na geração desta sessão: o site continuaria
+    // servindo o número antigo, e a próxima pessoa a abrir a tela veria o valor velho de volta.
+    // Recurso que só funciona até recarregar é pior que recurso ausente.
+    //
+    // Só publica se MUDOU: commit sem mudança polui o histórico que o Flavio usa para reverter.
+    const configMudou = JSON.stringify(config) !== JSON.stringify(dados.config)
+    if (configMudou && tudoOk) {
+      const rc = await publicarDados(segredos.tokenGitHub, 'config.json', config, 'atualiza a configuração da escala')
+      passos.push(rc.ok ? '✅ configuração publicada' : `🔴 configuração: ${rc.erro}`)
+      gravados.push(...rc.commits.map((c) => c.caminho))
+      tudoOk = tudoOk && rc.ok
+    }
 
     if (blocoNovo && tudoOk) {
       const rb = await publicarDados(

@@ -559,6 +559,38 @@ describe('Q5 — piso mensal', () => {
     ], teto3))
     expect(r.status).toBe('ok')
   })
+
+  // ── QUEM ESTÁ FORA DA ESCALA NÃO É CONTADO ────────────────────────────────
+  //
+  // 🔴 Achado do Flavio em 05/08/2026, olhando a tela: ele tirou o Thiago da escala e o sistema
+  // continuou acusando "Thiago ficou com 0 de 2" — cinco meses seguidos. Não é injustiça de
+  // distribuição: é ausência de participação. Aviso que sempre acusa é aviso que ninguém lê.
+  it('🔴 quem NÃO está no elenco deste bloco não é contado nem acusado', () => {
+    const r = rodar('Q5', ctxDe(
+      [turno('2026-09-02', 'NOITE', ['bia', 'caio'])],
+      teto3,
+      { elenco: ['bia', 'caio'] }, // ana ficou de fora desta escala
+    ))
+    expect(r.status).toBe('ok')
+    expect(r.violacoes).toEqual([])
+    expect(r.medida).not.toContain('ANA')
+  })
+
+  it('e a outra ponta: quem ESTÁ no elenco e ficou abaixo continua sendo acusado', () => {
+    const r = rodar('Q5', ctxDe(
+      [turno('2026-09-02', 'NOITE', ['ana', 'bia', 'caio'])],
+      teto3,
+      { elenco: ['ana', 'bia', 'caio'] },
+    ))
+    expect(r.status).toBe('aviso')
+    expect(r.violacoes[0].mensagem).toMatch(/\b1 de 3\b/)
+  })
+
+  // O fixture põe o nome em maiúsculas (`nome: id.toUpperCase()`), então é 'ANA' que se espera.
+  it('a medida NOMEIA de quem está falando — número sozinho pede confiança', () => {
+    const r = rodar('Q5', ctxDe([turno('2026-09-02', 'NOITE', ['ana', 'bia', 'caio'])], teto3))
+    expect(r.medida).toContain('ANA')
+  })
   it('🔴 ficar abaixo do teto NUNCA reprova — só avisa', () => {
     const rel = validar(ctxDe([turno('2026-09-02', 'NOITE', ['ana', 'bia', 'caio'])], teto3))
     expect(rel.aprovada).toBe(true)

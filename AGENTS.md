@@ -18,6 +18,32 @@
 
 ---
 
+## 0. 🔴 REGRA MÁXIMA DE ESCOPO — leia antes de qualquer decisão de produto
+
+> **Instituída pelo Flavio em 05/08/2026, textualmente:**
+> *"É uma escala **genérica**, **configurável**, mas genérica, **com intenção de comercialização**.
+> Coloque como regra máxima do escopo."*
+
+Este projeto **nasceu** para a escala de porteiros de uma congregação, e é lá que ele roda hoje. Mas
+o produto que se constrói daqui para a frente é **um gerador de escalas de turno para qualquer
+equipe** — a portaria de um prédio, uma recepção, um plantão. A congregação é o **primeiro cliente**,
+não o escopo.
+
+**O que isso obriga, em toda decisão:**
+
+| | |
+|---|---|
+| **Nada cravado no código** | número de pessoas por turno, dias de culto, datas especiais, turnos — tudo é **dado configurável**. Um número no código é um cliente que o produto não atende |
+| **Vocabulário de fora** | quem escala dois turnos numa portaria precisa entender a tela sem conhecer o vocabulário desta congregação. Toda regra tem `explicacao` em linguagem comum |
+| **O específico é dado, não estrutura** | "Santa Ceia" é uma **data sem escala** cadastrada em `config.santaCeia`. Outro cliente cadastra feriado, dedetização, reforma. A estrutura é a mesma |
+| **Configurável não é opcional** | se um comportamento varia de cliente para cliente e não tem tela para mudá-lo, ele **não existe** como recurso — existe como dívida |
+
+⚠️ **Onde ainda há dívida de escopo,** declarada em vez de escondida: os rótulos de turno
+(`MANHÃ/TARDE/NOITE`) e a malha de dias são dado, mas **a malha ainda não tem tela** — muda-se por
+`config.json`. Está no [`BACKLOG.md`](BACKLOG.md).
+
+---
+
 ## 1. O que é este projeto
 
 Site da **escala de porteiros da Congregação Cristã no Brasil — Jardim São Luiz, Barueri/SP**, com

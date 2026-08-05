@@ -95,6 +95,46 @@ export interface Regra {
 const nomeDe = (ctx: Contexto, id: string) => ctx.pessoas.find((p) => p.id === id)?.nome ?? id
 const turnosComGente = (b: Bloco) => b.turnos.filter((t) => !t.santaCeia)
 
+/**
+ * 🔴 QUEM ESTÁ NESTA ESCALA — e por que quase toda regra precisa disto.
+ *
+ * Achado do Flavio em 05/08/2026, olhando a tela: *"Eu deixei o Thiago de fora. Você, ainda assim,
+ * contou ele em «quem tem teto e ficou abaixo dele». Quem está fora da escala não deve ser contado
+ * para nada."*
+ *
+ * Ele estava certo. As regras percorriam `ctx.pessoas` — **todo mundo cadastrado** —, então quem foi
+ * tirado da escala aparecia com "0 de 2 em cada mês", cinco vezes seguidas. Não é injustiça de
+ * distribuição: é ausência de participação, e chamar uma de outra treina o administrador a ignorar o
+ * aviso. Aviso que sempre acusa é aviso que ninguém lê.
+ *
+ * ⚠️ E a pergunta que ele fez junto — *"pode o sistema gerar uma escala contando quem está de
+ * fora?"* — tem resposta medida: **não**. `gerador.ts` filtra `p.ativo && noElenco.has(p.id)` antes
+ * de qualquer escolha. O defeito era só do RELATÓRIO. Mas relatório errado sobre escala certa é
+ * exatamente o que faz alguém desconfiar da escala certa.
+ *
+ * Quem NÃO usa isto, de propósito: D8, cujo trabalho é justamente achar quem foi escalado sem
+ * poder — ela precisa enxergar quem está fora.
+ */
+function pessoasDoBloco(ctx: Contexto): Pessoa[] {
+  const elenco = new Set(ctx.bloco.elenco)
+  return ctx.pessoas.filter((p) => p.ativo && elenco.has(p.id))
+}
+
+/**
+ * Lista de nomes para a `medida`, cortada quando fica longa demais para uma linha.
+ *
+ * Pedido do Flavio em 05/08/2026: *"«2 pessoas com dia restrito» — ótimo, mas traga as pessoas,
+ * para maior credibilidade e conferência de quem está gerando a escala."* Um número sozinho pede
+ * confiança; o nome ao lado permite conferir.
+ */
+function comNomes(pessoas: Pessoa[], limite = 6): string {
+  if (pessoas.length === 0) return ''
+  const nomes = pessoas.map((p) => p.nome)
+  return nomes.length <= limite
+    ? `: ${nomes.join(', ')}`
+    : `: ${nomes.slice(0, limite).join(', ')} e mais ${nomes.length - limite}`
+}
+
 function ok(r: Omit<ResultadoRegra, 'status' | 'violacoes'>, violacoes: Violacao[], statusSeFalha: Status = 'falha'): ResultadoRegra {
   return { ...r, status: violacoes.length ? statusSeFalha : 'ok', violacoes }
 }
@@ -182,11 +222,11 @@ const D3: Regra = {
     'Quem só pode em certos dias da semana aparece somente neles.',
   avaliar(ctx) {
     const v: Violacao[] = []
-    let comRestricao = 0
-    for (const p of ctx.pessoas) {
+    const contados: Pessoa[] = []
+    for (const p of pessoasDoBloco(ctx)) {
       const permitidos = p.restricoes.diasPermitidos
       if (!permitidos) continue
-      comRestricao++
+      contados.push(p)
       for (const t of turnosComGente(ctx.bloco)) {
         if (!t.pessoas.includes(p.id)) continue
         const dia = diaDaSemana(t.data)
@@ -199,7 +239,7 @@ const D3: Regra = {
       }
     }
     return ok(
-      { id: D3.id, titulo: D3.titulo, familia: 'DURA', medida: `${comRestricao} pessoa(s) com dia restrito` },
+      { id: D3.id, titulo: D3.titulo, familia: 'DURA', medida: `${contados.length} pessoa(s) com dia restrito${comNomes(contados)}` },
       v,
     )
   },
@@ -213,11 +253,11 @@ const D4: Regra = {
     'Quem nunca pode num certo dia da semana nunca é escalado nesse dia.',
   avaliar(ctx) {
     const v: Violacao[] = []
-    let comRestricao = 0
-    for (const p of ctx.pessoas) {
+    const contados: Pessoa[] = []
+    for (const p of pessoasDoBloco(ctx)) {
       const proibidos = p.restricoes.diasProibidos
       if (!proibidos?.length) continue
-      comRestricao++
+      contados.push(p)
       for (const t of turnosComGente(ctx.bloco)) {
         if (!t.pessoas.includes(p.id)) continue
         const dia = diaDaSemana(t.data)
@@ -230,7 +270,7 @@ const D4: Regra = {
       }
     }
     return ok(
-      { id: D4.id, titulo: D4.titulo, familia: 'DURA', medida: `${comRestricao} pessoa(s) com dia vetado` },
+      { id: D4.id, titulo: D4.titulo, familia: 'DURA', medida: `${contados.length} pessoa(s) com dia vetado${comNomes(contados)}` },
       v,
     )
   },
@@ -244,11 +284,11 @@ const D5: Regra = {
     'Quem só pode num turno — só de manhã, só à noite — não é escalado no outro.',
   avaliar(ctx) {
     const v: Violacao[] = []
-    let comRestricao = 0
-    for (const p of ctx.pessoas) {
+    const contados: Pessoa[] = []
+    for (const p of pessoasDoBloco(ctx)) {
       const permitidos = p.restricoes.turnosPermitidos
       if (!permitidos) continue
-      comRestricao++
+      contados.push(p)
       for (const t of turnosComGente(ctx.bloco)) {
         if (!t.pessoas.includes(p.id)) continue
         if (!permitidos.includes(t.tipo))
@@ -260,7 +300,7 @@ const D5: Regra = {
       }
     }
     return ok(
-      { id: D5.id, titulo: D5.titulo, familia: 'DURA', medida: `${comRestricao} pessoa(s) com turno restrito` },
+      { id: D5.id, titulo: D5.titulo, familia: 'DURA', medida: `${contados.length} pessoa(s) com turno restrito${comNomes(contados)}` },
       v,
     )
   },
@@ -275,7 +315,7 @@ const D6: Regra = {
   avaliar(ctx) {
     const v: Violacao[] = []
     let total = 0
-    for (const p of ctx.pessoas) {
+    for (const p of pessoasDoBloco(ctx)) {
       const ausencias = p.restricoes.ausencias ?? []
       total += ausencias.length
       for (const a of ausencias) {
@@ -306,11 +346,11 @@ const D7: Regra = {
     'Quem tem limite de quantas vezes pode servir por mês não passa desse limite.',
   avaliar(ctx) {
     const v: Violacao[] = []
-    let comTeto = 0
-    for (const p of ctx.pessoas) {
+    const contados: Pessoa[] = []
+    for (const p of pessoasDoBloco(ctx)) {
       const teto = p.restricoes.tetoMensal
       if (teto == null) continue
-      comTeto++
+      contados.push(p)
       const porMes = new Map<string, number>()
       for (const t of turnosComGente(ctx.bloco)) {
         if (!t.pessoas.includes(p.id)) continue
@@ -323,7 +363,7 @@ const D7: Regra = {
       }
     }
     return ok(
-      { id: D7.id, titulo: D7.titulo, familia: 'DURA', medida: `${comTeto} pessoa(s) com teto mensal` },
+      { id: D7.id, titulo: D7.titulo, familia: 'DURA', medida: `${contados.length} pessoa(s) com teto mensal${comNomes(contados)}` },
       v,
     )
   },
@@ -511,7 +551,7 @@ const D10: Regra = {
         medida: 'piso não declarado (bloco importado) — nada a conferir', violacoes: [],
       }
     const v: Violacao[] = []
-    for (const p of ctx.pessoas) {
+    for (const p of pessoasDoBloco(ctx)) {
       const min = menorIntervalo(ctx, p.id)
       if (min != null && min < piso)
         v.push({
@@ -617,7 +657,7 @@ const Q1: Regra = {
     const linhas: Violacao[] = []
     let menorGlobal = Infinity
     let quem = ''
-    for (const p of ctx.pessoas) {
+    for (const p of pessoasDoBloco(ctx)) {
       const min = menorIntervalo(ctx, p.id)
       if (min == null) continue
       if (min < menorGlobal) {
@@ -700,7 +740,7 @@ const Q3: Regra = {
   avaliar(ctx) {
     const violacoes: Violacao[] = []
     let avaliadas = 0
-    for (const p of ctx.pessoas) {
+    for (const p of pessoasDoBloco(ctx)) {
       // Quem tem dia restrito não tem escolha: cobrar variedade dele seria cobrar
       // que ele viole a própria restrição.
       if (p.restricoes.diasPermitidos) continue
@@ -761,11 +801,11 @@ const Q5: Regra = {
   avaliar(ctx) {
     const violacoes: Violacao[] = []
     const meses = [...new Set(turnosComGente(ctx.bloco).map((t) => mesDe(t.data)))].sort()
-    let comTeto = 0
-    for (const p of ctx.pessoas) {
+    const contados: Pessoa[] = []
+    for (const p of pessoasDoBloco(ctx)) {
       const teto = p.restricoes.tetoMensal
       if (teto == null) continue
-      comTeto++
+      contados.push(p)
       for (const m of meses) {
         const n = turnosComGente(ctx.bloco).filter(
           (t) => mesDe(t.data) === m && t.pessoas.includes(p.id),
@@ -777,7 +817,7 @@ const Q5: Regra = {
     return {
       id: Q5.id, titulo: Q5.titulo, familia: 'QUALIDADE',
       status: violacoes.length ? 'aviso' : 'ok',
-      medida: `${comTeto} pessoa(s) com teto, em ${meses.length} mês(es)`,
+      medida: `${contados.length} pessoa(s) com teto nesta escala${comNomes(contados)} · ${meses.length} mês(es)`,
       violacoes,
     }
   },
