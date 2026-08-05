@@ -240,7 +240,14 @@ opacidade só se resolvem no navegador).
 > *"Toque para configurar"* a **2,67:1**, que é o convite para o irmão de 60+ achar o próprio nome.
 
 Hoje ele mede **quatro cenas** — celular como nasce · celular com o painel aberto · desktop 1440px ·
-porta do administrativo — e **reprova se uma cena não abrir**: se o seletor do painel mudar de nome,
+porta do administrativo — mais **duas medições de texto a 200%** (WCAG 2.1 AA §1.4.4, *"Resize
+text"*: o conteúdo continua legível e utilizável, sem rolagem horizontal e sem palavra cortada). Essa
+era a única exigência **normativa** que este portão não media — ao contrário do piso de 12px, que ele
+mesmo declara como convenção de casa. Norma que ninguém mede é norma que vai embora sem aviso: medido
+em 05/08/2026, o rótulo do seletor (*"Irmão"*) era **cortado inteiro** a 200%, porque a caixa tinha
+`truncate`. Quem aumenta a fonte é exatamente quem precisa do rótulo.
+
+E ele **reprova se uma cena não abrir**: se o seletor do painel mudar de nome,
 `preparar` falha em silêncio e a cena volta a medir a tela fechada. O sinal é o número de
 **focáveis**, que dobra com o painel aberto; o portão compara as duas cenas e acusa.
 

@@ -248,6 +248,52 @@ const medida = {
 const tabulados = { length: porCena.reduce((s, c) => s + c.focaveis, 0) }
 const semAnel = porCena.reduce((s, c) => s + c.semAnel, 0)
 
+/**
+ * 🔴 WCAG 2.1 AA §1.4.4 — "Resize text": o conteúdo continua legível e utilizável com o texto a
+ * **200%**, sem rolagem horizontal e sem palavra cortada.
+ *
+ * Este portão media contraste, tamanho e foco — e não media isto, que é **norma**, ao contrário do
+ * piso de 12px, que ele mesmo declara como convenção de casa. Norma que ninguém mede é norma que vai
+ * embora sem aviso: medido em 05/08/2026, o rótulo do seletor ("Irmão") era **cortado inteiro** a
+ * 200%, porque a caixa tinha `truncate`. Quem aumenta a fonte é exatamente quem precisa do rótulo.
+ *
+ * ⚠️ Aumenta a fonte-base do documento, e não o `deviceScaleFactor`: o zoom de página amplia tudo
+ * junto e não exerceria o que a norma cobre.
+ */
+const zoom = []
+for (const [nome, largura] of [['celular 200%', 390], ['desktop 200%', 1440]]) {
+  const p = await navegador.newPage({ viewport: { width: largura, height: 900 } })
+  await p.goto(URL, { waitUntil: 'networkidle', timeout: 60_000 })
+  await p.waitForTimeout(2200)
+  await p.evaluate(() => { document.documentElement.style.fontSize = '32px' })
+  await p.waitForTimeout(900)
+  const m = await p.evaluate(() => {
+    const doc = document.documentElement
+    const cortados = []
+    for (const el of document.querySelectorAll('body *')) {
+      const proprio = [...el.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim().length > 1)
+      if (!proprio) continue
+      const cs = getComputedStyle(el)
+      if (cs.display === 'none' || cs.visibility === 'hidden') continue
+      if (el.getBoundingClientRect().width === 0) continue
+      const escondido = cs.overflow === 'hidden' || cs.overflowY === 'hidden' || cs.textOverflow === 'ellipsis'
+      if (escondido && (el.scrollHeight > el.clientHeight + 2 || el.scrollWidth > el.clientWidth + 2))
+        cortados.push(el.textContent.trim().slice(0, 34))
+    }
+    return { rolaLado: doc.scrollWidth > doc.clientWidth + 1, cortados }
+  })
+  await p.close()
+  zoom.push({ nome, ...m })
+  console.log(`  ${nome.padEnd(38)} rolagem lateral: ${m.rolaLado ? '🔴 SIM' : 'não'} · texto cortado: ${m.cortados.length}`)
+  for (const c of m.cortados.slice(0, 4)) console.log(`     🔴 cortado: "${c}"`)
+}
+console.log()
+const achadosZoom = []
+for (const z of zoom) {
+  if (z.rolaLado) achadosZoom.push(`[${z.nome}] rolagem horizontal com o texto a 200% (WCAG 1.4.4)`)
+  if (z.cortados.length) achadosZoom.push(`[${z.nome}] ${z.cortados.length} texto(s) cortado(s) a 200% (WCAG 1.4.4)`)
+}
+
 await navegador.close()
 
 console.log(`  elementos de texto medidos ... ${medida.medidos}`)
@@ -286,7 +332,7 @@ if (comPainel && semPainel && comPainel.focaveis <= semPainel.focaveis) {
   process.exit(1)
 }
 
-const problemas = []
+const problemas = [...achadosZoom]
 
 if (medida.totalRuins) {
   problemas.push(`${medida.totalRuins} texto(s) abaixo do contraste mínimo`)

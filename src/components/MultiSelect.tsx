@@ -77,8 +77,17 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
             <Icon className="h-4 w-4 text-gray-400 mr-1 shrink-0" />
           )}
 
+          {/*
+            🔴 `truncate` saiu daqui em 05/08/2026 — medido com o texto a 200%, que é o que a WCAG
+            2.1 AA §1.4.4 exige suportar. Os rótulos deste seletor são curtos por construção
+            ("Irmão", "Mês"), então a reticência nunca ajudou; a 200% ela **cortava a palavra
+            inteira**, e quem aumentou a fonte foi justamente quem precisa ler o rótulo.
+
+            A proteção contra texto longo continua onde ela é necessária: nos nomes SELECIONADOS,
+            logo abaixo, que vêm do cadastro e podem ser compridos.
+          */}
           {selected.length === 0 && (
-            <span className="text-gray-600 text-sm truncate">{placeholder}</span>
+            <span className="text-gray-600 text-sm">{placeholder}</span>
           )}
 
           {selected.length > 0 && (
