@@ -124,7 +124,7 @@ Gravar em uma só é o erro que não avisa — o site continua no ar mostrando o
 ### 7. Conferir antes de publicar
 
 ```bash
-npm run gate                 # 13 passos, tem de sair 0
+npm run gate                 # 16 passos, tem de sair 0
 npm run generico             # nenhum nome de cliente cravado no código
 ```
 

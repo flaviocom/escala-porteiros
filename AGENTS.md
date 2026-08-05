@@ -51,7 +51,7 @@ no padrão de carregamento: nunca era lido. **Configuração morta é pior que c
 ela parece que resolve.** Quem lesse só o tipo concluiria que o produto já era configurável.
 
 🔒 **O portão que impede a volta:** `npm run generico` varre `src/` e o `index.html` atrás de nome
-de cliente fora de comentário, e `npm run generico:autoteste` prova que ele morde (15 casos, as
+de cliente fora de comentário, e `npm run generico:autoteste` prova que ele morde (21 casos, as
 duas pontas). Os dois estão dentro do `npm run gate`. *Regra sem portão é disciplina, e disciplina
 falha* — um dos termos deste portão nasceu inerte e só o autoteste mostrou.
 
@@ -138,7 +138,7 @@ npm run dev
 **O GATE — nenhuma mudança significativa passa sem:**
 
 ```bash
-npm run gate      # 12 passos: typecheck · testes (2 fusos) · denominação · fontes · contagem · cadeia · genérico · autoteste do genérico · auditoria · regras mestras · build
+npm run gate      # 16 passos: typecheck · testes (2 fusos) · denominação · fontes · contagem · cadeia · genérico + autoteste · catálogo gerado · comandos citados · arquitetura · auditoria · regras mestras · build
 ```
 
 O que ele encadeia, e por que cada um existe:
@@ -154,6 +154,10 @@ O que ele encadeia, e por que cada um existe:
 | `npm run cadeia` | `AGENTS.md`/`ESTADO.md`/`BACKLOG.md` apontam para o handoff que É o mais recente |
 | `npm run generico` | nenhum nome de cliente cravado — o produto é genérico (§0) |
 | `npm run generico:autoteste` | prova que o portão acima **morde**: 21 casos, infratores e limpos, mais a autodefesa |
+| `npm run doc:regras:conferir` | o catálogo de regras documentado bate com o código |
+| `npm run doc:comandos` | todo comando citado na documentação existe |
+| `npm run arquitetura` | o domínio continua sendo uma ilha; a 2ª régua não virou espelho |
+| `npm run fatos` | nenhum documento vivo desmente um número medido |
 | `npm run auditoria` | 20 ataques ao próprio código, com infrator injetado |
 | `npm run regras-mestras` | tooltip em todo botão, sem aspas duplas quebrando o atributo |
 | `npm run build` | compila e gera em `docs/` |

@@ -191,7 +191,10 @@ function autodefesaMorde() {
     writeFileSync(join(raiz, 'src', 'App.tsx'), LIMPO, 'utf8')
 
     try {
-      execFileSync(process.execPath, [copia, '--raiz', raiz], { encoding: 'utf8' })
+      // stdio silencioso: este caso INJETA a corrupção de propósito, e o grito da autodefesa vazava
+      // para o log do GATE — assustando quem lê, como se o portão de verdade estivesse quebrado.
+      // O veredito continua sendo lido de `e.status` e `e.stderr`, logo abaixo.
+      execFileSync(process.execPath, [copia, '--raiz', raiz], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] })
       return { ok: false, motivo: 'o portão doente rodou e deu VERDE — a autodefesa não morde' }
     } catch (e) {
       if (e.status !== 2) return { ok: false, motivo: `esperava saída 2 (portão quebrado), veio ${e.status}` }

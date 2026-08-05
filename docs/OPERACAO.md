@@ -96,7 +96,7 @@ está errada** — e é melhor descobrir antes da congregação descobrir.
 npm run gate
 ```
 
-12 passos, nesta ordem:
+16 passos, nesta ordem:
 
 | Passo | O que prova |
 |---|---|
@@ -111,6 +111,9 @@ npm run gate
 | `generico:autoteste` | prova que o portão acima **morde** — 21 casos, mais a autodefesa |
 | `doc:regras:conferir` | o catálogo de regras documentado bate com o código |
 | `auditoria` | 20 ataques ao próprio código, com infrator injetado |
+| `doc:comandos` | todo `npm run` citado na documentação existe de verdade |
+| `arquitetura` | o domínio continua sendo uma ilha; a segunda régua não virou espelho da primeira |
+| `fatos` | nenhum documento vivo desmente um número **medido** (passos do gate, casos de autoteste, piso…) |
 | `regras-mestras` | tooltip em todo botão |
 | `build` | compila e gera em `docs/` |
 

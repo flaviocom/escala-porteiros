@@ -74,7 +74,7 @@ npm run dev      # http://127.0.0.1:5173
 npm run gate     # typecheck · testes (2 fusos) · denominação · fontes · contagem · cadeia · genérico · auditoria · regras-mestras · build
 ```
 
-O GATE encadeia **doze** passos. Os mais incomuns, e o porquê:
+O GATE encadeia **dezesseis** passos. Os mais incomuns, e o porquê:
 
 | Passo | O que prova |
 |---|---|
@@ -83,7 +83,7 @@ O GATE encadeia **doze** passos. Os mais incomuns, e o porquê:
 | `fontes` | nenhuma fonte externa chamada e não declarada no inventário |
 | `auditoria` | **20** ataques ao próprio código, com infrator injetado |
 | `generico` | nenhum nome de cliente cravado — o produto é genérico (§0 do `AGENTS.md`) |
-| `generico:autoteste` | prova que o portão acima **morde**: 15 casos, infratores e limpos |
+| `generico:autoteste` | prova que o portão acima **morde**: 21 casos, infratores e limpos |
 | `contagem` · `cadeia` | o catálogo de regras e a cadeia de documentos batem com o que se afirma |
 
 ## Reconstruir do zero
