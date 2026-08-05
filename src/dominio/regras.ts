@@ -431,7 +431,7 @@ const D8: Regra = {
  * decisão é REPROVAR. Falhar fechado é a única saída honesta — sem o calendário, uma regra que
  * "aprova porque não tinha o que conferir" é indistinguível de uma regra desligada.
  */
-function gradeEsperada(ctx: Contexto): Turno[] | null {
+function gradeEsperada(ctx: Contexto): Turno[] | null | 'data-impossivel' {
   if (!ctx.config) return null
   /*
     🔴 `construirGrade` passou a RECUSAR data impossível em 05/08/2026 (ver lá o porquê). Uma regra,
@@ -448,7 +448,12 @@ function gradeEsperada(ctx: Contexto): Turno[] | null {
       santaCeia: ctx.config.santaCeia,
     })
   } catch {
-    return null
+    // 🔴 A CAUSA TEM DE SER A CERTA — sexta auditoria externa, 05/08/2026. Devolver `null` aqui fazia
+    //    D11 dizer *"configuração não recebida — impossível conferir"*, que é falso: a configuração
+    //    chegou, a DATA é que não existe no calendário. O veredito continuava certo (`aprovada =
+    //    false`), e só a explicação mentia — que é o suficiente para mandar alguém procurar no lugar
+    //    errado.
+    return 'data-impossivel'
   }
 }
 
@@ -604,6 +609,12 @@ const D11: Regra = {
     'A escala cobre todos os dias e turnos que o período exige — nem falta dia, nem sobra dia que não é de culto. É o que impede publicar uma escala vazia ou pela metade.',
   avaliar(ctx) {
     const esperada = gradeEsperada(ctx)
+    if (esperada === 'data-impossivel')
+      return {
+        id: D11.id, titulo: D11.titulo, familia: 'DURA', status: 'falha',
+        medida: 'o bloco declara uma data que não existe no calendário',
+        violacoes: [{ mensagem: `o período declarado (${ctx.bloco.inicio} a ${ctx.bloco.fim}) tem data que não existe — 31 de fevereiro e afins` }],
+      }
     if (!esperada) return semConfig(D11.id, D11.titulo)
 
     const v: Violacao[] = []

@@ -116,7 +116,12 @@ export const ScheduleTable: React.FC<ScheduleTableProps> = ({
         <div className={clsx('flex flex-col items-center justify-center rounded-lg border px-3 py-1', config.bg, config.border)}>
           <Icon className={clsx('h-4 w-4 mb-0.5', config.text)} />
           <span className={clsx('text-[10px] font-bold leading-none', config.text)}>{type}</span>
-          <span className={clsx('text-[10px] font-bold uppercase mt-0.5 leading-none tracking-wider', config.text)}>
+          {/*
+            `whitespace-pre-line` porque a imagem do WhatsApp honra a quebra de linha do rótulo e a
+            tela não honrava — sexta auditoria externa, 05/08/2026. Duas superfícies desenhando o
+            MESMO dado de formas diferentes é a fonte dupla de sempre, só que em pixel.
+          */}
+          <span className={clsx('text-[10px] font-bold uppercase mt-0.5 leading-none tracking-wider whitespace-pre-line text-center', config.text)}>
             {rotulo}
           </span>
         </div>

@@ -797,6 +797,35 @@ describe('D12 — todo turno que existe pede pelo menos uma pessoa', () => {
   })
 })
 
+/**
+ * 🔴 A CAUSA QUE D11 DAVA ERA FALSA — sexta auditoria externa, 05/08/2026.
+ *
+ * Com um bloco declarando `fim: "2026-11-31"`, `construirGrade` lança (data que não existe), e D11
+ * caía no `catch` devolvendo `null` — o que faz a tela dizer *"configuração não recebida — impossível
+ * conferir"*. O veredito continuava certo, e só a explicação mentia. Basta isso para mandar alguém
+ * procurar o defeito na configuração, que está inteira.
+ */
+describe('D11 — data que não existe no calendário', () => {
+  it('🔴 REPROVA, e a medida diz que a DATA é o problema — não a configuração', () => {
+    const rel = validar(ctxDe([turno('2026-11-06', 'NOITE', ['ana', 'bia', 'caio'])], TRES, {
+      inicio: '2026-11-01', fim: '2026-11-31',
+    }))
+    expect(rel.aprovada).toBe(false)
+    const d11 = rel.resultados.find((r) => r.id === 'D11')!
+    expect(d11.status).toBe('falha')
+    expect(d11.medida).toContain('não existe no calendário')
+    expect(d11.medida).not.toContain('configuração não recebida')
+  })
+
+  it('a outra ponta: período com datas reais é conferido normalmente', () => {
+    const rel = validar(ctxDe([turno('2026-11-06', 'NOITE', ['ana', 'bia', 'caio'])], TRES, {
+      inicio: '2026-11-01', fim: '2026-11-30',
+    }))
+    const d11 = rel.resultados.find((r) => r.id === 'D11')!
+    expect(d11.medida).not.toContain('não existe no calendário')
+  })
+})
+
 // ---------------------------------------------------------------------------
 // O portão do portão
 // ---------------------------------------------------------------------------
