@@ -78,10 +78,26 @@ const SANTA_CEIA = config.santaCeia
 const MALHA = config.malhaPadrao
 const CAPACIDADE = config.capacidadePadrao
 
-// Fronteira: última escala de cada um no bloco anterior.
+/**
+ * Fronteira: a última escala de cada um ANTES do início do bloco novo.
+ *
+ * 🔴 O `t.data < DE` entrou em 05/08/2026, e a ausência dele era um defeito latente que só apareceu
+ * quando o bloco congelado passou a cobrir o FUTURO.
+ *
+ * Antes, isto pegava o MAIOR `t.data` do bloco anterior, sem olhar a data de corte. Enquanto o
+ * congelado terminava no passado, dava no mesmo. Quando ele passou a ir até 31/12 — para preservar a
+ * escala vigente inteira, como o Flavio pediu —, a "última escala" de cada pessoa passou a ser uma
+ * data À FRENTE do bloco novo. Resultado: todo mundo parecia ter servido há pouco, ninguém ficava
+ * elegível, e o gerador declarava "não foi possível" em 08/08 mesmo com 16 pessoas livres.
+ *
+ * ⚠️ Falha HONESTA (o gerador disse que não deu, em vez de entregar escala pela metade), mas com
+ * diagnóstico que apontava para o lugar errado: parecia falta de gente, era data contaminada. A tela
+ * já filtrava certo (`Admin.tsx:1035`); era só este script que não.
+ */
 const fronteira = {}
-for (const t of historico.turnos) for (const id of t.pessoas) {
-  if (!fronteira[id] || t.data > fronteira[id]) fronteira[id] = t.data
+for (const t of historico.turnos) {
+  if (!(t.data < DE)) continue
+  for (const id of t.pessoas) if (!fronteira[id] || t.data > fronteira[id]) fronteira[id] = t.data
 }
 
 console.log(`GERAÇÃO DO BLOCO ${formatarBR(DE)} → ${formatarBR(ATE)}\n`)

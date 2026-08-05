@@ -1040,6 +1040,23 @@ const AbaGerar: React.FC<{
   }, [dados, de])
 
   const executar = () => {
+    /**
+     * 🔴 A TRAVA DE VERDADE — o `min` do campo de data é DICA, não garantia.
+     *
+     * Ele some com um toque no inspetor, e some sozinho em navegador que não o implemente. Gerar
+     * com data retroativa REESCREVE turno já divulgado, que é a primeira regra inviolável deste
+     * projeto. Uma trava que só existe no atributo é uma trava que não existe.
+     */
+    if (diferencaEmDias(de, hojeSaoPaulo()) > 0) {
+      setFalha(
+        `A data inicial (${formatarBR(de)}) é anterior a hoje (${formatarBR(hojeSaoPaulo())}).
+
+` +
+          'Gerar para trás reescreveria turnos que os irmãos já viram — e o passado divulgado não se ' +
+          'reescreve. Escolha hoje ou uma data à frente.'
+      )
+      return
+    }
     setOcupado(true)
     setFalha('')
     aoGerar(null, '')
@@ -1092,11 +1109,20 @@ const AbaGerar: React.FC<{
         <div className="flex flex-wrap gap-4 items-end">
           <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
             De
-            <input type="date" value={de} onChange={(e) => aoMudarDe(e.target.value)} className="block mt-1 px-3 py-2 border border-gray-300 rounded-xl text-sm" />
+            {/*
+            🔴 `min={hojeSaoPaulo()}` — pedido do Flavio em 05/08/2026, e é trava de dado, não de
+            conforto: *"deixe esmaecido, não habilitável, períodos anteriores; somente a partir de
+            hoje em diante. Temos que preservar o histórico."*
+            
+            Gerar com data retroativa REESCREVE turno que já foi divulgado — e a primeira regra
+            inviolável deste projeto é que o passado não se reescreve, porque isso faz o site
+            desmentir o que os irmãos já viram. O navegador agora nem deixa escolher.
+          */}
+          <input type="date" min={hojeSaoPaulo()} value={de} onChange={(e) => aoMudarDe(e.target.value)} className="block mt-1 px-3 py-2 border border-gray-300 rounded-xl text-sm" />
           </label>
           <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
             Até
-            <input type="date" value={ate} onChange={(e) => aoMudarAte(e.target.value)} className="block mt-1 px-3 py-2 border border-gray-300 rounded-xl text-sm" />
+            <input type="date" min={de || hojeSaoPaulo()} value={ate} onChange={(e) => aoMudarAte(e.target.value)} className="block mt-1 px-3 py-2 border border-gray-300 rounded-xl text-sm" />
           </label>
           <button title="Monta a escala buscando o maior espaçamento possível entre as escalas de cada um"
             onClick={executar}
