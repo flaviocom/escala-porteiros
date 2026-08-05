@@ -14,7 +14,7 @@
  *
  * Uso: node scripts/validar-seletor-de-meses.mjs
  */
-import { chromium } from 'playwright'
+import { chromium, devices } from 'playwright'
 import { spawn } from 'node:child_process'
 
 const PORTA = 4185
@@ -101,6 +101,49 @@ try {
       caixa === 0 ? 'gerou direto' : '🔴 a caixa apareceu à toa — estorvo novo no lugar do antigo')
     conferir('   …e gera o arquivo daquele mês', baixados.length === 1,
       baixados.length ? baixados[0].suggestedFilename() : '🔴 nenhum arquivo')
+    await pg.close()
+  }
+
+  // ------------------------------------------------------------------ 3. no CELULAR
+  //
+  // 🔴 É o aparelho que ele usa. Medido num iPhone 13 em 04/08/2026: "Todos" e "Nenhum" saíam com
+  // 36px de altura — a mesma classe do defeito já corrigido nos alternadores de senha, reintroduzida
+  // em código novo. Validar só a 1400px teria deixado passar.
+  {
+    const ctx = await navegador.newContext({ ...devices['iPhone 13'] })
+    const pg = await ctx.newPage()
+    let subiu = false
+    for (let i = 0; i < 40 && !subiu; i++) {
+      try { await pg.goto(`http://127.0.0.1:${PORTA}/`, { waitUntil: 'networkidle', timeout: 3000 }); subiu = true }
+      catch { await pg.waitForTimeout(500) }
+    }
+    await pg.waitForTimeout(2000)
+
+    // No celular quem abre é o botão flutuante.
+    const flutuante = pg.locator('button[title="Enviar Escala p/ WhatsApp"]')
+    conferir('no celular, o botão flutuante existe', (await flutuante.count()) > 0, 'presente')
+    await flutuante.first().click()
+    await pg.waitForTimeout(1400)
+
+    const caixa = pg.locator('dialog[open]')
+    const abriu = await caixa.count()
+    conferir('   …e abre a mesma caixa', abriu > 0, abriu ? 'abriu' : '🔴 não abriu no celular')
+
+    if (abriu) {
+      const cx = await caixa.boundingBox()
+      const vp = pg.viewportSize()
+      conferir('   …que cabe na tela', cx.width <= vp.width && cx.height <= vp.height,
+        `${Math.round(cx.width)}x${Math.round(cx.height)} em ${vp.width}x${vp.height}`)
+
+      const pequenos = []
+      for (const alvo of await caixa.locator('button, label').all()) {
+        const b = await alvo.boundingBox()
+        if (b && (b.height < 44 || b.width < 44)) pequenos.push(`${Math.round(b.width)}x${Math.round(b.height)}`)
+      }
+      conferir('   …com todo alvo de toque em 44px ou mais', pequenos.length === 0,
+        pequenos.length ? `🔴 ${pequenos.length} pequeno(s): ${pequenos.join(' ')}` : 'nenhum abaixo do piso')
+      await pg.screenshot({ path: 'capturas/seletor-celular.png' })
+    }
     await pg.close()
   }
 
