@@ -31,15 +31,44 @@ const blocos = JSON.parse(readFileSync(join(RAIZ, 'docs/dados/blocos.json'), 'ut
 const pessoas = JSON.parse(readFileSync(join(RAIZ, 'docs/dados/pessoas.json'), 'utf8')).pessoas
 const nomeDe = (id) => pessoas.find((p) => p.id === id)?.nome ?? id
 
-/** data → { nomes: Set, santaCeia: boolean } */
+/**
+ * data → { turnos: [{ tipo, nomes }], nomes: Set, santaCeia }
+ *
+ * 🔴 GUARDADO POR TURNO, não por dia. A primeira versão juntava todos os nomes do dia num conjunto
+ * só — e isso aprova uma tela em que **manhã e noite estejam trocadas**: os nomes estão todos lá,
+ * apenas no lugar errado. O número "543 nomes conferidos" era verdadeiro, e a garantia que ele
+ * sugeria era maior do que a que existia. É o ERRO 32 do catálogo, na minha própria régua.
+ */
 const esperado = new Map()
 for (const b of blocos) {
   for (const t of b.turnos) {
-    if (!esperado.has(t.data)) esperado.set(t.data, { nomes: new Set(), santaCeia: false })
+    if (!esperado.has(t.data)) esperado.set(t.data, { turnos: [], nomes: new Set(), santaCeia: false })
     const dia = esperado.get(t.data)
-    if (t.santaCeia) dia.santaCeia = true
-    for (const id of t.pessoas ?? []) dia.nomes.add(nomeDe(id))
+    if (t.santaCeia) { dia.santaCeia = true; continue }
+    const nomes = (t.pessoas ?? []).map(nomeDe)
+    dia.turnos.push({ tipo: t.tipo, nomes })
+    for (const n of nomes) dia.nomes.add(n)
   }
+}
+
+/** Como a tela rotula cada turno. Medido na página, não suposto. */
+const ROTULO = { MANHA: 'MANHÃ', TARDE: 'TARDE', NOITE: 'NOITE' }
+const ROTULOS = Object.values(ROTULO)
+
+/**
+ * Recorta o texto de cada turno: da linha do rótulo até o rótulo seguinte (ou o fim).
+ * Devolve `[{ rotulo, texto }]`, na ordem em que aparecem na tela.
+ */
+function fatiarPorTurno(texto) {
+  const linhas = texto.split('\n')
+  const marcas = []
+  linhas.forEach((l, i) => {
+    if (ROTULOS.includes(l.trim())) marcas.push({ rotulo: l.trim(), i })
+  })
+  return marcas.map((m, k) => ({
+    rotulo: m.rotulo,
+    texto: linhas.slice(m.i, k + 1 < marcas.length ? marcas[k + 1].i : linhas.length).join('\n'),
+  }))
 }
 
 const MESES = ['JAN', 'FEV', 'MAR', 'ABR', 'MAI', 'JUN', 'JUL', 'AGO', 'SET', 'OUT', 'NOV', 'DEZ']
@@ -100,9 +129,30 @@ for (const data of datas) {
   }
   conferidos++
 
-  const faltando = [...dia.nomes].sort().filter((n) => !trecho.includes(n))
-  nomesOk += dia.nomes.size - faltando.length
-  if (faltando.length) divergencias.push({ data, tipo: 'nome ausente na tela', detalhe: faltando.join(', ') })
+  const naTela = fatiarPorTurno(trecho)
+
+  for (const t of dia.turnos) {
+    const fatia = naTela.find((f) => f.rotulo === ROTULO[t.tipo])
+    if (!fatia) {
+      // 🔒 Turno do dado que a tela não rotula sairia da conta em silêncio — medir menos e chamar
+      // de conferido. Vira divergência, não desconto.
+      divergencias.push({
+        data,
+        tipo: `🔴 turno ${ROTULO[t.tipo]} não aparece na tela`,
+        detalhe: `o dado tem ${t.nomes.length} pessoa(s) nesse turno`,
+      })
+      continue
+    }
+    const faltando = t.nomes.filter((n) => !fatia.texto.includes(n))
+    nomesOk += t.nomes.length - faltando.length
+    if (faltando.length) {
+      divergencias.push({
+        data,
+        tipo: `🔴 ${ROTULO[t.tipo]} — nome ausente OU no turno errado`,
+        detalhe: `não está na ${ROTULO[t.tipo].toLowerCase()}: ${faltando.join(', ')}`,
+      })
+    }
+  }
 
   // Santa Ceia: o dia aparece, e NINGUÉM é escalado. Um nome aqui é o defeito que motivou o projeto.
   if (dia.santaCeia) {
