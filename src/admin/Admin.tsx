@@ -14,8 +14,8 @@ import {
   History, RotateCcw, Save, ShieldCheck, Trash2, Upload, X, XCircle,
 } from 'lucide-react'
 import { clsx } from 'clsx'
-import { abrirCofre, apagarCofre, cofreExiste, gravarCofre, type Segredos } from './cofre'
-import { baixarJSON, conferirToken, historicoPublicacoes, publicarDados, reverterPara, type Publicacao } from './github'
+import { abrirCofre, apagarCofre, cofreExiste, exportarCofre, gravarCofre, importarCofre, type Segredos } from './cofre'
+import { baixarPacoteManual, conferirToken, DESTINOS, historicoPublicacoes, publicarDados, reverterPara, type Publicacao } from './github'
 import type { DadosPublicados } from '../dados/carregar'
 import type { Bloco, Pessoa, TipoTurno } from '../dominio/tipos'
 import { ROTULO_TURNO } from '../dominio/tipos'
@@ -33,6 +33,112 @@ type Aba = 'elenco' | 'gerar' | 'ajustar' | 'publicar'
 // ===========================================================================
 // PORTA — login
 // ===========================================================================
+
+/**
+ * 🔴 LEVAR O ACESSO PARA OUTRO APARELHO — sem carregar o token em texto claro.
+ *
+ * O cofre vive no navegador, então cada aparelho precisa do seu. O caminho ingênuo seria mandar o
+ * token para si mesmo por mensagem — e aí ele fica legível num histórico de conversa, para sempre.
+ *
+ * O que se copia aqui é o cofre **já cifrado**. Sem a senha é ruído: pode ir por qualquer canal.
+ * A senha viaja na sua cabeça, que é o único lugar que não deixa cópia.
+ *
+ * Depois de colar uma vez no aparelho novo, ele passa a pedir **só a senha** — para sempre.
+ */
+function LevarParaOutroAparelho() {
+  const [codigo, setCodigo] = useState<string | null>(null)
+  const [copiado, setCopiado] = useState(false)
+
+  return (
+    <div className="mt-6 rounded-2xl border border-indigo-200 bg-indigo-50 p-4">
+      <h4 className="text-sm font-bold text-indigo-900">Usar no celular ou em outro navegador</h4>
+      <p className="text-xs text-indigo-800 mt-1 leading-relaxed">
+        Copie o código abaixo e mande para você mesmo — por mensagem, e-mail, o que preferir. Ele é o
+        cofre <strong>cifrado</strong>: sem a sua senha, não serve para nada. No outro aparelho, cole na
+        tela de acesso e digite a mesma senha. Depois disso, lá também é <strong>só a senha</strong>.
+      </p>
+      {!codigo ? (
+        <button title="Mostra o cofre cifrado deste navegador, pronto para copiar"
+          onClick={() => setCodigo(exportarCofre() ?? 'não há cofre neste navegador')}
+          className="mt-3 px-4 py-2 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700"
+        >
+          Mostrar o código
+        </button>
+      ) : (
+        <div className="mt-3">
+          <textarea
+            readOnly
+            value={codigo}
+            onFocus={(e) => e.currentTarget.select()}
+            title="Selecione tudo e copie"
+            className="w-full h-24 p-3 text-[11px] font-mono border border-indigo-200 rounded-lg bg-white text-gray-700 resize-none"
+          />
+          <div className="flex items-center gap-2 mt-2">
+            <button title="Copia o código para a área de transferência"
+              onClick={() => {
+                navigator.clipboard?.writeText(codigo)
+                setCopiado(true)
+                setTimeout(() => setCopiado(false), 2000)
+              }}
+              className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700"
+            >
+              {copiado ? 'Copiado!' : 'Copiar código'}
+            </button>
+            <button title="Esconde o código de novo"
+              onClick={() => setCodigo(null)}
+              className="px-3 py-2 text-xs font-semibold text-indigo-700 hover:underline"
+            >
+              Esconder
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+/** O outro lado: colar o código trazido de um aparelho já configurado. */
+function ColarCofre() {
+  const [aberto, setAberto] = useState(false)
+  const [codigo, setCodigo] = useState('')
+  const [erro, setErro] = useState('')
+
+  if (!aberto) {
+    return (
+      <button title="Se você já configurou noutro aparelho, traga o cofre de lá em vez de cadastrar tudo de novo"
+        onClick={() => setAberto(true)}
+        className="mb-4 text-xs font-bold text-indigo-600 hover:underline"
+      >
+        Já configurei noutro aparelho — colar o código de lá
+      </button>
+    )
+  }
+
+  return (
+    <div className="mb-5 rounded-xl border border-indigo-200 bg-indigo-50 p-3">
+      <p className="text-xs text-indigo-800 mb-2 leading-relaxed">
+        Cole o código copiado do outro aparelho. Ele é cifrado — a senha continua sendo pedida depois.
+      </p>
+      <textarea
+        value={codigo}
+        onChange={(e) => setCodigo(e.target.value)}
+        placeholder="ESCALA-PORTEIROS-COFRE-V1...."
+        className="w-full h-20 p-2 text-[11px] font-mono border border-indigo-200 rounded-lg bg-white resize-none"
+      />
+      {erro && <p className="text-xs text-red-600 mt-1 font-semibold">{erro}</p>}
+      <button title="Instala o cofre neste navegador — a senha é pedida em seguida"
+        onClick={() => {
+          const r = importarCofre(codigo)
+          if (r.ok) location.reload()
+          else setErro(r.motivo)
+        }}
+        className="mt-2 px-4 py-2 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700"
+      >
+        Usar este cofre
+      </button>
+    </div>
+  )
+}
 
 const PrimeiroAcesso: React.FC<{ aoAbrir: (s: Segredos) => void }> = ({ aoAbrir }) => {
   const [senha, setSenha] = useState('')
@@ -66,6 +172,7 @@ const PrimeiroAcesso: React.FC<{ aoAbrir: (s: Segredos) => void }> = ({ aoAbrir 
         token. Sem ela, o que ficar neste navegador é ruído, mesmo para quem estiver com o aparelho
         na mão. Se você esquecê-la, é só configurar de novo com um token novo.
       </p>
+      <ColarCofre />
       <Campo rotulo="Senha (mínimo 8 caracteres)" tipo="senha" valor={senha} aoMudar={setSenha} />
       <Campo rotulo="Repita a senha" tipo="senha" valor={repetir} aoMudar={setRepetir} />
       <Campo
@@ -874,25 +981,59 @@ const AbaPublicar: React.FC<{
             {ocupado ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
             {ocupado ? 'Publicando…' : 'Publicar'}
           </button>
-          <button title="Salva o elenco em arquivo — a rede para o dia em que o token expirar"
-            onClick={() => baixarJSON('pessoas.json', { versao: 1, pessoas })}
+          <button title="Baixa os arquivos e o guia com os dois endereços — dá para publicar sem token nenhum"
+            onClick={() =>
+              baixarPacoteManual([
+                { nome: 'pessoas.json', dados: { versao: 1, pessoas } },
+                ...(blocoNovo ? [{ nome: 'blocos.json', dados: { versao: 1, blocos: blocosParaPublicar } }] : []),
+              ])
+            }
             className="px-4 py-2.5 border border-gray-300 rounded-xl text-sm font-semibold text-gray-700 hover:bg-gray-50 flex items-center gap-2"
           >
-            <Download className="w-4 h-4" /> Baixar elenco
+            <Download className="w-4 h-4" /> Baixar para publicar à mão
           </button>
-          {blocoNovo && (
-            <button title="Salva a escala em arquivo — a rede para o dia em que o token expirar"
-              onClick={() => baixarJSON('blocos.json', { versao: 1, blocos: blocosParaPublicar })}
-              className="px-4 py-2.5 border border-gray-300 rounded-xl text-sm font-semibold text-gray-700 hover:bg-gray-50 flex items-center gap-2"
-            >
-              <Download className="w-4 h-4" /> Baixar escala
-            </button>
-          )}
         </div>
-        <p className="text-xs text-gray-400 mt-3">
-          Os botões de baixar são a rede de segurança: se o token expirar ou a API do GitHub falhar,
-          o trabalho não se perde.
-        </p>
+
+        {/*
+          🔴 O CAMINHO SEM TOKEN, ESCANCARADO NA TELA — não escondido num arquivo baixado.
+          Quem chega aqui sem token precisa saber, ANTES de clicar, que existe saída e que ela tem
+          duas paradas. Subir em só uma das pastas é o erro que não avisa: ou o site não muda, ou
+          muda e a próxima montagem desfaz.
+        */}
+        <details className="mt-4 rounded-xl border border-gray-200 bg-gray-50">
+          <summary className="cursor-pointer px-4 py-3 text-sm font-bold text-gray-700 select-none">
+            Publicar sem token — as duas paradas
+          </summary>
+          <div className="px-4 pb-4 text-sm text-gray-600 space-y-3">
+            <p>
+              O botão <strong>Publicar</strong> usa o token porque o site é estático: não há servidor, e
+              escrever no repositório pelo navegador só é possível pela API do GitHub. Sem token, o
+              mesmo se faz à mão — e o arquivo precisa ir para <strong>as duas</strong> pastas abaixo.
+            </p>
+            {DESTINOS.map((d, i) => (
+              <div key={d.pasta} className="rounded-lg border border-gray-200 bg-white p-3">
+                <div className="font-mono text-xs font-bold text-gray-800">{i + 1}. {d.pasta}</div>
+                <p className="text-xs text-gray-500 mt-1">{d.porque}</p>
+                <a
+                  href={d.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  title="Abre a página do GitHub já apontada para esta pasta"
+                  className="inline-flex items-center gap-1 mt-2 text-xs font-bold text-indigo-600 hover:underline"
+                >
+                  Abrir esta pasta no GitHub →
+                </a>
+              </div>
+            ))}
+            <p className="text-xs text-gray-500">
+              Subir em só uma delas é o erro que não avisa: <strong>só {DESTINOS[1].pasta}</strong> muda o
+              site agora e a próxima montagem desfaz; <strong>só {DESTINOS[0].pasta}</strong> não muda nada.
+              O guia baixado repete isso, para quando você estiver no computador sem esta tela aberta.
+            </p>
+          </div>
+        </details>
+
+        <LevarParaOutroAparelho />
 
         {resultado && (
           <div className={clsx('mt-4 p-4 rounded-xl border text-sm whitespace-pre-wrap', resultado.ok ? 'bg-green-50 border-green-200 text-green-900' : 'bg-red-50 border-red-200 text-red-900')}>

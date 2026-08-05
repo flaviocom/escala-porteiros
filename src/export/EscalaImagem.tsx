@@ -51,7 +51,9 @@ function Ficha({ nome }: { nome: string }) {
   return (
     <div style={{
       display: 'flex', alignItems: 'center', gap: 10, background: '#fff', border: '2px solid #dbeafe',
-      borderRadius: 999, padding: '7px 22px 7px 8px', boxShadow: '0 1px 2px rgba(15,23,42,.04)',
+      borderRadius: 999, padding: '7px 18px 7px 8px', boxShadow: '0 1px 2px rgba(15,23,42,.04)',
+      // Ocupa a coluna inteira da grade: é o que deixa os nomes alinhados de uma linha para outra.
+      minWidth: 0, overflow: 'hidden',
     }}>
       <div style={{
         width: 30, height: 30, borderRadius: 999, background: '#dbeafe', color: '#2563eb',
@@ -59,7 +61,10 @@ function Ficha({ nome }: { nome: string }) {
       }}>
         {nome.charAt(0).toUpperCase()}
       </div>
-      <span style={{ fontSize: 21, fontWeight: 700, color: '#1e293b', whiteSpace: 'nowrap' }}>{nome}</span>
+      <span style={{
+        fontSize: 21, fontWeight: 700, color: '#1e293b', whiteSpace: 'nowrap',
+        overflow: 'hidden', textOverflow: 'ellipsis',
+      }}>{nome}</span>
     </div>
   )
 }
@@ -103,6 +108,12 @@ export interface DadosImagem {
 
 export function EscalaImagem({ shifts, geradoEm, porTurno = 3 }: DadosImagem) {
   const dias = porDia(shifts)
+
+  /**
+   * Uma contagem de colunas para a imagem inteira — a do turno mais cheio. É isto que alinha os
+   * nomes verticalmente de um cartão para o outro, em vez de cada linha se arranjar sozinha.
+   */
+  const colunas = Math.max(porTurno, ...shifts.map((s) => s.assignedBrothers.length), 1)
   const { inicio, fim, presentes, resumo, titulo } = resumirPeriodo(shifts)
 
   return (
@@ -191,7 +202,21 @@ export function EscalaImagem({ shifts, geradoEm, porTurno = 3 }: DadosImagem) {
                       sem porteiros escalados
                     </span>
                   ) : (
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
+                    /*
+                     * 🔴 GRADE DE COLUNAS FIXAS, não `flex-wrap`.
+                     *
+                     * Com `flex-wrap`, o terceiro nome caía para uma segunda linha e **encavalava**
+                     * o turno seguinte na imagem — mas só na IMAGEM. Medido no navegador em
+                     * 04/08/2026: no DOM as linhas encostavam sem sobrepor (fim 351 → topo 351).
+                     * A captura reproduz o layout num clone, e o ponto de quebra do wrap diverge lá.
+                     *
+                     * Consertar a quebra seria perseguir o sintoma. Coluna fixa **elimina a quebra**:
+                     * não há ponto de decisão para o clone discordar, e a altura da linha vira
+                     * determinística. De quebra, é o que o Flavio pediu — nomes na mesma linha e
+                     * alinhados de um turno para o outro, porque todas as linhas usam a MESMA
+                     * contagem de colunas (a do maior turno da imagem).
+                     */
+                    <div style={{ display: 'grid', gridTemplateColumns: `repeat(${colunas}, 1fr)`, gap: 12, flex: 1, minWidth: 0 }}>
                       {t.assignedBrothers.map((id) => <Ficha key={id} nome={nomeDe(id)} />)}
                     </div>
                   )}

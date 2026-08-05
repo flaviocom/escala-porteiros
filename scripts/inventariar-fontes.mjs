@@ -42,6 +42,21 @@ const DECLARADAS = [
     derivavel: false,
   },
   {
+    host: 'github.com',
+    nome: 'Site do GitHub (páginas de upload)',
+    // 🔴 É a única da lista que NÃO busca dado: são endereços que a tela oferece para publicar à
+    // mão, apontando para a pasta certa. O portão exige declaração de todo host chamado, e reprovou
+    // este assim que a constante entrou no código — antes de qualquer commit.
+    entrega: 'nada — são links que a tela oferece para publicar à mão, apontando para a pasta certa',
+    frequencia: 'nunca automaticamente: só se a pessoa clicar',
+    custo: 'zero',
+    custoConferidoEm: '04/08/2026',
+    variavel: null,
+    seCair: 'o caminho manual fica sem atalho; publicar pelo botão continua funcionando',
+    alternativa: 'navegar até a pasta no GitHub à mão',
+    derivavel: false,
+  },
+  {
     host: 'api.anthropic.com',
     nome: 'Motor de sugestão',
     entrega: 'proposta alternativa de distribuição, explicação em português, arbitragem quando a escala não fecha, e auditoria da escala pronta',

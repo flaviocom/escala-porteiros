@@ -13,7 +13,7 @@
 
 De onde vem · o que entrega · com que frequência · é pago e quanto · estamos na melhor situação.
 
-Este projeto tem **3 fontes externas**, e 1 delas entrega algo **derivável**.
+Este projeto tem **4 fontes externas**, e 1 delas entrega algo **derivável**.
 
 ### API do GitHub (Contents)
 
@@ -27,6 +27,19 @@ Este projeto tem **3 fontes externas**, e 1 delas entrega algo **derivável**.
 | **Quem consome** | `src/admin/github.ts` |
 | **Se cair** | não publica pela tela; o botão "baixar JSON" continua salvando o trabalho |
 | **Alternativa** | commit manual pelo próprio site do GitHub, ou por linha de comando |
+
+### Site do GitHub (páginas de upload)
+
+| | |
+|---|---|
+| **De onde vem** | `github.com` |
+| **O que entrega** | nada — são links que a tela oferece para publicar à mão, apontando para a pasta certa |
+| **Com que frequência** | nunca automaticamente: só se a pessoa clicar |
+| **Custo** | zero · conferido em 04/08/2026 |
+| **Credencial** | `null` — valor só na central |
+| **Quem consome** | `src/admin/github.ts` |
+| **Se cair** | o caminho manual fica sem atalho; publicar pelo botão continua funcionando |
+| **Alternativa** | navegar até a pasta no GitHub à mão |
 
 ### Motor de sugestão
 
@@ -54,7 +67,7 @@ Este projeto tem **3 fontes externas**, e 1 delas entrega algo **derivável**.
 | **Com que frequência** | a cada abertura do site |
 | **Custo** | gratuita para repositório público · conferido em 04/08/2026 |
 | **Credencial** | não exige |
-| **Quem consome** | _(medido: nenhum arquivo chama este host)_ |
+| **Quem consome** | `src/admin/github.ts` |
 | **Se cair** | o site sai do ar; os dados continuam no repositório |
 | **Alternativa** | qualquer hospedagem estática |
 
@@ -79,7 +92,7 @@ node scripts/inventariar-fontes.mjs --conferir
 Reprova se algum host for **chamado no código e não declarado** aqui — que é como uma fonte externa
 entra num projeto sem ninguém ter decidido por ela.
 
-**Medido nesta geração:** 2 host(s) chamado(s), 3 declarado(s), 0 não declarado(s).
+**Medido nesta geração:** 4 host(s) chamado(s), 4 declarado(s), 0 não declarado(s).
 
 ## Quando refazer
 

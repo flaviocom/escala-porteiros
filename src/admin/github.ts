@@ -224,11 +224,68 @@ export async function reverterPara(
 
 /** Baixar o JSON — a rede para o dia em que o token expirar ou a API falhar. */
 export function baixarJSON(nome: string, conteudo: unknown): void {
-  const blob = new Blob([JSON.stringify(conteudo, null, 2) + '\n'], { type: 'application/json' })
-  const url = URL.createObjectURL(blob)
+  baixarTexto(nome, JSON.stringify(conteudo, null, 2) + '\n', 'application/json')
+}
+
+function baixarTexto(nome: string, texto: string, tipo: string): void {
+  const url = URL.createObjectURL(new Blob([texto], { type: tipo }))
   const a = document.createElement('a')
   a.href = url
   a.download = nome
   a.click()
-  URL.revokeObjectURL(url)
+  setTimeout(() => URL.revokeObjectURL(url), 3000)
+}
+
+/** As duas pastas que precisam receber o arquivo, e a página do GitHub que abre cada uma. */
+export const DESTINOS = PASTAS.map((pasta) => ({
+  pasta,
+  url: `https://github.com/${DONO}/${REPO}/upload/${RAMO}/${pasta}`,
+  porque:
+    pasta === 'docs/dados'
+      ? 'é o que o site serve — mexer aqui muda a escala no ar'
+      : 'é a fonte do build — sem isto, a próxima montagem do site desfaz a mudança',
+}))
+
+/**
+ * 📦 PUBLICAR SEM TOKEN — o caminho de mão, feito para não dar para errar.
+ *
+ * O botão "Publicar" precisa do token porque o site é estático: não há servidor, e escrever no
+ * repositório a partir do navegador só é possível pela API do GitHub. Quem não quiser cadastrar
+ * token faz o mesmo à mão — e este pacote existe para que isso seja seguro.
+ *
+ * 🔴 O RISCO QUE ELE FECHA: o arquivo tem de ir para **duas** pastas. Subir só em `docs/dados` muda
+ * o site agora e a **próxima montagem desfaz**; subir só em `public/dados` não muda nada. As duas
+ * falhas são silenciosas — a publicação "dá certo" e a escala fica errada.
+ *
+ * Por isso o guia desce junto com os arquivos, com os dois endereços prontos.
+ */
+export function baixarPacoteManual(conteudos: { nome: string; dados: unknown }[]): void {
+  for (const c of conteudos) baixarJSON(c.nome, c.dados)
+
+  const guia = [
+    'COMO PUBLICAR A ESCALA SEM TOKEN',
+    '='.repeat(60),
+    '',
+    `Arquivos baixados: ${conteudos.map((c) => c.nome).join(', ')}`,
+    '',
+    'CADA ARQUIVO VAI PARA AS DUAS PASTAS ABAIXO. As duas, sempre.',
+    '',
+    ...DESTINOS.flatMap((d, i) => [
+      `${i + 1}) ${d.pasta}`,
+      `   ${d.url}`,
+      `   Por que: ${d.porque}`,
+      '   Arraste o arquivo para a pagina, role ate o fim e clique em "Commit changes".',
+      '',
+    ]),
+    'Subir em so uma das duas e o erro que nao avisa:',
+    '  - so docs/dados   -> o site muda agora, e a proxima montagem desfaz',
+    '  - so public/dados -> o site nao muda',
+    '',
+    'Depois de subir nas duas, o site atualiza em cerca de um minuto.',
+    'Confira abrindo https://flaviocom.github.io/escala-porteiros/',
+    '',
+    `Gerado em ${new Date().toLocaleString('pt-BR')}`,
+  ].join('\n')
+
+  baixarTexto('COMO-PUBLICAR.txt', guia, 'text/plain;charset=utf-8')
 }

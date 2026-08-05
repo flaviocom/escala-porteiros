@@ -5,7 +5,7 @@
 > **Última atualização:** 04/08/2026 · **Fuso:** America/São_Paulo
 >
 > **Cadeia de navegação, nesta ordem:**
-> **`ESTADO.md` (você está aqui)** → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-04-h.md) → [`BACKLOG.md`](BACKLOG.md)
+> **`ESTADO.md` (você está aqui)** → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-04-i.md) → [`BACKLOG.md`](BACKLOG.md)
 > *onde estamos · o que aconteceu na última sessão e por quê · o que fazer a seguir*
 >
 > **Roteador do projeto:** [`AGENTS.md`](AGENTS.md) ·
@@ -37,7 +37,7 @@ autoverificação, que roda 20 checagens todo dia. Os quatro mais graves:
 
 **Consertados e provados nas duas pontas.** Dois portões novos (`contagem`, `cadeia`) existem porque
 número escrito à mão e ponteiro mantido à mão apodrecem sozinhos — o `AGENTS.md` apontava para a
-parte 4 de 7 como se fosse a última. Detalhe em [`HANDOFF_2026-08-04-h.md`](docs/handoff/HANDOFF_2026-08-04-h.md).
+parte 4 de 7 como se fosse a última. Detalhe em [`HANDOFF_2026-08-04-i.md`](docs/handoff/HANDOFF_2026-08-04-i.md).
 
 ⚠️ **Sete achados menores ficaram abertos**, em P4 do [`BACKLOG.md`](BACKLOG.md), com `arquivo:linha`
 e reprodução. Nenhum bloqueia o uso.
@@ -121,8 +121,8 @@ comentário). Consertados, com os casos reais virando teste permanente.
 
 **Nada em execução.**
 
-**A imagem que vai para o WhatsApp tem layout próprio** (parte 7), no modelo do arquivo que o Flavio
-usa. A anterior fotografava a tela e **fatiava em 5 dias** — numa escala de cinco meses, saíam cinco
+**A imagem que vai para o WhatsApp tem layout próprio** (partes 7 e 8), no modelo do arquivo que o
+Flavio usa — com os nomes em **colunas alinhadas** e um **seletor de meses** antes de gerar. A anterior fotografava a tela e **fatiava em 5 dias** — numa escala de cinco meses, saíam cinco
 dias. Agora o período inteiro cabe, e o filtro é o mesmo da tela. Exemplo em
 `capturas/exemplo-2026-08.png`; regerar com `npm run imagem`.
 

@@ -6,7 +6,7 @@
 > **Última atualização:** 04/08/2026
 >
 > **Cadeia de navegação, nesta ordem:**
-> [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-04-h.md) → **`BACKLOG.md` (você está aqui)**
+> [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-04-i.md) → **`BACKLOG.md` (você está aqui)**
 >
 > **Roteador do projeto:** [`AGENTS.md`](AGENTS.md) ·
 > **Solicitações:** [`docs/solicitacoes/INDICE_DE_SOLICITACOES.md`](docs/solicitacoes/INDICE_DE_SOLICITACOES.md) ·
@@ -71,7 +71,7 @@ Medido: Williams com **7 intervalos de 1 dia**, **18 pares com ≤3 dias**, 6 oc
 | P2.7 | `docs/INVENTARIO_DE_FONTES.md` **gerado por script** | ✅ 04/08 — 2 hosts medidos, 3 declarados |
 | P2.8 | GATE: typecheck + suíte completa + build | ✅ 04/08 — `npm run gate`, exit 0 |
 | P2.9 | Portão de denominação provando as duas pontas | ✅ 04/08 — 9 acusações + 13 absolvições, 0 vazamentos |
-| P2.10 | Auditoria adversarial **INDEPENDENTE** | ✅ 04/08 — **6 auditores em frentes disjuntas, 20 achados**. Ver [handoff](docs/handoff/HANDOFF_2026-08-04-h.md) |
+| P2.10 | Auditoria adversarial **INDEPENDENTE** | ✅ 04/08 — **6 auditores em frentes disjuntas, 20 achados**. Ver [handoff](docs/handoff/HANDOFF_2026-08-04-i.md) |
 | P2.11 | 🔴 **Disco `D:` a 0,8 s por arquivo** — build roda numa cópia em `C:` | 👤 contornado; a causa é do Flavio |
 | P2.12 | Pré-voo vermelho em `D:` por ausência **proposital** de `node_modules` | ✅ 04/08 — o método ganhou `deps: {bloqueia, motivo}`, que **falha fechada** (sem motivo escrito, não isenta) e não desliga a checagem de instalação parcial. Autoteste de 8 casos; contra a versão anterior, reprova 4 |
 | P2.13 | Portão `contagem` — documento vivo não declara número de regras que o catálogo desmente | ✅ 04/08 — achou 8 divergências de uma vez |
@@ -82,7 +82,7 @@ Medido: Williams com **7 intervalos de 1 dia**, **18 pares com ≤3 dias**, 6 oc
 
 ## P4 — Achados da auditoria independente, ainda abertos 🟠
 
-> Vieram da auditoria de 04/08/2026 ([handoff](docs/handoff/HANDOFF_2026-08-04-h.md)). **Nenhum
+> Vieram da auditoria de 04/08/2026 ([handoff](docs/handoff/HANDOFF_2026-08-04-i.md)). **Nenhum
 > bloqueia o uso.** Estão aqui com `arquivo:linha` e reprodução — não como lembrete vago. Foram
 > separados por serem de risco baixo e escopo próprio; os graves já foram corrigidos.
 

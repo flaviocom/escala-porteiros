@@ -372,6 +372,114 @@ Quatro arquivos novos e um reescrito, num commit. Reverter devolve a captura de 
 
 ---
 
+## DB-009 · 04/08/2026 — duas falhas silenciosas no mesmo passo
+
+**Solicitação:** [S-009](docs/solicitacoes/INDICE_DE_SOLICITACOES.md), continuação.
+**Handoff:** [parte 7](docs/handoff/HANDOFF_2026-08-04-g.md).
+
+### 1. Tirei uma trava sem testar o caso que a justificava
+
+Removi o corte de 5 dias da exportação e **não gerei o período inteiro**. O portão recém-escrito
+mediu: **969 × 16384**. Os navegadores cortam o canvas em 16384px e, para caber, encolhem a largura
+— o PNG sai truncado e distorcido, **sem erro**. Troquei uma falha declarada por uma silenciosa.
+
+**Correção:** uma imagem por **mês** — que é como a escala é usada, não remendo. Mais duas travas:
+altura acima do teto vira erro com a razão escrita, e a largura do PNG é conferida **depois** de
+gerado. *Conferir o que saiu, não o que foi pedido.*
+
+### 2. Validei "ao vivo" a versão anterior
+
+25 segundos após o push, o Pages ainda servia o pacote antigo. Tela abriu, nomes apareceram, console
+limpo — e eu quase reportei o comportamento velho como novo. Só apareceu porque o **nome do arquivo
+baixado** era o do formato anterior.
+
+**Correção:** `npm run vivo` compara o `index-*.js` do HTML publicado com o de `docs/assets` antes de
+qualquer outra checagem. Provado com divergência injetada.
+
+### A regra que as duas compartilham
+
+> **Toda trava que eu remover exige rodar o caso que a motivou. E "esperar um pouco" nunca é
+> verificação — comparar é.**
+
+---
+
+## DB-010 · 04/08/2026 — "deixa o token embutido" e o cofre portátil
+
+**Solicitação:** [S-010](docs/solicitacoes/INDICE_DE_SOLICITACOES.md).
+**Handoff:** [parte 7](docs/handoff/HANDOFF_2026-08-04-g.md).
+
+### O pedido, e por que não foi atendido como veio
+
+*"Deixa esse token embutido, eu só coloco a senha."* O repositório **é público** — conferido, não
+presumido. Embutir significa publicar o token para todo visitante **e** ter o GitHub revogando-o
+automaticamente, o que quebraria o botão Publicar sozinho, repetidamente. Cifrar não salva: o texto
+cifrado ficaria público e atacável offline.
+
+### O que ele queria de verdade
+
+*"Só a senha"* — legítimo. O obstáculo real era o cofre ser **por navegador**: cada aparelho pedia o
+token de novo.
+
+### Decisões
+
+| # | Decisão | Por quê |
+|---|---|---|
+| 1 | **Não** embutir | fato técnico, não preferência: repositório público + revogação automática |
+| 2 | Transportar o cofre **cifrado** | pode ir por qualquer canal; a senha viaja na cabeça dele, o único canal sem cópia |
+| 3 | Recusar código truncado **antes** de gravar | instalar cofre quebrado trocaria "cole de novo" por "senha incorreta" eterno |
+| 4 | Declarar `github.com` no inventário | o portão reprovou antes do commit — e é o único host da lista que **não busca dado** |
+
+### O que quase me pegou
+
+O inventário de fontes é **gerado** a partir de uma constante no script. Editei o markdown à mão e o
+portão continuou vermelho — corretamente: a próxima geração desfaria a edição. **A fonte de verdade
+não era o documento.**
+
+### Como reverter
+
+`exportarCofre`/`importarCofre` em `cofre.ts` e dois componentes na tela. Remover não afeta quem já
+está configurado.
+
+---
+
+## DB-011 · 04/08/2026 — o encavalamento que não estava no DOM
+
+**Solicitação:** [S-011](docs/solicitacoes/INDICE_DE_SOLICITACOES.md).
+**Handoff:** [parte 8](docs/handoff/HANDOFF_2026-08-04-h.md).
+
+### O que a medição desmentiu
+
+O Flavio mandou a captura de novembro com os nomes sobrepostos. A hipótese óbvia era "a quebra de
+linha está errada". Medi antes de mexer:
+
+```
+ linha MANHÃ  topo 266  fundo 351
+ linha NOITE  topo 351  fundo 439      ← encosta, não sobrepõe
+```
+
+**No DOM não há sobreposição.** Ela existe só na **imagem**: a captura reproduz o layout num clone,
+e ali o ponto de quebra do `flex-wrap` diverge do original.
+
+### Decisões
+
+| # | Decisão | Por quê |
+|---|---|---|
+| 1 | **Eliminar** a quebra, não ajustá-la | ajustar o ponto de quebra trataria o sintoma e reabriria com qualquer nome mais longo; coluna fixa não tem ponto de decisão para o clone discordar |
+| 2 | Uma contagem de colunas para a imagem inteira | é o que alinha os nomes de um cartão para o outro, não só dentro da linha |
+| 3 | Seletor **só quando há escolha** | um mês em vista é o caso comum; ele não paga o preço da pergunta |
+| 4 | `<dialog>` nativo | a barra lateral tem rolagem própria e recortaria um painel absoluto; e vêm foco preso, `Esc` e fundo inerte de graça |
+| 5 | O botão diz **quantos arquivos** saem | a surpresa de download era o defeito, não o número de meses |
+
+### O erro na régua do teste
+
+`getByRole('button', { name: /Gerar/i })` casou com o botão de **fechar** — `title="Fechar sem
+gerar"`, e o nome acessível cai no `title` quando não há texto. Rótulo vazio, clique errado, produto
+certo. **Nome acessível não é texto visível.**
+
+### Como reverter
+
+`SeletorDeMeses.tsx` e a grade em `EscalaImagem.tsx`. Reverter devolve o encavalamento na imagem e
+os dez downloads de uma vez.
 ## 04/08/2026 · parte 8 — a auditoria independente, e o que ela derrubou
 
 **Solicitação:** *"go"*.
