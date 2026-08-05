@@ -63,6 +63,17 @@ piso primeiro e o índice de Jain depois. A primeira das oito é sempre a gulosa
 o resultado nunca fica pior do que era. **A semente fica gravada no bloco**, então "gerar outra
 combinação" explora caminho diferente sem que a escala deixe de ser reproduzível.
 
+**5. A escala de 06/08 a 31/12 foi gerada, e saiu IDÊNTICA à que já estava no ar.** O algoritmo é
+determinístico: mesma entrada, mesma saída. É a melhor resposta possível para *"posso gerar sem
+medo?"*. No caminho apareceram dois defeitos — o script escrevia por um caminho **pior** que o da
+tela (usava o guloso; a tela compara 8 versões) e gravava em **uma pasta só**.
+
+**6. Documentação de reconstrução — portabilidade entre IAs.** Sete documentos novos, sob
+[`docs/RECONSTRUIR.md`](docs/RECONSTRUIR.md): modelo de dados, catálogo de regras (⚙️ **gerado do
+código**, com portão que reprova se divergir), algoritmo, arquitetura (grafo de importações
+**medido**), operação e instalação do zero. O portão `contagem` foi **invertido**: tinha lista fixa
+de 5 documentos e deixava 4 invisíveis; agora descobre e mede **15**.
+
 Detalhe completo em [`HANDOFF_2026-08-05-c.md`](docs/handoff/HANDOFF_2026-08-05-c.md).
 
 ## O que entrou em 04/08: a auditoria independente (P2.10)
