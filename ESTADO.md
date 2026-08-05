@@ -204,7 +204,7 @@ commit. Publicar fica **bloqueado** enquanto a validação reprovar.
 falsos. Ligar o `strict` resolveu todos e revelou 9 trechos de código morto, removidos.
 
 **Tudo validado ao vivo, no navegador** — não só por `curl`: a tela renderiza, os nomes aparecem, o
-16/08 mostra SANTA CEIA sem ninguém, as 16 regras aparecem na aba Validação, o cofre cifra de
+16/08 mostra SANTA CEIA sem ninguém, as 17 regras aparecem na aba Validação, o cofre cifra de
 verdade (senha errada não abre) e um token inválido é recusado antes de ser guardado.
 
 **Depois disso, na segunda parte da sessão**, entraram quatro itens do backlog:

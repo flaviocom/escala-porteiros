@@ -235,7 +235,7 @@ export function conferirEsquema(pessoas: Pessoa[], blocos: Bloco[]): string[] {
     Ela existe, está certa, é exportada, é provada nos dois lados — e nunca era chamada em produção.
     Código inerte que parece cobertura. Medido pelo auditor: com `inicio = "2026-02-31"`, o produto
     **gera um turno em 31/02/2026** (data que não existe), pula 01 a 03 de março, e o veredito sai
-    *"Aprovada, sem ressalvas."* Nenhuma das 16 regras confere se a data existe; nenhuma tem por quê.
+    *"Aprovada, sem ressalvas."* Nenhuma das 17 regras confere se a data existe; nenhuma tem por quê.
 
     Aqui é o lugar: este é o portão que pergunta se o arquivo publicado é internamente coerente.
   */

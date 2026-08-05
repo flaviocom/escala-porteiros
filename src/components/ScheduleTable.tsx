@@ -98,7 +98,20 @@ export const ScheduleTable: React.FC<ScheduleTableProps> = ({
 
     const Icon = config.icon;
 
-    if (rotulo) {
+    /*
+      🔴 A CORREÇÃO DO RÓTULO DUPLICADO FOI ASSIMÉTRICA — sexta auditoria externa, 05/08/2026.
+
+      Quando a etiqueta do dado passou a atravessar, a imagem do WhatsApp imprimiu "SANTA CEIA /
+      SANTA CEIA" e ganhou a comparação `t.rotulo !== TURNO[t.type].rotulo`. **Aqui não.** A Santa
+      Ceia escapa por acaso (o `if (type === 'SANTA_CEIA')` retorna antes), mas qualquer outro turno
+      cujo `rotulo` do dado coincida com o nome do turno duplicava — e `rotulo` é texto livre no
+      `config.json`, editável à mão pelo caminho documentado.
+
+      Medido: `rotulo: "NOITE"` num turno NOITE imprimia **"NOITE / NOITE"** na tabela do site, com a
+      imagem mostrando a mesma coisa certa ao lado. Fechar a ponte que doeu e deixar a outra é o
+      defeito de fonte dupla com outro nome.
+    */
+    if (rotulo && rotulo !== type) {
       return (
         <div className={clsx('flex flex-col items-center justify-center rounded-lg border px-3 py-1', config.bg, config.border)}>
           <Icon className={clsx('h-4 w-4 mb-0.5', config.text)} />

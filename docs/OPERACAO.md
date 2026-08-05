@@ -95,7 +95,7 @@ Desde 05/08/2026 esse caminho tem guarda, e ele lê a versão **antes** de grava
 
 ### A validação que os irmãos veem
 
-Aba **Validação** no site público: roda as **16 regras** do catálogo e mostra o resultado.
+Aba **Validação** no site público: roda as **17 regras** do catálogo e mostra o resultado.
 
 ### "Conferir por fora" — e por que é diferente
 
@@ -161,7 +161,7 @@ Rodar **depois de publicar**:
 
 | Comando | O que confere |
 |---|---|
-| `npm run vivo` | a tela renderizou, as 16 regras aparecem, sem erro no console |
+| `npm run vivo` | a tela renderizou, as 17 regras aparecem, sem erro no console |
 | `npm run vivo:caminho` | 🔴 **o caminho INTEIRO de quem administra**, num navegador: site público → filtro por data → atalhos → Validação → Elenco → Gerar → Ajustar → Conferir por fora → Publicar → e de volta |
 | `npm run vivo:conferir` | cada dia e cada nome do JSON chega inteiro à tela |
 | `npm run vivo:divulgado -- --antigo <url>` | 🔴 se a escala nova **desmente** o que já foi divulgado |

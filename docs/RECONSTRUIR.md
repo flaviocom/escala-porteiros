@@ -14,7 +14,7 @@
 |---|---|
 | **este** | o que é, por que é assim, e em que ordem reconstruir |
 | [`MODELO_DE_DADOS.md`](MODELO_DE_DADOS.md) | os 3 arquivos JSON, campo a campo |
-| [`CATALOGO_DE_REGRAS.md`](CATALOGO_DE_REGRAS.md) | as 16 regras — ⚙️ **gerado a partir do código** |
+| [`CATALOGO_DE_REGRAS.md`](CATALOGO_DE_REGRAS.md) | as 17 regras — ⚙️ **gerado a partir do código** |
 | [`ALGORITMO.md`](ALGORITMO.md) | como a escala é montada, e o que o algoritmo não garante |
 | [`ARQUITETURA.md`](ARQUITETURA.md) | as camadas, medidas no grafo de importações |
 | [`OPERACAO.md`](OPERACAO.md) | como usar, como conferir, o que fazer quando dá errado |

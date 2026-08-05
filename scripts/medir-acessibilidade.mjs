@@ -189,19 +189,40 @@ async function medirFoco(pagina) {
   const vistos = new Set()
   for (let i = 0; i < 60; i++) {
     await pagina.keyboard.press('Tab')
-    const f = await pagina.evaluate(() => {
+    const f = await pagina.evaluate((primeiraVolta) => {
       const a = document.activeElement
       if (!a || a === document.body) return null
+      // O PRIMEIRO elemento focado fica marcado no próprio nó: identidade não colide, descrição sim.
+      const w = window
+      if (primeiraVolta) w.__primeiroFocavel = a
       const cs = getComputedStyle(a)
       const temAnel = cs.outlineStyle !== 'none' && parseFloat(cs.outlineWidth) > 0
       return {
         tag: a.tagName,
         marca: `${a.tagName}|${(a.textContent ?? '').trim().slice(0, 30)}|${a.className?.toString?.().slice(0, 30) ?? ''}`,
+        ehOPrimeiro: !primeiraVolta && w.__primeiroFocavel === a,
         visivel: temAnel || cs.boxShadow !== 'none',
       }
-    })
+    }, focos.length === 0)
+    /*
+      🔴 A "MARCA" NÃO É ÚNICA, E O `break` PARAVA NA METADE — sexta auditoria externa, 05/08/2026.
+
+      A correção anterior trocou "6 tabulações fixas" por "anda até o foco VOLTAR ao primeiro" — e a
+      volta era detectada por `tag|texto|classe`, que **dois elementos podem compartilhar**. Os dois
+      `<input type="date">` (o calendário invisível, texto vazio, mesma classe) produzem marca
+      idêntica, e o laço interrompia ali achando que tinha dado a volta.
+
+      Medido: no desktop o portão contava **7** focáveis, e a volta completa tem **17**; no celular
+      com o painel aberto, **12** contra **24**. Os dez que ele nunca alcançava incluem os dois
+      botões de envio, os dois filtros, Estatísticas, Validação e a porta do administrativo — e há
+      **um com foco invisível** dentro justamente dessa faixa cega. O portão imprimia
+      *"foco visível ao tabular … 31 de 31"* e saía verde.
+
+      A volta se detecta pelo ELEMENTO, não pela descrição dele: `document.activeElement === primeiro`
+      é identidade, e identidade não colide. A descrição continua servindo para o relatório.
+    */
     if (!f) continue
-    if (vistos.has(f.marca)) break // deu a volta — todo focável já foi visto
+    if (f.ehOPrimeiro && focos.length > 0) break // deu a volta de verdade — mesmo NÓ, não mesma marca
     vistos.add(f.marca)
     focos.push(f)
   }

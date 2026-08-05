@@ -513,6 +513,57 @@ export const Admin: React.FC<{ dados: DadosPublicados }> = ({ dados: dadosInicia
    * inteiro, que é a porta por onde a trava anterior escapava. O estado ao lado existe só para o
    * botão poder ficar cinza — os dois são escritos sempre juntos, pelas duas funções abaixo.
    */
+  /**
+   * 🔴 REVERTER E PUBLICAR EM SEGUIDA DESFAZIA A REVERSÃO — sexta auditoria externa, 05/08/2026.
+   *
+   * A correção da manhã fez o **retrato** (`dados`) acompanhar quem grava. Mas `publicar()` não sobe
+   * `dados.pessoas`: sobe o estado `pessoas`, que nasce de um inicializador preguiçoso e **nunca mais
+   * é reescrito**. Ou seja, a correção mexeu na variável errada — `dados` alimenta a montagem dos
+   * blocos e a fronteira, não o que vai para o arquivo.
+   *
+   * Medido ao vivo, com a API mocada: reverter o elenco, ver a mensagem verde, clicar Publicar —
+   * e o nome que a reversão tinha trocado **volta**. O administrador acredita que reverteu; o site
+   * serve o elenco que ele quis descartar.
+   *
+   * `config` é pior ainda: `configMudou` compara `config` (velho) com `dados.config` (revertido),
+   * então a publicação seguinte passa a **decidir ativamente** republicar a configuração antiga —
+   * título, vocabulário, capacidade padrão, malha e Santa Ceia.
+   *
+   * ⚠️ POR QUE ISTO É SEPARADO DE `aoGravar`, e não um sincronismo em toda gravação: numa publicação
+   * com falha parcial, `dados.config` fica sendo o ANTIGO de propósito (não foi gravado) — e copiá-lo
+   * de volta para o estado apagaria a edição que a pessoa acabou de fazer e ainda quer publicar.
+   * Reverter é o único caso em que o arquivo lido do passado **é** a intenção declarada.
+   */
+  const aoReverter = (d: DadosPublicados, arquivo: string) => {
+    setDados(d)
+    if (arquivo === 'pessoas.json') setPessoas(d.pessoas.map((p) => ({ ...p, restricoes: { ...p.restricoes } })))
+    if (arquivo === 'config.json') setConfig({ ...d.config })
+  }
+
+  /**
+   * 🔴 E OS CAMPOS DE PERÍODO TAMBÉM NÃO ACOMPANHAVAM — mesma auditoria (F7).
+   *
+   * `inicioSugerido` é `useMemo` sobre `dados.blocos` e recalcula; mas `useState(inicioSugerido)`
+   * ignora o valor novo, por definição do React. Depois da primeira publicação da sessão, os campos
+   * continuavam **no período que acabou de ir ao ar** — com cara de certo.
+   *
+   * Medido: publicar jan→mar/2027 e voltar à aba deixava `De = 01/01/2027`. Mudar só o "Até" e gerar
+   * reescreveria, com outra semente, a escala que os irmãos já receberam. `conferirPassadoPreservado`
+   * não pega — regerar o MESMO período não perde turno nenhum, só troca as pessoas — e `min` só
+   * protege o passado do calendário, não o já publicado.
+   */
+  const aoGravar = (d: DadosPublicados) => {
+    setDados(d)
+    const ultimo = d.blocos.flatMap((b) => b.turnos).map((t) => t.data).sort().at(-1)
+    if (!ultimo) return
+    const seguinte = somarDias(ultimo, 1)
+    const amanha = somarDias(hojeSaoPaulo(), 1)
+    const novoDe = diferencaEmDias(ultimo, amanha) < 0 ? seguinte : amanha
+    setDe(novoDe)
+    const ano = Number(novoDe.slice(0, 4))
+    setAte(diferencaEmDias(novoDe, `${ano}-12-31`) >= 30 ? `${ano}-12-31` : `${ano + 1}-12-31`)
+  }
+
   const [gravando, setGravando] = useState<string | null>(gravacaoEmVoo)
   const tomarGravacao = (oQue: string): boolean => {
     if (gravacaoEmVoo) return false
@@ -635,7 +686,8 @@ export const Admin: React.FC<{ dados: DadosPublicados }> = ({ dados: dadosInicia
             config={config}
             blocoNovo={blocoNovo}
             segredos={segredos}
-            aoGravar={setDados}
+            aoGravar={aoGravar}
+            aoReverter={aoReverter}
             gravando={gravando}
             tomarGravacao={tomarGravacao}
             soltarGravacao={soltarGravacao}
@@ -1458,7 +1510,7 @@ const AbaGerar: React.FC<{
               </p>
             ) : (
               <p className="mt-2 text-xs leading-relaxed text-gray-600">
-                Esta escala veio <strong>do motor</strong> e passou no portão determinístico — as 16 regras
+                Esta escala veio <strong>do motor</strong> e passou no portão determinístico — as 17 regras
                 foram conferidas do mesmo jeito. Pedir outra monta uma escala pelo algoritmo, comparando
                 várias versões internamente.
               </p>
@@ -1761,10 +1813,12 @@ const AbaPublicar: React.FC<{
   segredos: Segredos
   /** Atualiza o retrato do publicado com o que ACABOU de ser gravado. Ver `retratoPublicado`. */
   aoGravar: (d: DadosPublicados) => void
+  /** Repassado ao Histórico: reverter sincroniza também o estado editável. Ver `aoReverter`. */
+  aoReverter: (d: DadosPublicados, arquivo: string) => void
   gravando: string | null
   tomarGravacao: (oQue: string) => boolean
   soltarGravacao: () => void
-}> = ({ dados, pessoas, config, blocoNovo, segredos, aoGravar, gravando, tomarGravacao, soltarGravacao }) => {
+}> = ({ dados, pessoas, config, blocoNovo, segredos, aoGravar, aoReverter, gravando, tomarGravacao, soltarGravacao }) => {
   const [ocupado, setOcupado] = useState(false)
   const [resultado, setResultado] = useState<{ ok: boolean; texto: string } | null>(null)
 
@@ -1801,6 +1855,19 @@ const AbaPublicar: React.FC<{
     }
     setOcupado(true)
     setResultado(null)
+    /*
+      🔴 SEM `finally`, UM ESTOURO DEIXAVA A TRAVA PRESA — sexta auditoria externa, 05/08/2026.
+
+      `soltarGravacao()` era a ÚLTIMA linha do caminho feliz. Bastava um `throw` no meio para a trava
+      de módulo ficar presa — e ela é de módulo justamente para sobreviver à desmontagem, o que aqui
+      vira contra: sobrevive à troca de aba, à saída para o site e a um novo login. Medido ao vivo: o
+      botão Publicar fica **cinza para o resto da sessão**, sem uma linha de explicação, e só um F5
+      resolve.
+
+      E como estas funções são `async`, o erro vira *unhandled rejection*: o `ErrorBoundary` não vê
+      (ele só pega estouro de render) e a tela não muda nada.
+    */
+    try {
     const passos: string[] = []
     let tudoOk = true
     // 🔴 O QUE REALMENTE FOI GRAVADO — corrigido em 04/08/2026 por auditoria independente.
@@ -1873,8 +1940,6 @@ const AbaPublicar: React.FC<{
       ))
     }
 
-    soltarGravacao()
-    setOcupado(false)
     setResultado({
       ok: tudoOk,
       texto: tudoOk
@@ -1890,6 +1955,18 @@ const AbaPublicar: React.FC<{
               'Se falhar outra vez, confira os commits no repositório antes de mexer em qualquer coisa.') +
           '\n\nA escala só é tentada depois que o elenco é publicado — se o elenco falhou, a escala nem começou.',
     })
+    } catch (e) {
+      // O erro precisa VIRAR TEXTO na tela: promessa rejeitada em silêncio é o pior desfecho.
+      setResultado({
+        ok: false,
+        texto:
+          `A publicação parou com um erro inesperado:\n\n${e instanceof Error ? e.message : String(e)}\n\n` +
+          'Confira os commits no repositório antes de tentar de novo.',
+      })
+    } finally {
+      soltarGravacao()
+      setOcupado(false)
+    }
   }
 
   /*
@@ -2032,7 +2109,7 @@ const AbaPublicar: React.FC<{
       <Historico
         segredos={segredos}
         dados={dados}
-        aoGravar={aoGravar}
+        aoReverter={aoReverter}
         tomarGravacao={tomarGravacao}
         soltarGravacao={soltarGravacao}
       />
@@ -2054,10 +2131,11 @@ const AbaPublicar: React.FC<{
 const Historico: React.FC<{
   segredos: Segredos
   dados: DadosPublicados
-  aoGravar: (d: DadosPublicados) => void
+  /** Reverter é o único caso em que o arquivo lido do passado É a intenção — ver `aoReverter`. */
+  aoReverter: (d: DadosPublicados, arquivo: string) => void
   tomarGravacao: (oQue: string) => boolean
   soltarGravacao: () => void
-}> = ({ segredos, dados, aoGravar, tomarGravacao, soltarGravacao }) => {
+}> = ({ segredos, dados, aoReverter, tomarGravacao, soltarGravacao }) => {
   const [lista, setLista] = useState<Publicacao[] | null>(null)
   const [carregando, setCarregando] = useState(false)
   const [erro, setErro] = useState('')
@@ -2098,6 +2176,9 @@ const Historico: React.FC<{
 
     setRevertendo(`${p.sha}|${arquivo}`)
     setAviso(null)
+    // Mesma razão de `publicar()`: sem `finally`, um estouro prende a trava e mata o botão
+    // Publicar para o resto da sessão, cinza e mudo. Ver o comentário longo lá.
+    try {
 
     /*
       🔴 REVERTER PASSAVA POR CIMA DE TODOS OS GUARDAS — sexta auditoria externa, 05/08/2026.
@@ -2118,16 +2199,12 @@ const Historico: React.FC<{
     try {
       conteudoPrevio = await lerDadosNoCommit(segredos.tokenGitHub, arquivo, p.sha)
     } catch (e) {
-      soltarGravacao()
-      setRevertendo('')
       setAviso({ ok: false, texto: e instanceof Error ? e.message : String(e) })
       return
     }
 
     const efeito = conferirReversao(arquivo, conteudoPrevio, dados, hojeSaoPaulo())
     if (!efeito.ok) {
-      soltarGravacao()
-      setRevertendo('')
       setAviso({
         ok: false,
         texto:
@@ -2139,13 +2216,10 @@ const Historico: React.FC<{
     if (efeito.futuroAlterado && !confirm(
       `Confirma?\n\n${efeito.avisos.join('\n\n')}\n\nO passado divulgado NÃO seria tocado — isso já foi conferido.`
     )) {
-      soltarGravacao()
-      setRevertendo('')
       return
     }
 
     const r = await reverterPara(segredos.tokenGitHub, arquivo, p.sha, quando)
-    setRevertendo('')
 
     /*
       🔴 E O RETRATO EM MEMÓRIA TEM DE ACOMPANHAR.
@@ -2157,22 +2231,36 @@ const Historico: React.FC<{
     if (r.ok && r.conteudo) {
       if (arquivo === 'pessoas.json') {
         const lido = (r.conteudo as ArquivoPessoas)?.pessoas
-        if (Array.isArray(lido)) aoGravar(retratoPublicado(lido, dados.blocos, dados.config))
+        if (Array.isArray(lido)) aoReverter(retratoPublicado(lido, dados.blocos, dados.config), arquivo)
       } else if (arquivo === 'blocos.json') {
         const lido = (r.conteudo as ArquivoBlocos)?.blocos
-        if (Array.isArray(lido)) aoGravar(retratoPublicado(dados.pessoas, lido, dados.config))
+        if (Array.isArray(lido)) aoReverter(retratoPublicado(dados.pessoas, lido, dados.config), arquivo)
       } else if (arquivo === 'config.json') {
-        aoGravar(retratoPublicado(dados.pessoas, dados.blocos, completarConfig(r.conteudo as ConfigLida)))
+        aoReverter(retratoPublicado(dados.pessoas, dados.blocos, completarConfig(r.conteudo as ConfigLida)), arquivo)
       }
     }
 
-    soltarGravacao()
     setAviso(
       r.ok
         ? { ok: true, texto: `"${arquivo}" voltou para a versão de ${quando}. O site atualiza em cerca de um minuto.` }
         : { ok: false, texto: r.erro ?? 'Não foi possível reverter.' },
     )
     if (r.ok) carregar()
+    } catch (e) {
+      setAviso({
+        ok: false,
+        texto:
+          `A reversão parou com um erro inesperado:
+
+${e instanceof Error ? e.message : String(e)}
+
+` +
+          'Nada garante o que foi gravado — confira os commits no repositório antes de tentar de novo.',
+      })
+    } finally {
+      soltarGravacao()
+      setRevertendo('')
+    }
   }
 
   /*

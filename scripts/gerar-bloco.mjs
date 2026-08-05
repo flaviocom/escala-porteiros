@@ -146,7 +146,7 @@ const grade = construirGrade({ inicio: DE, fim: ATE, malha: MALHA, capacidadePad
   piso de distanciamento e, no empate, o índice de Jain (equilíbrio de carga).
 
   Era fonte dupla silenciosa. O `blocos.json` publicado saía de um caminho **pior** que o da tela, e
-  ninguém veria a diferença: as duas escalas passam nas 16 regras — só que uma distribui melhor que
+  ninguém veria a diferença: as duas escalas passam nas 17 regras — só que uma distribui melhor que
   a outra. É a mesma classe de defeito que fez este script trazer a Santa Ceia cravada até 04/08.
 
   A primeira das oito é sempre o guloso puro, então o resultado nunca fica PIOR do que era.

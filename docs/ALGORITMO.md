@@ -236,7 +236,7 @@ Há teste que gera uma escala de verdade e a valida, provando a concordância.
 | Escolher entre duas escalas válidas | A pessoa, na tela |
 | Decidir quem "merece" mais turnos | Ninguém — o equilíbrio é medido, não julgado |
 | Entregar escala pela metade | Ninguém. Se não fecha, **declara** e diz onde travou |
-| Publicar | Só a pessoa, e só depois das 16 regras passarem |
+| Publicar | Só a pessoa, e só depois das 17 regras passarem |
 
 ---
 
@@ -251,4 +251,4 @@ npm run tempo
 ```
 
 O log imprime as 8 versões comparadas, o piso alcançado, os pisos tentados, o distanciamento por
-pessoa e o resultado das 16 regras.
+pessoa e o resultado das 17 regras.

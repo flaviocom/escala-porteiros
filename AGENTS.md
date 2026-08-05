@@ -214,7 +214,7 @@ aqui. Escrito para quem **não participou de nada** — inclusive outra intelig�
 | Assunto | Documento |
 |---|---|
 | Os 3 arquivos JSON, campo a campo | [`docs/MODELO_DE_DADOS.md`](docs/MODELO_DE_DADOS.md) |
-| As 16 regras — ⚙️ **gerado do código** | [`docs/CATALOGO_DE_REGRAS.md`](docs/CATALOGO_DE_REGRAS.md) |
+| As 17 regras — ⚙️ **gerado do código** | [`docs/CATALOGO_DE_REGRAS.md`](docs/CATALOGO_DE_REGRAS.md) |
 | Como a escala é montada, e o que o algoritmo **não** garante | [`docs/ALGORITMO.md`](docs/ALGORITMO.md) |
 | As camadas, medidas no grafo de importações | [`docs/ARQUITETURA.md`](docs/ARQUITETURA.md) |
 | Como usar, conferir, e o que fazer quando dá errado | [`docs/OPERACAO.md`](docs/OPERACAO.md) |

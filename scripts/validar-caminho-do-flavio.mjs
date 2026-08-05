@@ -14,12 +14,27 @@
  *
  * Uso: node scripts/validar-caminho-do-flavio.mjs
  */
-import { mkdirSync } from 'node:fs'
+import { mkdirSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { fileURLToPath, pathToFileURL } from 'node:url'
+import { createRequire } from 'node:module'
 import { subirServidor } from './lib/servidor-de-teste.mjs'
 
 const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..')
+
+/*
+  O catálogo REAL, compilado do mesmo código que a tela usa. Sem isto, esta régua decoraria os ids —
+  e foi decorando que ela continuou procurando D1..D11 depois de D12 entrar, verde e mentindo.
+*/
+const _req = createRequire(import.meta.url)
+const _esbuild = _req('esbuild')
+const _entrada = join(RAIZ, 'node_modules', '.caminho-entrada.ts')
+const _saida = join(RAIZ, 'node_modules', '.caminho-catalogo.mjs')
+// A quebra vem de `String.fromCharCode(10)`: um `\n` literal aqui já virou quebra de verdade três
+// vezes neste projeto, quando o arquivo foi reescrito por script.
+writeFileSync(_entrada, "export * from '../src/dominio/regras'" + String.fromCharCode(10), 'utf8')
+_esbuild.buildSync({ entryPoints: [_entrada], outfile: _saida, format: 'esm', platform: 'node', bundle: true })
+const { CATALOGO } = await import(pathToFileURL(_saida).href)
 const { chromium } = await import(`file:///${RAIZ.replace(/\\/g, '/')}/node_modules/playwright/index.mjs`)
 mkdirSync(join(RAIZ, 'capturas'), { recursive: true })
 
@@ -87,10 +102,20 @@ try {
     await p.locator('button', { hasText: /Valida/i }).first().click()
     await p.waitForTimeout(1200)
     const t = await p.locator('#root').innerText()
-    const ids = [...Array(11)].map((_, i) => `D${i + 1}`).concat(['Q1', 'Q2', 'Q3', 'Q4', 'Q5'])
+    /*
+      🔴 A LISTA DE IDS ERA CRAVADA — sexta auditoria externa, 05/08/2026, mesma classe do `16/16`.
+
+      Ela dizia `[...Array(11)]` mais os cinco Q, então continuou procurando **D1 a D11** depois de
+      D12 entrar no catálogo. A régua saía verde e ainda IMPRIMIA "as 16 regras aparecem" — um número
+      decorado, exatamente o defeito P4.14 que este projeto já registrou uma vez.
+
+      Os ids agora vêm do CATÁLOGO compilado, que é a mesma fonte que a tela usa. Uma régua que decora
+      o que deveria medir não é régua: é uma segunda cópia da resposta.
+    */
+    const ids = CATALOGO.map((r) => r.id)
     const faltam = ids.filter((id) => !new RegExp('(^|[^A-Z0-9])' + id + '([^0-9]|$)').test(t))
     exigir(faltam.length === 0, `faltam na tela: ${faltam.join(', ')}`)
-    return `as ${ids.length} regras aparecem`
+    return `as ${ids.length} regras do catálogo aparecem`
   })
 
   // ── PARTE 2 — O CAMINHO DELE, na área administrativa ─────────────────────────────────────────
@@ -119,12 +144,22 @@ try {
     await p.screenshot({ path: join(RAIZ, 'capturas', 'caminho-2-gerar.png'), fullPage: true })
     const t = await p.locator('#root').innerText()
     exigir(/Piso alcançado/.test(t), 'não mostrou o piso')
-    exigir(/16\/16/.test(t), 'não mostrou 16/16 regras')
+    /*
+      🔴 O NÚMERO ERA CRAVADO, e por isso esta checagem estava QUEBRADA POR CONSTRUÇÃO desde que D12
+      entrou — sexta auditoria externa, 05/08/2026. A tela mostra `17/17`, e a régua exigia `16/16`.
+      Como `vivo:caminho` está fora do gate (precisa do site no ar), ninguém soube.
+
+      Agora a régua não decora: exige "N/N" com os dois lados IGUAIS, que é a promessa de verdade —
+      "a validação percorreu o catálogo inteiro, sem subconjunto escondido".
+    */
+    const mRegras = t.match(/(\d+)\s*\/\s*(\d+)\s*regras/i) ?? t.match(/regras conferidas[^0-9]*(\d+)\s*\/\s*(\d+)/i)
+    exigir(!!mRegras, 'não mostrou a contagem de regras conferidas')
+    exigir(mRegras[1] === mRegras[2], `mostrou ${mRegras[1]}/${mRegras[2]} — a validação não percorreu o catálogo inteiro`)
     exigir(!/melhor de 0 versões/.test(t), 'diz "melhor de 0 versões"')
     exigir(!/undefined|NaN/.test(t), 'aparece undefined/NaN')
     const piso = t.match(/Piso alcançado: (\d+)/)?.[1]
     const versoes = t.match(/melhor de\s+(\d+)\s+vers/)?.[1]
-    return `piso ${piso} dias · melhor de ${versoes} versões · 16/16 regras`
+    return `piso ${piso} dias · melhor de ${versoes} versões · ${mRegras[1]}/${mRegras[2]} regras`
   })
 
   await passo('3. Ajustar abre com os turnos, prontos para trocar', async () => {

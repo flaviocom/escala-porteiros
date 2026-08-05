@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Calendar as CalendarIcon, Search, X } from 'lucide-react';
 import { isSameDay, format } from 'date-fns';
 import { clsx } from 'clsx';
@@ -14,7 +14,25 @@ interface DateSearchProps {
   dateRange: { start: Date | null; end: Date | null } | null;
 }
 
+/**
+ * O que a pessoa ACRESCENTOU a um texto que ela não escreveu.
+ *
+ * Compara as duas pontas: consome o prefixo comum, consome o sufixo comum, e o que sobra no meio do
+ * texto novo é o que foi digitado. Apagar devolve string vazia, que é a resposta certa — quem mexe
+ * no rótulo de um atalho está desfazendo o atalho, não construindo uma busca a partir dele.
+ *
+ * Exportada só para o teste: é a regra que impede a tela de esvaziar sem causa visível.
+ */
+export function apenasOAcrescentado(antigo: string, novo: string): string {
+  let i = 0
+  while (i < antigo.length && i < novo.length && antigo[i] === novo[i]) i++
+  let j = 0
+  while (j < antigo.length - i && j < novo.length - i && antigo[antigo.length - 1 - j] === novo[novo.length - 1 - j]) j++
+  return novo.slice(i, novo.length - j)
+}
+
 export const DateSearch: React.FC<DateSearchProps> = ({ value, onChange, onDateRangeChange, dateRange, vocabulario }) => {
+  const campoDeData = useRef<HTMLInputElement>(null);
   // Sync query with currentRange if it changes externally or via quick actions
   useEffect(() => {
     if (dateRange?.start && dateRange?.end) {
@@ -68,10 +86,29 @@ export const DateSearch: React.FC<DateSearchProps> = ({ value, onChange, onDateR
     const rotulo = rotuloDoIntervalo();
     const mexeuNoRotulo = rotulo !== null && value === rotulo;
 
+    /*
+      🔴 "EDITAR NO MEIO" NÃO ERA INDECIFRÁVEL — sexta auditoria externa, 05/08/2026.
+
+      A primeira correção tratou dois gestos (digitar no fim, apagar no fim) e deixou o resto cair no
+      `else` implícito, com o comentário *"não há como adivinhar melhor que isso"*. Mas o código
+      **sabe** que a pessoa mexeu no rótulo de um atalho que ela não escreveu, e mantinha o rótulo
+      MUTILADO como busca literal — a pior das opções. Medido ao vivo, em 3 de 7 gestos:
+
+          Home, →→→, digitar "9"  →  caixa "01/908 - 31/08"  →  🔴 "Nenhum turno encontrado"
+          Home, →→→, Backspace    →  caixa "0108 - 31/08"    →  🔴 idem
+          Home, Delete            →  caixa "1/08 - 31/08"    →  🔴 idem
+
+      Exatamente o sintoma original: escala em branco, sem causa visível, e 11 a 13 caracteres para
+      apagar que a pessoa não digitou.
+
+      A regra passa a ser uma só: **o que sobra é o que a pessoa ACRESCENTOU** — os caracteres que não
+      estavam no rótulo. Se ela só apagou, sobra vazio, e a escala inteira volta. Nunca sobra pedaço
+      de rótulo.
+    */
     if (mexeuNoRotulo) {
       if (val.startsWith(rotulo)) val = val.slice(rotulo.length);      // digitou no fim
-      else if (rotulo.startsWith(val)) val = '';                        // apagou com backspace
-      // Editou no meio: sobra o que o navegador entregou — não há como adivinhar melhor que isso.
+      else if (rotulo.startsWith(val)) val = '';                        // apagou com backspace no fim
+      else val = apenasOAcrescentado(rotulo, val);                      // mexeu no meio
     }
 
     onChange(val);
@@ -126,14 +163,40 @@ export const DateSearch: React.FC<DateSearchProps> = ({ value, onChange, onDateR
             </button>
           )}
 
+          {/*
+            🔴 UM CAMPO INVISÍVEL NÃO PODE ESTAR NA ORDEM DE TABULAÇÃO — sexta auditoria externa,
+            05/08/2026, achado no trecho que o portão de acessibilidade nunca alcançava.
+
+            Este `<input type="date">` é `opacity-0` e fica POR CIMA do botão, para o clique do mouse
+            abrir o calendário nativo. Só que ele também recebia foco: quem navega por teclado
+            tabulava para um elemento **invisível**, sem anel nenhum (não há como desenhar contorno
+            em opacidade zero), e ficava sem saber onde estava. É a violação da WCAG 2.4.7 que a
+            faixa cega do portão escondia — medido: 1 dos 17 focáveis do desktop.
+
+            `tabIndex={-1}` o tira da ordem sem tirar o clique do mouse, e o botão VISÍVEL — que tem
+            anel — passa a abrir o calendário pelo teclado. Cada entrada com a sua superfície.
+          */}
           <div className="relative flex items-center h-full">
             <input
+              ref={campoDeData}
               type="date"
+              tabIndex={-1}
               className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10"
               onChange={handleDateChange}
               title="Selecionar data"
             />
-            <button title="Escolher uma data no calendário" className="p-1.5 text-gray-400 hover:text-black bg-white hover:bg-gray-50 rounded-lg transition-colors">
+            <button
+              type="button"
+              title="Escolher uma data no calendário"
+              onClick={() => {
+                const c = campoDeData.current
+                if (!c) return
+                // `showPicker` é o caminho certo; onde não existe, focar + clicar faz o mesmo.
+                if (typeof c.showPicker === 'function') c.showPicker()
+                else { c.focus(); c.click() }
+              }}
+              className="p-1.5 text-gray-400 hover:text-black bg-white hover:bg-gray-50 rounded-lg transition-colors"
+            >
               <CalendarIcon className="h-5 w-5" />
             </button>
           </div>

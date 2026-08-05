@@ -73,6 +73,9 @@ function todosOsDocumentos(dir = RAIZ, acc = []) {
     if (/\.test\.(ts|tsx)$/.test(nome.name)) continue
     const rel = relative(RAIZ, abs).split(sep).join('/')
     if (HISTORICOS.some((h) => rel === h || rel.startsWith(h))) continue
+    // O próprio portão CITA os números errados para explicar por que os procura — como o portão de
+    // datas, que também se isenta. Um verificador que se acusa é ruído puro.
+    if (rel === 'scripts/conferir-contagem-de-regras.mjs') continue
     acc.push(rel)
   }
   return acc
@@ -91,7 +94,57 @@ const PADROES = [
   { re: /catálogo\s+de\s+(\d+)\s+regras/gi, esperado: () => TOTAL, oQue: 'total do catálogo' },
   { re: /(?:as\s+)?(\d+)\s+regras\s+do\s+catálogo/gi, esperado: () => TOTAL, oQue: 'total do catálogo' },
   { re: /(\d+)\s+de\s+(\d+)\s+regras/gi, esperado: () => TOTAL, oQue: 'total do catálogo', grupo: 2 },
+  /*
+    🔴 A FRASE MAIS NATURAL DA LÍNGUA NÃO ESTAVA AQUI — sexta auditoria externa, 05/08/2026.
+
+    Os seis padrões acima exigem que a palavra "catálogo" ou "duras" acompanhe o número. Mas ninguém
+    escreve assim no meio de um texto: escreve **"as 16 regras foram conferidas"**, "as 16 regras
+    obrigatórias", "válidas pelas 16 regras". Quando D12 entrou e o catálogo virou 17, **dezesseis
+    lugares vivos** passaram a mentir — e os dois portões de número deram verde nos dezesseis.
+
+    Dois agravantes medidos, que mostram o tamanho do buraco:
+      · `Admin.tsx` renderiza `{avaliadas}/{totalNoCatalogo}` = **17/17**, e onze linhas acima a prosa
+        da MESMA TELA dizia "as 16 regras foram conferidas". A tela se contradizia sozinha.
+      · `validar-caminho-do-flavio.mjs` exigia `/16\/16/` na tela. Com 17/17 no ar, `vivo:caminho`
+        estava **quebrado por construção** — e, por estar fora do gate, ninguém sabia.
+
+    É a sétima vez que "o portão responde só a pergunta que foi feita" aparece neste projeto — desta
+    vez DENTRO do portão criado para fechar essa classe.
+
+    ⚠️ E ele NASCEU LARGO DEMAIS, como o de "porteiro" e o de "ensaio" antes dele. Sem o artigo, casava
+    narrativa histórica — *"o núcleo nasceu com 15 regras"*, que era verdade em 04/08 e continua sendo
+    — e acusou 25, das quais 9 eram inocentes. Portão que acusa o inocente é portão que alguém
+    desliga.
+
+    O artigo definido (**as** / **nas** / **pelas** / **das**) é o que separa *"as 16 regras"*, que
+    afirma o conjunto de HOJE, de *"com 15 regras"*, que conta uma história. Números soltos continuam
+    invisíveis, de propósito.
+
+    ⚠️ E o `[*_]{0,2}` não é enfeite: em Markdown escreve-se `as **16 regras**`, e sem ele o portão
+    passava direto por cima — foi assim que uma linha do `OPERACAO.md` sobreviveu à primeira rodada
+    desta mesma correção, medida minutos depois.
+  */
+  { re: /(?:as|nas|pelas|das)\s+[*_]{0,2}(\d+)\s+regras(?!\s+(?:do|de|duras|num))/gi, esperado: () => TOTAL, oQue: 'total do catálogo' },
 ]
+
+/**
+ * 🔴 NÚMERO ENTRE ASPAS É CITAÇÃO, NÃO AFIRMAÇÃO — sexta auditoria externa, 05/08/2026.
+ *
+ * Ao ficar mais rigoroso, o portão passou a acusar quatro linhas que **contam a história de um
+ * defeito**: *"a checagem se anunciava como «as 15 regras» e conferia 5 de amostra"*. Esse texto
+ * está certo — ele cita o rótulo errado de então, e é justamente o registro que impede repetir o
+ * erro. Acusá-lo empurraria alguém a apagar a lição para calar o portão.
+ *
+ * A régua é simples e não tem exceção manual: se o trecho está **dentro de aspas**, ele é texto
+ * citado. Nenhuma das nove afirmações reais deste projeto estava entre aspas — foi medido antes de
+ * a regra entrar.
+ */
+function dentroDeAspas(texto, indice) {
+  const inicioDaLinha = texto.lastIndexOf('\n', indice) + 1
+  const antes = texto.slice(inicioDaLinha, indice)
+  const aspas = (antes.match(/["“”]/g) ?? []).length
+  return aspas % 2 === 1
+}
 
 function conferirTexto(rotulo, texto) {
   const erros = []
@@ -99,7 +152,7 @@ function conferirTexto(rotulo, texto) {
     for (const m of texto.matchAll(p.re)) {
       const achado = Number(m[p.grupo ?? 1])
       const devido = p.esperado()
-      if (achado !== devido) {
+      if (achado !== devido && !dentroDeAspas(texto, m.index)) {
         const linha = texto.slice(0, m.index).split('\n').length
         erros.push(`${rotulo}:${linha} diz "${m[0].trim()}" — hoje são ${devido} ${p.oQue}`)
       }
