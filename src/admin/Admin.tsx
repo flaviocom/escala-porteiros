@@ -24,7 +24,7 @@ import { gerarVariasVersoes } from '../dominio/gerador'
 import { validar, resumir } from '../dominio/validacao'
 import { CATALOGO, menorIntervalo } from '../dominio/regras'
 import { conferirPorFora } from '../dominio/conferencia-independente'
-import { diferencaEmDias, formatarBR, hojeSaoPaulo, NOMES_DIA_CURTO, somarDias } from '../dominio/datas'
+import { diferencaEmDias, formatarBR, hojeSaoPaulo, NOMES_DIA, NOMES_DIA_CURTO, somarDias } from '../dominio/datas'
 import { AbaAjustar } from './AbaAjustar'
 import { arbitrar, auditar, medir, pedirProposta, type Placar, type ProgressoMotor } from './motor'
 import { Sparkles } from 'lucide-react'
@@ -406,6 +406,19 @@ export const Admin: React.FC<{ dados: DadosPublicados }> = ({ dados }) => {
   /** O bloco como o gerador o entregou — a referência para o "desfazer tudo" do ajuste manual. */
   const [blocoOriginal, setBlocoOriginal] = useState<Bloco | null>(null)
   const [relatoGeracao, setRelatoGeracao] = useState<string>('')
+  /**
+   * 🔴 QUANTAS VERSÕES FORAM COMPARADAS — e por que este número mora AQUI, e não na aba.
+   *
+   * Ele vivia dentro de `AbaGerar`. A aba é montada por condição, então **trocar de aba a
+   * desmonta** — e ao voltar, uma instância nova nascia com `0`, enquanto a escala (que mora aqui)
+   * sobrevivia. A tela passava a dizer *"esta escala é a melhor de 0 versões"* sobre uma escala que
+   * existia e tinha sido escolhida entre oito.
+   *
+   * Achado pela verificação visual de 05/08/2026 — nenhum teste pegava, porque o defeito só existe
+   * depois de **navegar**. É a mesma classe do P4.1: estado que descreve o bloco tem de viver onde
+   * o bloco vive.
+   */
+  const [versoesComparadas, setVersoesComparadas] = useState(0)
 
   /**
    * 🔴 O INTERVALO MORA AQUI, e não dentro da aba — corrigido em 05/08/2026 a pedido do Flavio.
@@ -427,7 +440,21 @@ export const Admin: React.FC<{ dados: DadosPublicados }> = ({ dados }) => {
     return ultimo && diferencaEmDias(ultimo, amanha) < 0 ? somarDias(ultimo, 1) : amanha
   }, [dados.blocos])
   const [de, setDe] = useState(inicioSugerido)
-  const [ate, setAte] = useState(`${Number(inicioSugerido.slice(0, 4))}-12-31`)
+  /*
+    🔴 O FIM SUGERIDO NÃO PODE NASCER CURTO DEMAIS — achado da verificação visual de 05/08/2026.
+
+    Era sempre 31/12 do ano do INÍCIO. Depois de publicar até 30/12, o início sugerido virou 31/12,
+    o fim virou 31/12, e a aba abria com uma janela de UM dia numa quinta-feira — que a malha não
+    tem. Quem clicasse em Gerar recebia "a escala ficou inválida".
+
+    Menos de 30 dias de janela quase nunca é o que a pessoa quer, e no fim do ano é sempre errado.
+    Aí o fim salta para 31/12 do ano SEGUINTE.
+  */
+  const [ate, setAte] = useState(() => {
+    const anoDoInicio = Number(inicioSugerido.slice(0, 4))
+    const fimDoAno = `${anoDoInicio}-12-31`
+    return diferencaEmDias(inicioSugerido, fimDoAno) >= 30 ? fimDoAno : `${anoDoInicio + 1}-12-31`
+  })
 
   if (!segredos) {
     return (
@@ -507,6 +534,7 @@ export const Admin: React.FC<{ dados: DadosPublicados }> = ({ dados }) => {
             pessoas={pessoas}
             blocoNovo={blocoNovo}
             relato={relatoGeracao}
+            versoesComparadas={versoesComparadas}
             segredos={segredos}
             fronteira={fronteira}
             de={de}
@@ -516,7 +544,7 @@ export const Admin: React.FC<{ dados: DadosPublicados }> = ({ dados }) => {
             aoMudarPessoas={setPessoas}
             config={config}
             aoMudarConfig={setConfig}
-            aoGerar={(b, r) => { setBlocoNovo(b); setBlocoOriginal(b); setRelatoGeracao(r) }}
+            aoGerar={(b, r, versoes) => { setBlocoNovo(b); setBlocoOriginal(b); setRelatoGeracao(r); setVersoesComparadas(versoes ?? 0) }}
           />
         )}
         {aba === 'ajustar' && blocoNovo && blocoOriginal && (
@@ -1015,13 +1043,13 @@ const AbaGerar: React.FC<{
   aoMudarPessoas: (p: Pessoa[]) => void
   config: Configuracao
   aoMudarConfig: (c: Configuracao) => void
-  aoGerar: (b: Bloco | null, relato: string) => void
-}> = ({ dados, pessoas, blocoNovo, relato, segredos, de, ate, aoMudarDe, aoMudarAte, aoMudarPessoas, config, aoMudarConfig, aoGerar }) => {
+  aoGerar: (b: Bloco | null, relato: string, versoesComparadas?: number) => void
+  versoesComparadas: number
+}> = ({ dados, pessoas, blocoNovo, relato, segredos, de, ate, aoMudarDe, aoMudarAte, aoMudarPessoas, config, aoMudarConfig, aoGerar, versoesComparadas }) => {
   const [ocupado, setOcupado] = useState(false)
   const [falha, setFalha] = useState<string>('')
   /** Muda a cada "gerar outra combinação" — é o que faz a próxima rodada explorar outro caminho. */
   const [sementeBase, setSementeBase] = useState(1)
-  const [comparadas, setComparadas] = useState(0)
   const [motorOcupado, setMotorOcupado] = useState<ProgressoMotor | null>(null)
   const [motorErro, setMotorErro] = useState<string>('')
   const [propostaMotor, setPropostaMotor] = useState<{ bloco: Bloco; explicacao: string } | null>(null)
@@ -1057,17 +1085,39 @@ const AbaGerar: React.FC<{
       )
       return
     }
+
+    /*
+      🔴 PERÍODO SEM NENHUM DIA DE CULTO — achado da verificação visual de 05/08/2026.
+
+      Depois de publicar até 30/12, o início sugerido virou 31/12 e o fim sugerido era 31/12 do
+      MESMO ano: uma janela de um dia, numa quinta-feira, que a malha não tem. O usuário abria a
+      aba, clicava em Gerar e recebia *"A escala ficou inválida — o bloco está VAZIO"*.
+
+      A regra D11 estava certa: bloco vazio É inválido, e ela existe justamente para isso. Errado
+      era deixar a pessoa chegar até lá para descobrir. **Conferir antes custa uma linha; descobrir
+      depois custa a confiança de quem achou que tinha quebrado alguma coisa.**
+    */
+    const grade = construirGrade({
+      inicio: de, fim: ate,
+      malha: config.malhaPadrao,
+      capacidadePadrao: config.capacidadePadrao,
+      santaCeia: config.santaCeia,
+    })
+    if (grade.length === 0) {
+      const dias = [...new Set(config.malhaPadrao.regras.map((r) => NOMES_DIA[r.diaSemana]))].join(', ')
+      setFalha(
+        `De ${formatarBR(de)} a ${formatarBR(ate)} não há nenhum dia de culto.\n\n` +
+          `A escala tem turno em: ${dias || '(nenhum dia configurado)'}. ` +
+          'Escolha um período mais longo, ou que inclua um desses dias.'
+      )
+      return
+    }
+
     setOcupado(true)
     setFalha('')
     aoGerar(null, '')
     // Um respiro para o navegador pintar o estado "gerando" antes do trabalho pesado.
     setTimeout(() => {
-      const grade = construirGrade({
-        inicio: de, fim: ate,
-        malha: config.malhaPadrao,
-        capacidadePadrao: config.capacidadePadrao,
-        santaCeia: config.santaCeia,
-      })
       const elenco = pessoas.filter((p) => p.ativo).map((p) => p.id)
       /**
        * 🔴 OITO VERSÕES, e a melhor vai para a tela — decisão de 05/08/2026, registrada em
@@ -1084,7 +1134,7 @@ const AbaGerar: React.FC<{
         8, 3, sementeBase,
       )
       const r = escolha.melhor
-      setComparadas(escolha.versoes.filter((v) => v.resultado.ok).length)
+      const validas = escolha.versoes.filter((v) => v.resultado.ok).length
       setOcupado(false)
       if (!r.ok) {
         setFalha(
@@ -1094,7 +1144,7 @@ const AbaGerar: React.FC<{
         )
         return
       }
-      aoGerar(r.bloco, r.relato)
+      aoGerar(r.bloco, r.relato, validas)
     }, 50)
   }
 
@@ -1231,7 +1281,7 @@ const AbaGerar: React.FC<{
               <RefreshCw className="h-4 w-4" /> Não gostei — gerar outra combinação
             </button>
             <p className="mt-2 text-xs leading-relaxed text-gray-600">
-              Esta escala é a melhor de <strong>{comparadas} versões</strong> que o sistema montou e
+              Esta escala é a melhor de <strong>{versoesComparadas} versões</strong> que o sistema montou e
               comparou internamente — primeiro pelo espaçamento entre as escalas de cada um, e
               depois pelo equilíbrio de carga. Pedir outra explora combinações diferentes; a
               anterior não volta sozinha.
