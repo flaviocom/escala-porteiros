@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { exportToImage } from './utils/export';
+import { filtrarTurnos } from './dados/filtrar';
 import { Shift, BROTHERS } from './types/scheduler';
 import type { DadosPublicados } from './dados/carregar';
 import { mesDeData } from './dominio/datas';
@@ -84,7 +85,12 @@ function App({ shifts, dados }: AppProps) {
     if (isGenerating) return;
     setIsGenerating(true);
     try {
-      await exportToImage('schedule-container');
+      // Exporta EXATAMENTE o que está aparecendo — mesma função de filtro que a tabela usa.
+      await exportToImage(filtrarTurnos(shifts, {
+        selectedBrotherIds, selectedMonthStrs, dateSearchQuery, dateRange,
+      }));
+    } catch (e) {
+      alert(e instanceof Error ? e.message : 'Não foi possível gerar a imagem.');
     } finally {
       setIsGenerating(false);
       setIsMobileMenuOpen(false);
@@ -562,7 +568,6 @@ function App({ shifts, dados }: AppProps) {
                 selectedMonthStrs={selectedMonthStrs}
                 dateSearchQuery={dateSearchQuery}
                 dateRange={dateRange}
-                isExporting={isGenerating}
               />
             </div>
           )}

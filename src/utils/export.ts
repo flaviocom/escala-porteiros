@@ -1,79 +1,62 @@
-import { toBlob } from 'html-to-image';
-import { format } from 'date-fns';
-
 /**
- * Função para exportar a escala como imagem.
- * Agora o ScheduleTable em si se encarrega de fatiar para 10 itens 
- * no momento do click via props "isExporting". 
+ * Entrega da imagem: compartilhar no celular, baixar no computador.
+ *
+ * 🔴 O QUE MUDOU EM 04/08/2026: antes, esta função **fotografava a tela** — pegava o
+ * `#schedule-container`, ligava um modo `is-exporting` que sobrescrevia largura, cores e pesos de
+ * fonte no meio da captura, e fatiava a lista em 10 dias com um alerta pedindo *"filtre um período
+ * menor"*.
+ *
+ * A imagem saía parecida com um site. O modelo que o Flavio usa é um **documento**, e documento não
+ * se faz com captura de tela: o layout agora é próprio (`src/export/EscalaImagem.tsx`), montado fora
+ * do campo de visão. Aqui ficou só o que sempre foi desta camada — **entregar o arquivo**.
  */
-export async function exportToImage(elementId: string) {
-  const node = document.getElementById(elementId);
-  if (!node) return;
+import { gerarImagemDaEscala } from '../export/gerarImagem'
+import type { Shift } from '../types/scheduler'
 
-  // 1. Iniciar modo de exportação visual (CSS)
-  document.body.classList.add('is-exporting');
-  const exportHeader = document.getElementById('export-header');
+const doisDigitos = (n: number) => String(n).padStart(2, '0')
 
-  try {
-    if (exportHeader) {
-      exportHeader.classList.remove('hidden');
-      exportHeader.classList.add('flex');
+/** `escala-porteiros-05-08-2026-a-30-12-2026.png` — o nome já diz o período, sem abrir o arquivo. */
+function nomeDoArquivo(shifts: Shift[]): string {
+  const datas = shifts.map((s) => s.date).sort((a, b) => a.getTime() - b.getTime())
+  const rotulo = (d: Date) => `${doisDigitos(d.getDate())}-${doisDigitos(d.getMonth() + 1)}-${d.getFullYear()}`
+  if (!datas.length) return 'escala-porteiros.png'
+  const [i, f] = [datas[0], datas[datas.length - 1]]
+  return rotulo(i) === rotulo(f)
+    ? `escala-porteiros-${rotulo(i)}.png`
+    : `escala-porteiros-${rotulo(i)}-a-${rotulo(f)}.png`
+}
+
+export async function exportToImage(shifts: Shift[]): Promise<void> {
+  const blob = await gerarImagemDaEscala(shifts)
+  const nome = nomeDoArquivo(shifts)
+  const arquivo = new File([blob], nome, { type: 'image/png' })
+
+  // No celular, o compartilhamento nativo leva direto ao WhatsApp — que é o destino real da imagem.
+  const podeCompartilhar =
+    typeof navigator !== 'undefined' &&
+    'share' in navigator &&
+    'canShare' in navigator &&
+    navigator.canShare({ files: [arquivo] })
+
+  if (podeCompartilhar) {
+    try {
+      await navigator.share({ files: [arquivo], title: 'Escala de Porteiros' })
+      return
+    } catch (e) {
+      // Cancelar o compartilhamento NÃO é erro — e cair no download depois de cancelar seria
+      // entregar o que a pessoa acabou de recusar.
+      if (e instanceof DOMException && e.name === 'AbortError') return
     }
-
-    // 2. Dar tempo suficiente para o React terminar de "fatiar" a lista de dias 
-    // e para as imagens e fontes da página estabilizarem.
-    await new Promise(resolve => setTimeout(resolve, 800));
-
-    // 3. Capturar a imagem com uma base FÍSICA moderada (800px) e pixel ratio normal (2x) 
-    // Usamos px absolutos no CSS ao invés de REM para garantir que as fontes sejam 
-    // rasterizadas como vetores perfeitos no mobile e sem serrilhados causados por DPI virtual.
-    const blob = await toBlob(node, {
-      quality: 1.0,
-      pixelRatio: 2,
-      backgroundColor: '#ffffff',
-      width: 800,
-      style: {
-        transform: 'none',
-        width: '800px',
-        margin: '0',
-        padding: '40px',
-        display: 'block'
-      }
-    });
-
-    if (!blob) throw new Error('Falha ao gerar imagem');
-
-    const fileName = `escala-irmaos-${format(new Date(), 'dd-MM-yyyy')}.png`;
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-
-    if (isMobile && navigator.share) {
-      try {
-        const file = new File([blob], fileName, { type: 'image/png' });
-        await navigator.share({ files: [file], title: 'Escala Porteiros' });
-        return;
-      } catch (e) { console.warn('Share nativo falhou'); }
-    }
-
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = fileName;
-    document.body.appendChild(link);
-    link.click();
-
-    setTimeout(() => {
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-    }, 1000);
-
-  } catch (err) {
-    console.error('Erro:', err);
-    alert("Erro ao gerar imagem. Tente filtrar um período menor.");
-  } finally {
-    if (exportHeader) {
-      exportHeader.classList.add('hidden');
-      exportHeader.classList.remove('flex');
-    }
-    document.body.classList.remove('is-exporting');
   }
+
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = nome
+  document.body.appendChild(link)
+  link.click()
+  setTimeout(() => {
+    link.remove()
+    URL.revokeObjectURL(url)
+  }, 1000)
 }

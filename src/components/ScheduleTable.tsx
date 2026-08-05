@@ -1,7 +1,8 @@
 import React, { useMemo, useEffect, useRef } from 'react';
-import { format, isSameMonth, parseISO, startOfMonth, isWithinInterval, isSameDay, startOfToday, isAfter } from 'date-fns';
+import { format, parseISO, startOfMonth, isSameDay, startOfToday, isAfter } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Shift, BROTHERS } from '../types/scheduler';
+import { filtrarTurnos } from '../dados/filtrar';
 import { clsx } from 'clsx';
 import { Calendar, Clock, Sun, MoonStar, CloudSun, AlertCircle } from 'lucide-react';
 
@@ -11,7 +12,6 @@ interface ScheduleTableProps {
   selectedMonthStrs: string[];
   dateSearchQuery?: string;
   dateRange?: { start: Date | null; end: Date | null } | null;
-  isExporting?: boolean;
 }
 
 export const ScheduleTable: React.FC<ScheduleTableProps> = ({
@@ -19,94 +19,26 @@ export const ScheduleTable: React.FC<ScheduleTableProps> = ({
   selectedBrotherIds,
   selectedMonthStrs,
   dateSearchQuery,
-  dateRange,
-  isExporting
+  dateRange
 }) => {
   const today = startOfToday();
   const scrollRef = useRef<HTMLDivElement>(null);
   const hasScrolled = useRef(false);
 
-  const filteredShifts = useMemo(() => {
-    // ... logic remains unmodified for filteredShifts
-    const normalize = (val: string) =>
-      val.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  // O filtro vive em `dados/filtrar.ts` — a tela e a IMAGEM chamam a mesma função. Duas cópias
+  // de uma regra é onde as duas divergem em silêncio.
+  const filteredShifts = useMemo(
+    () => filtrarTurnos(shifts, { selectedBrotherIds, selectedMonthStrs, dateSearchQuery, dateRange }),
+    [shifts, selectedBrotherIds, selectedMonthStrs, dateSearchQuery, dateRange]
+  );
 
-    return shifts.filter(shift => {
-      // 1. Date Range Filter
-      if (dateRange?.start && dateRange?.end) {
-        if (!isWithinInterval(shift.date, { start: dateRange.start, end: dateRange.end })) {
-          return false;
-        }
-      }
-
-      // 2. Text Search Filter (Date or Day)
-      if (dateSearchQuery) {
-        const query = normalize(dateSearchQuery).trim();
-        let isDateRangeText = false;
-
-        if (dateRange?.start && dateRange?.end) {
-          const rangeStr = isSameDay(dateRange.start, dateRange.end)
-            ? format(dateRange.start, 'dd/MM/yyyy')
-            : `${format(dateRange.start, 'dd/MM')} - ${format(dateRange.end, 'dd/MM')}`;
-
-          if (query === normalize(rangeStr)) {
-            isDateRangeText = true;
-          }
-        }
-
-        if (!isDateRangeText) {
-          const dateStrFull = format(shift.date, 'dd/MM/yyyy');
-          const dateStrShort = format(shift.date, 'dd/MM');
-          const dateStrNoZero = format(shift.date, 'd/M');
-          const dateStrNoZeroFull = format(shift.date, 'd/M/yyyy');
-          const monthName = normalize(format(shift.date, 'MMMM', { locale: ptBR }));
-          const dayName = normalize(format(shift.date, 'EEEE', { locale: ptBR }));
-
-          const matchesDate =
-            dateStrFull.includes(query) ||
-            dateStrShort.includes(query) ||
-            dateStrNoZero.includes(query) ||
-            dateStrNoZeroFull.includes(query) ||
-            monthName.includes(query);
-
-          const matchesBrother = shift.assignedBrothers.some(id => {
-            const brother = BROTHERS.find(b => b.id === id);
-            return brother && normalize(brother.name).includes(query);
-          });
-
-          if (!matchesDate && !dayName.includes(query) && !matchesBrother) {
-            return false;
-          }
-        }
-      }
-
-      // 3. Month Filter
-      if (selectedMonthStrs.length > 0) {
-        const match = selectedMonthStrs.some(m => isSameMonth(parseISO(m), shift.date));
-        if (!match) return false;
-      }
-
-      // 4. Brother Filter
-      if (selectedBrotherIds.length > 0) {
-        const hasBrother = shift.assignedBrothers.some(id => selectedBrotherIds.includes(id));
-        if (!hasBrother) return false;
-      }
-
-      return true;
-    });
-  }, [shifts, selectedBrotherIds, selectedMonthStrs, dateSearchQuery, dateRange]);
-
-  const finalShifts = useMemo(() => {
-    let result = filteredShifts;
-    if (isExporting) {
-      // Acha o primeiro compromisso a partir de hoje
-      const upcomingIndex = result.findIndex(s => isSameDay(s.date, today) || isAfter(s.date, today));
-      const startIndex = upcomingIndex >= 0 ? upcomingIndex : 0;
-      // Corta na origem para no máximo 5 itens!
-      result = result.slice(startIndex, startIndex + 5);
-    }
-    return result;
-  }, [filteredShifts, isExporting, today]);
+  /**
+   * 🔴 Não há mais corte para exportar. Havia um `isExporting` que fatiava a lista em **5 dias** a
+   * partir de hoje — numa escala de cinco meses, a imagem saía com cinco dias. O corte existia
+   * porque a imagem era uma fotografia desta tela; agora ela tem layout próprio
+   * (`src/export/EscalaImagem.tsx`) e o período inteiro cabe.
+   */
+  const finalShifts = filteredShifts;
 
   const months = useMemo(() => {
     const groups: Record<string, Shift[]> = {};

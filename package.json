@@ -29,7 +29,8 @@
     "vivo:quem-saiu": "node scripts/validar-quem-saiu.mjs",
     "vivo:erro": "node scripts/validar-caminho-de-erro.mjs",
     "vivo:acessibilidade": "node scripts/medir-acessibilidade.mjs",
-    "ensaio": "node scripts/ensaio-troca-de-elenco.mjs"
+    "ensaio": "node scripts/ensaio-troca-de-elenco.mjs",
+    "imagem": "node scripts/gerar-imagem-exemplo.mjs"
   },
   "dependencies": {
     "clsx": "^2.1.1",

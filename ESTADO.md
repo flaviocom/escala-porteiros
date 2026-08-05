@@ -5,7 +5,7 @@
 > **Última atualização:** 04/08/2026 · **Fuso:** America/São_Paulo
 >
 > **Cadeia de navegação, nesta ordem:**
-> **`ESTADO.md` (você está aqui)** → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-04-f.md) → [`BACKLOG.md`](BACKLOG.md)
+> **`ESTADO.md` (você está aqui)** → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-04-g.md) → [`BACKLOG.md`](BACKLOG.md)
 > *onde estamos · o que aconteceu na última sessão e por quê · o que fazer a seguir*
 >
 > **Roteador do projeto:** [`AGENTS.md`](AGENTS.md) ·
@@ -98,7 +98,12 @@ comentário). Consertados, com os casos reais virando teste permanente.
 
 ## O que está em curso
 
-**Nada em execução.** O backlog técnico está vazio pela segunda vez.
+**Nada em execução.**
+
+**A imagem que vai para o WhatsApp tem layout próprio** (parte 7), no modelo do arquivo que o Flavio
+usa. A anterior fotografava a tela e **fatiava em 5 dias** — numa escala de cinco meses, saíam cinco
+dias. Agora o período inteiro cabe, e o filtro é o mesmo da tela. Exemplo em
+`capturas/exemplo-2026-08.png`; regerar com `npm run imagem`.
 
 🔴 **O achado mais consequente do dia veio de mapear o grafo de importações** (parte 6):
 `definirPessoas` filtrava por `ativo` e, com isso, **quem saísse do elenco perdia o passado na

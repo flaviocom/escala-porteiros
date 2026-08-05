@@ -233,3 +233,23 @@ conferidos" (ERRO 32 na minha própria régua, no dia em que o escrevi). `vivo:a
 contraste **159 → 0** sem trocar a paleta, e o botão do WhatsApp resolvido sem tocar no verde da
 marca. 🔴 Dois defeitos da minha régua: "sem foco visível" era falso (`.focus()` não dispara
 `:focus-visible`) e "159 textos" eram 8 combinações repetidas.
+
+---
+
+## [04/08/2026] Sessão 1, parte 7 — a imagem do WhatsApp
+
+**Gatilho.** S-009: uma imagem de referência (`escalaagosto2026.png`), sem mais instrução.
+
+- **Descoberto ao abrir o código:** a exportação fotografava a tela e **fatiava em 5 dias**. Numa
+  escala de 5 meses, saíam 5 dias — e o erro pedia "filtre um período menor". É por isso que havia
+  um arquivo de referência feito por fora.
+- **Construído:** `src/export/EscalaImagem.tsx` (layout, estilos em linha) + `gerarImagem.ts`
+  (monta fora da vista, captura) + `dados/filtrar.ts` (filtro único: tela **e** imagem).
+- **Corrigido na comparação:** Santa Ceia fora da legenda; contagem que a somava como turno.
+- **Portões:** 11 testes sobre o que não aparece no pixel + `npm run imagem`, que gera pelo **botão**
+  e confere as dimensões do PNG.
+
+**93 testes verdes em 2 fusos · imagem 1440×2900 · GATE 8 passos.**
+
+**Skills acionadas:** `impeccable` (o desenho), `ponytail` (testar lógica, não pixel),
+`graphify` (mapear o caminho da exportação antes de mexer), `documentacao-auditavel`.

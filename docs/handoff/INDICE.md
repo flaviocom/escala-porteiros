@@ -9,6 +9,7 @@
 
 | Data | Handoff | O que aconteceu |
 |---|---|---|
+| 04/08/2026 | [`HANDOFF_2026-08-04-g.md`](HANDOFF_2026-08-04-g.md) | **Sessão 1, parte 7** — a imagem do WhatsApp ganhou **layout próprio**, no modelo do arquivo que o Flavio usa. A anterior fotografava a tela e saía com **5 dias**. |
 | 04/08/2026 | [`HANDOFF_2026-08-04-f.md`](HANDOFF_2026-08-04-f.md) | **Sessão 1, parte 6** — o grafo de importações mapeado (a tela usa o domínio, sem caminho paralelo) e o achado que ele expôs: **quem sai do elenco perdia o passado na tela**, em silêncio. |
 | 04/08/2026 | [`HANDOFF_2026-08-04-e.md`](HANDOFF_2026-08-04-e.md) | **Sessão 1, parte 5** — o histórico congelado conferido contra a **tela** do site antigo (66/66 dias, 282 nomes, 0 divergências), e o achado de que o site antigo **não mostra o passado**. |
 | 04/08/2026 | [`HANDOFF_2026-08-04.md`](HANDOFF_2026-08-04.md) | **Sessão 1, parte 1** — nascimento do projeto. Levantamento medido do site atual (9 defeitos, incluindo a Santa Ceia com data errada no ar), desenho da área administrativa, esqueleto do método, repositório criado. |
@@ -18,7 +19,7 @@
 
 ---
 
-**Handoff mais recente:** [`HANDOFF_2026-08-04-f.md`](HANDOFF_2026-08-04-f.md)
+**Handoff mais recente:** [`HANDOFF_2026-08-04-g.md`](HANDOFF_2026-08-04-g.md)
 
 Ligações: [`../solicitacoes/INDICE_DE_SOLICITACOES.md`](../solicitacoes/INDICE_DE_SOLICITACOES.md) ·
 [`../historico/INDICE.md`](../historico/INDICE.md) ·

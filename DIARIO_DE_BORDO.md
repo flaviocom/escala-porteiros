@@ -329,3 +329,43 @@ comentários antes de medir, com `(?<!:)` para não engolir o `//` de URL.
 
 Três arquivos (`types/scheduler.ts`, `App.tsx`, `components/StatsView.tsx`) e um commit. Reverter
 devolve o defeito: quem sair do elenco perde o passado na tela.
+
+---
+
+## DB-008 · 04/08/2026 — a imagem do WhatsApp virou documento, não captura de tela
+
+**Solicitação:** [S-009](docs/solicitacoes/INDICE_DE_SOLICITACOES.md) — uma imagem de referência,
+sem mais instrução. **Handoff:** [parte 7](docs/handoff/HANDOFF_2026-08-04-g.md).
+
+### O que se descobriu ao abrir o código
+
+A exportação **fotografava a tela** — e fatiava a lista em **5 dias** a partir de hoje. Numa escala
+de cinco meses, a imagem saía com cinco dias, e o alerta de erro pedia *"filtre um período menor"*.
+**É por isso que existe um arquivo de referência feito por fora**: o produto nunca conseguiu gerar
+aquilo.
+
+### Decisões
+
+| # | Decisão | Por quê |
+|---|---|---|
+| 1 | Layout **próprio**, não captura | documento não se faz fotografando site; e a imagem tem de ser igual em qualquer aparelho |
+| 2 | **Estilos em linha** | o CSS do aplicativo (incluindo `is-exporting`) não pode alcançar a imagem — foi esse acoplamento que a fez envelhecer junto com a tela |
+| 3 | Filtro extraído para `dados/filtrar.ts` | tela e imagem passam a usar **a mesma** regra; duas cópias divergem em silêncio |
+| 4 | Corte de 5 dias **removido** | existia porque a tela não aguentava a captura, não porque o formato pedisse |
+| 5 | Testar a **lógica**, não o pixel | agrupamento por dia, ordem dos turnos e contagem são o que erra sem aparecer numa imagem bonita |
+
+### Duas correções que a comparação expôs
+
+**A Santa Ceia não estava na legenda** — a cor mais chamativa da imagem era a única sem explicação.
+**E a contagem a somava como turno**: dizia "19 turnos" incluindo um dia sem porteiros. Virou
+`18 turnos · 1 Santa Ceia`.
+
+### Diferença esperada em relação à referência
+
+O **16/08 sai como SANTA CEIA sem porteiros**; a referência do Flavio, anterior à correção, traz seis
+irmãos escalados. É diferença de **dado**, não de forma — e é o defeito que originou o projeto.
+
+### Como reverter
+
+Quatro arquivos novos e um reescrito, num commit. Reverter devolve a captura de tela com corte de
+5 dias.
