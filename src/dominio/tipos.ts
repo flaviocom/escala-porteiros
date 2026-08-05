@@ -138,6 +138,18 @@ export interface Bloco {
   malha: Malha
   turnos: Turno[]
   observacao?: string
+  /**
+   * A semente que produziu esta escala, quando ela veio de uma busca com sorteio (GRASP).
+   *
+   * 🔴 É ela que mantém a promessa de conferência viva depois de 05/08/2026: com a mesma entrada e
+   * esta semente, qualquer pessoa reproduz esta escala byte a byte. Sem gravá-la, "gerar várias
+   * versões e escolher a melhor" produziria uma escala que ninguém consegue refazer — e escala
+   * irreproduzível é escala que ninguém audita.
+   *
+   * Ausente nos blocos anteriores a essa data e nos importados: eles vieram do guloso puro, que não
+   * precisa de semente para ser reproduzido.
+   */
+  semente?: number
 }
 
 export interface ArquivoBlocos {

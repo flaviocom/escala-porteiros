@@ -20,7 +20,7 @@ import type { DadosPublicados } from '../dados/carregar'
 import type { Bloco, Configuracao, Pessoa, TipoTurno } from '../dominio/tipos'
 import { ROTULO_TURNO } from '../dominio/tipos'
 import { construirGrade } from '../dominio/malha'
-import { gerar } from '../dominio/gerador'
+import { gerarVariasVersoes } from '../dominio/gerador'
 import { validar, resumir } from '../dominio/validacao'
 import { CATALOGO, menorIntervalo } from '../dominio/regras'
 import { conferirPorFora } from '../dominio/conferencia-independente'
@@ -1010,6 +1010,9 @@ const AbaGerar: React.FC<{
 }> = ({ dados, pessoas, blocoNovo, relato, segredos, de, ate, aoMudarDe, aoMudarAte, aoMudarPessoas, config, aoMudarConfig, aoGerar }) => {
   const [ocupado, setOcupado] = useState(false)
   const [falha, setFalha] = useState<string>('')
+  /** Muda a cada "gerar outra combinação" — é o que faz a próxima rodada explorar outro caminho. */
+  const [sementeBase, setSementeBase] = useState(1)
+  const [comparadas, setComparadas] = useState(0)
   const [motorOcupado, setMotorOcupado] = useState<ProgressoMotor | null>(null)
   const [motorErro, setMotorErro] = useState<string>('')
   const [propostaMotor, setPropostaMotor] = useState<{ bloco: Bloco; explicacao: string } | null>(null)
@@ -1040,7 +1043,22 @@ const AbaGerar: React.FC<{
         santaCeia: config.santaCeia,
       })
       const elenco = pessoas.filter((p) => p.ativo).map((p) => p.id)
-      const r = gerar({ inicio: de, fim: ate, grade, pessoas, elenco, malha: config.malhaPadrao, ultimaEscalaAnterior: fronteira })
+      /**
+       * 🔴 OITO VERSÕES, e a melhor vai para a tela — decisão de 05/08/2026, registrada em
+       * `docs/superpowers/specs/PESQUISA_2026-08-05-gerar-n-versoes.md`.
+       *
+       * Medido antes de escolher: uma escala custa ~6 ms; oito custam ~48 ms. Abaixo dos 100 ms
+       * em que Nielsen diz que nem indicador de carregando é necessário — por isso o Web Worker
+       * que a pesquisa recomendou foi RECUSADO: seria complexidade comprada sem dor.
+       *
+       * A semente muda a cada clique em "gerar outra combinação", e fica gravada no bloco.
+       */
+      const escolha = gerarVariasVersoes(
+        { inicio: de, fim: ate, grade, pessoas, elenco, malha: config.malhaPadrao, ultimaEscalaAnterior: fronteira },
+        8, 3, sementeBase,
+      )
+      const r = escolha.melhor
+      setComparadas(escolha.versoes.filter((v) => v.resultado.ok).length)
       setOcupado(false)
       if (!r.ok) {
         setFalha(
@@ -1103,6 +1121,29 @@ const AbaGerar: React.FC<{
             vale na próxima geração · hoje a escala no ar usa {dados.config.capacidadePadrao}
           </span>
         </label>
+        {/*
+          🔴 "GERAR OUTRA COMBINAÇÃO" — o pedido do Flavio de poder recusar e pedir outra.
+          Só aparece depois que existe escala: antes dela o botão não teria o que substituir.
+          Ele muda a SEMENTE, e é isso que faz a próxima rodada explorar caminhos diferentes —
+          sem semente nova, oito versões seriam oito cópias.
+        */}
+        {blocoNovo && !ocupado && (
+          <div className="mt-4 rounded-xl border border-gray-200 bg-gray-50 p-3">
+            <button
+              onClick={() => { setSementeBase((n) => n + 100); setTimeout(executar, 30) }}
+              title="Descarta esta escala e monta outra, explorando combinações diferentes"
+              className="flex min-h-[2.75rem] items-center gap-2 rounded-xl border border-gray-300 bg-white px-4 text-sm font-semibold text-gray-700 hover:bg-gray-100"
+            >
+              <RefreshCw className="h-4 w-4" /> Não gostei — gerar outra combinação
+            </button>
+            <p className="mt-2 text-xs leading-relaxed text-gray-600">
+              Esta escala é a melhor de <strong>{comparadas} versões</strong> que o sistema montou e
+              comparou internamente — primeiro pelo espaçamento entre as escalas de cada um, e
+              depois pelo equilíbrio de carga. Pedir outra explora combinações diferentes; a
+              anterior não volta sozinha.
+            </p>
+          </div>
+        )}
         <p className="text-xs text-gray-500 mt-3">
           {pessoas.filter((p) => p.ativo).length} pessoas no elenco ·{' '}
           {Object.keys(fronteira).length} com escala anterior a considerar na fronteira

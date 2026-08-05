@@ -50,6 +50,16 @@ export interface OpcoesGeracao {
   ultimaEscalaAnterior?: Record<string, DataISO>
   /** Teto de piso a tentar. Ausente = calculado a partir da folga da escala. */
   pisoMaximo?: number
+  /**
+   * Tamanho da lista restrita de candidatos (GRASP). Ausente ou 1 = guloso puro, como sempre foi.
+   * Ver `docs/superpowers/specs/PESQUISA_2026-08-05-gerar-n-versoes.md`.
+   */
+  candidatos?: number
+  /**
+   * Semente do sorteio. **Sem ela não há sorteio nenhum** — a escala volta a ser a gulosa.
+   * Com ela, mesma entrada + mesma semente = mesma escala, byte a byte.
+   */
+  semente?: number
 }
 
 export interface Sucesso {
@@ -120,15 +130,38 @@ function ultimaData(est: Estado, id: string): DataISO | undefined {
 }
 
 /**
+ * Gerador de números pseudoaleatórios semeado — 32 bits, `mulberry32`.
+ *
+ * `Math.random()` NÃO serve aqui: não aceita semente, então a escala deixaria de ser reproduzível
+ * e a promessa de conferência cairia junto. Este cabe em cinco linhas, é determinístico por
+ * construção, e não traz dependência nova para um problema deste tamanho.
+ */
+function sorteioSemeado(semente: number): () => number {
+  let a = semente >>> 0
+  return () => {
+    a = (a + 0x6d2b79f5) >>> 0
+    let t = a
+    t = Math.imul(t ^ (t >>> 15), t | 1)
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61)
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296
+  }
+}
+
+/**
  * Uma passada com um piso FIXO. Devolve os turnos preenchidos, ou o primeiro que travou.
  *
- * A escolha de quem entra é determinística: mesma entrada, mesma escala. Sem sorteio — uma escala
- * que muda a cada abertura da tela seria impossível de conferir.
+ * ⚠️ Este comentário dizia *"sem sorteio"* até 05/08/2026, e passou a mentir quando o GRASP entrou.
+ * A promessa correta hoje: **mesma entrada e mesma semente dão a mesma escala, byte a byte**. Sem
+ * semente, não há sorteio nenhum e o comportamento é o guloso de sempre. O que a promessa protegia —
+ * uma escala que se possa conferir e reproduzir — continua de pé.
  */
 function tentarComPiso(
   op: OpcoesGeracao,
   piso: number,
 ): { ok: true; turnos: Turno[] } | { ok: false; turno: Turno; faltaram: number; barrados: { pessoa: string; motivo: string }[] } {
+  // Uma semente por PISO, derivada da semente do bloco: assim tentar 9, 8, 7… não repete a
+  // mesma sequência de sorteios em cada tentativa, o que enviesaria todas para o mesmo lado.
+  const sorteio = op.semente != null ? sorteioSemeado(op.semente + piso * 7919) : null
   const noElenco = new Set(op.elenco)
   const candidatas = op.pessoas.filter((p) => p.ativo && noElenco.has(p.id))
 
@@ -198,9 +231,40 @@ function tentarComPiso(
 
         return a.id < b.id ? -1 : 1
       })
-      .slice(0, turno.capacidade)
 
-    for (const p of escolhidas) {
+    /**
+     * 🔴 GRASP — a lista restrita de candidatos, e por que ela não quebra o determinismo.
+     *
+     * Decisão registrada em `docs/superpowers/specs/PESQUISA_2026-08-05-gerar-n-versoes.md`.
+     *
+     * O Flavio pediu que o sistema gerasse várias versões e escolhesse a melhor. A armadilha: este
+     * algoritmo é **determinístico**, então rodá-lo N vezes com a mesma entrada devolve N cópias
+     * idênticas — "três versões" seriam a mesma escala três vezes.
+     *
+     * A técnica que resolve isso chama-se GRASP: em vez de pegar sempre o topo da ordenação, monta-se
+     * uma lista com os `k` melhores e sorteia-se **dentro dela**. A heurística continua mandando —
+     * quem está há mais tempo sem servir segue favorecido —, mas caminhos que o guloso puro nunca
+     * visitava passam a existir.
+     *
+     * ⚠️ E o determinismo, que `gerador.ts` prometia com todas as letras? Continua de pé, mais forte:
+     * o sorteio é **semeado**. Mesma entrada **e mesma semente** dão a mesma escala byte a byte, e a
+     * semente fica gravada no bloco. A promessa deixa de ser *"não há sorteio"* e passa a ser
+     * *"não há sorteio irreproduzível"* — antes havia um caminho só; agora há muitos, cada um com
+     * endereço.
+     *
+     * Com `k = 1` (o padrão quando não há semente), isto é exatamente o guloso de antes.
+     */
+    const k = Math.max(1, Math.min(op.candidatos ?? 1, escolhidas.length))
+    const escolhidasFinal: Pessoa[] = []
+    const restantes = [...escolhidas]
+    while (escolhidasFinal.length < turno.capacidade && restantes.length > 0) {
+      // A lista restrita só existe entre os que ainda não foram escolhidos para ESTE turno.
+      const lista = restantes.slice(0, k)
+      const i = lista.length > 1 && sorteio ? Math.floor(sorteio() * lista.length) : 0
+      escolhidasFinal.push(restantes.splice(i, 1)[0])
+    }
+
+    for (const p of escolhidasFinal) {
       turno.pessoas.push(p.id)
       est.datas.get(p.id)!.push(turno.data)
       est.porMes.set(chaveMes(p.id, turno.data), (est.porMes.get(chaveMes(p.id, turno.data)) ?? 0) + 1)
@@ -234,6 +298,8 @@ export function gerar(op: OpcoesGeracao): Resultado {
         pisoAlcancado: piso,
         elenco: [...op.elenco],
         malha: op.malha,
+        // Gravada para que esta escala possa ser refeita exatamente igual, por qualquer pessoa.
+        ...(op.semente != null ? { semente: op.semente } : {}),
         turnos: r.turnos,
       }
       const naoCouberam = tentados.filter((p) => p !== piso)
@@ -256,4 +322,87 @@ export function gerar(op: OpcoesGeracao): Resultado {
     candidatosBarrados: ultimaFalha?.barrados ?? [],
     pisosTentados: tentados,
   }
+}
+
+/**
+ * GERAR VÁRIAS VERSÕES E ESCOLHER A MELHOR.
+ *
+ * 🔴 Pedido do Flavio em 05/08/2026, e a decisão inteira — com o que foi RECUSADO da pesquisa —
+ * está em `docs/superpowers/specs/PESQUISA_2026-08-05-gerar-n-versoes.md`.
+ *
+ * O critério de escolha é em CASCATA, e a ordem importa mais que os pesos:
+ *
+ *   1. **maior piso alcançado** — espaçamento é o defeito que originou o projeto, e nenhum ganho de
+ *      equilíbrio compensa alguém servindo quarta e voltando no sábado;
+ *   2. **maior equidade**, pelo índice de Jain sobre a carga de quem não tem teto próprio.
+ *
+ * ⚠️ Por que cascata e não soma ponderada: somar critérios com pesos escolhidos a dedo é a armadilha
+ * que a literatura documenta — produz um ótimo agregado que concentra todo o sacrifício numa pessoa,
+ * e o sistema fica cego para a injustiça individual. Cascata não tem peso para escolher errado.
+ */
+export interface VersaoGerada {
+  resultado: Resultado
+  semente: number
+  jain: number
+}
+
+export interface EscolhaDeVersoes {
+  melhor: Resultado
+  /** Todas as tentativas, para a tela poder dizer o que foi comparado. */
+  versoes: VersaoGerada[]
+  descartadas: number
+}
+
+/**
+ * Índice de Jain sobre a carga por pessoa: `(Σx)² / (n · Σx²)`, de 0 a 1 — 1 é carga idêntica.
+ *
+ * Quem tem teto mensal fica FORA da conta: ele joga outro jogo, e incluí-lo faria uma escala justa
+ * parecer injusta só por respeitar a restrição de alguém.
+ */
+export function indiceDeJain(cargas: number[]): number {
+  if (cargas.length === 0) return 1
+  const soma = cargas.reduce((s, n) => s + n, 0)
+  const somaQuadrados = cargas.reduce((s, n) => s + n * n, 0)
+  if (somaQuadrados === 0) return 1
+  return (soma * soma) / (cargas.length * somaQuadrados)
+}
+
+export function gerarVariasVersoes(
+  op: OpcoesGeracao,
+  quantas = 8,
+  candidatos = 3,
+  sementeBase = 1,
+): EscolhaDeVersoes {
+  const versoes: VersaoGerada[] = []
+  const semTeto = new Set(
+    op.pessoas.filter((p) => p.ativo && op.elenco.includes(p.id) && p.restricoes.tetoMensal == null).map((p) => p.id),
+  )
+
+  for (let i = 0; i < Math.max(1, quantas); i++) {
+    // A primeira versão é o GULOSO PURO, sem sorteio. Ela é a rede: se todas as sorteadas saírem
+    // piores, a escala de sempre continua na mesa.
+    const semente = sementeBase + i
+    const resultado = i === 0
+      ? gerar({ ...op, candidatos: 1, semente: undefined })
+      : gerar({ ...op, candidatos, semente })
+    let jain = 0
+    if (resultado.ok) {
+      const cargas = [...semTeto].map(
+        (id) => resultado.bloco.turnos.filter((t) => t.pessoas.includes(id)).length,
+      )
+      jain = indiceDeJain(cargas)
+    }
+    versoes.push({ resultado, semente: i === 0 ? 0 : semente, jain })
+  }
+
+  const validas = versoes.filter((v) => v.resultado.ok)
+  if (validas.length === 0) return { melhor: versoes[0].resultado, versoes, descartadas: versoes.length }
+
+  const melhor = validas.reduce((a, b) => {
+    const pa = (a.resultado as Sucesso).pisoAlcancado
+    const pb = (b.resultado as Sucesso).pisoAlcancado
+    if (pa !== pb) return pa > pb ? a : b
+    return a.jain >= b.jain ? a : b
+  })
+  return { melhor: melhor.resultado, versoes, descartadas: versoes.length - validas.length }
 }

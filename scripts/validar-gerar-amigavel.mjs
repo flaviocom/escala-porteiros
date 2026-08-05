@@ -138,6 +138,27 @@ try {
   conferir('🔴 e o apagado em GERAR some do ELENCO — uma lista só, não duas',
     !/ausência\(s\)/.test(etiqueta2), etiqueta2.trim().slice(0, 60) || '(sem etiqueta, como esperado)')
 
+  // ── 7. GRASP: comparou várias e deixa pedir outra ───────────────────────
+  //
+  // ⚠️ O botão vive na aba GERAR, e a checagem anterior deixou a tela no ELENCO. Sem voltar, o
+  // portão acusaria "AUSENTE" um botão que existe — defeito da régua, não do produto.
+  await pagina.getByRole('button', { name: /^Gerar escala/i }).first().click()
+  await pagina.waitForTimeout(800)
+  conferir('diz que comparou VÁRIAS versões antes de escolher', /melhor de \d+ versões/i.test(corpo),
+    corpo.match(/melhor de \d+ versões/i)?.[0] ?? '(não anuncia)')
+  const botaoOutra = await pagina.getByRole('button', { name: /gerar outra combinação/i }).count()
+  conferir('oferece "gerar outra combinação"', botaoOutra > 0, botaoOutra ? 'presente' : 'AUSENTE')
+
+  // E ele PRECISA produzir uma escala diferente — senão é um botão que finge trabalhar.
+  const antesDoRegerar = await pagina.locator('body').innerText()
+  const assinatura = (t) => t.split('\n').filter((l) => /\d+ turnos · mín\./.test(l)).join('|')
+  await pagina.getByRole('button', { name: /gerar outra combinação/i }).click()
+  await pagina.waitForTimeout(7000)
+  const depoisDoRegerar = await pagina.locator('body').innerText()
+  conferir('🔴 "gerar outra" produz escala DIFERENTE, não a mesma de novo',
+    assinatura(antesDoRegerar) !== '' && assinatura(antesDoRegerar) !== assinatura(depoisDoRegerar),
+    assinatura(antesDoRegerar) === assinatura(depoisDoRegerar) ? 'saiu IGUAL — o botão não faz nada' : 'distribuição mudou')
+
   // ── 6. A SEGUNDA RÉGUA na tela, e o cruzamento ──────────────────────────
   await pagina.getByRole('button', { name: /^Conferir por fora/i }).first().click()
   await pagina.waitForTimeout(1200)
