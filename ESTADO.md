@@ -5,7 +5,7 @@
 > **Última atualização:** 05/08/2026 · **Fuso:** America/São_Paulo
 >
 > **Cadeia de navegação, nesta ordem:**
-> **`ESTADO.md` (você está aqui)** → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-05-d.md) → [`BACKLOG.md`](BACKLOG.md)
+> **`ESTADO.md` (você está aqui)** → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-05-e.md) → [`BACKLOG.md`](BACKLOG.md)
 > *onde estamos · o que aconteceu na última sessão e por quê · o que fazer a seguir*
 >
 > **Reconstruir do zero (portabilidade entre IAs):** [`docs/RECONSTRUIR.md`](docs/RECONSTRUIR.md)
@@ -18,12 +18,33 @@
 
 ## Em uma frase
 
-**O produto está no ar, auditado por fora, e a escala de 06/08 a 31/12 está publicada e conferida.**
-O nome do cliente saiu do código e virou dado. As duas decisões que estavam pendentes **foram
-tomadas pelo Flavio em 05/08** — a data de início (06/08) e o escopo de finalidade (fase 1, uso
-interno). O que falta é só o que depende das credenciais dele.
+**O produto está no ar, auditado por fora CINCO vezes, e a escala de 06/08 a 31/12 está publicada e
+conferida.** O nome do cliente saiu do código e virou dado. As duas decisões que estavam pendentes
+**foram tomadas pelo Flavio em 05/08** — a data de início (06/08) e o escopo de finalidade (fase 1,
+uso interno). O que falta é só o que depende das credenciais dele.
 
-## O que aconteceu em 05/08/2026
+## O mais recente: a quinta auditoria (05/08, noite)
+
+**21 achados, todos fechados.** Ela mirou o que as quatro anteriores não tinham olhado — entrada
+hostil, concorrência, a matemática do Jain, a imagem do WhatsApp, acessibilidade, `localStorage` —
+e o pior repetia o de ontem **por outra porta**:
+
+```
+publicar 2× na mesma sessão, sem recarregar → a 1ª publicação SUMIA (55 turnos medidos)
+                                              e o guarda dizia ok=true, perdidos=0
+```
+
+O guarda não errou: recebia o **retrato envelhecido**. `carregarDados()` roda uma vez, no topo do
+módulo, e o objeto ficava congelado no closure da tela. **Um guarda só é tão bom quanto o argumento
+que lhe entregam.**
+
+Os outros dois vermelhos: `capacidade: 0` gerava 110 turnos com **zero pessoas** e as DUAS réguas
+aprovavam (nasceu **D12**); e a ponte dado→tela não tinha **um único teste** — quatro mutantes que
+apagam a escala de todos os irmãos passavam em 232/232.
+
+Detalhe em [`HANDOFF_2026-08-05-e.md`](docs/handoff/HANDOFF_2026-08-05-e.md).
+
+## O que aconteceu antes, em 05/08/2026
 
 **1. A escala nova desmentia o site que a congregação já tem o link — em TODOS os turnos.**
 O Flavio viu antes de mim: hoje, 05/08, a escala nova trocava uma pessoa sem ninguém ter pedido.
@@ -101,7 +122,7 @@ dias** sumiriam.
 **9. O caminho inteiro virou portão** (`npm run vivo:caminho`). Os outros cobrem cada peça; a
 sequência que a pessoa faz de verdade não era percorrida por ninguém.
 
-Detalhe completo em [`HANDOFF_2026-08-05-d.md`](docs/handoff/HANDOFF_2026-08-05-d.md).
+Detalhe completo em [`HANDOFF_2026-08-05-e.md`](docs/handoff/HANDOFF_2026-08-05-e.md).
 
 ## O que entrou em 04/08: a auditoria independente (P2.10)
 

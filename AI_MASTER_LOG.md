@@ -4,7 +4,7 @@
 > O **porquê** de cada decisão vive no [`DIARIO_DE_BORDO.md`](DIARIO_DE_BORDO.md); aqui fica o
 > registro do que foi feito, passo a passo.
 >
-> **Cadeia de navegação:** [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-05-d.md) → [`BACKLOG.md`](BACKLOG.md)
+> **Cadeia de navegação:** [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-05-e.md) → [`BACKLOG.md`](BACKLOG.md)
 > **Roteador:** [`AGENTS.md`](AGENTS.md) ·
 > **Solicitações:** [`docs/solicitacoes/INDICE_DE_SOLICITACOES.md`](docs/solicitacoes/INDICE_DE_SOLICITACOES.md) ·
 > **Fatias arquivadas:** [`docs/historico/INDICE.md`](docs/historico/INDICE.md)
@@ -315,3 +315,57 @@ antes da palavra. Cada achado que escapou virou critério novo.
 **Skills acionadas:** `padrao-ouro` (o ciclo inteiro, quatro vezes), `loop-autonomo`,
 `documentacao-auditavel`, `deep-research` (a pesquisa sobre gerar N versões), `ponytail` (remover
 estado morto em vez de ligá-lo), `impeccable` (alvo de toque, contraste, foco).
+
+---
+
+## 05/08/2026 — sessão 2, parte 5: a quinta auditoria externa
+
+**Solicitação:** S-032 — *"go workflow completo item a item… sempre expandir… quem determina a ordem
+é você, sempre."*
+
+**Skills acionadas:** `engineering-loop` (o ciclo) · `loop-autonomo` (executar de ponta a ponta sem
+devolver a bola) · `documentacao-auditavel` (esta entrada, o Diário e a cadeia) · `ponytail` (D12 é
+uma regra, não um remendo em D1; a fronteira do portão de "ensaio" é uma propriedade, não um
+subsistema).
+
+### O que a quinta auditoria mirou, e por que ela achou
+
+As quatro anteriores olharam o domínio, os portões, a documentação e o caminho do Flavio. Esta mirou
+o que **nenhuma** tinha olhado: entrada hostil, concorrência entre abas, a matemática do Jain, a
+imagem do WhatsApp aberta pixel a pixel, acessibilidade fora da primeira tela, e `localStorage`.
+
+**21 achados** — 3 vermelhos, 9 laranjas, 9 menores. Todos fechados.
+
+| # | Achado | Medido |
+|---|---|---|
+| 1 🔴 | publicar 2× na mesma sessão apagava a 1ª publicação | **55 turnos** somem; guarda diz `ok=true` |
+| 2 🔴 | `capacidade: 0` passava pelas DUAS réguas | 110 turnos · 0 escalados · "sem ressalvas" |
+| 3 🔴 | a ponte dado→tela sem um único teste | 4 mutantes destrutivos passam em 232/232 |
+| 4 | "gerar outra combinação" um clique atrasado | 1º clique devolve escala idêntica byte a byte |
+| 5 | "ENSAIO" cravado no site e na imagem | `Turno.rotulo` lido em 1 de 3 lugares |
+| 6 | 2ª régua sem checagem de vacuidade | 3 cenários, 0 furos de 7 |
+| 7 | acessibilidade media a tela FECHADA | 4 falhas WCAG a um toque |
+| 8 | reverter fora da trava de publicação | grava os mesmos 2 arquivos |
+| 9 | `localStorage` nu + sem `ErrorBoundary` | tela branca com cookies bloqueados |
+| 10 | digitar após atalho zerava a escala | 15 caracteres para desfazer |
+| 11 | motor sem trava modular | 2 execuções pagas em paralelo |
+| 12 | testes por vacuidade | inclusive os 2 do piso e o das 8 versões |
+
+### As frentes que NÃO renderam achado (medidas, não presumidas)
+
+Fuzz de 400 rodadas com restrições sorteadas: **286 escalas geradas, 0 reprovadas**. `podeAssumir` ×
+D3–D8 em 5.000 sorteios: **0 divergências**. `indiceDeJain` correto nos casos-limite. As 8 chamadas
+de `fetch` do projeto **todas** conferem `response.ok` — é o ponto mais bem defendido do código.
+Duplo clique em Gerar e em Enviar: travados. `.skip`/`.only`/`expect` comentado: zero.
+
+### O que ficou provado
+
+`EXIT_GATE=0` em **20 passos** · **263 testes** (eram 232) · catálogo com **17 regras** (12 duras) ·
+**13 validações ao vivo** verdes · acessibilidade: 4 cenas, 3.952 textos, **0** abaixo do piso.
+
+Os três vermelhos foram medidos **no dado real**, antes e depois — e foi essa medição que pegou o
+defeito que eu mesmo introduzi em D12 (o `slice` nos turnos em vez das violações), que os cinco
+testes novos não pegavam.
+
+**Handoff:** [`HANDOFF_2026-08-05-e.md`](docs/handoff/HANDOFF_2026-08-05-e.md) ·
+**Diário:** DB-018 a DB-021.

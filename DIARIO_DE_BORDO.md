@@ -4,7 +4,7 @@
 > como reverter.** Documento **append-only**, fatiado por período ao estourar o teto. **Nada é
 > excluído, nunca.**
 >
-> **Cadeia de navegação:** [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-05-d.md) → [`BACKLOG.md`](BACKLOG.md)
+> **Cadeia de navegação:** [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-05-e.md) → [`BACKLOG.md`](BACKLOG.md)
 > **Roteador:** [`AGENTS.md`](AGENTS.md) ·
 > **Solicitações:** [`docs/solicitacoes/INDICE_DE_SOLICITACOES.md`](docs/solicitacoes/INDICE_DE_SOLICITACOES.md) ·
 > **Histórico:** [`docs/historico/INDICE.md`](docs/historico/INDICE.md)
@@ -839,3 +839,167 @@ como o primeiro lugar onde o próximo auditor vai procurar.
 
 Nenhuma destas correções deve ser revertida isoladamente — cada uma tem teste que fica vermelho.
 O `BACKLOG.md` lista as 48, com `arquivo:linha` e como reproduzir.
+
+---
+
+## DB-018 · 05/08/2026 — o guarda estava certo; o argumento é que estava velho
+
+### A solicitação
+
+*"Go workflow completo item a item… sempre expandir, mapeando todas as ligações em Documentos e
+Código antes de mexer… quem determina a ordem é você, sempre."* — Flavio, 05/08/2026 (S-032).
+
+Quinta auditoria externa, mirando o que as quatro anteriores **não** tinham olhado.
+
+### A medição
+
+`carregarDados()` roda **uma vez**, no topo do módulo. O objeto ficava congelado no closure da tela,
+e a área administrativa media tudo contra ele. Medido com o domínio de produção e o dado real:
+
+```
+publicação 1 (jan→mar/2027)            → 238 turnos
+publicação 2 (abr→jun), sem recarregar → 238 turnos   ← jan-mar SUMIU
+                                          guarda: ok=true, perdidos=0
+com o retrato atualizado               → 293 turnos   ⇒ 55 turnos salvos
+```
+
+Segundo efeito da mesma raiz: a fronteira lia a última escala de `p1` como **27/09** em vez de
+**27/12**, e o gerador o escalava em 01/01 — um dia depois de ele servir em 31/12.
+
+### A decisão, e o porquê
+
+O retrato do publicado virou **estado**, atualizado por quem grava, com o que gravou.
+
+**Recarregar da rede foi recusado**, e é a parte que importa: o GitHub Pages leva cerca de um minuto
+para servir o arquivo novo. Buscar de novo logo depois de publicar traria **o dado antigo de volta** —
+a cura seria pior que a doença, e silenciosa. Quem sabe a verdade neste instante é quem acabou de
+gravar.
+
+Campo a campo, e só o que **de fato** passou: numa falha parcial, trocar um retrato velho por um
+retrato falso é pior, porque o guarda passaria a comparar com algo que nunca existiu.
+
+> 🔴 **A lição, que é a de ontem por outra porta:** ontem o defeito estava na função
+> (`conferirPassadoPreservado` contava só a cabeça). Hoje, no que ela **recebia**. Um conferidor só é
+> tão bom quanto o argumento que lhe entregam — e nenhum teste de unidade pega isso, porque o teste
+> entrega o argumento certo.
+
+### Como reverter
+
+`git revert e7fcd37` desfaz o commit inteiro. Só esta parte: devolver `dados` a prop em
+`Admin.tsx` e apagar `retratoPublicado` de `carregar.ts`. Os testes de `blocos.test.ts` continuam
+verdes — eles não cobrem esta ponta, e é justamente por isso que ela escapou.
+
+---
+
+## DB-019 · 05/08/2026 — nasceu D12, e ela nasceu com o defeito que existe para fechar
+
+### A medição
+
+```
+capacidadePadrao = 0 → 110 turnos · 0 pessoas escaladas → "Aprovada, sem ressalvas."
+                       2ª régua: 0 furos de 7
+```
+
+Nenhuma das réguas errou por descuido. **D1** pergunta *"o turno recebeu o que pediu?"* e `0 === 0` é
+verdade. **D11** compara a grade do bloco com a esperada — construída pela **mesma** função, com a
+mesma capacidade: casam perfeitamente. **Q2** vê amplitude zero, que é equilíbrio perfeito.
+
+### A decisão
+
+A pergunta que faltava é anterior a todas: **o turno pediu um número que faz sentido?** Isso não cabe
+em D1 (que julga o preenchimento) nem em D11 (que julga a cobertura), e por isso virou regra própria
+em vez de remendo — com `explicacao` própria no catálogo, que é o que o usuário lê.
+
+Santa Ceia é a exceção **legítima e única**: ela tem capacidade 0 por definição.
+
+### O que aconteceu no caminho, e vale mais que a regra
+
+A primeira versão de D12 fazia `for (const t of comGente.slice(0, 5))` — fatiava os **turnos**
+achando que limitava as **mensagens**. Medido no dado real: um turno sem vaga na **posição 10**, no
+meio de uma escala boa, saía **aprovado**.
+
+> 🔴 **A regra escrita para fechar a classe "portão que mede menos do que diz" tinha o defeito dentro
+> dela.** E ela passou nos cinco testes que eu tinha acabado de escrever, porque todos usavam
+> cenários curtos. Só apareceu porque a correção foi medida **contra o dado real**, e não só contra o
+> cenário que a inspirou.
+
+Regra de bolso que sai daqui: **filtra primeiro, fatia depois.** O `slice` limita o RELATÓRIO; a
+conferência é sempre sobre a população inteira.
+
+### Como reverter
+
+Tirar `D12` de `REGRAS_DURAS` em `regras.ts` e o id de `comTeste` em `regras.test.ts`. ⚠️ O portão
+`fatos:conferir` ficará vermelho até os textos voltarem de 12 para 11 duras — é ele que impede que
+catálogo e documentação divirjam.
+
+---
+
+## DB-020 · 05/08/2026 — quatro maneiras de apagar a escala de todos, com o portão verde ao lado
+
+### A medição
+
+O auditor injetou mutantes num espelho do projeto e rodou a suíte inteira:
+
+| mutante | o que a congregação veria | suíte |
+|---|---|---|
+| `paraShifts` → `assignedBrothers: []` | escala vazia para todo mundo | 232/232 ✅ |
+| `paraShifts` → `date: 01/01/2000` | a escala inteira em 2000 | 232/232 ✅ |
+| `paraShifts` → `type: 'NOITE'` | manhã e Santa Ceia somem da tela | 232/232 ✅ |
+| `filtrarTurnos` → `return []` | tela em branco | 232/232 ✅ |
+
+### A decisão, e o porquê
+
+O domínio deste projeto está coberto até o osso — 16 regras, duas réguas independentes, portão do
+portão. **O caminho que a pessoa realmente vê** não tinha um único teste: `paraShifts`,
+`filtrarTurnos`, `gerarImagensDaEscala`, `reverterPara`, `medir`.
+
+A causa é conhecida e vale registrar: o adaptador para a tela herdada foi escrito como "código de
+cola", e código de cola parece não merecer teste. Ele é justamente onde **todo** o dado passa.
+
+`ponte-para-a-tela.test.ts` afirma **um campo por vez, com valor absoluto**. Comparar
+`paraShifts(t)[0].type` com `TIPO_PARA_TELA[t.tipo]` seria escrever o defeito duas vezes e chamar
+isso de prova.
+
+### Como reverter
+
+Apagar `src/dados/ponte-para-a-tela.test.ts`. Nada de produção depende dele — e é exatamente essa a
+razão pela qual ele demorou a existir.
+
+---
+
+## DB-021 · 05/08/2026 — o portão de acessibilidade media a tela FECHADA
+
+### A medição
+
+O portão media **uma cena**: o celular, como a página nasce. O veredito *"contraste, foco de teclado
+e idioma dentro do piso WCAG AA"* era verdadeiro — e era verdadeiro sobre **6 elementos focáveis**.
+
+A barra lateral inteira (busca, "Minha Escala", os dois filtros, os botões de enviar) vive sob
+`hidden md:flex`: no celular tem retângulo zerado e fica fora da conta; no desktop nunca era
+visitada; e a porta do administrativo, nunca.
+
+| cena | textos | focáveis | abaixo do contraste |
+|---|---|---|---|
+| celular, como nasce | 1.303 | 6 | 0 |
+| celular, **filtros abertos** | 1.317 | 12 | **4** |
+| **desktop 1440px** | 1.311 | 7 | **3** |
+| **porta do administrativo** | 21 | 6 | **2** |
+
+O pior: *"Toque para configurar"* a **2,67:1** — que é o convite para o irmão de 60+ achar o próprio
+nome na escala.
+
+### A decisão
+
+Quatro cenas, com a mesma régua aplicada às quatro. E o portão **reprova se uma cena não abrir**: se
+o seletor do painel mudar de nome, `preparar` falha em silêncio e a cena volta a medir a tela
+fechada. O sinal é o número de **focáveis**, que mais que dobra com o painel aberto.
+
+> 🔴 **Portão que mede menos do que diz é pior que portão ausente**: ele responde "está tudo bem" a
+> uma pergunta maior do que a que ele fez. É a quinta vez que esta classe aparece no projeto, e a
+> primeira em que a defesa é o próprio portão conferir o tamanho da população que mediu.
+
+### Como reverter
+
+`git revert` do commit. Só a cor: `text-gray-600` volta a `text-gray-400` em `App.tsx`,
+`MultiSelect.tsx` e `Admin.tsx`, e `indigo-700` a `indigo-400`. ⚠️ `vivo:acessibilidade` fica
+vermelho — é para isso que ele existe.

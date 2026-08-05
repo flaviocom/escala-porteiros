@@ -6,7 +6,7 @@
 > **Última atualização:** 05/08/2026
 >
 > **Cadeia de navegação, nesta ordem:**
-> [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-05-d.md) → **`BACKLOG.md` (você está aqui)**
+> [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-05-e.md) → **`BACKLOG.md` (você está aqui)**
 >
 > **Roteador do projeto:** [`AGENTS.md`](AGENTS.md) ·
 > **Solicitações:** [`docs/solicitacoes/INDICE_DE_SOLICITACOES.md`](docs/solicitacoes/INDICE_DE_SOLICITACOES.md) ·
@@ -85,6 +85,18 @@ Medido: Williams com **7 intervalos de 1 dia**, **18 pares com ≤3 dias**, 6 oc
 > Vieram da auditoria de 04/08/2026 ([handoff](docs/handoff/HANDOFF_2026-08-04-i.md)). **Nenhum
 > bloqueia o uso.** Estão aqui com `arquivo:linha` e reprodução — não como lembrete vago. Foram
 > separados por serem de risco baixo e escopo próprio; os graves já foram corrigidos.
+
+### Quinta auditoria externa — 05/08/2026, **21 achados, 0 abertos**
+
+Detalhe e medição em [`HANDOFF_2026-08-05-e.md`](docs/handoff/HANDOFF_2026-08-05-e.md) e no
+`DIARIO_DE_BORDO.md` (DB-018 a DB-021). Ficam aqui os três vermelhos, porque são os que alguém
+precisa saber que existiram para não recriá-los:
+
+| # | Item | Onde | Estado |
+|---|---|---|---|
+| P5.8 | 🔴 **Publicar 2× na mesma sessão apagava a 1ª publicação.** O retrato dos dados era congelado no closure; a 2ª montagem usava o de antes da 1ª. **55 turnos medidos.** E o guarda do passado aprovava, porque recebia o mesmo argumento envelhecido | `src/dados/carregar.ts` (`retratoPublicado`), `src/admin/Admin.tsx` (`setDados`) | ✅ **FECHADO 05/08** — provado no dado real, antes e depois. ⚠️ recarregar da rede foi RECUSADO: o Pages leva 1 min e traria o dado antigo de volta |
+| P5.9 | 🔴 **`capacidade: 0` gerava 110 turnos com zero pessoas, e as DUAS réguas aprovavam.** D1 conta `0===0` como completo; D11 compara a grade com ela mesma; Q2 vê amplitude zero | `src/dominio/regras.ts` (`D12`), `conferencia-independente.ts` (promessa 0) | ✅ **FECHADO 05/08** — nasceu **D12**. ⚠️ ela nasceu com o defeito que existe para fechar (`slice` nos turnos, não nas violações); pego pela medição no dado real |
+| P5.10 | 🔴 **A ponte dado→tela não tinha um único teste.** 4 mutantes que apagam a escala de todos os irmãos passavam em 232/232 | `src/dados/ponte-para-a-tela.test.ts` | ✅ **FECHADO 05/08** — 20 testes novos, um campo por vez, com valor absoluto |
 
 | # | Item | Onde | Como reproduzir |
 |---|---|---|---|
