@@ -45,7 +45,7 @@ writeFileSync(
 esbuild.buildSync({ entryPoints: [entrada], outfile: saidaJs, format: 'esm', platform: 'node', bundle: true })
 
 const dominio = await import(pathToFileURL(saidaJs).href)
-const { construirGrade, gerar, validar, resumir, menorIntervalo, formatarBR, diferencaEmDias } = dominio
+const { construirGrade, gerarVariasVersoes, validar, resumir, menorIntervalo, formatarBR, diferencaEmDias } = dominio
 
 // ---------------------------------------------------------------------------
 const args = process.argv.slice(2)
@@ -108,12 +108,35 @@ console.log(`Capacidade padrão: ${CAPACIDADE} · malha com ${MALHA.regras.lengt
 console.log(`Elenco: ${pessoas.filter((p) => p.ativo).length} pessoas\n`)
 
 const grade = construirGrade({ inicio: DE, fim: ATE, malha: MALHA, capacidadePadrao: CAPACIDADE, santaCeia: SANTA_CEIA })
-const r = gerar({
+/*
+  🔴 O MESMO CAMINHO DA TELA — corrigido em 05/08/2026.
+
+  Este script escrevia com `gerar()` puro (guloso), enquanto a área administrativa usa
+  `gerarVariasVersoes()`: monta OITO escalas internamente e entrega a melhor, comparando primeiro o
+  piso de distanciamento e, no empate, o índice de Jain (equilíbrio de carga).
+
+  Era fonte dupla silenciosa. O `blocos.json` publicado saía de um caminho **pior** que o da tela, e
+  ninguém veria a diferença: as duas escalas passam nas 16 regras — só que uma distribui melhor que
+  a outra. É a mesma classe de defeito que fez este script trazer a Santa Ceia cravada até 04/08.
+
+  A primeira das oito é sempre o guloso puro, então o resultado nunca fica PIOR do que era.
+*/
+const escolha = gerarVariasVersoes({
   inicio: DE, fim: ATE, grade, pessoas,
   elenco: pessoas.filter((p) => p.ativo).map((p) => p.id),
   malha: MALHA,
   ultimaEscalaAnterior: fronteira,
 })
+const r = escolha.melhor
+
+console.log(`VERSÕES INTERNAS COMPARADAS: ${escolha.versoes.length} (${escolha.descartadas} não fecharam)`)
+for (const [i, v] of escolha.versoes.entries()) {
+  const marca = v.resultado === escolha.melhor ? '→' : ' '
+  const como = i === 0 ? 'guloso puro' : `semente ${v.semente}`
+  console.log(`  ${marca} versão ${i + 1} (${como}): ` +
+    (v.resultado.ok ? `piso ${v.resultado.bloco.pisoAlcancado} · Jain ${v.jain.toFixed(4)}` : 'não fechou'))
+}
+console.log()
 
 if (!r.ok) {
   console.error('🔴 NÃO FOI POSSÍVEL GERAR\n')
@@ -164,8 +187,24 @@ if (ESCREVER) {
   const vespera = dominio.somarDias(DE, -1)
   const truncado = { ...historico, fim: vespera, turnos: historico.turnos.filter((t) => diferencaEmDias(t.data, DE) > 0) }
   const novo = { versao: 1, blocos: [truncado, r.bloco] }
-  writeFileSync(join(RAIZ, 'public/dados/blocos.json'), JSON.stringify(novo, null, 2) + '\n', 'utf8')
-  console.log('\n✅ blocos.json atualizado (histórico truncado + bloco novo)')
+  /*
+    🔴 AS DUAS PASTAS, SEMPRE — achado da auditoria adversarial em 05/08/2026.
+
+    Este script gravava só em `public/dados/` e contava com o `npm run build` para copiar para
+    `docs/`, que é o que o GitHub Pages serve. Funciona… enquanto alguém sempre lembrar de construir
+    logo depois. Entre uma coisa e outra, o repositório fica com **duas verdades**: o dado de origem
+    já com a escala nova e o dado servido ainda com a antiga.
+
+    É exatamente o modo de falha que `publicarDados` (a publicação pela tela) foi escrita para não
+    ter — ela grava nas duas. Não havia motivo para o script ser menos cuidadoso que o botão.
+
+    Quem pegou foi o auditor adversarial, com a pergunta *"os dois arquivos de dados são iguais?"*.
+  */
+  const conteudo = JSON.stringify(novo, null, 2) + '\n'
+  for (const pasta of ['public/dados', 'docs/dados']) {
+    writeFileSync(join(RAIZ, pasta, 'blocos.json'), conteudo, 'utf8')
+  }
+  console.log('\n✅ blocos.json atualizado nas DUAS pastas (histórico truncado + bloco novo)')
 } else {
   console.log('\n(simulação — use --escrever para gravar)')
 }
