@@ -183,3 +183,12 @@ build) exit 0 · órfãos 0 · site e área administrativa validados **ao vivo**
   antigo). Roda sob demanda; o resultado fica datado no handoff.
 
 **Skills acionadas:** `engineering-loop`, `loop-autonomo`, `documentacao-auditavel`, `ponytail`.
+
+**Continuação da parte 5 — o pré-voo deste projeto achou 3 defeitos no MÉTODO.** O portão de
+tamanho disse "15 medidos" num projeto de 16 (o `docs/historico/INDICE.md` era isento por estar sob
+`historico/`, mas é documento vivo). Puxando o fio: **ERRO 15 e ERRO 27 duplicados** no catálogo de
+anteparos, índice parado no 26 com 31 erros existentes, `ANTEPAROS.md` 133 linhas acima do teto, e
+**12 scripts com um único autoteste que ninguém rodava**. Tudo corrigido em
+`flaviocom/padroes-globais` (`b08b6ec`): 2 portões novos com autoteste nas duas pontas, catálogo
+dividido por assunto, e o pré-voo agora roda **todos** os autotestes antes de cada tarefa.
+Registrado como ERRO 32 e ERRO 35.
