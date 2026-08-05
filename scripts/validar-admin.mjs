@@ -80,7 +80,7 @@ await conferir('🔴 recusa senha curta antes de tocar na rede', async () => {
   const campos = pagina.locator('input[type="password"]')
   await campos.nth(0).fill('123')
   await campos.nth(1).fill('123')
-  await pagina.getByRole('button', { name: /Conferir o token/i }).click()
+  await pagina.getByRole('button', { name: /Conferir o token|Entrar sem token/i }).click()
   await pagina.waitForTimeout(600)
   const texto = await pagina.locator('#root').innerText()
   return { ok: /ao menos 8 caracteres/i.test(texto), detalhe: texto.includes('8 caracteres') ? 'avisou corretamente' : 'não avisou' }
@@ -90,10 +90,62 @@ await conferir('🔴 recusa senhas diferentes', async () => {
   const campos = pagina.locator('input[type="password"]')
   await campos.nth(0).fill('senha-boa-123')
   await campos.nth(1).fill('outra-coisa-456')
-  await pagina.getByRole('button', { name: /Conferir o token/i }).click()
+  await pagina.getByRole('button', { name: /Conferir o token|Entrar sem token/i }).click()
   await pagina.waitForTimeout(600)
   const texto = await pagina.locator('#root').innerText()
   return { ok: /não são iguais/i.test(texto), detalhe: 'avisou' }
+})
+
+/**
+ * 🔴 ENTRAR SEM TOKEN — e por que esta checagem existe.
+ *
+ * A tela **exigia** token para passar do primeiro acesso. Com isso, o caminho de "publicar à mão",
+ * construído justamente para quem não quer cadastrar token, ficava **inalcançável para essa
+ * pessoa** — recurso presente no código e ausente na prática.
+ *
+ * Aqui se prova o par inteiro: entrar sem token **funciona**, e o que ele custa aparece — o botão
+ * Publicar desabilitado e o caminho manual aberto, não um botão morto sem explicação.
+ */
+await conferir('🔴 dá para ENTRAR SEM TOKEN, e o caminho manual aparece', async () => {
+  await pagina.goto(`${BASE.replace(/\/$/, '')}/#/admin`, { waitUntil: 'networkidle' })
+  await pagina.evaluate(() => localStorage.clear())
+  await pagina.reload({ waitUntil: 'networkidle' })
+  await pagina.waitForTimeout(900)
+
+  const campos = pagina.locator('input[type="password"]')
+  await campos.nth(0).fill('senha-boa-123')
+  await campos.nth(1).fill('senha-boa-123')
+  // 🔒 O campo do token fica VAZIO de propósito: é o cenário inteiro do teste.
+  await pagina.getByRole('button', { name: /Entrar sem token/i }).click()
+  await pagina.waitForTimeout(2500)
+
+  const entrou = !/Configurar o acesso/i.test(await pagina.locator('#root').innerText())
+
+  // A seção de publicação vive na ABA Publicar — olhar a aba inicial não prova nada sobre ela.
+  if (entrou) {
+    await pagina.getByRole('button', { name: /^Publicar$/i }).first().click().catch(() => {})
+    await pagina.waitForTimeout(800)
+  }
+  const texto = await pagina.locator('#root').innerText()
+  const mostraCaminho = /publique assim|duas paradas/i.test(texto)
+  const publicarMorto = await pagina.locator('button[title*="entrou sem token"]').first().isDisabled().catch(() => null)
+
+  // 🔒 Devolve a página ao estado em que a encontrou: apaga o cofre que ESTE caso gravou E
+  // recarrega. Limpar sem recarregar não basta — o cofre sai do armazenamento e a tela continua
+  // aberta em memória, e a checagem seguinte não acha os campos de senha. Teste que suja o
+  // ambiente derruba o próximo e manda procurar defeito no produto.
+  await pagina.evaluate(() => localStorage.clear())
+  await pagina.reload({ waitUntil: 'networkidle' })
+  await pagina.waitForTimeout(800)
+
+  return {
+    ok: entrou && mostraCaminho && publicarMorto !== false,
+    detalhe: !entrou
+      ? '🔴 não passou do primeiro acesso — o caminho sem token continua inalcançável'
+      : !mostraCaminho
+        ? '🔴 entrou, mas não diz como publicar à mão'
+        : `entrou · caminho manual visível · Publicar desabilitado: ${publicarMorto}`,
+  }
 })
 
 await conferir('🔴 não guarda nada sem token válido — o GitHub é consultado antes', async () => {
@@ -101,7 +153,7 @@ await conferir('🔴 não guarda nada sem token válido — o GitHub é consulta
   await campos.nth(0).fill('senha-boa-123')
   await campos.nth(1).fill('senha-boa-123')
   await campos.nth(2).fill('token_de_mentira_para_teste')
-  await pagina.getByRole('button', { name: /Conferir o token/i }).click()
+  await pagina.getByRole('button', { name: /Conferir o token|Entrar sem token/i }).click()
   await pagina.waitForTimeout(4000)
   const guardou = await pagina.evaluate(() => localStorage.getItem('escala-porteiros:cofre') !== null)
   const texto = await pagina.locator('#root').innerText()

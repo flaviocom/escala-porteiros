@@ -155,12 +155,22 @@ const PrimeiroAcesso: React.FC<{ aoAbrir: (s: Segredos) => void }> = ({ aoAbrir 
     setErro('')
     if (senha.length < 8) return setErro('A senha precisa ter ao menos 8 caracteres.')
     if (senha !== repetir) return setErro('As duas senhas não são iguais.')
-    if (!token.trim()) return setErro('Cole o token do GitHub — é ele que permite publicar.')
+    /**
+     * 🔴 O TOKEN É OPCIONAL — e antes não era, o que tornava INALCANÇÁVEL o caminho de publicar
+     * à mão que existe logo ali dentro. Quem não quisesse cadastrar token não passava desta tela,
+     * então a alternativa construída para essa pessoa nunca chegava a ela. Código inerte com cara
+     * de recurso.
+     *
+     * Sem token: gera, valida, ajusta e baixa. Só o botão Publicar fica de fora — e a tela diz
+     * isso com todas as letras, em vez de deixar o botão morto sem explicação.
+     */
     setOcupado(true)
-    const teste = await conferirToken(token.trim())
-    if (!teste.ok) {
-      setOcupado(false)
-      return setErro(teste.detalhe)
+    if (token.trim()) {
+      const teste = await conferirToken(token.trim())
+      if (!teste.ok) {
+        setOcupado(false)
+        return setErro(teste.detalhe)
+      }
     }
     const segredos: Segredos = { tokenGitHub: token.trim(), ...(chaveMotor.trim() ? { chaveMotor: chaveMotor.trim() } : {}) }
     await gravarCofre(senha, segredos)
@@ -179,12 +189,17 @@ const PrimeiroAcesso: React.FC<{ aoAbrir: (s: Segredos) => void }> = ({ aoAbrir 
       <Campo rotulo="Senha (mínimo 8 caracteres)" tipo="senha" valor={senha} aoMudar={setSenha} />
       <Campo rotulo="Repita a senha" tipo="senha" valor={repetir} aoMudar={setRepetir} />
       <Campo
-        rotulo="Token do GitHub"
+        rotulo="Token do GitHub (opcional)"
         tipo="senha"
         valor={token}
         aoMudar={setToken}
         dica="Fine-grained · Only select repositories → escala-porteiros · Repository permissions → Contents: Read and write"
       />
+      <p className="-mt-2 mb-4 text-xs leading-relaxed text-gray-500">
+        <strong>Sem token também funciona:</strong> você gera, valida, ajusta e baixa os arquivos —
+        só o botão <em>Publicar</em> fica de fora, e a tela mostra como subir à mão em duas paradas.
+        Dá para cadastrar o token depois, sem refazer nada.
+      </p>
       <Campo
         rotulo="Chave do motor (opcional)"
         tipo="senha"
@@ -194,7 +209,7 @@ const PrimeiroAcesso: React.FC<{ aoAbrir: (s: Segredos) => void }> = ({ aoAbrir 
       />
       {erro && <Aviso tom="erro">{erro}</Aviso>}
       <Botao aoClicar={criar} ocupado={ocupado} icone={KeyRound}>
-        Conferir o token e guardar
+        {token.trim() ? 'Conferir o token e guardar' : 'Entrar sem token'}
       </Botao>
     </Moldura>
   )
@@ -949,6 +964,8 @@ const AbaPublicar: React.FC<{
   }
 
   const impedido = relatorio ? !relatorio.aprovada : false
+  /** Sem token, publicar pela tela não existe — e o motivo aparece, em vez de um botão morto. */
+  const semToken = !segredos.tokenGitHub
 
   return (
     <>
@@ -976,9 +993,11 @@ const AbaPublicar: React.FC<{
         )}
 
         <div className="flex flex-wrap gap-2">
-          <button title="Grava a escala no repositório. O site atualiza em cerca de um minuto, sem sair do ar"
+          <button title={semToken
+            ? 'Você entrou sem token — publique pelo botão ao lado, em duas paradas'
+            : 'Grava a escala no repositório. O site atualiza em cerca de um minuto, sem sair do ar'}
             onClick={publicar}
-            disabled={ocupado || impedido}
+            disabled={ocupado || impedido || semToken}
             className="px-5 py-2.5 bg-green-600 text-white rounded-xl text-sm font-bold hover:bg-green-700 disabled:bg-gray-300 flex items-center gap-2"
           >
             {ocupado ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
@@ -1003,9 +1022,14 @@ const AbaPublicar: React.FC<{
           duas paradas. Subir em só uma das pastas é o erro que não avisa: ou o site não muda, ou
           muda e a próxima montagem desfaz.
         */}
-        <details className="mt-4 rounded-xl border border-gray-200 bg-gray-50">
+        {/*
+          Aberto por padrão para quem entrou SEM token: para essa pessoa, isto não é um detalhe
+          escondido — é o único caminho de publicação que ela tem. Quem tem token acha o bloco
+          recolhido, onde ele não estorva.
+        */}
+        <details open={semToken} className={clsx('mt-4 rounded-xl border', semToken ? 'border-amber-300 bg-amber-50' : 'border-gray-200 bg-gray-50')}>
           <summary className="cursor-pointer px-4 py-3 text-sm font-bold text-gray-700 select-none">
-            Publicar sem token — as duas paradas
+            {semToken ? 'Você entrou sem token — publique assim, em duas paradas' : 'Publicar sem token — as duas paradas'}
           </summary>
           <div className="px-4 pb-4 text-sm text-gray-600 space-y-3">
             <p>
