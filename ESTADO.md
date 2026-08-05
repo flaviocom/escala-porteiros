@@ -74,6 +74,17 @@ código**, com portão que reprova se divergir), algoritmo, arquitetura (grafo d
 **medido**), operação e instalação do zero. O portão `contagem` foi **invertido**: tinha lista fixa
 de 5 documentos e deixava 4 invisíveis; agora descobre e mede **15**.
 
+**7. A finalidade ficou escrita, em três fases** (decisão dele, S-029). **Hoje o produto atende UMA
+congregação, e só ela** — os porteiros da comum do Jd. São Luiz. Outras comuns e a venda são planos
+futuros, e não começaram. Isso importa porque a §0 diz *"com intenção de comercialização"*, e quem
+lesse só aquilo concluiria que o produto já está sendo vendido.
+
+> ⏱️ **O portão genérico não serve à fase 1 — ele serve a manter as fases 2 e 3 possíveis.** Cravar
+> o nome do cliente é barato hoje e vira reescrita depois.
+
+Detalhe, com as palavras dele e o que cada fase reabre:
+[`docs/FINALIDADE_E_FASES.md`](docs/FINALIDADE_E_FASES.md).
+
 Detalhe completo em [`HANDOFF_2026-08-05-c.md`](docs/handoff/HANDOFF_2026-08-05-c.md).
 
 ## O que entrou em 04/08: a auditoria independente (P2.10)

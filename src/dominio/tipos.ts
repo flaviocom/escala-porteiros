@@ -172,6 +172,17 @@ export interface Configuracao {
    * daqui participam.
    */
   santaCeia: DataISO[]
+  /**
+   * ⏱️ QUEM É O DONO DESTA ESCALA — e por que isto existe antes de existir um segundo cliente.
+   *
+   * O produto atende **uma** congregação hoje (fase 1 — `docs/FINALIDADE_E_FASES.md`). Vender é
+   * plano futuro. Este campo não ajuda o cliente de hoje em nada: ele existe para que instalar a
+   * escala numa segunda comum seja **trocar dado**, e não reescrever o produto.
+   *
+   * Quando ele foi criado, ficou aqui **sem nunca ser lido** — e o nome do cliente seguiu cravado em
+   * nove lugares da tela. Configuração morta é pior que configuração ausente: parece que resolve.
+   * Hoje `npm run generico` reprova o *build* se algum voltar.
+   */
   identidade: {
     titulo: string
     subtitulo: string

@@ -13,6 +13,20 @@
  * medisse — e é isso que este arquivo resolve. A regra do método é explícita: *regra sem portão é
  * disciplina, e disciplina falha*.
  *
+ * ⏱️ **A QUEM ESTE PORTÃO SERVE — porque não é ao cliente de hoje.**
+ *
+ * O produto atende UMA congregação, e só ela (fase 1 — ver `docs/FINALIDADE_E_FASES.md`). Vender é
+ * plano futuro, e não começou. Alguém vai olhar este arquivo e perguntar por que um projeto com um
+ * único cliente reprova o *build* por causa do nome desse cliente.
+ *
+ * **Porque a alternativa não tem volta.** Cravar o nome é barato hoje e caríssimo depois: no dia em
+ * que a segunda comum pedir, o trabalho não é configurar — é **reescrever**, achando cada lugar
+ * onde o nome vazou. E ele vaza onde ninguém procura: no `alt` de uma imagem, na descrição do
+ * `package.json`, no nome do arquivo baixado, dentro do texto que o motor recebe. Eram **nove**
+ * lugares quando isto foi medido pela primeira vez.
+ *
+ * Este portão não serve à fase 1. **Ele serve a manter as fases 2 e 3 possíveis.**
+ *
  * O QUE ELE MEDE: texto de cliente em `src/` e no `index.html`, fora de comentários.
  *
  * POR QUE FORA DE COMENTÁRIOS: os comentários deste projeto CITAM o defeito para explicá-lo — o

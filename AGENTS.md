@@ -30,6 +30,25 @@ o produto que se constrói daqui para a frente é **um gerador de escalas de tur
 equipe** — a portaria de um prédio, uma recepção, um plantão. A congregação é o **primeiro cliente**,
 não o escopo.
 
+> ### ⏱️ MAS NÃO CONFUNDA "intenção de comercialização" COM "está sendo vendido"
+>
+> **Hoje o produto atende UMA congregação, e só ela** — decisão do Flavio em 05/08/2026:
+> *"eu pretendo somente disponibilizar para minha comum congregação, somente para os meus irmãos e
+> somente para os porteiros da minha igreja. Outras igrejas, comercialização é um plano futuro."*
+>
+> São **três fases**: 1️⃣ uso próprio (🟢 é onde estamos) · 2️⃣ outras comuns e casas de oração ·
+> 3️⃣ venda, possivelmente para uma central.
+>
+> **A §0 vale integralmente na fase 1** — mas o *escopo de trabalho* é a fase 1. Recurso que só a
+> fase 2 ou 3 usaria vai para o `BACKLOG.md` com a fase marcada, não para o código de hoje.
+>
+> 🔴 **Por que ser genérico agora, então?** Porque cravar o nome é barato hoje e caríssimo depois:
+> vira reescrita, não configuração. **O portão genérico não serve à fase 1 — ele serve a manter as
+> fases 2 e 3 possíveis.**
+>
+> Detalhe, com as palavras dele e o que cada fase reabre:
+> [`docs/FINALIDADE_E_FASES.md`](docs/FINALIDADE_E_FASES.md).
+
 **O que isso obriga, em toda decisão:**
 
 | | |
@@ -200,6 +219,7 @@ aqui. Escrito para quem **não participou de nada** — inclusive outra intelig�
 | As camadas, medidas no grafo de importações | [`docs/ARQUITETURA.md`](docs/ARQUITETURA.md) |
 | Como usar, conferir, e o que fazer quando dá errado | [`docs/OPERACAO.md`](docs/OPERACAO.md) |
 | Instalar do zero, e publicar para **outro cliente** | [`docs/INSTALAR.md`](docs/INSTALAR.md) |
+| **Para quem este produto é, e quando** — as três fases | [`docs/FINALIDADE_E_FASES.md`](docs/FINALIDADE_E_FASES.md) |
 | Cada portão **por dentro**: critério, população, isenções | [`docs/PORTOES.md`](docs/PORTOES.md) |
 
 ### O registro do que aconteceu

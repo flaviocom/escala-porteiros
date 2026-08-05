@@ -20,6 +20,7 @@
 | [`OPERACAO.md`](OPERACAO.md) | como usar, como conferir, o que fazer quando dá errado |
 | [`INSTALAR.md`](INSTALAR.md) | do zero numa máquina nova, e como publicar para **outro cliente** |
 | [`PORTOES.md`](PORTOES.md) | cada portão **por dentro**: critério, população, e o que ele decidiu não olhar |
+| [`FINALIDADE_E_FASES.md`](FINALIDADE_E_FASES.md) | **para quem o produto é, e quando** — as 3 fases, e o que cada uma reabre |
 
 Registro histórico: [`handoff/INDICE.md`](handoff/INDICE.md) ·
 [`solicitacoes/INDICE_DE_SOLICITACOES.md`](solicitacoes/INDICE_DE_SOLICITACOES.md) ·
@@ -38,6 +39,10 @@ de domingo (manhã e noite), quarta (noite) e sábado (noite), mais um ensaio no
 **Mas o produto é genérico e configurável, com intenção de comercialização.** Isso é a regra máxima
 de escopo (§0 do [`AGENTS.md`](../AGENTS.md)) e não é decoração: há um portão que reprova o *build*
 se alguém cravar um nome de cliente no código.
+
+⏱️ **Atenção ao tempo verbal:** *intenção* de comercialização. **Hoje o produto atende uma
+congregação, e só ela.** Vender é a fase 3, e não começou. O produto é genérico agora porque cravar
+o nome depois vira reescrita, não configuração — ver [`FINALIDADE_E_FASES.md`](FINALIDADE_E_FASES.md).
 
 ## 2. O problema que ele resolve
 
