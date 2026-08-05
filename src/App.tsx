@@ -88,7 +88,7 @@ function App({ shifts, dados }: AppProps) {
       // Exporta EXATAMENTE o que está aparecendo — mesma função de filtro que a tabela usa.
       await exportToImage(filtrarTurnos(shifts, {
         selectedBrotherIds, selectedMonthStrs, dateSearchQuery, dateRange,
-      }));
+      }), dados.config.capacidadePadrao);
     } catch (e) {
       alert(e instanceof Error ? e.message : 'Não foi possível gerar a imagem.');
     } finally {
@@ -425,7 +425,20 @@ function App({ shifts, dados }: AppProps) {
       {/* Bottom Sheet Mobile */}
       {isMobileMenuOpen && (
         <div className="md:hidden fixed inset-0 z-50 flex items-end">
-          <div
+          {/*
+            Era um `<div onClick>` sem título, sem papel e sem foco — invisível para o teclado e
+            para o leitor de tela, e invisível também para o portão `regras-mestras`, que só olhava
+            `<button>`. Achado de auditoria independente em 04/08/2026.
+
+            Virou `<button>` de verdade: ganha foco, responde a Enter e Espaço de graça, entra na
+            contagem de tooltips do portão, e some do fluxo de leitura com `aria-hidden` — o menu
+            logo abaixo já oferece a mesma saída a quem navega por teclado.
+          */}
+          <button
+            type="button"
+            aria-hidden="true"
+            tabIndex={-1}
+            title="Fechar o menu"
             className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
             onClick={() => setIsMobileMenuOpen(false)}
           />
@@ -546,20 +559,15 @@ function App({ shifts, dados }: AppProps) {
 
         {/* View renderizada */}
         <div className="p-4 sm:p-6 lg:p-8 flex-1 max-w-5xl mx-auto w-full bg-gray-50 pb-24" id="schedule-container">
-          {/* Contador de filtros oculto para o sistema de exportação saber se deve limitar a foto */}
-          <span id="active-filters-count" className="hidden active-filters-count">{activeFiltersCount}</span>
+          {/*
+            Aqui viviam um `#active-filters-count` e um `#export-header`, ambos ocultos, ambos sem
+            um único leitor em `src/` ou `scripts/` — removidos em 04/08/2026 por auditoria.
 
-          {/* Cabeçalho de Exportação */}
-          <div id="export-header" className="hidden items-center gap-3 mb-6 pb-4 border-b border-gray-200">
-            <img src={logo} alt="Logo CCB" className="h-10 w-auto object-contain" />
-            <div>
-              <h1 className="text-xl font-bold text-text-primary tracking-tight leading-none uppercase">
-                Escala Porteiros
-              </h1>
-              <p className="text-xs text-text-secondary mt-1 font-medium tracking-wider">JD. SÃO LUIZ - 2026</p>
-            </div>
-          </div>
-
+            O comentário do primeiro dizia servir "para o sistema de exportação saber se deve limitar
+            a foto". Esse sistema não existe mais: a imagem tem layout próprio desde a parte 7 e não
+            fotografa a tela. Comentário que descreve um mecanismo extinto é pior que código morto —
+            o código morto ninguém lê, o comentário engana quem for mexer depois.
+          */}
           {view === 'schedule' && (
             <div className="bg-gray-50 pb-8">
               <ScheduleTable

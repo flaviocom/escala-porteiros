@@ -23,7 +23,8 @@
 import {
   diaDaSemana, diferencaEmDias, formatarBR, mesDe, NOMES_DIA, type DataISO,
 } from './datas'
-import { ROTULO_TURNO, type Bloco, type Pessoa, type TipoTurno, type Turno } from './tipos'
+import { ROTULO_TURNO, type Bloco, type Configuracao, type Pessoa, type TipoTurno, type Turno } from './tipos'
+import { construirGrade } from './malha'
 
 export type Familia = 'DURA' | 'QUALIDADE'
 export type Status = 'ok' | 'falha' | 'aviso'
@@ -55,6 +56,21 @@ export interface Contexto {
    * cair em 01/09. Sem isto, todo bloco novo começa cego para o anterior.
    */
   ultimaEscalaAnterior: Record<string, DataISO>
+  /**
+   * 🔴 A CONFIGURAÇÃO — entrou em 04/08/2026, por auditoria independente, e o motivo importa.
+   *
+   * Sem ela, uma regra só conseguia comparar o bloco **consigo mesmo**. Foi assim que D9 ficou
+   * estruturalmente cega: ela conferia que todo turno marcado `santaCeia` estava vazio, mas não
+   * tinha de onde saber se a Santa Ceia **estava marcada**. Perdida a marca — num bloco importado,
+   * num ajuste manual, num turno gerado sem a flag —, D9 respondia *"0 dia(s) de Santa Ceia no
+   * bloco"* e aprovava.
+   *
+   * Que é exatamente o defeito que originou este projeto: o site antigo escala seis irmãos no dia
+   * da Ceia porque a data mora no código, e ninguém confere contra o calendário de verdade.
+   *
+   * Com a configuração aqui, o calendário é a fonte, e o bloco é o que se confere contra ela.
+   */
+  config: Configuracao
 }
 
 export interface Regra {
@@ -336,20 +352,120 @@ const D8: Regra = {
   },
 }
 
+/**
+ * A grade que o bloco DEVERIA ter, expandida da própria malha dele sobre o próprio período.
+ *
+ * É a mesma função que o gerador usa (`construirGrade`) — de propósito. Duas expansões da malha
+ * seriam duas regras que divergem em silêncio; este projeto já pagou por fonte dupla.
+ *
+ * Devolve `null` quando não há configuração: quem chama decide o que fazer, e nas regras abaixo a
+ * decisão é REPROVAR. Falhar fechado é a única saída honesta — sem o calendário, uma regra que
+ * "aprova porque não tinha o que conferir" é indistinguível de uma regra desligada.
+ */
+function gradeEsperada(ctx: Contexto): Turno[] | null {
+  if (!ctx.config) return null
+  return construirGrade({
+    inicio: ctx.bloco.inicio,
+    fim: ctx.bloco.fim,
+    malha: ctx.bloco.malha,
+    capacidadePadrao: ctx.config.capacidadePadrao,
+    santaCeia: ctx.config.santaCeia,
+  })
+}
+
+/**
+ * 🔴 A FRONTEIRA DO PASSADO — decidida em 04/08/2026, ao ligar D9 ao calendário e criar D11.
+ *
+ * Assim que as duas regras passaram a existir, a escala PUBLICADA reprovou. Não por defeito: o
+ * bloco histórico traz **07/06/2026 marcada como Santa Ceia**, que é a data errada do site antigo —
+ * e está ali de propósito, porque o passado foi congelado **fiel à tela que os irmãos viram** (66
+ * dias, 282 nomes, 0 divergências). O calendário de hoje diz 16/08.
+ *
+ * Cobrar coerência com o calendário atual num bloco importado é pedir para **reescrever o passado**,
+ * que é a primeira regra que este projeto não viola: *"o passado já foi divulgado aos irmãos;
+ * reescrevê-lo faz o site desmentir o que as pessoas viram"*.
+ *
+ * Então a fronteira é: o sistema responde pelo que **ele gera** e pelo que vai ao ar daqui para a
+ * frente. Do passado importado ele cobra só o que continua valendo — nenhum turno de Santa Ceia com
+ * gente escalada, e não estar vazio.
+ *
+ * ⚠️ E a fronteira é DITA na medida de cada regra, nunca silenciosa: um portão que afrouxa sem
+ * avisar é indistinguível de um portão furado.
+ */
+const congelado = (ctx: Contexto) => ctx.bloco.origem === 'importado'
+
+const semConfig = (id: string, titulo: string): ResultadoRegra => ({
+  id, titulo, familia: 'DURA', status: 'falha',
+  medida: 'configuração não recebida — impossível conferir',
+  violacoes: [{ mensagem: 'Esta regra precisa da configuração (calendário e malha) e não a recebeu. Conferir era impossível, então a escala é reprovada em vez de aprovada no escuro.' }],
+})
+
 const D9: Regra = {
   id: 'D9',
-  titulo: 'Santa Ceia — dia marcado não recebe ninguém',
+  titulo: 'Santa Ceia — o dia do calendário está marcado, e não recebe ninguém',
   familia: 'DURA',
   avaliar(ctx) {
-    const dias = ctx.bloco.turnos.filter((t) => t.santaCeia)
-    const v: Violacao[] = dias
-      .filter((t) => t.pessoas.length > 0)
-      .map((t) => ({
-        data: t.data,
-        mensagem: `${formatarBR(t.data)} é Santa Ceia e tem ${t.pessoas.length} pessoa(s) escalada(s) — não se escala porteiro nesse dia`,
-      }))
+    if (!ctx.config) return semConfig(D9.id, D9.titulo)
+
+    const v: Violacao[] = []
+    const dentroDoPeriodo = (d: DataISO) =>
+      diferencaEmDias(ctx.bloco.inicio, d) >= 0 && diferencaEmDias(d, ctx.bloco.fim) >= 0
+
+    // (1) O que o bloco tem marcado não pode receber ninguém. Era a ÚNICA coisa que se conferia —
+    //     e conferir isso é conferir o bloco contra ele mesmo.
+    const marcadosNoBloco = ctx.bloco.turnos.filter((t) => t.santaCeia)
+    for (const t of marcadosNoBloco)
+      if (t.pessoas.length > 0)
+        v.push({
+          data: t.data,
+          mensagem: `${formatarBR(t.data)} é Santa Ceia e tem ${t.pessoas.length} pessoa(s) escalada(s) — não se escala porteiro nesse dia`,
+        })
+
+    // (2) 🔴 O QUE FALTAVA: conferir contra o CALENDÁRIO, que é a fonte.
+    //
+    //     Se a data canônica cai no período e o bloco tem turno comum nela, a marca se perdeu —
+    //     e é assim que aparece gente escalada no dia da Ceia. Se o bloco não tem turno nenhum
+    //     naquele dia, está certo: dia sem culto, ou dia pulado.
+    const datasCanonicas = new Set(ctx.config.santaCeia.filter(dentroDoPeriodo))
+    const datasMarcadas = new Set(marcadosNoBloco.map((t) => t.data))
+
+    if (congelado(ctx))
+      return ok(
+        {
+          id: D9.id, titulo: D9.titulo, familia: 'DURA',
+          medida:
+            `${datasMarcadas.size} dia(s) marcado(s), nenhum com gente escalada · bloco importado: ` +
+            `não se cobra o calendário de hoje do passado já publicado`,
+        },
+        v,
+      )
+
+    for (const data of datasCanonicas) {
+      if (datasMarcadas.has(data)) continue
+      const turnosNoDia = ctx.bloco.turnos.filter((t) => t.data === data)
+      if (turnosNoDia.length === 0) continue
+      const escalados = turnosNoDia.flatMap((t) => t.pessoas)
+      v.push({
+        data,
+        mensagem:
+          `${formatarBR(data)} é Santa Ceia no calendário, mas o bloco tem ${turnosNoDia.length} turno(s) comum(ns) nesse dia` +
+          (escalados.length ? `, com ${escalados.length} pessoa(s) escalada(s)` : ''),
+      })
+    }
+
+    // (3) E o contrário: dia marcado no bloco que não é Santa Ceia nenhuma.
+    for (const data of datasMarcadas)
+      if (!datasCanonicas.has(data))
+        v.push({
+          data,
+          mensagem: `${formatarBR(data)} está marcada como Santa Ceia no bloco, mas não consta do calendário`,
+        })
+
     return ok(
-      { id: D9.id, titulo: D9.titulo, familia: 'DURA', medida: `${dias.length} dia(s) de Santa Ceia no bloco` },
+      {
+        id: D9.id, titulo: D9.titulo, familia: 'DURA',
+        medida: `${datasCanonicas.size} data(s) de Santa Ceia no calendário dentro do período · ${datasMarcadas.size} marcada(s) no bloco`,
+      },
       v,
     )
   },
@@ -377,6 +493,81 @@ const D10: Regra = {
     }
     return ok(
       { id: D10.id, titulo: D10.titulo, familia: 'DURA', medida: `piso declarado: ${piso} dia(s)` },
+      v,
+    )
+  },
+}
+
+/**
+ * 🔴 D11 EXISTE POR CAUSA DE UM BURACO ENCONTRADO EM AUDITORIA INDEPENDENTE, 04/08/2026.
+ *
+ * Um bloco com **zero turnos** era APROVADO — e não por descuido de uma regra: por construção. As
+ * quinze regras percorrem `bloco.turnos`; sem turnos, cada uma delas responde "nada a apontar", e o
+ * relatório sai *"Aprovada, sem ressalvas."* Nenhuma perguntava se havia escala ali.
+ *
+ * E "aprovada" não é enfeite: é o que destrava o botão Publicar (`Admin.tsx`). Um bloco importado
+ * torto, ou uma malha que por engano não produzisse turno nenhum, publicaria **uma escala vazia de
+ * setembro a dezembro** com o sistema dizendo que estava tudo certo. O irmão abriria o site e não
+ * veria ninguém escalado — sem um erro em lugar nenhum.
+ *
+ * Todas as outras regras perguntam "o que está aqui está certo?". Esta pergunta **"está tudo aqui?"**
+ * — e é a diferença entre validar o conteúdo e validar a ausência dele.
+ */
+const D11: Regra = {
+  id: 'D11',
+  titulo: 'Cobertura — o bloco tem os turnos que o período dele exige',
+  familia: 'DURA',
+  avaliar(ctx) {
+    const esperada = gradeEsperada(ctx)
+    if (!esperada) return semConfig(D11.id, D11.titulo)
+
+    const v: Violacao[] = []
+
+    // (1) VAZIO É SEMPRE ERRADO, venha de onde vier. Vale mesmo para bloco importado, sem malha
+    //     declarada: um trecho de escala que não escala ninguém não é uma escala.
+    if (ctx.bloco.turnos.length === 0) {
+      v.push({
+        mensagem: `o bloco de ${formatarBR(ctx.bloco.inicio)} a ${formatarBR(ctx.bloco.fim)} está VAZIO — não há um único turno`,
+      })
+      return ok(
+        { id: D11.id, titulo: D11.titulo, familia: 'DURA', medida: '0 turno(s) no bloco' },
+        v,
+      )
+    }
+
+    // (2) Sem malha declarada não há de onde derivar o que era esperado. Bloco importado pode ser
+    //     assim — é o mesmo caso que D10 já trata com "nada a conferir". Diz-se o que foi conferido
+    //     e o que não foi, em vez de aprovar dando a impressão de ter conferido tudo.
+    if (ctx.bloco.malha.regras.length === 0 || congelado(ctx))
+      return {
+        id: D11.id, titulo: D11.titulo, familia: 'DURA', status: 'ok',
+        medida:
+          `${ctx.bloco.turnos.length} turno(s) · ` +
+          (congelado(ctx)
+            ? 'bloco importado: o passado é conferido contra a tela do site antigo, não contra a malha de hoje'
+            : 'malha não declarada — conferida só a não-vacuidade'),
+        violacoes: [],
+      }
+
+    const chave = (t: Turno) => `${t.data}|${t.tipo}`
+    const noBloco = new Set(ctx.bloco.turnos.map(chave))
+    const devidos = new Set(esperada.map(chave))
+    const faltando = esperada.filter((t) => !noBloco.has(chave(t)))
+    const sobrando = ctx.bloco.turnos.filter((t) => !devidos.has(chave(t)))
+
+    // Poucos exemplos, e o total ao lado: cem violações iguais não informam mais que três.
+    for (const t of faltando.slice(0, 5))
+      v.push({ data: t.data, mensagem: `falta o turno de ${formatarBR(t.data)} ${ROTULO_TURNO[t.tipo]}` })
+    if (faltando.length > 5) v.push({ mensagem: `… e mais ${faltando.length - 5} turno(s) faltando` })
+    for (const t of sobrando.slice(0, 5))
+      v.push({ data: t.data, mensagem: `${formatarBR(t.data)} ${ROTULO_TURNO[t.tipo]} não é dia de culto nesta malha` })
+    if (sobrando.length > 5) v.push({ mensagem: `… e mais ${sobrando.length - 5} turno(s) sobrando` })
+
+    return ok(
+      {
+        id: D11.id, titulo: D11.titulo, familia: 'DURA',
+        medida: `${ctx.bloco.turnos.length} turno(s) no bloco · ${esperada.length} previsto(s) pela malha do período`,
+      },
       v,
     )
   },
@@ -447,7 +638,20 @@ const Q2: Regra = {
     return {
       id: Q2.id, titulo: Q2.titulo, familia: 'QUALIDADE',
       status: violacoes.length ? 'aviso' : 'ok',
-      medida: `entre ${min} e ${max} turnos por pessoa (diferença de ${amplitude})`,
+      // ⚠️ A MEDIDA DIZ SOBRE QUEM ELA FALA — corrigido em 04/08/2026 por auditoria independente.
+      //
+      // Antes: "entre 16 e 17 turnos por pessoa (diferença de 1)". Verdadeiro para 14 das 16
+      // pessoas, e lido por qualquer um como valendo para as 16 — enquanto Thiago tinha 10 e
+      // Williams 15, ambos no próprio teto mensal (a regra funcionando, não falhando). O cálculo
+      // sempre excluiu quem tem teto; só o texto não contava.
+      //
+      // Número que descreve um subconjunto e soa total é a forma mais barata de mentir sem mentir.
+      medida:
+        `entre ${min} e ${max} turnos (diferença de ${amplitude}) entre as ${semTeto.length} pessoas ` +
+        `sem teto mensal` +
+        (contagem.size - semTeto.length > 0
+          ? ` · ${contagem.size - semTeto.length} com teto ficam fora da comparação, por terem limite próprio`
+          : ''),
       violacoes,
     }
   },
@@ -543,8 +747,10 @@ const Q5: Regra = {
 // O CATÁLOGO — a lista COMPLETA. A validação percorre todas.
 // ---------------------------------------------------------------------------
 
-export const REGRAS_DURAS: Regra[] = [D1, D2, D3, D4, D5, D6, D7, D8, D9, D10]
-export const REGRAS_QUALIDADE: Regra[] = [Q1, Q2, Q3, Q4, Q5]
+// Deixaram de ser exportadas em 04/08/2026: eram superfície pública sem um único consumidor fora
+// deste arquivo. Quem precisa agrupar por família tem `familia` em cada resultado.
+const REGRAS_DURAS: Regra[] = [D1, D2, D3, D4, D5, D6, D7, D8, D9, D10, D11]
+const REGRAS_QUALIDADE: Regra[] = [Q1, Q2, Q3, Q4, Q5]
 export const CATALOGO: Regra[] = [...REGRAS_DURAS, ...REGRAS_QUALIDADE]
 
 // ---------------------------------------------------------------------------

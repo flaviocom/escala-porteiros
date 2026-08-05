@@ -25,7 +25,7 @@
  * ⚠️ A CHAVE VIVE NO NAVEGADOR DO ADMINISTRADOR, cifrada pela senha dele — nunca no site público.
  * `anthropic-dangerous-direct-browser-access` é o que a API exige para aceitar chamada de navegador.
  */
-import type { Bloco, Pessoa, Turno } from '../dominio/tipos'
+import type { Bloco, Configuracao, Pessoa, Turno } from '../dominio/tipos'
 import { ROTULO_TURNO } from '../dominio/tipos'
 import { validar } from '../dominio/validacao'
 import { menorIntervalo } from '../dominio/regras'
@@ -183,6 +183,9 @@ export async function pedirProposta(
   base: Bloco,
   pessoas: Pessoa[],
   fronteira: Record<string, DataISO>,
+  // A configuração entrou em 04/08/2026: sem ela o PORTÃO abaixo julgaria a proposta do motor
+  // contra ela mesma, sem o calendário da Santa Ceia e sem saber se o bloco cobre o período.
+  config: Configuracao,
   aoProgredir?: (p: ProgressoMotor) => void,
 ): Promise<ResultadoMotor> {
   if (!chave) return { ok: false, motivo: 'Não há chave do motor guardada neste navegador.', causa: 'sem-chave' }
@@ -229,7 +232,7 @@ export async function pedirProposta(
 
       // 🔒 O PORTÃO. A proposta é julgada pelas mesmas regras da escala do algoritmo.
       const parcial: Bloco = { ...base, turnos: [...turnosFinais, ...candidatos], origem: 'motor' }
-      const rel = validar({ bloco: parcial, pessoas, ultimaEscalaAnterior: fronteira })
+      const rel = validar({ bloco: parcial, pessoas, ultimaEscalaAnterior: fronteira, config })
       const duras = rel.falhasDuras.flatMap((f) => f.violacoes.map((v) => `${f.id}: ${v.mensagem}`))
 
       if (duras.length === 0) {
@@ -266,7 +269,7 @@ export async function pedirProposta(
   const bloco: Bloco = { ...base, turnos: ordenado, origem: 'motor', pisoAlcancado: null }
 
   // O piso real desta proposta, medido — não declarado.
-  const ctx = { bloco, pessoas, ultimaEscalaAnterior: fronteira }
+  const ctx = { bloco, pessoas, ultimaEscalaAnterior: fronteira, config }
   const minimos = pessoas.map((p) => menorIntervalo(ctx, p.id)).filter((n): n is number => n != null)
   bloco.pisoAlcancado = minimos.length ? Math.min(...minimos) : null
 
@@ -340,8 +343,8 @@ export interface Placar {
   turnosCompletos: string
 }
 
-export function medir(rotulo: string, bloco: Bloco, pessoas: Pessoa[], fronteira: Record<string, DataISO>): Placar {
-  const ctx = { bloco, pessoas, ultimaEscalaAnterior: fronteira }
+export function medir(rotulo: string, bloco: Bloco, pessoas: Pessoa[], fronteira: Record<string, DataISO>, config: Configuracao): Placar {
+  const ctx = { bloco, pessoas, ultimaEscalaAnterior: fronteira, config }
   const minimos = pessoas.map((p) => menorIntervalo(ctx, p.id)).filter((n): n is number => n != null)
 
   const intervalos: number[] = []

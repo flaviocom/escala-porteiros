@@ -28,8 +28,29 @@ const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..')
  * um elemento truncado.
  */
 export function extrairBotoes(codigo) {
+  return extrairElementos(codigo, 'button')
+}
+
+/**
+ * O mesmo varredor, para qualquer tag.
+ *
+ * 🔴 POR QUE ELE FOI GENERALIZADO em 04/08/2026, por auditoria independente: o portão só enxergava
+ * `<button>` e cravava "100% dos botões têm tooltip" — enquanto o backdrop do menu no celular era um
+ * `<div onClick>` sem título, sem papel e sem foco. Clicável de verdade, inacessível por teclado, e
+ * 100% fora do radar. A Regra Mestra 3 diz "tooltips em tudo"; o portão media um subconjunto de
+ * "tudo" e afirmava sobre o todo.
+ */
+export function extrairElementos(codigoBruto, tag) {
+  // Comentário não é elemento. Sem isto, uma linha de documentação que MENCIONE `<button>` entra na
+  // contagem como um botão sem tooltip e derruba o percentual — foi o que aconteceu em 04/08/2026,
+  // ao documentar por que um `<div onClick>` virou botão. É a mesma armadilha que a auditoria tinha
+  // no detector de código morto: contar o texto bruto em vez do código.
+  //
+  // O `(?<!:)` protege o `//` de "https://" — outro portão deste projeto já mediu zero por causa
+  // disso, e disse que estava tudo certo.
+  const codigo = codigoBruto.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/(?<!:)\/\/[^\n]*/g, ' ')
   const botoes = []
-  const re = /<button\b/g
+  const re = new RegExp(`<${tag}\\b`, 'g')
   let m
   while ((m = re.exec(codigo)) !== null) {
     let i = m.index + m[0].length
@@ -134,6 +155,18 @@ let total = 0
 let comTooltip = 0
 let comHover = 0
 const semTooltip = []
+/**
+ * Clicáveis que NÃO são `<button>` — a população que o portão não via até 04/08/2026.
+ *
+ * Um `<div onClick>` funciona no mouse e não existe para o teclado: sem foco, sem Enter, sem
+ * Espaço, sem nome para o leitor de tela. `<button>` dá tudo isso de graça. Quando for mesmo
+ * decorativo (um backdrop, por exemplo), o jeito de dizer isso é `aria-hidden` — declarado, não
+ * subentendido.
+ */
+const clicaveisNaoBotao = []
+const TAGS_CLICAVEIS = ['div', 'span', 'li', 'section', 'article']
+const TEM_ONCLICK = /\bonClick\s*=/
+const ACESSIVEL = /\b(role|aria-hidden|aria-label|title)\s*=/
 const malFormados = []
 
 for (const caminho of arquivos(join(RAIZ, 'src'))) {
@@ -147,6 +180,16 @@ for (const caminho of arquivos(join(RAIZ, 'src'))) {
       malFormados.push(`${relative(RAIZ, caminho).replace(/\\/g, '/')}:${b.linha}`)
     }
   }
+  // A população que faltava: clicável que não é botão não aparece na conta acima.
+  for (const tag of TAGS_CLICAVEIS) {
+    for (const e of extrairElementos(codigo, tag)) {
+      if (!TEM_ONCLICK.test(e.texto) || ACESSIVEL.test(e.texto)) continue
+      clicaveisNaoBotao.push({
+        arquivo: relative(RAIZ, caminho).replace(/\\/g, '/'), linha: e.linha, tag,
+        trecho: e.texto.replace(/\s+/g, ' ').slice(0, 80),
+      })
+    }
+  }
 }
 
 const codigoTodo = arquivos(join(RAIZ, 'src')).map((c) => readFileSync(c, 'utf8')).join('\n')
@@ -156,6 +199,7 @@ const temCarregando = (codigoTodo.match(/animate-spin/g) ?? []).length
 console.log('─'.repeat(70))
 console.log('REGRA MESTRA 3 — tooltips, micro-interações, arrastar-e-soltar\n')
 console.log(`  botões medidos ................. ${total}`)
+console.log(`  clicáveis fora de <button> ..... ${clicaveisNaoBotao.length}  (div/span/li/section/article com onClick e sem papel declarado)`)
 console.log(`  com tooltip (title/aria-label) . ${comTooltip}  (${Math.round((comTooltip / total) * 100)}%)`)
 console.log(`  com hover ...................... ${comHover}  (${Math.round((comHover / total) * 100)}%)`)
 console.log(`  estados de desabilitado ........ ${temDesabilitado}`)
@@ -163,6 +207,14 @@ console.log(`  indicadores de carregando ...... ${temCarregando}`)
 
 const PISO_TOOLTIP = 0.9
 const proporcao = comTooltip / total
+
+if (clicaveisNaoBotao.length) {
+  console.log(`\n🔴 ${clicaveisNaoBotao.length} elemento(s) clicável(is) que o teclado não alcança:\n`)
+  for (const c of clicaveisNaoBotao) console.log(`  ${c.arquivo}:${c.linha}  <${c.tag} onClick …>\n    ${c.trecho}`)
+  console.log('\n   Use <button>, que já vem com foco, Enter e Espaço. Se for mesmo decorativo,')
+  console.log('   diga isso com `aria-hidden` — declarado, não subentendido.')
+  process.exit(1)
+}
 
 if (semTooltip.length) {
   console.log(`\n${semTooltip.length} botão(ões) sem tooltip:\n`)

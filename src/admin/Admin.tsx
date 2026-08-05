@@ -221,6 +221,7 @@ export const Admin: React.FC<{ dados: DadosPublicados }> = ({ dados }) => {
             pessoas={pessoas}
             fronteira={fronteira}
             aoAlterar={setBlocoNovo}
+            config={dados.config}
           />
         )}
         {aba === 'publicar' && (
@@ -521,8 +522,8 @@ const AbaGerar: React.FC<{
   }
 
   const relatorio = useMemo(
-    () => (blocoNovo ? validar({ bloco: blocoNovo, pessoas, ultimaEscalaAnterior: fronteira }) : null),
-    [blocoNovo, pessoas, fronteira],
+    () => (blocoNovo ? validar({ bloco: blocoNovo, pessoas, ultimaEscalaAnterior: fronteira, config: dados.config }) : null),
+    [blocoNovo, pessoas, fronteira, dados.config],
   )
 
   return (
@@ -612,7 +613,7 @@ const AbaGerar: React.FC<{
                     setMotorErro('')
                     setPropostaMotor(null)
                     try {
-                      const r = await pedirProposta(segredos.chaveMotor!, blocoNovo, pessoas, fronteira, setMotorOcupado)
+                      const r = await pedirProposta(segredos.chaveMotor!, blocoNovo, pessoas, fronteira, dados.config, setMotorOcupado)
                       if (r.ok) setPropostaMotor({ bloco: r.proposta.bloco, explicacao: r.proposta.explicacao })
                       else setMotorErro(r.motivo)
                     } catch (e) {
@@ -666,8 +667,8 @@ const AbaGerar: React.FC<{
                     </thead>
                     <tbody className="divide-y divide-gray-100">
                       {linhasDoPlacar(
-                        medir('Algoritmo', blocoNovo, pessoas, fronteira),
-                        medir('Motor', propostaMotor.bloco, pessoas, fronteira),
+                        medir('Algoritmo', blocoNovo, pessoas, fronteira, dados.config),
+                        medir('Motor', propostaMotor.bloco, pessoas, fronteira, dados.config),
                       ).map((l) => (
                         <tr key={l.rotulo}>
                           <td className="py-2 pr-3 text-gray-600">{l.rotulo}</td>
@@ -726,7 +727,7 @@ const AbaGerar: React.FC<{
           <Cartao titulo="Distanciamento por pessoa" subtitulo="Quantos dias, no mínimo, cada um ficou entre duas escalas">
             <div className="grid sm:grid-cols-2 gap-x-6 gap-y-1">
               {pessoas.filter((p) => p.ativo).map((p) => {
-                const min = menorIntervalo({ bloco: blocoNovo, pessoas, ultimaEscalaAnterior: fronteira }, p.id)
+                const min = menorIntervalo({ bloco: blocoNovo, pessoas, ultimaEscalaAnterior: fronteira, config: dados.config }, p.id)
                 const total = blocoNovo.turnos.filter((t) => t.pessoas.includes(p.id)).length
                 return (
                   <div key={p.id} className="flex items-baseline justify-between text-sm py-1 border-b border-gray-50">
@@ -778,8 +779,8 @@ const AbaPublicar: React.FC<{
       if (diferencaEmDias(t.data, blocoNovo.inicio) <= 0) continue
       for (const id of t.pessoas) if (!f[id] || t.data > f[id]) f[id] = t.data
     }
-    return validar({ bloco: blocoNovo, pessoas, ultimaEscalaAnterior: f })
-  }, [blocoNovo, dados.blocos, pessoas])
+    return validar({ bloco: blocoNovo, pessoas, ultimaEscalaAnterior: f, config: dados.config })
+  }, [blocoNovo, dados.blocos, pessoas, dados.config])
 
   const publicar = async () => {
     if (relatorio && !relatorio.aprovada) return
@@ -787,9 +788,24 @@ const AbaPublicar: React.FC<{
     setResultado(null)
     const passos: string[] = []
     let tudoOk = true
+    // 🔴 O QUE REALMENTE FOI GRAVADO — corrigido em 04/08/2026 por auditoria independente.
+    //
+    // Cada arquivo vai para DUAS pastas (`public/dados` e `docs/dados`), em dois commits. Se o
+    // primeiro é aceito e o segundo falha (409 por edição concorrente, queda de rede, limite de
+    // requisições), `publicarDados` devolve `ok: false` — mas o primeiro **já foi gravado**.
+    //
+    // A tela dizia, nesse caso, *"Nada foi publicado pela metade"*. Era verdade sobre uma coisa
+    // (se o elenco falha, a escala nem é tentada) e MENTIRA sobre outra: uma das duas cópias tinha
+    // ido. O operador ficava sem saber que o site estava com metade dos dados novos.
+    //
+    // Não se tenta desfazer: desfazer é outro commit, que também pode falhar, e bloco publicado não
+    // se reescreve por conta própria. O que se faz é **contar o que aconteceu** — republicar é
+    // idempotente e regrava as duas pastas.
+    const gravados: string[] = []
 
     const rp = await publicarDados(segredos.tokenGitHub, 'pessoas.json', { versao: 1, pessoas }, 'atualiza o elenco e as restrições')
     passos.push(rp.ok ? '✅ elenco publicado' : `🔴 elenco: ${rp.erro}`)
+    gravados.push(...rp.commits.map((c) => c.caminho))
     tudoOk = tudoOk && rp.ok
 
     if (blocoNovo && tudoOk) {
@@ -800,6 +816,7 @@ const AbaPublicar: React.FC<{
         `escala de ${formatarBR(blocoNovo.inicio)} a ${formatarBR(blocoNovo.fim)}`,
       )
       passos.push(rb.ok ? '✅ escala publicada' : `🔴 escala: ${rb.erro}`)
+      gravados.push(...rb.commits.map((c) => c.caminho))
       tudoOk = tudoOk && rb.ok
     }
 
@@ -808,7 +825,16 @@ const AbaPublicar: React.FC<{
       ok: tudoOk,
       texto: tudoOk
         ? passos.join('\n') + '\n\nO site mostra a escala nova em cerca de um minuto. Ele não saiu do ar em momento nenhum.'
-        : passos.join('\n') + '\n\nNada foi publicado pela metade: se o elenco falhou, a escala nem foi tentada.',
+        : passos.join('\n') +
+          '\n\n' +
+          (gravados.length === 0
+            ? 'Nada chegou a ser gravado — o site continua exatamente como estava.'
+            : `⚠️ ATENÇÃO: ${gravados.length} arquivo(s) JÁ foram gravados antes da falha:\n` +
+              gravados.map((c) => `   · ${c}`).join('\n') +
+              '\n\nO site pode estar com parte dos dados novos e parte dos antigos. ' +
+              'Clique em Publicar de novo: a publicação regrava tudo e resolve. ' +
+              'Se falhar outra vez, confira os commits no repositório antes de mexer em qualquer coisa.') +
+          '\n\nA escala só é tentada depois que o elenco é publicado — se o elenco falhou, a escala nem começou.',
     })
   }
 

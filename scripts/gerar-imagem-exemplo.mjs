@@ -8,7 +8,7 @@
  *      (sem mês, exporta tudo o que estiver na tela)
  */
 import { chromium } from 'playwright'
-import { spawn } from 'node:child_process'
+import { subirServidor } from './lib/servidor-de-teste.mjs'
 import { mkdirSync, statSync, readFileSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -21,9 +21,11 @@ const SAIDA = join(RAIZ, 'capturas')
 mkdirSync(SAIDA, { recursive: true })
 console.log(`GERANDO A IMAGEM PELO BOTÃO — mês ${MES}\n`)
 
-const servidor = spawn('npx', ['vite', 'preview', '--port', String(PORTA), '--strictPort'], {
-  cwd: RAIZ, shell: true, stdio: 'ignore',
-})
+// `preview`: serve o build de `docs/`, que é o que o irmão realmente abre. Se a porta estiver
+// ocupada, isto ESTOURA em vez de conversar com um servidor alheio — em 04/08/2026 um órfão desta
+// mesma porta serviu um bundle antigo e o script aprovou a imagem citando um nome de arquivo que
+// já não existia no código.
+const servidor = await subirServidor({ raiz: RAIZ, porta: PORTA, modo: 'preview' })
 
 try {
   const navegador = await chromium.launch()
@@ -34,7 +36,7 @@ try {
   let subiu = false
   for (let i = 0; i < 40 && !subiu; i++) {
     try {
-      await pagina.goto(`http://127.0.0.1:${PORTA}/`, { waitUntil: 'networkidle', timeout: 3000 })
+      await pagina.goto(servidor.url, { waitUntil: 'networkidle', timeout: 3000 })
       subiu = true
     } catch { await pagina.waitForTimeout(500) }
   }
@@ -81,5 +83,5 @@ try {
   console.log(erros.length ? '\n🔴 gerou, mas com erro no console\n' : '\n✅ imagem gerada pelo botão, sem erro no console\n')
   process.exitCode = erros.length ? 1 : 0
 } finally {
-  servidor.kill()
+  await servidor.derrubar()
 }

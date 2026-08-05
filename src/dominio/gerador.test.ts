@@ -13,7 +13,7 @@ import { gerar, pisoTeorico } from './gerador'
 import { construirGrade, MALHA_ATUAL } from './malha'
 import { validar } from './validacao'
 import { menorIntervalo } from './regras'
-import type { Pessoa } from './tipos'
+import type { Configuracao, Pessoa } from './tipos'
 
 function pessoas(n: number, extras: Partial<Pessoa>[] = []): Pessoa[] {
   return Array.from({ length: n }, (_, i) => ({
@@ -26,6 +26,19 @@ function pessoas(n: number, extras: Partial<Pessoa>[] = []): Pessoa[] {
 }
 
 const SET_DEZ = { inicio: '2026-09-01', fim: '2026-12-30' }
+
+/**
+ * A configuração que as regras recebem. Precisa bater com o que `gradePadrao()` usa: é contra ela
+ * que D11 confere se o bloco cobre o período, e contra `santaCeia` que D9 confere o calendário.
+ * Divergir aqui faria o teste acusar o gerador por um descompasso do próprio teste.
+ */
+const CONFIG: Configuracao = {
+  versao: 1,
+  capacidadePadrao: 3,
+  malhaPadrao: MALHA_ATUAL,
+  santaCeia: [],
+  identidade: { titulo: 'Teste', subtitulo: 'Teste' },
+}
 
 function gradePadrao(inicio = SET_DEZ.inicio, fim = SET_DEZ.fim) {
   return construirGrade({ inicio, fim, malha: MALHA_ATUAL, capacidadePadrao: 3 })
@@ -62,7 +75,7 @@ describe('geração com elenco folgado', () => {
 
   it('🔴 o piso descoberto é REAL — ninguém fica abaixo dele', () => {
     if (!r.ok) throw new Error(r.motivo)
-    const ctx = { bloco: r.bloco, pessoas: pessoas(16), ultimaEscalaAnterior: {} }
+    const ctx = { bloco: r.bloco, pessoas: pessoas(16), ultimaEscalaAnterior: {}, config: CONFIG }
     for (const p of pessoas(16)) {
       const min = menorIntervalo(ctx, p.id)
       if (min != null) expect(min).toBeGreaterThanOrEqual(r.pisoAlcancado)
@@ -71,7 +84,7 @@ describe('geração com elenco folgado', () => {
 
   it('🔴 conserta o defeito medido no site antigo: ninguém com intervalo de 1 ou 3 dias', () => {
     if (!r.ok) throw new Error(r.motivo)
-    const ctx = { bloco: r.bloco, pessoas: pessoas(16), ultimaEscalaAnterior: {} }
+    const ctx = { bloco: r.bloco, pessoas: pessoas(16), ultimaEscalaAnterior: {}, config: CONFIG }
     const curtos = pessoas(16)
       .map((p) => ({ nome: p.nome, min: menorIntervalo(ctx, p.id) }))
       .filter((x) => x.min != null && x.min <= 3)
@@ -80,7 +93,7 @@ describe('geração com elenco folgado', () => {
 
   it('🔒 o que o gerador produz PASSA na validação — gerador e regras não divergem', () => {
     if (!r.ok) throw new Error(r.motivo)
-    const rel = validar({ bloco: r.bloco, pessoas: pessoas(16), ultimaEscalaAnterior: {} })
+    const rel = validar({ bloco: r.bloco, pessoas: pessoas(16), ultimaEscalaAnterior: {}, config: CONFIG })
     expect(rel.falhasDuras.map((f) => `${f.id}: ${f.violacoes[0]?.mensagem ?? ''}`)).toEqual([])
     expect(rel.aprovada).toBe(true)
   })
@@ -124,7 +137,7 @@ describe('geração respeitando as restrições reais do elenco atual', () => {
 
   it('🔒 e o resultado passa na validação inteira', () => {
     if (!r.ok) throw new Error(r.motivo)
-    const rel = validar({ bloco: r.bloco, pessoas: elenco, ultimaEscalaAnterior: {} })
+    const rel = validar({ bloco: r.bloco, pessoas: elenco, ultimaEscalaAnterior: {}, config: CONFIG })
     expect(rel.falhasDuras.map((f) => f.id)).toEqual([])
   })
 })

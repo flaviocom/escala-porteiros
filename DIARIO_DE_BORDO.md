@@ -369,3 +369,61 @@ irmãos escalados. É diferença de **dado**, não de forma — e é o defeito q
 
 Quatro arquivos novos e um reescrito, num commit. Reverter devolve a captura de tela com corte de
 5 dias.
+
+---
+
+## 04/08/2026 · parte 8 — a auditoria independente, e o que ela derrubou
+
+**Solicitação:** *"go"*.
+
+**Decisão de escopo:** o `BACKLOG.md` tinha um único item autônomo em aberto — **P2.10**, a auditoria
+independente, marcada com a ressalva de que quem auditou tinha escrito o código. Foi por ela que o
+turno começou.
+
+### Por que seis auditores, e não um
+
+Frentes **disjuntas** e instrução **adversarial**: achar defeito, não confirmar. Cada um obrigado a
+citar `arquivo:linha` **e** provar com comando e saída real — ler código e raciocinar não contava.
+Resultado: **20 achados**, nenhum deles visto pela auditoria automatizada que roda 20 checagens todo
+dia. Dois auditores, em frentes diferentes, chegaram sozinhos ao mesmo defeito de raiz (o vite
+órfão) — convergência independente é o sinal mais forte que este método consegue produzir.
+
+### As decisões que exigiram julgamento, não conserto
+
+**1. `Contexto` ganhou `config` como campo OBRIGATÓRIO.** Opcional seria mais barato e teria deixado
+D9 cega em qualquer chamador que esquecesse. Obrigatório fez o compilador listar os treze chamadores
+um a um. Nos scripts `.mjs`, que ele não alcança, as regras **falham fechadas**: sem configuração,
+reprovam. *Reverter:* tornar o campo opcional devolve a cegueira silenciosa.
+
+**2. A fronteira do passado.** Assim que D9 e D11 passaram a existir, a **escala publicada reprovou**
+— o bloco histórico traz 07/06/2026 marcada como Santa Ceia, que é a data errada do site antigo,
+congelada de propósito porque é o que os irmãos viram. Cobrar do passado o calendário de hoje é pedir
+para reescrevê-lo, e essa é a primeira regra que o projeto não viola.
+
+Decisão: **o sistema responde pelo que ele gera**; do passado importado cobra só o que continua
+valendo (nenhum turno de Santa Ceia com gente, e não estar vazio). A fronteira **aparece na medida da
+regra**, e há teste provando que não virou porta dos fundos — o mesmo bloco, com gente escalada,
+reprova mesmo importado. *Reverter:* tirar `congelado(ctx)` volta a reprovar a escala no ar.
+
+**3. `est.formacoes` foi REMOVIDO, não ligado.** O comentário prometia "variar a companhia" e o campo
+nunca era lido. Ligá-lo mudaria a escala já publicada, e escala publicada não se reescreve por conta
+própria. Q4 mede a repetição e avisa; o gerador não a persegue, e isso agora está **declarado** em
+vez de subentendido. *Reverter:* é item de backlog com nova geração e nova publicação.
+
+**4. Dois portões novos, em vez de oito correções.** Havia oito lugares dizendo "15 regras" e um
+ponteiro de handoff apontando para a parte 4 de 7. Corrigir à mão resolveria hoje e quebraria na
+próxima regra e no próximo handoff — este mesmo, aliás. Viraram `npm run contagem` e `npm run cadeia`,
+os dois com autoteste das duas pontas, os dois isentando documento append-only (reescrever handoff
+seria falsificar histórico). *Reverter:* tirar os dois passos do `gate` no `package.json`.
+
+**5. A defesa contra o servidor fantasma é RECUSAR-SE A COMEÇAR.** Matar a árvore de processos resolve
+o vazamento, mas se um órfão sobrar por outro motivo — outra sessão, um Ctrl+C — o script novo ainda
+falaria com ele. Por isso a porta é conferida **antes** de subir, e ocupada o script para dizendo o
+PID. *Reverter:* `scripts/lib/servidor-de-teste.mjs`; os três chamadores voltariam ao `spawn` direto.
+
+### Uma alegação que o código não sustentava
+
+O piso é buscado por escolha gulosa **sem retrocesso**, e o docstring dizia "o maior que a escala
+aceitou". É *o maior que esta busca conseguiu*. Medido: o piso 7 falha em 03/10/2026 e inverter o
+desempate daquele dia não destrava — evidência de que 6 está perto do limite real. Evidência, não
+prova. O texto foi corrigido; a busca, não. Trocá-la por uma com retrocesso é P4.9.

@@ -14,7 +14,7 @@
 import { describe, expect, it } from 'vitest'
 import { CATALOGO, podeAssumir, type Contexto } from './regras'
 import { validar } from './validacao'
-import type { Bloco, Pessoa, Turno } from './tipos'
+import type { Bloco, Configuracao, Pessoa, Turno } from './tipos'
 
 // ---------------------------------------------------------------------------
 // Construtores de cenário
@@ -28,26 +28,52 @@ function turno(data: string, tipo: Turno['tipo'], pessoas: string[], extras: Par
   return { data, tipo, pessoas, capacidade: 3, ...extras }
 }
 
+/**
+ * Configuração dos testes. `santaCeia` traz 16/08/2026 porque é a data que os casos de D9 usam —
+ * e, desde 04/08/2026, D9 confere o bloco contra ESTE calendário, não contra si mesmo.
+ */
+const CONFIG: Configuracao = {
+  versao: 1,
+  capacidadePadrao: 3,
+  malhaPadrao: { regras: [] },
+  santaCeia: ['2026-08-16'],
+  identidade: { titulo: 'Teste', subtitulo: 'Teste' },
+}
+
 function ctxDe(
   turnos: Turno[],
   pessoas: Pessoa[],
-  extras: { elenco?: string[]; piso?: number | null; anterior?: Record<string, string> } = {},
+  extras: {
+    elenco?: string[]
+    piso?: number | null
+    anterior?: Record<string, string>
+    config?: Partial<Configuracao>
+    malha?: Bloco['malha']
+    origem?: Bloco['origem']
+  } = {},
 ): Contexto {
   const bloco: Bloco = {
     id: 'teste',
     inicio: turnos[0]?.data ?? '2026-09-01',
     fim: turnos[turnos.length - 1]?.data ?? '2026-09-30',
     geradoEm: '2026-08-04T12:00:00-03:00',
-    origem: 'algoritmo',
+    origem: extras.origem ?? 'algoritmo',
     pisoAlcancado: extras.piso ?? null,
     elenco: extras.elenco ?? pessoas.map((p) => p.id),
-    malha: { regras: [] },
+    malha: extras.malha ?? { regras: [] },
     turnos,
   }
-  return { bloco, pessoas, ultimaEscalaAnterior: extras.anterior ?? {} }
+  return {
+    bloco,
+    pessoas,
+    ultimaEscalaAnterior: extras.anterior ?? {},
+    config: { ...CONFIG, ...extras.config },
+  }
 }
 
 const TRES = [pessoa('ana'), pessoa('bia'), pessoa('caio')]
+/** Elenco de quatro, para exercer o lado "sobrou gente" da capacidade (ver D1). */
+const QUATRO = [...TRES, pessoa('dora')]
 
 /** Roda uma regra pelo id e devolve o resultado. */
 function rodar(id: string, ctx: Contexto) {
@@ -69,6 +95,16 @@ describe('D1 — capacidade', () => {
   it('aprova turno completo', () => {
     const r = rodar('D1', ctxDe([turno('2026-09-06', 'MANHA', ['ana', 'bia', 'caio'])], TRES))
     expect(r.status).toBe('ok')
+  })
+  // A OUTRA METADE DA INFRAÇÃO — acrescentada em 04/08/2026 por auditoria independente.
+  //
+  // Os dois casos acima só cobriam "faltou gente". D1 compara com `===`, então já pegava
+  // "sobrou gente" — mas nenhum teste exercia esse lado, e um mutante com `>=` no lugar de `===`
+  // passava nos dois. O ajuste manual escala uma pessoa por clique: excesso é plausível.
+  it('reprova turno com gente A MAIS que a capacidade', () => {
+    const r = rodar('D1', ctxDe([turno('2026-09-06', 'MANHA', ['ana', 'bia', 'caio', 'dora'])], QUATRO))
+    expect(r.status).toBe('falha')
+    expect(r.violacoes[0].mensagem).toMatch(/\b4 de 3\b/)
   })
 })
 
@@ -237,6 +273,142 @@ describe('D9 — Santa Ceia', () => {
     ))
     expect(r.status).toBe('ok')
   })
+
+  // ── O QUE D9 NÃO ENXERGAVA ATÉ 04/08/2026 ────────────────────────────────
+  //
+  // Ela só conferia turnos que JÁ estivessem marcados `santaCeia` — isto é, conferia o bloco
+  // contra ele mesmo. Perdida a marca, a resposta era "0 dia(s) de Santa Ceia no bloco", e
+  // aprovava. É o defeito que originou este projeto: o site antigo escala seis irmãos no dia da
+  // Ceia porque a data mora no código e ninguém confere contra o calendário.
+  it('🔴 reprova quando a data do CALENDÁRIO virou turno comum — a marca se perdeu', () => {
+    const r = rodar('D9', ctxDe(
+      [turno('2026-08-16', 'MANHA', ['ana', 'bia', 'caio'])], // sem santaCeia: true
+      TRES,
+    ))
+    expect(r.status).toBe('falha')
+    expect(r.violacoes[0].mensagem).toContain('16/08/2026')
+    expect(r.violacoes[0].mensagem).toContain('3 pessoa(s)')
+  })
+
+  it('🔴 reprova dia marcado no bloco que não consta do calendário', () => {
+    const r = rodar('D9', ctxDe(
+      [turno('2026-09-06', 'MANHA', [], { santaCeia: true, capacidade: 0 })],
+      TRES,
+    ))
+    expect(r.status).toBe('falha')
+    expect(r.violacoes[0].mensagem).toContain('não consta do calendário')
+  })
+
+  it('aprova quando o dia da Ceia foi PULADO — sem turno nenhum, que é o certo', () => {
+    const r = rodar('D9', ctxDe(
+      [turno('2026-08-15', 'NOITE', ['ana', 'bia', 'caio']), turno('2026-08-17', 'NOITE', ['ana', 'bia', 'caio'])],
+      TRES,
+    ))
+    expect(r.status).toBe('ok')
+  })
+
+  // ── A FRONTEIRA DO PASSADO ────────────────────────────────────────────────
+  //
+  // O bloco histórico traz 07/06/2026 marcada como Santa Ceia — a data ERRADA do site antigo,
+  // congelada de propósito porque é o que os irmãos viram. Cobrar dela o calendário de hoje seria
+  // pedir para reescrever o passado, que é a primeira regra que este projeto não viola.
+  it('não cobra o calendário de hoje de um bloco IMPORTADO — o passado não se reescreve', () => {
+    const r = rodar('D9', ctxDe(
+      [turno('2026-06-07', 'MANHA', [], { santaCeia: true, capacidade: 0 })],
+      TRES,
+      { origem: 'importado' },
+    ))
+    expect(r.status).toBe('ok')
+    expect(r.medida).toContain('bloco importado')
+  })
+
+  it('🔴 mas a isenção do passado NÃO é porta dos fundos: com gente escalada, reprova mesmo importado', () => {
+    const r = rodar('D9', ctxDe(
+      [turno('2026-06-07', 'MANHA', ['ana', 'bia'], { santaCeia: true, capacidade: 0 })],
+      TRES,
+      { origem: 'importado' },
+    ))
+    expect(r.status).toBe('falha')
+    expect(r.violacoes[0].mensagem).toContain('2 pessoa(s)')
+  })
+
+  it('🔴 e o MESMO bloco, gerado pelo sistema, reprova — a isenção é só do passado importado', () => {
+    const r = rodar('D9', ctxDe(
+      [turno('2026-06-07', 'MANHA', [], { santaCeia: true, capacidade: 0 })],
+      TRES,
+      { origem: 'algoritmo' },
+    ))
+    expect(r.status).toBe('falha')
+    expect(r.violacoes[0].mensagem).toContain('não consta do calendário')
+  })
+
+  it('reprova quando não recebe a configuração — falha FECHADA, nunca aprova no escuro', () => {
+    const ctx = ctxDe([turno('2026-08-16', 'MANHA', ['ana'])], TRES)
+    // Simula um chamador que não passou a configuração (só possível fora do TypeScript, num script).
+    const r = rodar('D9', { ...ctx, config: undefined as unknown as Configuracao })
+    expect(r.status).toBe('falha')
+    expect(r.medida).toContain('impossível conferir')
+  })
+})
+
+// ---------------------------------------------------------------------------
+// D11 — a regra que pergunta "está tudo aqui?", e não "o que está aqui está certo?"
+// ---------------------------------------------------------------------------
+
+describe('D11 — cobertura do período', () => {
+  // Domingos à noite. 06, 13 e 20 de setembro de 2026 são domingos.
+  const SO_DOMINGO = { regras: [{ diaSemana: 0, turnos: ['NOITE' as const] }] }
+
+  it('🔴 reprova bloco VAZIO — era APROVADO "sem ressalvas" até 04/08/2026', () => {
+    const r = rodar('D11', ctxDe([], TRES))
+    expect(r.status).toBe('falha')
+    expect(r.violacoes[0].mensagem).toContain('VAZIO')
+  })
+
+  it('🔴 e o bloco vazio agora REPROVA a validação inteira — é ela que destrava o Publicar', () => {
+    const rel = validar(ctxDe([], TRES))
+    expect(rel.aprovada).toBe(false)
+    expect(rel.falhasDuras.map((f) => f.id)).toContain('D11')
+  })
+
+  it('🔴 reprova quando falta um turno que a malha do período prevê', () => {
+    const r = rodar('D11', ctxDe(
+      [turno('2026-09-06', 'NOITE', ['ana', 'bia', 'caio']), turno('2026-09-20', 'NOITE', ['ana', 'bia', 'caio'])],
+      TRES,
+      { malha: SO_DOMINGO },
+    ))
+    expect(r.status).toBe('falha')
+    expect(r.violacoes.some((v) => v.mensagem.includes('13/09/2026'))).toBe(true)
+  })
+
+  it('🔴 reprova turno em dia que não é de culto nesta malha', () => {
+    const r = rodar('D11', ctxDe(
+      [turno('2026-09-06', 'NOITE', ['ana', 'bia', 'caio']), turno('2026-09-07', 'NOITE', ['ana', 'bia', 'caio'])],
+      TRES,
+      { malha: SO_DOMINGO },
+    ))
+    expect(r.status).toBe('falha')
+    expect(r.violacoes.some((v) => v.mensagem.includes('07/09/2026'))).toBe(true)
+  })
+
+  it('aprova quando o bloco cobre exatamente o que a malha prevê', () => {
+    const r = rodar('D11', ctxDe(
+      [
+        turno('2026-09-06', 'NOITE', ['ana', 'bia', 'caio']),
+        turno('2026-09-13', 'NOITE', ['ana', 'bia', 'caio']),
+        turno('2026-09-20', 'NOITE', ['ana', 'bia', 'caio']),
+      ],
+      TRES,
+      { malha: SO_DOMINGO },
+    ))
+    expect(r.status).toBe('ok')
+  })
+
+  it('bloco importado (sem malha declarada) — confere a não-vacuidade e DIZ que só conferiu isso', () => {
+    const r = rodar('D11', ctxDe([turno('2026-09-06', 'NOITE', ['ana', 'bia', 'caio'])], TRES))
+    expect(r.status).toBe('ok')
+    expect(r.medida).toContain('malha não declarada')
+  })
 })
 
 describe('D10 — coerência do piso declarado', () => {
@@ -247,7 +419,10 @@ describe('D10 — coerência do piso declarado', () => {
   it('reprova bloco que declara piso 7 e tem intervalo de 1 dia', () => {
     const r = rodar('D10', ctxDe(turnosColados, TRES, { piso: 7 }))
     expect(r.status).toBe('falha')
-    expect(r.violacoes[0].mensagem).toContain('1 dia')
+    // `toMatch` com limite de palavra, não `toContain('1 dia')`: a segunda também casaria com
+    // "11 dia(s)" ou "21 dia(s)" — passaria por um valor estruturalmente errado. Achado de
+    // auditoria independente em 04/08/2026.
+    expect(r.violacoes[0].mensagem).toMatch(/\b1 dia\b/)
   })
   it('aprova quando o piso declarado bate com a realidade', () => {
     const r = rodar('D10', ctxDe(turnosColados, TRES, { piso: 1 }))
@@ -271,7 +446,7 @@ describe('Q1 — distanciamento', () => {
       turno('2026-09-05', 'NOITE', ['ana', 'bia', 'caio']), // sábado
     ], TRES))
     expect(r.status).toBe('aviso')
-    expect(r.medida).toContain('3 dia')
+    expect(r.medida).toMatch(/\b3 dia/)
   })
   it('fica ok quando todos ficam a 7 dias', () => {
     const r = rodar('Q1', ctxDe([
@@ -374,7 +549,7 @@ describe('Q5 — piso mensal', () => {
   it('avisa quem tem teto de 3 e ficou com 1', () => {
     const r = rodar('Q5', ctxDe([turno('2026-09-02', 'NOITE', ['ana', 'bia', 'caio'])], teto3))
     expect(r.status).toBe('aviso')
-    expect(r.violacoes[0].mensagem).toContain('1 de 3')
+    expect(r.violacoes[0].mensagem).toMatch(/\b1 de 3\b/)
   })
   it('fica ok quando o teto foi atingido', () => {
     const r = rodar('Q5', ctxDe([
@@ -397,7 +572,7 @@ describe('Q5 — piso mensal', () => {
 describe('cobertura do catálogo', () => {
   it('🔒 TODA regra do catálogo tem teste — regra nova sem teste deixa isto vermelho', () => {
     const comTeste = new Set([
-      'D1', 'D2', 'D3', 'D4', 'D5', 'D6', 'D7', 'D8', 'D9', 'D10',
+      'D1', 'D2', 'D3', 'D4', 'D5', 'D6', 'D7', 'D8', 'D9', 'D10', 'D11',
       'Q1', 'Q2', 'Q3', 'Q4', 'Q5',
     ])
     const semTeste = CATALOGO.filter((r) => !comTeste.has(r.id)).map((r) => `${r.id} — ${r.titulo}`)

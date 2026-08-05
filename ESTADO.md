@@ -5,7 +5,7 @@
 > **Última atualização:** 04/08/2026 · **Fuso:** America/São_Paulo
 >
 > **Cadeia de navegação, nesta ordem:**
-> **`ESTADO.md` (você está aqui)** → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-04-g.md) → [`BACKLOG.md`](BACKLOG.md)
+> **`ESTADO.md` (você está aqui)** → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-04-h.md) → [`BACKLOG.md`](BACKLOG.md)
 > *onde estamos · o que aconteceu na última sessão e por quê · o que fazer a seguir*
 >
 > **Roteador do projeto:** [`AGENTS.md`](AGENTS.md) ·
@@ -17,9 +17,30 @@
 
 ## Em uma frase
 
-**O produto está pronto e no ar**: site, área administrativa, motor, histórico com reversão, 15
-regras com portão dos dois lados, e o passado congelado **conferido contra a tela do site antigo**.
-Falta o que só o Flavio pode fazer — as duas credenciais e um auditor independente.
+**O produto está pronto, no ar e agora auditado por fora**: site, área administrativa, motor,
+histórico com reversão, 16 regras com portão dos dois lados, e o passado congelado **conferido contra
+a tela do site antigo**. Falta só o que depende do Flavio — as duas credenciais.
+
+## O que acabou de entrar: a auditoria independente (P2.10)
+
+Era o único item autônomo em aberto, e o método se recusava a dar o projeto por encerrado sem ele:
+*"quem auditou escreveu o código"*. **Seis auditores em frentes disjuntas, mandado adversarial,
+obrigados a provar com comando e saída real. Vinte achados** — nenhum deles visto pela
+autoverificação, que roda 20 checagens todo dia. Os quatro mais graves:
+
+| O que estava errado | Por que ninguém tinha visto |
+|---|---|
+| **Bloco VAZIO era aprovado "sem ressalvas"** — e é isso que destrava o Publicar | as 15 regras percorriam `turnos`; sem turnos, todas respondiam "nada a apontar" |
+| **D9 era cega ao calendário da Santa Ceia** — conferia o bloco contra ele mesmo | `Contexto` não carregava a configuração. É o defeito que originou o projeto |
+| **Três portões não mordiam** — o de fontes ignorava `scripts/` inteiro | infrator injetado passava verde; ninguém tinha atacado os portões |
+| **O verde "ao vivo" podia ser de outro código** | o vite ficava órfão no Windows e a execução seguinte falava com ele — chegou a aprovar um **bundle antigo** |
+
+**Consertados e provados nas duas pontas.** Dois portões novos (`contagem`, `cadeia`) existem porque
+número escrito à mão e ponteiro mantido à mão apodrecem sozinhos — o `AGENTS.md` apontava para a
+parte 4 de 7 como se fosse a última. Detalhe em [`HANDOFF_2026-08-04-h.md`](docs/handoff/HANDOFF_2026-08-04-h.md).
+
+⚠️ **Sete achados menores ficaram abertos**, em P4 do [`BACKLOG.md`](BACKLOG.md), com `arquivo:linha`
+e reprodução. Nenhum bloqueia o uso.
 
 ## Onde roda
 
@@ -52,7 +73,7 @@ git clone https://github.com/flaviocom/escala-porteiros.git /c/.../build-escala-
 
 ## O que acabou de entrar
 
-**O núcleo, medido e testado.** 15 regras num catálogo único (10 duras + 5 de qualidade), cada uma
+**O núcleo, medido e testado.** 16 regras num catálogo único (11 duras + 5 de qualidade), cada uma
 com teste que **reprova um infrator injetado e aprova o caso limpo** — 55 testes verdes.
 
 **O gerador descobre o piso de distanciamento** em vez de recebê-lo cravado. Na escala real ele
@@ -141,8 +162,8 @@ revelou `historicoPublicacoes()` sem consumidor, o ERRO 12 no código desta pró
 barrava, mas o ajuste manual e os blocos importados abriam a porta — que é exatamente o cenário
 deste projeto. Corrigido, com teste.
 
-⚠️ **A auditoria foi feita por quem escreveu o código.** O método diz que isso não basta.
-**Auditor independente continua pendente.**
+⚠️ Aquela auditoria foi feita por quem escreveu o código, e o método dizia que não bastava.
+**Isso foi resolvido em 04/08/2026** — ver a seção do topo.
 
 ## O que bloqueia
 
@@ -151,6 +172,10 @@ deste projeto. Corrigido, com teste.
 | Publicar pela tela | 👤 Flavio cola `GITHUB_PAT_ESCALA_PORTEIROS` no primeiro acesso |
 | O motor funcionar | 👤 Flavio cola `ANTHROPIC_API_KEY_ESCALA` (opcional — sem ela o algoritmo segue) |
 | Desenvolver na pasta `D:` | 👤 Flavio decide se investiga o antivírus/disco |
+
+O pré-voo **não reprova mais** por causa do disco: a ausência de `node_modules` em `D:` é proposital
+e agora está declarada em `docs/pre-voo.json`, com motivo escrito. Ela aparece no relatório em ⚪ com
+a explicação ao lado, em vez de 🔴 sem contexto — e a checagem continua acusando instalação parcial.
 
 ## Como retomar
 

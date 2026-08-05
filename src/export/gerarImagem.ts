@@ -18,7 +18,7 @@ import type { Shift } from '../types/scheduler'
 
 const LARGURA = 1440
 
-export async function gerarImagemDaEscala(shifts: Shift[]): Promise<Blob> {
+export async function gerarImagemDaEscala(shifts: Shift[], porTurno: number): Promise<Blob> {
   if (!shifts.length) throw new Error('Não há turnos no período selecionado para gerar a imagem.')
 
   // Fora da vista, mas RENDERIZADO: `display:none` não tem layout, e o que não tem layout não
@@ -29,7 +29,13 @@ export async function gerarImagemDaEscala(shifts: Shift[]): Promise<Blob> {
 
   const raiz = createRoot(palco)
   try {
-    raiz.render(createElement(EscalaImagem, { shifts, geradoEm: new Date() }))
+    // 🔴 `porTurno` VEM DA CONFIGURAÇÃO — corrigido em 04/08/2026 por auditoria independente.
+    //
+    // Antes ele não era passado, e o componente caía no padrão `= 3`. O rodapé da imagem afirmava
+    // "3 irmãos por turno" como fato. Só que `capacidadePadrao` é editável pelo administrador: no
+    // dia em que ele mudasse, a imagem que vai para o WhatsApp continuaria dizendo 3 — um número
+    // errado, impresso como fato, no documento que a congregação lê.
+    raiz.render(createElement(EscalaImagem, { shifts, geradoEm: new Date(), porTurno }))
 
     // Espera o React pintar e as fontes assentarem. Sem isto, a primeira linha sai com a fonte
     // de fallback e a imagem fica com dois tipos diferentes — defeito que só aparece na 1ª geração.

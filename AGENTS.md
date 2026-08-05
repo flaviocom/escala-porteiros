@@ -7,7 +7,7 @@
 > **Este arquivo é o ROTEADOR do projeto.** Ordem de leitura, e ela importa:
 >
 > **1.** este arquivo (como se trabalha) → **2.** [`ESTADO.md`](ESTADO.md) (onde estamos) →
-> **3.** [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-04-d.md) (o que aconteceu e por quê) →
+> **3.** [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-04-h.md) (o que aconteceu e por quê) →
 > **4.** [`BACKLOG.md`](BACKLOG.md) (o que fazer a seguir)
 >
 > Só depois, e só o trecho de que precisar, os índices:
@@ -59,7 +59,7 @@ regras da do algoritmo antes de chegar à tela de publicação.
    que as pessoas viram.
 2. **Pessoa sai da escala sendo desativada, nunca apagada.** *Por quê:* os blocos passados a
    referenciam por `id`; apagar o registro deixa o histórico com nomes órfãos.
-3. **Toda regra do catálogo tem validação executável** — hoje são **10 duras + 5 de qualidade**, e o teste `regras.test.ts` fica vermelho se alguém acrescentar regra sem cobertura. *Por quê:* o site antigo promete na
+3. **Toda regra do catálogo tem validação executável** — hoje são **11 duras + 5 de qualidade**, e o teste `regras.test.ts` fica vermelho se alguém acrescentar regra sem cobertura — assim como `npm run contagem`, que reprova documento vivo declarando um número que o catálogo desmente. *Por quê:* o site antigo promete na
    especificação que valida espaçamento e capacidade, e o código não valida nem um nem outro. Regra
    escrita e não executada é o defeito que este projeto existe para não repetir.
 4. **O portão prova as duas pontas** — reprova a escala com infrator injetado **e** aprova a limpa.
@@ -92,7 +92,7 @@ npm run dev
 **O GATE — nenhuma mudança significativa passa sem:**
 
 ```bash
-npm run gate      # typecheck + testes (2 fusos) + denominação + fontes + build
+npm run gate      # 10 passos: typecheck · testes (2 fusos) · denominação · fontes · contagem · cadeia · auditoria · regras mestras · build
 ```
 
 O que ele encadeia, e por que cada um existe:
@@ -103,8 +103,17 @@ O que ele encadeia, e por que cada um existe:
 | `npm test` | a suíte **completa**, nunca escopada |
 | `npm run test:fuso:berlim` | a mesma suíte noutro fuso, **depois de provar que o fuso mudou** |
 | `npm run denominacao` | nenhum jargão em texto que alguém lê (autoteste 9 + 13) |
-| `npm run fontes` | nenhuma fonte externa chamada e não declarada |
+| `npm run fontes` | nenhuma fonte externa chamada e não declarada — em `src/` **e** `scripts/` |
+| `npm run contagem` | nenhum documento vivo declara um número de regras que o catálogo desmente |
+| `npm run cadeia` | `AGENTS.md`/`ESTADO.md`/`BACKLOG.md` apontam para o handoff que É o mais recente |
+| `npm run auditoria` | 20 ataques ao próprio código, com infrator injetado |
+| `npm run regras-mestras` | tooltip em todo botão, sem aspas duplas quebrando o atributo |
 | `npm run build` | compila e gera em `docs/` |
+
+Os três últimos portões nasceram em 04/08/2026, de auditoria independente: **dois deles mediam menos
+do que diziam** (o de fontes ignorava `scripts/` inteiro; a auditoria não via `export const` nem
+comparava `pessoas.json`), e os dois novos existem porque um número escrito à mão e um ponteiro
+mantido à mão apodrecem sozinhos.
 
 ⚠️ Cuidado com pipe mascarando o código de saída: `comando | head && echo OK` imprime OK mesmo com o
 comando vermelho. Use sem pipe, ou `${PIPESTATUS[0]}`.
@@ -128,7 +137,7 @@ que `C:`. Clone numa pasta em `C:` para trabalhar, e traga de volta por `git pul
 | Vou mexer em… | Leia antes |
 |---|---|
 | Estado atual | [`ESTADO.md`](ESTADO.md) |
-| O que aconteceu na última sessão, e por quê | [`docs/handoff/HANDOFF_2026-08-04-d.md`](docs/handoff/HANDOFF_2026-08-04-d.md) · [índice](docs/handoff/INDICE.md) |
+| O que aconteceu na última sessão, e por quê | [`docs/handoff/HANDOFF_2026-08-04-h.md`](docs/handoff/HANDOFF_2026-08-04-h.md) · [índice](docs/handoff/INDICE.md) |
 | O que falta | [`BACKLOG.md`](BACKLOG.md) |
 | Regras da escala, modelo de dados, motor | [`o desenho`](docs/superpowers/specs/2026-08-04-area-administrativa-escala-design.md) |
 | **Por que** uma decisão foi tomada, e como revertê-la | [`DIARIO_DE_BORDO.md`](DIARIO_DE_BORDO.md) |

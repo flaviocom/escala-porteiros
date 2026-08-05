@@ -26,8 +26,8 @@ function nomeDoArquivo(shifts: Shift[]): string {
     : `escala-porteiros-${rotulo(i)}-a-${rotulo(f)}.png`
 }
 
-export async function exportToImage(shifts: Shift[]): Promise<void> {
-  const blob = await gerarImagemDaEscala(shifts)
+export async function exportToImage(shifts: Shift[], porTurno: number): Promise<void> {
+  const blob = await gerarImagemDaEscala(shifts, porTurno)
   const nome = nomeDoArquivo(shifts)
   const arquivo = new File([blob], nome, { type: 'image/png' })
 

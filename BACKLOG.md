@@ -6,7 +6,7 @@
 > **Última atualização:** 04/08/2026
 >
 > **Cadeia de navegação, nesta ordem:**
-> [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-04-g.md) → **`BACKLOG.md` (você está aqui)**
+> [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-04-h.md) → **`BACKLOG.md` (você está aqui)**
 >
 > **Roteador do projeto:** [`AGENTS.md`](AGENTS.md) ·
 > **Solicitações:** [`docs/solicitacoes/INDICE_DE_SOLICITACOES.md`](docs/solicitacoes/INDICE_DE_SOLICITACOES.md) ·
@@ -71,9 +71,32 @@ Medido: Williams com **7 intervalos de 1 dia**, **18 pares com ≤3 dias**, 6 oc
 | P2.7 | `docs/INVENTARIO_DE_FONTES.md` **gerado por script** | ✅ 04/08 — 2 hosts medidos, 3 declarados |
 | P2.8 | GATE: typecheck + suíte completa + build | ✅ 04/08 — `npm run gate`, exit 0 |
 | P2.9 | Portão de denominação provando as duas pontas | ✅ 04/08 — 9 acusações + 13 absolvições, 0 vazamentos |
-| P2.10 | Auditoria adversarial | ⚠️ 04/08 — **17 checagens em 5 frentes, 2 achados corrigidos**. Mas quem auditou escreveu o código: **auditor INDEPENDENTE continua pendente** 👤 |
+| P2.10 | Auditoria adversarial **INDEPENDENTE** | ✅ 04/08 — **6 auditores em frentes disjuntas, 20 achados**. Ver [handoff](docs/handoff/HANDOFF_2026-08-04-h.md) |
 | P2.11 | 🔴 **Disco `D:` a 0,8 s por arquivo** — build roda numa cópia em `C:` | 👤 contornado; a causa é do Flavio |
-| P2.12 | ⚠️ **O pré-voo fica vermelho em `D:`** por `node_modules` ausente — ausência *proposital*, já que o build vive em `C:`. Exceção declarada aqui e em [`ESTADO.md`](ESTADO.md); o script do método não tem chave para afrouxar esse item | 👤 decidir se vale acrescentar `deps: {bloqueia:false}` ao método |
+| P2.12 | Pré-voo vermelho em `D:` por ausência **proposital** de `node_modules` | ✅ 04/08 — o método ganhou `deps: {bloqueia, motivo}`, que **falha fechada** (sem motivo escrito, não isenta) e não desliga a checagem de instalação parcial. Autoteste de 8 casos; contra a versão anterior, reprova 4 |
+| P2.13 | Portão `contagem` — documento vivo não declara número de regras que o catálogo desmente | ✅ 04/08 — achou 8 divergências de uma vez |
+| P2.14 | Portão `cadeia` — a cadeia de navegação aponta para o handoff que **é** o mais recente | ✅ 04/08 — `AGENTS.md` apontava para a parte 4 de 7 |
+| P2.15 | Servidor de teste único, que **recusa** porta ocupada | ✅ 04/08 — 3 scripts vazavam o vite no Windows e validavam servidor fantasma |
+
+---
+
+## P4 — Achados da auditoria independente, ainda abertos 🟠
+
+> Vieram da auditoria de 04/08/2026 ([handoff](docs/handoff/HANDOFF_2026-08-04-h.md)). **Nenhum
+> bloqueia o uso.** Estão aqui com `arquivo:linha` e reprodução — não como lembrete vago. Foram
+> separados por serem de risco baixo e escopo próprio; os graves já foram corrigidos.
+
+| # | Item | Onde | Como reproduzir |
+|---|---|---|---|
+| P4.1 | 🟠 **Publicação concorrente entre abas.** `AbaPublicar` é desmontada ao trocar de aba, mas a promessa em voo não é cancelada; ao voltar, uma instância nova nasce com `ocupado=false` e permite clicar de novo. O resultado da primeira some sem confirmação nem erro | `src/admin/Admin.tsx:226-228`, `:758-759` | Publicar → trocar para Elenco antes de resolver → voltar → Publicar de novo. Medido ao vivo: 2 chamadas independentes à API |
+| P4.2 | 🟠 **A mensagem amigável do token é código morto no caso mais comum.** `gravarArquivo` sempre faz um GET antes do PUT; `shaAtual` só trata 404 como especial, então um 401 sai como *"Não consegui ler … (HTTP 401)"* e a frase *"confira se ele expirou ou foi revogado"* nunca é alcançada. E 403 de limite de requisições e 500 do GitHub são rotulados como "token recusado" | `src/admin/github.ts:50-59`, `:61-89`, `:117-131` | Publicar com token revogado |
+| P4.3 | 🟠 **`validar-admin.mjs` dá falso vermelho fora do build de produção.** Procura `assets/index-*.js`; em `npm run dev` o script é `/src/main.tsx`, o `.find()` volta `undefined` e o teste da criptografia quebra **antes** de rodar — parecendo que a cifra falhou | `scripts/validar-admin.mjs:44-45` | `npm run vivo:admin http://localhost:5173` |
+| P4.4 | ⚪ **Corpo não-JSON em HTTP 200 vaza erro em inglês.** Todo `await r.json()` sem guarda: uma página de erro de intermediário vira `Unexpected token in JSON…` na tela, quebrando a convenção pt-BR | `src/admin/github.ts` (5 pontos) | Responder 200 com corpo HTML |
+| P4.5 | 🟠 **`validar-celular` mede 40px enquanto o comentário cita 44.** O texto ao lado invoca o piso da Apple (44) e do Material (48) como justificativa, e o código aprova de 40 para cima — sem declarar isso como convenção de casa | `scripts/validar-celular.mjs:72-81` | Ler as duas linhas juntas |
+| P4.6 | 🟠 **`npm run imagem` está fora do GATE.** É o único que renderiza o pixel; os 11 testes da imagem cobrem só as funções puras. Cor trocada, nome cortado ou cartão sobreposto passariam pelo GATE inteiro | `package.json` · `src/export/EscalaImagem.test.ts` | Trocar a cor de MANHÃ por NOITE e rodar `npm run gate` |
+| P4.7 | ⚪ **`carga-inicial.mjs` usa `new Date().toISOString().slice(0,10)`** — o antipadrão que o cabeçalho de `datas.ts` denuncia. Script de carga única, já rodado; só morde se for rerodado perto da meia-noite | `scripts/carga-inicial.mjs:193` | Rodar com `TZ=Europe/Berlin` às 23h BRT |
+| P4.8 | ⚪ **Falha de leitura da resposta do motor descarta a proposta inteira.** JSON malformado aborta sem as 3 tentativas que uma falha de validação recebe; num bloco de vários meses, o trabalho já aceito se perde | `src/admin/motor.ts:218-221` | Devolver JSON truncado no 2º mês |
+| P4.9 | ⚪ **O piso não é um máximo comprovado.** A busca é gulosa e **sem retrocesso**: é o maior que esta busca conseguiu, não o maior que existe. Já está declarado no docstring; trocar por busca com retrocesso é o que tornaria o número um máximo de fato | `src/dominio/gerador.ts` | Medido: piso 7 falha em 03/10/2026 |
 
 ---
 
@@ -90,7 +113,7 @@ Medido: Williams com **7 intervalos de 1 dia**, **18 pares com ≤3 dias**, 6 oc
 | # | Item | Estado |
 |---|---|---|
 | P3.1 | Modelo de dados: `pessoas.json`, `blocos.json`, `config.json` | ✅ 04/08 |
-| P3.2 | Catálogo de regras executável — **10 duras + 5 de qualidade**, cada uma com teste das duas pontas | ✅ 04/08 — 55 testes |
+| P3.2 | Catálogo de regras executável — **11 duras + 5 de qualidade**, cada uma com teste das duas pontas | ✅ 04/08 — 55 testes |
 | P3.3 | Carga inicial: congelar 01/03 → 04/08, **contando as duas pontas** (ERRO 23) | ✅ 04/08 — 184/549/549 |
 | P3.4 | Algoritmo com piso **descoberto** por busca | ✅ 04/08 — piso 6, tentou 9/8/7 |
 | P3.5 | Site público lendo os JSON | ✅ 04/08 — validado ao vivo |

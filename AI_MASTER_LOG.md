@@ -253,3 +253,25 @@ marca. 🔴 Dois defeitos da minha régua: "sem foco visível" era falso (`.focu
 
 **Skills acionadas:** `impeccable` (o desenho), `ponytail` (testar lógica, não pixel),
 `graphify` (mapear o caminho da exportação antes de mexer), `documentacao-auditavel`.
+
+## 04/08/2026 — parte 8: a auditoria independente (P2.10)
+
+- **Solicitação:** "go". Escopo escolhido: o único item autônomo em aberto do backlog.
+- **6 auditores independentes**, frentes disjuntas, mandado adversarial, prova empírica obrigatória.
+- **20 achados.** Graves: bloco vazio aprovado (destravava o Publicar) · D9 cega ao calendário da
+  Santa Ceia · 3 portões que não mordiam · verde "ao vivo" sobre bundle antigo · a tela afirmando
+  "nada publicado pela metade" quando podia ter sido · roteador apontando para a parte 4 de 7.
+- **Corrigidos com prova nas duas pontas.** D11 nova; D9 reescrita contra o calendário; `Contexto`
+  com `config` obrigatório (13 chamadores) e falha fechada nos scripts.
+- **Portões novos:** `contagem` (achou 8 divergências), `cadeia` (ordenação de handoff que a
+  ordenação alfabética erraria). **Corrigidos:** `fontes` (26→48 arquivos), `auditoria` (dois cegos),
+  `regras-mestras` (clicáveis fora de `<button>`).
+- **Acessibilidade:** o seletor de filtros era `<div onClick>` — inacessível por teclado. 100% dos
+  botões com tooltip, 0 clicáveis sem papel declarado.
+- **Método:** o pré-voo ganhou `deps: {bloqueia, motivo}`, que falha fechada (`padroes-globais`
+  155b9a2), fechando o P2.12.
+
+**107 testes verdes em 2 fusos · GATE 10 passos, exit 0 · 7 achados menores em P4 do backlog.**
+
+**Skills acionadas:** `padrao-ouro` (o ciclo), `loop-autonomo`, `documentacao-auditavel`,
+`ponytail` (remover em vez de ligar o estado morto), `impeccable` (acessibilidade do seletor).

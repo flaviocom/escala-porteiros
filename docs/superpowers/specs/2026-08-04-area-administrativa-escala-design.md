@@ -259,7 +259,7 @@ Se não fechar nem com piso 1, o sistema **declara que não foi possível gerar*
 ## 8. Motor de geração — três passos
 
 ### Passo 1 — Algoritmo gera a base
-Busca com retrocesso, instantânea e gratuita. Garante as 9 regras duras por construção e descobre o maior piso possível. **É a rede**: sempre existe uma escala válida na mesa, independentemente do que a IA fizer.
+Busca com retrocesso, instantânea e gratuita. Garante as 11 regras duras por construção e descobre o maior piso possível. **É a rede**: sempre existe uma escala válida na mesa, independentemente do que a IA fizer.
 
 ### Passo 2 — IA gera a proposta dela
 Recebe elenco, restrições, malha, última data de cada pessoa no bloco anterior e a base do algoritmo como referência. Devolve a distribuição em JSON estruturado.
@@ -390,7 +390,7 @@ A chave de mês usa `toISOString()` (UTC) em vez da data local, o que seria frá
 
 ### 13.1 O portão precisa morder (as duas pontas)
 
-Para **cada** uma das 9 regras duras e 5 de qualidade:
+Para **cada** uma das 11 regras duras e 5 de qualidade:
 - um teste que injeta uma escala **com a violação proposital** e prova que a validação **reprova**;
 - um teste que prova que a validação **aprova** a escala limpa.
 
@@ -499,7 +499,7 @@ Do catálogo de 30 erros, estes são os que a natureza deste trabalho convida:
 | **ERRO 27** — três verdes sobre trabalho parado | Commit cair em branch errada, `push` dizer "up-to-date", e `main` intacta | Ler o `--stat` inteiro e **conferir que `main` mudou** — não só o "push OK" |
 | **ERRO 17** — teste verde testando o vazio | Teste do gerador que só exercita caminhos de recusa | Pelo menos **um teste do caminho feliz** que afirma que a escala saiu completa |
 | **ERRO 10** — a rede não pega o caso que existe para pegar | Elenco vazio, bloco de um dia só, todo mundo com ausência no mesmo período | Escrever **primeiro** os casos-limite que a proteção deve pegar |
-| **ERRO 20** — portão com escopo implícito | Validação que confere 8 das 9 regras duras e não avisa | Enumerar o universo de regras **primeiro**; exceção é declarada e contada |
+| **ERRO 20** — portão com escopo implícito | Validação que confere 8 das 11 regras duras e não avisa | Enumerar o universo de regras **primeiro**; exceção é declarada e contada |
 | **ERRO 15** — herdar diagnóstico sem reconferir | Acreditar que a Santa Ceia é 07/06 porque está no código | A fonte diz o que **é**; o registro diz o que **era**. Já mordeu: a data correta é 16/08 |
 | **ERRO 29** — rótulo lido como veredito | Interpretar um assunto citado numa lista como decisão tomada | Decisão de produto **vem com verbo**. Na dúvida entre nomear e escolher, é nomear |
 

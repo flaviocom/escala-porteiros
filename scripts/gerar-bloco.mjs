@@ -45,7 +45,7 @@ writeFileSync(
 esbuild.buildSync({ entryPoints: [entrada], outfile: saidaJs, format: 'esm', platform: 'node', bundle: true })
 
 const dominio = await import(pathToFileURL(saidaJs).href)
-const { construirGrade, MALHA_ATUAL, gerar, validar, resumir, menorIntervalo, formatarBR, diferencaEmDias } = dominio
+const { construirGrade, gerar, validar, resumir, menorIntervalo, formatarBR, diferencaEmDias } = dominio
 
 // ---------------------------------------------------------------------------
 const args = process.argv.slice(2)
@@ -53,12 +53,30 @@ const arg = (n, padrao) => { const i = args.indexOf(n); return i >= 0 ? args[i +
 const DE = arg('--de', '2026-08-05')
 const ATE = arg('--ate', '2026-12-30')
 const ESCREVER = args.includes('--escrever')
-const SANTA_CEIA = ['2026-08-16']
 
 const pessoasArq = JSON.parse(readFileSync(join(RAIZ, 'public/dados/pessoas.json'), 'utf8'))
 const blocosArq = JSON.parse(readFileSync(join(RAIZ, 'public/dados/blocos.json'), 'utf8'))
 const pessoas = pessoasArq.pessoas
 const historico = blocosArq.blocos[0]
+
+// 🔴 A CONFIGURAÇÃO VEM DO DADO, NUNCA DO CÓDIGO — corrigido em 04/08/2026 por auditoria.
+//
+// Até aqui este script trazia a Santa Ceia cravada (`['2026-08-16']`), a capacidade cravada (`3`) e
+// a malha importada do código-fonte (`MALHA_ATUAL`). Os três batiam com `config.json` — por
+// coincidência, não por construção.
+//
+// É a fonte dupla que o projeto inteiro existe para não ter: `malha.ts:8` diz, com todas as
+// letras, *"aqui a malha é dado; trocar dias e turnos é editar configuração, não código"*. E este é
+// o script que de fato escreveu o `blocos.json` publicado. Bastaria o Flavio cadastrar a Santa
+// Ceia do ano que vem em `config.json` e rodar isto para conferir: geraria contra o dado ANTIGO,
+// em silêncio, que é a forma exata do defeito que originou o projeto (o site antigo tem a Ceia em
+// 07/06 porque a data estava no código).
+//
+// A tela nunca teve esse problema: `Admin.tsx:504-509` sempre leu `dados.config`.
+const config = JSON.parse(readFileSync(join(RAIZ, 'public/dados/config.json'), 'utf8'))
+const SANTA_CEIA = config.santaCeia
+const MALHA = config.malhaPadrao
+const CAPACIDADE = config.capacidadePadrao
 
 // Fronteira: última escala de cada um no bloco anterior.
 const fronteira = {}
@@ -67,14 +85,17 @@ for (const t of historico.turnos) for (const id of t.pessoas) {
 }
 
 console.log(`GERAÇÃO DO BLOCO ${formatarBR(DE)} → ${formatarBR(ATE)}\n`)
-console.log(`Santa Ceia cadastrada: ${SANTA_CEIA.map(formatarBR).join(', ')}`)
+// Diz de ONDE veio cada número: o log é a única chance de alguém notar que a fonte mudou.
+console.log(`Configuração lida de public/dados/config.json`)
+console.log(`Santa Ceia cadastrada: ${SANTA_CEIA.length ? SANTA_CEIA.map(formatarBR).join(', ') : '(nenhuma)'}`)
+console.log(`Capacidade padrão: ${CAPACIDADE} · malha com ${MALHA.regras.length} regra(s)`)
 console.log(`Elenco: ${pessoas.filter((p) => p.ativo).length} pessoas\n`)
 
-const grade = construirGrade({ inicio: DE, fim: ATE, malha: MALHA_ATUAL, capacidadePadrao: 3, santaCeia: SANTA_CEIA })
+const grade = construirGrade({ inicio: DE, fim: ATE, malha: MALHA, capacidadePadrao: CAPACIDADE, santaCeia: SANTA_CEIA })
 const r = gerar({
   inicio: DE, fim: ATE, grade, pessoas,
   elenco: pessoas.filter((p) => p.ativo).map((p) => p.id),
-  malha: MALHA_ATUAL,
+  malha: MALHA,
   ultimaEscalaAnterior: fronteira,
 })
 
@@ -88,7 +109,7 @@ if (!r.ok) {
 
 console.log('✅ ' + r.relato + '\n')
 
-const ctx = { bloco: r.bloco, pessoas, ultimaEscalaAnterior: fronteira }
+const ctx = { bloco: r.bloco, pessoas, ultimaEscalaAnterior: fronteira, config }
 const rel = validar(ctx)
 console.log('VALIDAÇÃO — ' + resumir(rel))
 console.log(`Regras avaliadas: ${rel.avaliadas} de ${rel.totalNoCatalogo}\n`)

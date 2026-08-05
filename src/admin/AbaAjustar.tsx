@@ -15,7 +15,7 @@
 import React, { useMemo, useState } from 'react'
 import { AlertTriangle, ArrowLeftRight, CheckCircle, RotateCcw, XCircle } from 'lucide-react'
 import { clsx } from 'clsx'
-import type { Bloco, Pessoa, Turno } from '../dominio/tipos'
+import type { Bloco, Configuracao, Pessoa, Turno } from '../dominio/tipos'
 import { ROTULO_TURNO } from '../dominio/tipos'
 import { podeAssumir } from '../dominio/regras'
 import { validar } from '../dominio/validacao'
@@ -27,15 +27,17 @@ interface Props {
   fronteira: Record<string, string>
   aoAlterar: (b: Bloco) => void
   blocoOriginal: Bloco
+  /** O calendário e a malha vigentes — D9 e D11 conferem o bloco CONTRA ela, não contra si mesmo. */
+  config: Configuracao
 }
 
-export const AbaAjustar: React.FC<Props> = ({ bloco, pessoas, fronteira, aoAlterar, blocoOriginal }) => {
+export const AbaAjustar: React.FC<Props> = ({ bloco, pessoas, fronteira, aoAlterar, blocoOriginal, config }) => {
   const [selecionado, setSelecionado] = useState<{ turno: number; pessoa: string } | null>(null)
   const [filtro, setFiltro] = useState('')
 
   const relatorio = useMemo(
-    () => validar({ bloco, pessoas, ultimaEscalaAnterior: fronteira }),
-    [bloco, pessoas, fronteira],
+    () => validar({ bloco, pessoas, ultimaEscalaAnterior: fronteira, config }),
+    [bloco, pessoas, fronteira, config],
   )
 
   const alterados = useMemo(() => {

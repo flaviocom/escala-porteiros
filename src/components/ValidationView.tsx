@@ -33,7 +33,7 @@ export const ValidationView: React.FC<ValidationViewProps> = ({ dados }) => {
           }
         }
       }
-      return { bloco, relatorio: validar({ bloco, pessoas: dados.pessoas, ultimaEscalaAnterior }) }
+      return { bloco, relatorio: validar({ bloco, pessoas: dados.pessoas, ultimaEscalaAnterior, config: dados.config }) }
     })
   }, [dados])
 

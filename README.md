@@ -21,9 +21,10 @@ ar por uma tela, em um minuto.
 O coração do projeto é um **catálogo único de regras** que o gerador consulta e a validação percorre
 inteiro. No site anterior essas duas listas eram diferentes, e a diferença era invisível.
 
-**10 regras duras** — violou, não publica: capacidade do turno · ninguém duas vezes no mesmo dia ·
+**11 regras duras** — violou, não publica: capacidade do turno · ninguém duas vezes no mesmo dia ·
 dias permitidos · dias proibidos · turnos permitidos · ausências (férias, viagem) · teto mensal ·
-elenco (e ativo) · Santa Ceia sem porteiro · coerência do piso declarado.
+elenco (e ativo) · Santa Ceia conferida contra o calendário · coerência do piso declarado ·
+cobertura do período.
 
 **5 de qualidade** — o gerador maximiza, a validação mede e mostra: distanciamento · equilíbrio de
 carga · variedade de dia da semana · variedade de companhia · piso mensal.

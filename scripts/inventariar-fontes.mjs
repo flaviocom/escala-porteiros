@@ -67,20 +67,65 @@ const DECLARADAS = [
   },
 ]
 
+/**
+ * O ÚNICO arquivo isento da varredura, e por quê: ele É a declaração.
+ *
+ * Este script contém a tabela `FONTES`, onde cada host aparece como texto. Varrê-lo faria a
+ * declaração se autoconfirmar — todo host declarado passaria a contar como "host chamado", e a
+ * conferência viraria uma tautologia. A isenção é declarada aqui, impressa no relatório e contada:
+ * isenção silenciosa é como um portão apodrece.
+ */
+const ISENTO = 'scripts/inventariar-fontes.mjs'
+
+/**
+ * Hosts que NÃO são fonte externa — e por que cada grupo não é um afrouxamento.
+ *
+ * O inventário existe para responder "de onde vem cada dado, a que custo, e o que acontece se cair".
+ * Duas famílias de host não respondem a nenhuma dessas perguntas:
+ *
+ *  • **Laço local** (`127.0.0.1`, `localhost`, `0.0.0.0`, `::1`) — é a própria máquina. Aparece nos
+ *    scripts que sobem um servidor para validar ao vivo. Não tem dono, não tem custo, não cai.
+ *  • **Domínios reservados pela RFC 2606** (`example.com/.net/.org`, `.test`, `.invalid`,
+ *    `.localhost`) — a norma os reserva para documentação e teste, e garante que nunca serão
+ *    registrados. São dados de teste por definição: `scripts/auditoria-adversarial.mjs` usa um
+ *    deles como infrator do próprio autoteste.
+ *
+ * ⚠️ A exclusão é por REGRA, não por lista de arquivos, e o relatório imprime quantos caíram nela.
+ * Isentar um arquivo esconderia junto qualquer host real que ele viesse a chamar.
+ */
+const RE_LACO_LOCAL = /^(127\.\d+\.\d+\.\d+|localhost|0\.0\.0\.0|::1|\[::1\])$/
+const RE_RESERVADO_RFC2606 = /(^|\.)(example\.(com|net|org)|test|invalid|localhost)$/
+
+const naoEhFonteExterna = (host) => RE_LACO_LOCAL.test(host) || RE_RESERVADO_RFC2606.test(host)
+
 /** Varre o código e MEDE quais hosts são de fato chamados, e por quem. */
 function medirHosts() {
   const encontrados = new Map()
   const arquivos = []
-  ;(function andar(dir) {
+  const andar = (dir) => {
     for (const nome of readdirSync(dir)) {
       if (['node_modules', '.git', 'docs', 'dist'].includes(nome)) continue
       const c = join(dir, nome)
       if (statSync(c).isDirectory()) andar(c)
       else if (['.ts', '.tsx', '.mjs'].includes(extname(c))) arquivos.push(c)
     }
-  })(join(RAIZ, 'src'))
+  }
+  // 🔴 `scripts/` ENTROU EM 04/08/2026, por auditoria independente.
+  //
+  // A varredura começava e terminava em `src/`. Mas os scripts de build e de validação fazem
+  // chamadas de rede DE VERDADE — `flaviocom.github.io` aparece em seis deles. Um auditor injetou
+  // um host novo e não declarado em `scripts/gerar-imagem-exemplo.mjs` e o portão respondeu
+  // "✅ toda fonte chamada está declarada", exit 0.
+  //
+  // O portão media metade da população e afirmava sobre o todo — que é a forma deste método de
+  // ficar cego: não um vermelho ignorado, um verde que nunca teve como ser vermelho.
+  andar(join(RAIZ, 'src'))
+  andar(join(RAIZ, 'scripts'))
 
-  for (const caminho of arquivos) {
+  const rel = (c) => relative(RAIZ, c).replace(/\\/g, '/')
+  const isentados = arquivos.filter((c) => rel(c) === ISENTO)
+  const foraDeEscopo = new Set()
+  for (const caminho of arquivos.filter((c) => rel(c) !== ISENTO)) {
     const codigo = readFileSync(caminho, 'utf8')
     // Só chamadas de verdade, não menção em comentário: procura URL dentro de fetch/URL literal.
     // 🔴 O `//` de "https://" NÃO é comentário.
@@ -95,10 +140,19 @@ function medirHosts() {
       .replace(/(?<!:)\/\/[^\n]*/g, ' ')
     for (const m of semComentario.matchAll(/https?:\/\/([a-z0-9.-]+)/gi)) {
       const host = m[1].toLowerCase()
+      if (naoEhFonteExterna(host)) { foraDeEscopo.add(host); continue }
       if (!encontrados.has(host)) encontrados.set(host, new Set())
-      encontrados.get(host).add(relative(RAIZ, caminho).replace(/\\/g, '/'))
+      encontrados.get(host).add(rel(caminho))
     }
   }
+  // O número medido só significa alguma coisa junto com a população: "2 hosts" não diz se foram
+  // 26 arquivos ou 4.
+  console.log(
+    `  varredura: ${arquivos.length - isentados.length} arquivo(s) em src/ e scripts/` +
+      (isentados.length ? ` · ${isentados.length} isento (${ISENTO} — é a própria declaração)` : ''),
+  )
+  if (foraDeEscopo.size)
+    console.log(`  fora de escopo: ${[...foraDeEscopo].sort().join(', ')} (laço local ou reservado pela RFC 2606)`)
   return encontrados
 }
 

@@ -62,6 +62,25 @@ const bloco = (turnos, elenco, piso = null) => ({
   malha: { regras: [] }, turnos,
 })
 
+/**
+ * Configuração dos cenários sintéticos. Entrou em 04/08/2026, junto com D9 (que agora confere o
+ * bloco contra o CALENDÁRIO, não contra si mesmo) e D11 (que confere se o bloco cobre o período).
+ *
+ * `santaCeia: []` e malha vazia de propósito: estes cenários exercitam OUTRAS regras, e uma
+ * configuração casada com cada fixture só acrescentaria ruído. Sem configuração NENHUMA, porém, as
+ * duas regras REPROVAM — falha fechada — e todo cenário daqui viraria falso vermelho.
+ */
+const CONFIG_TESTE = {
+  versao: 1,
+  capacidadePadrao: 3,
+  malhaPadrao: { regras: [] },
+  santaCeia: [],
+  identidade: { titulo: 'auditoria', subtitulo: 'auditoria' },
+}
+
+/** A configuração REAL, para as checagens que rodam contra o dado publicado. */
+const CONFIG_REAL = JSON.parse(readFileSync(join(RAIZ, 'public/dados/config.json'), 'utf8'))
+
 // ═══ FRENTE 1 — a validação pode ser enganada? ═════════════════════════════
 const F1 = 'validação'
 
@@ -69,7 +88,7 @@ conferir(F1, 'turno com gente A MAIS passa?', () => {
   const ps = [pessoa('a'), pessoa('b'), pessoa('c'), pessoa('d')]
   const rel = D.validar({
     bloco: bloco([turno('2026-09-06', 'NOITE', ['a', 'b', 'c', 'd'])], ['a', 'b', 'c', 'd']),
-    pessoas: ps, ultimaEscalaAnterior: {},
+    pessoas: ps, ultimaEscalaAnterior: {}, config: CONFIG_TESTE,
   })
   return rel.aprovada
     ? { defeito: true, detalhe: '4 pessoas num turno de 3 vagas foi APROVADO — D1 só olha "menor que"' }
@@ -80,7 +99,7 @@ conferir(F1, 'pessoa repetida DENTRO do mesmo turno passa?', () => {
   const ps = [pessoa('a'), pessoa('b')]
   const rel = D.validar({
     bloco: bloco([turno('2026-09-06', 'NOITE', ['a', 'a', 'b'])], ['a', 'b']),
-    pessoas: ps, ultimaEscalaAnterior: {},
+    pessoas: ps, ultimaEscalaAnterior: {}, config: CONFIG_TESTE,
   })
   return rel.aprovada
     ? { defeito: true, detalhe: 'a mesma pessoa DUAS VEZES no mesmo turno foi aprovada' }
@@ -91,7 +110,7 @@ conferir(F1, 'pessoa INATIVA escalada passa?', () => {
   const ps = [pessoa('a'), pessoa('b'), { ...pessoa('c'), ativo: false }]
   const rel = D.validar({
     bloco: bloco([turno('2026-09-06', 'NOITE', ['a', 'b', 'c'])], ['a', 'b', 'c']),
-    pessoas: ps, ultimaEscalaAnterior: {},
+    pessoas: ps, ultimaEscalaAnterior: {}, config: CONFIG_TESTE,
   })
   return rel.aprovada
     ? { defeito: true, detalhe: 'pessoa DESATIVADA escalada foi aprovada — D8 confere o elenco do bloco, não o campo ativo' }
@@ -102,7 +121,7 @@ conferir(F1, 'lista de dias permitidos VAZIA é tratada como "todos"?', () => {
   const ps = [pessoa('a', { diasPermitidos: [] }), pessoa('b'), pessoa('c')]
   const rel = D.validar({
     bloco: bloco([turno('2026-09-06', 'NOITE', ['a', 'b', 'c'])], ['a', 'b', 'c']),
-    pessoas: ps, ultimaEscalaAnterior: {},
+    pessoas: ps, ultimaEscalaAnterior: {}, config: CONFIG_TESTE,
   })
   return rel.aprovada
     ? { defeito: true, detalhe: 'lista VAZIA deveria significar "nenhum dia", e foi tratada como "sem restrição"' }
@@ -113,7 +132,7 @@ conferir(F1, 'ausência com fim ANTES do início barra alguém indevidamente?', 
   const ps = [pessoa('a', { ausencias: [{ inicio: '2026-09-20', fim: '2026-09-10' }] }), pessoa('b'), pessoa('c')]
   const rel = D.validar({
     bloco: bloco([turno('2026-09-15', 'NOITE', ['a', 'b', 'c'])], ['a', 'b', 'c']),
-    pessoas: ps, ultimaEscalaAnterior: {},
+    pessoas: ps, ultimaEscalaAnterior: {}, config: CONFIG_TESTE,
   })
   return rel.aprovada
     ? { detalhe: 'intervalo invertido não barra ninguém (comportamento defensável)' }
@@ -128,7 +147,7 @@ conferir(F2, 'com elenco no limite, o piso declarado é real?', () => {
   const grade = D.construirGrade({ inicio: '2026-09-01', fim: '2026-10-31', malha: D.MALHA_ATUAL, capacidadePadrao: 3 })
   const r = D.gerar({ inicio: '2026-09-01', fim: '2026-10-31', grade, pessoas: ps, elenco: ps.map((p) => p.id), malha: D.MALHA_ATUAL })
   if (!r.ok) return { detalhe: `não gerou com 6 pessoas, e disse por quê (correto)` }
-  const ctx = { bloco: r.bloco, pessoas: ps, ultimaEscalaAnterior: {} }
+  const ctx = { bloco: r.bloco, pessoas: ps, ultimaEscalaAnterior: {}, config: CONFIG_TESTE }
   const abaixo = ps.filter((p) => {
     const m = D.menorIntervalo(ctx, p.id)
     return m != null && m < r.pisoAlcancado
@@ -174,7 +193,7 @@ conferir(F2, 'a fronteira é respeitada mesmo com o elenco apertado?', () => {
     elenco: ps.map((p) => p.id), malha: D.MALHA_ATUAL, ultimaEscalaAnterior: fronteira,
   })
   if (!r.ok) return { detalhe: 'com todos trabalhando na véspera, declarou impossível (correto)' }
-  const ctx = { bloco: r.bloco, pessoas: ps, ultimaEscalaAnterior: fronteira }
+  const ctx = { bloco: r.bloco, pessoas: ps, ultimaEscalaAnterior: fronteira, config: CONFIG_TESTE }
   const violando = ps.filter((p) => {
     const m = D.menorIntervalo(ctx, p.id)
     return m != null && m < r.pisoAlcancado
@@ -188,11 +207,38 @@ conferir(F2, 'a fronteira é respeitada mesmo com o elenco apertado?', () => {
 const F3 = 'dados publicados'
 
 conferir(F3, 'os dois arquivos de dados (public e docs) são iguais?', () => {
-  const a = readFileSync(join(RAIZ, 'public/dados/blocos.json'), 'utf8')
-  const b = readFileSync(join(RAIZ, 'docs/dados/blocos.json'), 'utf8')
-  return a === b
-    ? { detalhe: 'idênticos' }
-    : { defeito: true, detalhe: 'public/dados e docs/dados DIVERGEM — o site serviria o antigo' }
+  // 🔴 COMPARA TODOS OS ARQUIVOS, não só o `blocos.json` — corrigido em 04/08/2026 por auditoria.
+  //
+  // A pergunta diz "os dois arquivos de dados", no plural, e a checagem olhava UM. Um auditor
+  // trocou `"ativo": true` por `false` no `docs/dados/pessoas.json`, deixando o `public/` intacto,
+  // e esta linha respondeu "✅ idênticos". Na tela isso é um irmão aparecendo como fora da escala
+  // no site publicado enquanto a cópia local ainda o tem ativo — exatamente a divergência
+  // silenciosa que o nome da checagem promete cobrir.
+  //
+  // A lista vem de VARREDURA, não escrita à mão: arquivo de dados novo entra sozinho. Lista
+  // manual é como o portão fica desatualizado sem ninguém notar.
+  const nomes = [...new Set([
+    ...readdirSync(join(RAIZ, 'public/dados')),
+    ...readdirSync(join(RAIZ, 'docs/dados')),
+  ])].filter((n) => n.endsWith('.json')).sort()
+
+  const divergentes = []
+  const ausentes = []
+  for (const nome of nomes) {
+    const pa = join(RAIZ, 'public/dados', nome)
+    const pb = join(RAIZ, 'docs/dados', nome)
+    if (!existsSync(pa) || !existsSync(pb)) { ausentes.push(nome); continue }
+    if (readFileSync(pa, 'utf8') !== readFileSync(pb, 'utf8')) divergentes.push(nome)
+  }
+  if (ausentes.length || divergentes.length)
+    return {
+      defeito: true,
+      detalhe:
+        `public/dados e docs/dados DIVERGEM — o site serviria o antigo` +
+        (divergentes.length ? ` · conteúdo diferente: ${divergentes.join(', ')}` : '') +
+        (ausentes.length ? ` · só existe de um lado: ${ausentes.join(', ')}` : ''),
+    }
+  return { detalhe: `idênticos nos ${nomes.length} arquivo(s): ${nomes.join(', ')}` }
 })
 
 conferir(F3, 'a escala publicada passa na própria validação?', () => {
@@ -207,12 +253,12 @@ conferir(F3, 'a escala publicada passa na própria validação?', () => {
         if (!fronteira[id] || t.data > fronteira[id]) fronteira[id] = t.data
       }
     }
-    const rel = D.validar({ bloco: b, pessoas, ultimaEscalaAnterior: fronteira })
+    const rel = D.validar({ bloco: b, pessoas, ultimaEscalaAnterior: fronteira, config: CONFIG_REAL })
     if (!rel.aprovada) problemas.push(`${b.id}: ${rel.falhasDuras.map((f) => f.id).join(', ')}`)
   }
   return problemas.length
     ? { defeito: true, detalhe: `a escala NO AR reprova: ${problemas.join(' · ')}` }
-    : { detalhe: `${blocos.length} bloco(s) publicados passam nas 15 regras` }
+    : { detalhe: `${blocos.length} bloco(s) publicados passam nas ${D.CATALOGO.length} regras` }
 })
 
 conferir(F3, 'há buraco ou sobreposição entre os blocos?', () => {
@@ -261,12 +307,31 @@ conferir(F4, 'alguma função exportada não tem consumidor NENHUM (nem teste, n
     }
   })(join(RAIZ, 'src'))
 
-  const fontes = arquivos.map((a) => ({ caminho: a, texto: readFileSync(a, 'utf8') }))
+  // 🔴 DOIS PONTOS CEGOS QUE SE SOMAVAM — corrigidos em 04/08/2026 por auditoria independente.
+  //
+  // 1. A busca só casava `export function nome`. Mas o estilo dominante NESTE projeto é
+  //    `export const nome = (...) => ...` — é assim que `Admin`, `AbaAjustar`, `DateSearch`,
+  //    `StatsView` e `ValidationView` são exportados. A forma mais comum era invisível.
+  // 2. A contagem de uso rodava sobre o TEXTO BRUTO. Um `// TODO: tirar calcularPesoSazonal`
+  //    contava como uso — bastava a função ser CITADA num comentário para deixar de ser órfã.
+  //
+  // Um auditor injetou duas funções 100% órfãs, uma por cada ponto cego, e esta checagem
+  // respondeu "toda função exportada é usada", exit 0. Um detector que nunca foi visto achando é
+  // indistinguível de um detector quebrado.
+  const semComentarios = (t) =>
+    t.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/(?<!:)\/\/[^\n]*/g, ' ')
+
+  const fontes = arquivos.map((a) => ({ caminho: a, texto: semComentarios(readFileSync(a, 'utf8')) }))
   const orfas = []
+  let medidas = 0
   for (const f of fontes) {
     if (f.caminho.endsWith('.test.ts')) continue
-    for (const m of f.texto.matchAll(/export (?:async )?function (\w+)/g)) {
+    // `function`, `const`/`let` e `class` — as três formas de exportar algo com nome. `type` e
+    // `interface` ficam de fora de propósito: some no compilado, não vira código morto em produção.
+    const declaracoes = /export\s+(?:async\s+function|function|const|let|class)\s+(\w+)/g
+    for (const m of f.texto.matchAll(declaracoes)) {
       const nome = m[1]
+      medidas++
       // Mais de uma ocorrência no próprio arquivo = a declaração + pelo menos um uso.
       const noProprio = (f.texto.match(new RegExp(`\\b${nome}\\b`, 'g')) ?? []).length > 1
       const noutro = fontes.some(
@@ -277,7 +342,7 @@ conferir(F4, 'alguma função exportada não tem consumidor NENHUM (nem teste, n
   }
   return orfas.length
     ? { defeito: true, detalhe: `sem consumidor NENHUM: ${orfas.join(', ')}` }
-    : { detalhe: 'toda função exportada é usada — pelo próprio arquivo, por outro, ou por teste' }
+    : { detalhe: `${medidas} exportação(ões) medida(s) — todas usadas, e comentário não conta como uso` }
 })
 
 // ═══ FRENTE 5 — os portões mordem mesmo? ═══════════════════════════════════
@@ -301,7 +366,16 @@ conferir(F5, 'o portão de denominação reprova um infrator injetado no código
 
 conferir(F5, 'o portão de fontes reprova um host não declarado?', () => {
   const alvo = join(RAIZ, 'src', '__fonte_temporaria.ts')
-  require('node:fs').writeFileSync(alvo, "export const u = 'https://fonte-nao-declarada.example.com/x'\n", 'utf8')
+  // ⚠️ DUAS SUTILEZAS, as duas descobertas em 04/08/2026 ao consertar o portão de fontes:
+  //
+  // 1. O host NÃO pode ser `*.example.com`: a RFC 2606 reserva esses domínios para documentação, e
+  //    o portão passou a tratá-los como fora de escopo — com um deles aqui, o infrator ficava
+  //    invisível e esta checagem acusava o portão de aprovar quando ele estava certo.
+  // 2. A URL é montada por CONCATENAÇÃO. Escrita inteira, o literal ficaria neste arquivo — que
+  //    agora também é varrido — e o portão apontaria um host não declarado para sempre. O
+  //    arquivo-alvo recebe a URL completa; a fonte deste script, não.
+  const hospedeiro = 'fonte-que-ninguem-declarou.dominio-de-teste.net'
+  require('node:fs').writeFileSync(alvo, `export const u = 'https://${hospedeiro}/x'\n`, 'utf8')
   let saiu = 0
   try {
     execFileSync('node', [join(RAIZ, 'scripts', 'inventariar-fontes.mjs'), '--conferir'], { stdio: 'pipe' })

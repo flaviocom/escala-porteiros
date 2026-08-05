@@ -9,8 +9,23 @@
  * não foi possível."*
  *
  * Então o piso é **descoberto**: calcula-se o maior espaçamento teoricamente possível, tenta-se com
- * ele, e desce-se de um em um até caber. O número final não foi escolhido por ninguém — foi o maior
- * que a escala aceitou —, e ele é **informado**, junto com os que foram tentados e não deram.
+ * ele, e desce-se de um em um até caber. O número final não foi escolhido por ninguém, e ele é
+ * **informado**, junto com os que foram tentados e não deram.
+ *
+ * ⚠️ O QUE ESSE NÚMERO *NÃO* É — precisão exigida por auditoria independente em 04/08/2026.
+ *
+ * Cada piso é tentado **uma vez**, com escolha gulosa em ordem cronológica: no primeiro turno sem
+ * gente suficiente, aquele piso é descartado inteiro. **Não há retrocesso.** Logo o piso alcançado é
+ * *o maior que esta busca conseguiu*, não *o maior que existe* — o algoritmo não tem como distinguir
+ * "impossível de verdade" de "esta sequência de escolhas travou".
+ *
+ * Na escala de 05/08 → 30/12 isso foi medido: o piso 7 falha em 03/10/2026 (sábado com Ensaio +
+ * Noite, 6 vagas no mesmo dia) porque 9 das 16 pessoas estavam a 3–6 dias por escolhas feitas em
+ * 20/09, 27/09 e 30/09. Inverter o desempate daquele dia **não** destravou — evidência de que 6 está
+ * perto do limite real ali. Evidência, não prova.
+ *
+ * Dizer "o maior possível" seria afirmar mais do que o código sustenta. Se um dia a folga apertar,
+ * cabe trocar a busca gulosa por uma com retrocesso — e aí, sim, o número passa a ser um máximo.
  *
  * Se não couber nem com piso 1, o gerador **declara que não foi possível** e diz onde travou. Nunca
  * entrega uma escala pela metade em silêncio.
@@ -18,7 +33,7 @@
  * O que ele NÃO faz: escolher sozinho entre duas escalas válidas. Isso é do Flavio, na tela de
  * conferência.
  */
-import { deData, diferencaEmDias, formatarBR, mesDe, type DataISO } from './datas'
+import { diferencaEmDias, formatarBR, hojeSaoPaulo, mesDe, type DataISO } from './datas'
 import { podeAssumir } from './regras'
 import type { Bloco, Malha, Pessoa, Turno } from './tipos'
 import { ROTULO_TURNO } from './tipos'
@@ -79,9 +94,23 @@ interface Estado {
   datas: Map<string, DataISO[]>
   /** Contagem por pessoa e mês, para o teto. */
   porMes: Map<string, number>
-  /** Formações já usadas, para variar a companhia. */
-  formacoes: Map<string, number>
 }
+
+/**
+ * ⚖️ VARIEDADE DE COMPANHIA: medida, não perseguida — e isto é decisão declarada.
+ *
+ * Até 04/08/2026 havia aqui um `formacoes: Map<string, number>` com o comentário *"formações já
+ * usadas, para variar a companhia"*. Ele era inicializado e **gravado a cada turno — e nunca lido**.
+ * O desempate de quem entra (adiante, em `tentarComPiso`) olha total de turnos, distância desde a
+ * última escala e teto mensal; nunca consultou as formações. Estado morto sob um comentário que
+ * prometia um recurso: quem lesse o código — pessoa ou assistente — concluiria que existe controle
+ * de variedade, e não existe. Uma auditoria independente o encontrou.
+ *
+ * Removido em vez de ligado, de propósito: ligar mudaria a escala já publicada, e escala publicada
+ * não se reescreve por conta própria. A regra **Q4 mede** a repetição de formações e avisa (hoje:
+ * 7 trios repetidos 3+ vezes) — o número aparece na aba Validação. Se um dia isso passar a incomodar,
+ * é item de backlog com nova geração e nova publicação, não um efeito colateral silencioso.
+ */
 
 const chaveMes = (id: string, data: DataISO) => `${id}|${mesDe(data)}`
 
@@ -103,7 +132,7 @@ function tentarComPiso(
   const noElenco = new Set(op.elenco)
   const candidatas = op.pessoas.filter((p) => p.ativo && noElenco.has(p.id))
 
-  const est: Estado = { datas: new Map(), porMes: new Map(), formacoes: new Map() }
+  const est: Estado = { datas: new Map(), porMes: new Map() }
   for (const p of candidatas) est.datas.set(p.id, [])
 
   // A fronteira com o bloco anterior: quem trabalhou em 30/08 não pode cair em 01/09.
@@ -176,8 +205,6 @@ function tentarComPiso(
       est.datas.get(p.id)!.push(turno.data)
       est.porMes.set(chaveMes(p.id, turno.data), (est.porMes.get(chaveMes(p.id, turno.data)) ?? 0) + 1)
     }
-    const chave = [...turno.pessoas].sort().join('|')
-    est.formacoes.set(chave, (est.formacoes.get(chave) ?? 0) + 1)
   }
 
   return { ok: true, turnos }
@@ -199,7 +226,10 @@ export function gerar(op: OpcoesGeracao): Resultado {
         id: `bloco-${op.inicio}-${op.fim}`,
         inicio: op.inicio,
         fim: op.fim,
-        geradoEm: deData(new Date()),
+        // `hojeSaoPaulo()`, não `deData(new Date())`: o segundo lê a data local da MÁQUINA que
+        // gerou. O projeto tem a função certa para isto desde o começo (`datas.ts:117`) e este era
+        // o único ponto que não a usava — achado de auditoria independente em 04/08/2026.
+        geradoEm: hojeSaoPaulo(),
         origem: 'algoritmo',
         pisoAlcancado: piso,
         elenco: [...op.elenco],

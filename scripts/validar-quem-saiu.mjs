@@ -20,7 +20,7 @@
  */
 import { chromium } from 'playwright'
 import { readFileSync, writeFileSync, copyFileSync, rmSync, existsSync } from 'node:fs'
-import { spawn } from 'node:child_process'
+import { subirServidor } from './lib/servidor-de-teste.mjs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -60,9 +60,10 @@ try {
     'utf8',
   )
 
-  servidor = spawn('npx', ['vite', '--port', String(PORTA), '--strictPort'], {
-    cwd: RAIZ, shell: true, stdio: 'ignore',
-  })
+  // Estoura se a porta estiver ocupada. Em 04/08/2026 este script deu 🔴 quatro vezes seguidas
+  // conversando com um vite órfão de execuções anteriores; matando os órfãos, o MESMO código deu
+  // 5 de 5. Falso vermelho e falso verde saem da mesma causa.
+  servidor = await subirServidor({ raiz: RAIZ, porta: PORTA, modo: 'dev' })
 
   const navegador = await chromium.launch()
   const pagina = await navegador.newPage({ viewport: { width: 1400, height: 1600 } })
@@ -73,7 +74,7 @@ try {
   let subiu = false
   for (let i = 0; i < 40 && !subiu; i++) {
     try {
-      await pagina.goto(`http://127.0.0.1:${PORTA}/`, { waitUntil: 'networkidle', timeout: 3000 })
+      await pagina.goto(servidor.url, { waitUntil: 'networkidle', timeout: 3000 })
       subiu = true
     } catch { await pagina.waitForTimeout(500) }
   }
@@ -129,7 +130,7 @@ try {
   await pagina.screenshot({ path: 'capturas/quem-saiu.png', fullPage: false })
   await navegador.close()
 } finally {
-  if (servidor) servidor.kill()
+  if (servidor) await servidor.derrubar()
   if (existsSync(BACKUP)) {
     copyFileSync(BACKUP, ARQ)
     rmSync(BACKUP, { force: true })

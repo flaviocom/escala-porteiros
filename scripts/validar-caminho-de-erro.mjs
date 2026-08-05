@@ -19,7 +19,7 @@
  * Uso: node scripts/validar-caminho-de-erro.mjs
  */
 import { chromium } from 'playwright'
-import { spawn } from 'node:child_process'
+import { subirServidor } from './lib/servidor-de-teste.mjs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -29,9 +29,8 @@ const ALVO = /dados\/blocos\.json/
 
 console.log('O QUE O IRMÃO VÊ QUANDO O CARREGAMENTO FALHA?\n')
 
-const servidor = spawn('npx', ['vite', '--port', String(PORTA), '--strictPort'], {
-  cwd: RAIZ, shell: true, stdio: 'ignore',
-})
+// Recusa-se a subir se a porta estiver ocupada — ver `lib/servidor-de-teste.mjs`.
+const servidor = await subirServidor({ raiz: RAIZ, porta: PORTA, modo: 'dev' })
 
 const checagens = []
 const conferir = (nome, ok, detalhe) => checagens.push({ nome, ok, detalhe })
@@ -49,7 +48,7 @@ try {
     pagina.on('pageerror', (e) => erros.push(e.message))
     await pagina.route(ALVO, aplicar)
     try {
-      await pagina.goto(`http://127.0.0.1:${PORTA}/`, { waitUntil: 'networkidle', timeout: 20_000 })
+      await pagina.goto(servidor.url, { waitUntil: 'networkidle', timeout: 20_000 })
     } catch { /* networkidle pode não chegar quando a requisição é abortada — seguimos e lemos a tela */ }
     await pagina.waitForTimeout(1800)
     const texto = (await pagina.locator('#root').innerText()).trim()
@@ -64,7 +63,7 @@ try {
     let subiu = false
     for (let i = 0; i < 40 && !subiu; i++) {
       try {
-        await p.goto(`http://127.0.0.1:${PORTA}/`, { waitUntil: 'domcontentloaded', timeout: 3000 })
+        await p.goto(servidor.url, { waitUntil: 'domcontentloaded', timeout: 3000 })
         subiu = true
       } catch { await p.waitForTimeout(500) }
     }
@@ -139,7 +138,7 @@ try {
   // Sem esta checagem, um "sempre mostra erro" passaria como sucesso nas quatro acima.
   {
     const pagina = await navegador.newPage({ viewport: { width: 900, height: 900 } })
-    await pagina.goto(`http://127.0.0.1:${PORTA}/`, { waitUntil: 'networkidle', timeout: 20_000 })
+    await pagina.goto(servidor.url, { waitUntil: 'networkidle', timeout: 20_000 })
     await pagina.waitForTimeout(1500)
     const texto = await pagina.locator('#root').innerText()
     await pagina.close()
@@ -152,7 +151,7 @@ try {
 
   await navegador.close()
 } finally {
-  servidor.kill()
+  await servidor.derrubar()
 }
 
 for (const c of checagens) console.log(`  ${c.ok ? '✅' : '🔴'} ${c.nome.padEnd(50)} ${c.detalhe}`)

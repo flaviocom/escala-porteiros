@@ -9,6 +9,7 @@
 
 | Data | Handoff | O que aconteceu |
 |---|---|---|
+| 04/08/2026 | [`HANDOFF_2026-08-04-h.md`](HANDOFF_2026-08-04-h.md) | **Sessão 1, parte 8** — a **auditoria independente** que faltava (P2.10): 6 auditores adversariais em frentes disjuntas, **20 achados** que a autoverificação não via. Bloco vazio era aprovado; D9 era cega ao calendário; **três portões não mordiam**; o verde "ao vivo" podia ser de um bundle antigo. Dois portões novos, com autoteste. |
 | 04/08/2026 | [`HANDOFF_2026-08-04-g.md`](HANDOFF_2026-08-04-g.md) | **Sessão 1, parte 7** — a imagem do WhatsApp ganhou **layout próprio**, no modelo do arquivo que o Flavio usa. A anterior fotografava a tela e saía com **5 dias**. |
 | 04/08/2026 | [`HANDOFF_2026-08-04-f.md`](HANDOFF_2026-08-04-f.md) | **Sessão 1, parte 6** — o grafo de importações mapeado (a tela usa o domínio, sem caminho paralelo) e o achado que ele expôs: **quem sai do elenco perdia o passado na tela**, em silêncio. |
 | 04/08/2026 | [`HANDOFF_2026-08-04-e.md`](HANDOFF_2026-08-04-e.md) | **Sessão 1, parte 5** — o histórico congelado conferido contra a **tela** do site antigo (66/66 dias, 282 nomes, 0 divergências), e o achado de que o site antigo **não mostra o passado**. |
@@ -19,7 +20,7 @@
 
 ---
 
-**Handoff mais recente:** [`HANDOFF_2026-08-04-g.md`](HANDOFF_2026-08-04-g.md)
+**Handoff mais recente:** [`HANDOFF_2026-08-04-h.md`](HANDOFF_2026-08-04-h.md)
 
 Ligações: [`../solicitacoes/INDICE_DE_SOLICITACOES.md`](../solicitacoes/INDICE_DE_SOLICITACOES.md) ·
 [`../historico/INDICE.md`](../historico/INDICE.md) ·

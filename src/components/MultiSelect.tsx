@@ -54,9 +54,19 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
 
   return (
     <div className="relative w-full" ref={containerRef}>
-      <div
+      {/*
+        🔴 Era um `<div onClick>`: funcionava no mouse e NÃO EXISTIA para o teclado — sem foco, sem
+        Enter, sem Espaço, sem nome no leitor de tela. Quem navega por teclado não conseguia usar
+        NENHUM filtro do site. Achado em 04/08/2026 pelo portão `regras-mestras`, depois que ele
+        deixou de olhar só `<button>`. `<button>` entrega foco e teclado de graça.
+      */}
+      <button
+        type="button"
+        aria-haspopup="listbox"
+        aria-expanded={isOpen}
+        title={placeholder}
         className={clsx(
-          "h-12 border rounded-xl shadow-sm bg-white px-4 py-2 cursor-pointer flex items-center justify-between transition-all duration-200 gap-2",
+          "w-full text-left h-12 border rounded-xl shadow-sm bg-white px-4 py-2 cursor-pointer flex items-center justify-between transition-all duration-200 gap-2",
           selected.length > 0 ? "border-2 border-amber-400" : "border-gray-200 hover:border-gray-300 hover:bg-gray-50",
           isOpen && selected.length === 0 && "border-gray-300 ring-2 ring-black/5"
         )}
@@ -92,37 +102,55 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
         </div>
 
         <div className="flex items-center gap-1 shrink-0">
+          {/*
+            `role="button"` + `tabIndex` + teclado à mão, e não um `<button>`: este elemento vive
+            DENTRO do botão do seletor, e botão dentro de botão é HTML inválido — o navegador
+            desmonta a árvore e o clique passa a se comportar de um jeito em cada navegador.
+          */}
           {selected.length > 0 && (
-            <div
+            <span
+              role="button"
+              tabIndex={0}
+              title="Limpar a seleção"
               className="p-1 hover:bg-gray-200 rounded-full transition-colors"
               onClick={(e) => {
                 e.stopPropagation();
                 onChange([]);
               }}
+              onKeyDown={(e) => {
+                if (e.key !== 'Enter' && e.key !== ' ') return;
+                e.preventDefault();
+                e.stopPropagation();
+                onChange([]);
+              }}
             >
               <X className="h-3 w-3 text-gray-400 hover:text-gray-600" />
-            </div>
+            </span>
           )}
           <ChevronDown className={clsx("h-4 w-4 text-gray-400 transition-transform duration-200", isOpen && "rotate-180")} />
         </div>
-      </div>
+      </button>
 
       {isOpen && (
-        <div className="absolute z-50 w-full mt-2 bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-auto py-1 animate-in fade-in zoom-in-95 duration-100">
+        <div role="listbox" aria-multiselectable="true" className="absolute z-50 w-full mt-2 bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-auto py-1 animate-in fade-in zoom-in-95 duration-100">
           {options.map((option) => {
             const isSelected = selected.includes(option.value);
             return (
-              <div
+              <button
+                type="button"
                 key={option.value}
+                role="option"
+                aria-selected={isSelected}
+                title={option.label}
                 className={clsx(
-                  "px-4 py-2.5 text-sm cursor-pointer flex items-center justify-between hover:bg-gray-50 transition-colors",
+                  "w-full text-left px-4 py-2.5 text-sm cursor-pointer flex items-center justify-between hover:bg-gray-50 transition-colors",
                   isSelected ? "text-black font-medium bg-gray-50" : "text-gray-600"
                 )}
                 onClick={() => toggleOption(option.value)}
               >
                 <span>{option.label}</span>
                 {isSelected && <Check className="h-4 w-4 text-black" />}
-              </div>
+              </button>
             );
           })}
           {options.length === 0 && (

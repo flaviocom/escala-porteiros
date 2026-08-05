@@ -114,11 +114,20 @@ for (const b of blocos) for (const t of b.turnos) {
 // ---------------------------------------------------------------------------
 // A REGERAÇÃO
 // ---------------------------------------------------------------------------
-const santaCeia = blocos.flatMap((b) => b.turnos.filter((t) => t.santaCeia).map((t) => t.data)).filter((d) => d >= CORTE)
-const grade = construirGrade({ inicio: CORTE, fim: FIM, malha: MALHA_ATUAL, capacidadePadrao: 3, santaCeia })
+// 🔴 A configuração vem do DADO, não dos blocos nem do código — corrigido em 04/08/2026.
+//
+// A Santa Ceia era deduzida dos turnos já marcados nos blocos, e a malha e a capacidade vinham
+// cravadas. Deduzir o calendário do próprio resultado é circular: se a marca se perdesse, o ensaio
+// concordaria com o erro em vez de acusá-lo. E é exatamente contra isso que D9 passou a conferir.
+const config = JSON.parse(readFileSync(join(RAIZ, 'public/dados/config.json'), 'utf8'))
+const santaCeia = config.santaCeia.filter((d) => d >= CORTE)
+const grade = construirGrade({
+  inicio: CORTE, fim: FIM, malha: config.malhaPadrao,
+  capacidadePadrao: config.capacidadePadrao, santaCeia,
+})
 const r = gerar({
   inicio: CORTE, fim: FIM, grade, pessoas: novoElencoPessoas,
-  elenco: idsAtivos, malha: MALHA_ATUAL, ultimaEscalaAnterior: fronteira,
+  elenco: idsAtivos, malha: config.malhaPadrao, ultimaEscalaAnterior: fronteira,
 })
 
 if (!r.ok) {
@@ -168,9 +177,10 @@ const naAusencia = doNovo.filter((t) => t.data >= '2026-11-01' && t.data <= '202
 provar('família 4 — ausência (novembro inteiro)', naAusencia.length === 0,
   naAusencia.length === 0 ? 'nenhum turno em novembro' : `🔴 ${naAusencia.map((t) => formatarBR(t.data)).join(', ')}`)
 
-// 3 — as 15 regras
-const rel = validar({ bloco: r.bloco, pessoas: novoElencoPessoas, ultimaEscalaAnterior: fronteira })
-provar('as 15 regras do catálogo', rel.falhasDuras.length === 0,
+// 3 — o catálogo inteiro. O número NÃO é escrito à mão: sai de `rel.totalNoCatalogo`. Regra nova
+// entra na conta sozinha — número decorado é como o texto passa a mentir sem ninguém notar.
+const rel = validar({ bloco: r.bloco, pessoas: novoElencoPessoas, ultimaEscalaAnterior: fronteira, config })
+provar(`as ${rel.totalNoCatalogo} regras do catálogo`, rel.falhasDuras.length === 0,
   `${rel.avaliadas} de ${rel.totalNoCatalogo} avaliadas · ${rel.falhasDuras.length} falha(s) dura(s) · ${rel.avisos.length} aviso(s)`)
 
 // 4 — o passado intocado. A prova forte: comparação byte a byte do que existia antes do corte.
@@ -189,7 +199,7 @@ provar('o passado ficou intocado (byte a byte)', antesPublicado === antesDepois,
 // 5 — o distanciamento não desabou
 const pisos = novoElencoPessoas
   .filter((p) => p.ativo)
-  .map((p) => menorIntervalo({ bloco: r.bloco, pessoas: novoElencoPessoas, ultimaEscalaAnterior: fronteira }, p.id))
+  .map((p) => menorIntervalo({ bloco: r.bloco, pessoas: novoElencoPessoas, ultimaEscalaAnterior: fronteira, config }, p.id))
   .filter((v) => v != null)
 const menorPiso = pisos.length ? Math.min(...pisos) : null
 provar('o distanciamento não desabou (≥ 4 dias)', menorPiso != null && menorPiso >= 4,
