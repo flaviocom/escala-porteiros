@@ -369,3 +369,34 @@ irmãos escalados. É diferença de **dado**, não de forma — e é o defeito q
 
 Quatro arquivos novos e um reescrito, num commit. Reverter devolve a captura de tela com corte de
 5 dias.
+
+---
+
+## DB-009 · 04/08/2026 — duas falhas silenciosas no mesmo passo
+
+**Solicitação:** [S-009](docs/solicitacoes/INDICE_DE_SOLICITACOES.md), continuação.
+**Handoff:** [parte 7](docs/handoff/HANDOFF_2026-08-04-g.md).
+
+### 1. Tirei uma trava sem testar o caso que a justificava
+
+Removi o corte de 5 dias da exportação e **não gerei o período inteiro**. O portão recém-escrito
+mediu: **969 × 16384**. Os navegadores cortam o canvas em 16384px e, para caber, encolhem a largura
+— o PNG sai truncado e distorcido, **sem erro**. Troquei uma falha declarada por uma silenciosa.
+
+**Correção:** uma imagem por **mês** — que é como a escala é usada, não remendo. Mais duas travas:
+altura acima do teto vira erro com a razão escrita, e a largura do PNG é conferida **depois** de
+gerado. *Conferir o que saiu, não o que foi pedido.*
+
+### 2. Validei "ao vivo" a versão anterior
+
+25 segundos após o push, o Pages ainda servia o pacote antigo. Tela abriu, nomes apareceram, console
+limpo — e eu quase reportei o comportamento velho como novo. Só apareceu porque o **nome do arquivo
+baixado** era o do formato anterior.
+
+**Correção:** `npm run vivo` compara o `index-*.js` do HTML publicado com o de `docs/assets` antes de
+qualquer outra checagem. Provado com divergência injetada.
+
+### A regra que as duas compartilham
+
+> **Toda trava que eu remover exige rodar o caso que a motivou. E "esperar um pouco" nunca é
+> verificação — comparar é.**

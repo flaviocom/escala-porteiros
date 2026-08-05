@@ -35,6 +35,46 @@ const conferir = async (nome, fn) => {
   }
 }
 
+/**
+ * 🔴 É A VERSÃO NOVA QUE ESTÁ NO AR, OU A ANTERIOR?
+ *
+ * Em 04/08/2026 validei o site "ao vivo" 25 segundos depois do push, e o GitHub Pages ainda servia o
+ * pacote **anterior**. A tela abriu, os nomes apareceram, nada acusou nada — e eu quase reportei o
+ * comportamento antigo como se fosse o novo. Só apareceu porque o nome do arquivo baixado era o do
+ * formato velho, e eu estranhei.
+ *
+ * `esperar um pouco` não é verificação. **Comparar o pacote publicado com o commitado é.**
+ *
+ * Só vale quando o script roda dentro do repositório e mira o site publicado — validação contra o
+ * servidor de desenvolvimento não tem `docs/assets` para comparar, e aí a checagem se declara
+ * inaplicável em vez de inventar um veredito.
+ */
+await conferir('o pacote NO AR é o commitado (não a versão anterior)', async () => {
+  const { readdirSync, existsSync } = await import('node:fs')
+  const { join, dirname } = await import('node:path')
+  const { fileURLToPath } = await import('node:url')
+  const pasta = join(dirname(fileURLToPath(import.meta.url)), '..', 'docs', 'assets')
+
+  if (!existsSync(pasta) || !/^https:\/\//.test(URL)) {
+    return { ok: true, detalhe: 'não se aplica (sem docs/assets ou fora do site publicado)' }
+  }
+
+  const local = readdirSync(pasta).filter((f) => f.endsWith('.js')).sort()
+  const html = await (await fetch(URL, { cache: 'no-store' })).text()
+  const noAr = [...html.matchAll(/assets\/(index-[A-Za-z0-9_-]+\.js)/g)].map((m) => m[1])
+
+  if (!local.length || !noAr.length) {
+    return { ok: false, detalhe: `não consegui comparar (local: ${local.length}, no ar: ${noAr.length})` }
+  }
+  const bate = noAr.every((n) => local.includes(n))
+  return {
+    ok: bate,
+    detalhe: bate
+      ? `${noAr[0]} — mesma versão`
+      : `🔴 no ar: ${noAr.join(', ')} · commitado: ${local.join(', ')} — o Pages ainda não publicou`,
+  }
+})
+
 await conferir('a tela renderizou (não está em branco)', async () => {
   const texto = (await pagina.locator('#root').innerText()).trim()
   return { ok: texto.length > 200, detalhe: `${texto.length} caracteres visíveis` }
