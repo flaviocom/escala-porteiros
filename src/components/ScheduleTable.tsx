@@ -177,11 +177,22 @@ export const ScheduleTable: React.FC<ScheduleTableProps> = ({
   };
 
   if (months.length === 0) {
+    // 🔴 A mensagem tem de dizer a CAUSA certa. Ela era sempre "ajuste os filtros" — inclusive
+    // quando não havia escala nenhuma publicada, e aí a pessoa vai caçar um filtro que nunca
+    // aplicou. Como este componente recebe a lista COMPLETA e os filtros, ele sabe qual é o caso:
+    // lista vazia = não há escala; lista cheia e nada aparecendo = os filtros excluíram tudo.
+    const semEscalaPublicada = shifts.length === 0;
     return (
       <div className="text-center py-16 bg-white rounded-3xl border border-gray-200 border-dashed">
         <Calendar className="h-8 w-8 text-gray-300 mx-auto mb-4" />
-        <h3 className="text-lg font-medium text-gray-900">Nenhum turno encontrado</h3>
-        <p className="text-gray-500 mt-1">Tente ajustar os filtros selecionados.</p>
+        <h3 className="text-lg font-medium text-gray-900">
+          {semEscalaPublicada ? 'Ainda não há escala publicada' : 'Nenhum turno encontrado'}
+        </h3>
+        <p className="text-gray-500 mt-1">
+          {semEscalaPublicada
+            ? 'Assim que a escala do período for publicada, ela aparece aqui.'
+            : 'Tente ajustar os filtros selecionados.'}
+        </p>
       </div>
     );
   }

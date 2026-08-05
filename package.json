@@ -27,6 +27,7 @@
     "vivo:conferir-passado": "node scripts/conferir-historico-contra-site-antigo.mjs",
 
     "vivo:quem-saiu": "node scripts/validar-quem-saiu.mjs",
+    "vivo:erro": "node scripts/validar-caminho-de-erro.mjs",
     "ensaio": "node scripts/ensaio-troca-de-elenco.mjs"
   },
   "dependencies": {
