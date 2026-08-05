@@ -123,7 +123,7 @@ está errada** — e é melhor descobrir antes da congregação descobrir.
 npm run gate
 ```
 
-20 passos, **nesta ordem** — lida do `package.json`, não de memória:
+24 passos, **nesta ordem** — lida do `package.json`, não de memória:
 
 | # | Passo | O que prova |
 |---|---|---|
@@ -146,11 +146,21 @@ npm run gate
 | 17 | `tamanho-docs` | nenhum documento passou do teto do regime dele (raiz 400 · subpasta 800 · append-only 2.000) |
 | 18 | `auditoria` | 20 ataques ao próprio código, com infrator injetado |
 | 19 | `regras-mestras` | tooltip em todo botão |
-| 20 | `build` | compila e gera em `docs/` |
+| 20 | `ensaio` | 🔴 o cenário que ORIGINOU o projeto, ponta a ponta: alguém sai do elenco, outro entra com as 5 restrições, a escala se refaz a partir de um corte |
+| 21 | `tempo` | a geração não regrediu de desempenho |
+| 22 | `build` | compila e gera em `docs/` |
+| 23 | `imagem` | 🔴 o único passo que **renderiza o pixel**: gera a imagem do WhatsApp pelo botão de verdade e falha se o console reclamar |
+| 24 | `selo:gravar` | 🔒 guarda a impressão digital da árvore. `npm run selo:conferir`, antes de commitar, prova que o verde acima é **desta** árvore |
 
 > ⚠️ Esta tabela já esteve **fora de ordem e incompleta**: listava 12 linhas para 15 comandos e
 > trocava `auditoria` de posição — achado por auditoria externa em 05/08/2026. Mexeu no `gate`,
-> mexe aqui no mesmo passo.
+> mexe aqui no mesmo passo (e o portão `fatos:conferir` cobra).
+>
+> 🔴 **`ensaio`, `tempo` e `imagem` ENTRARAM em 05/08/2026**, pela sexta auditoria. Os três rodam sem
+> rede e sem credencial — a exclusão dos `vivo:*` nunca valeu para eles, e ficaram de fora por
+> inércia. O mais caro era o `imagem`: **o único que renderiza o pixel**, e o `BACKLOG P4.6` já
+> declarava que cor trocada, nome cortado e cartão sobreposto só aparecem ao abrir o PNG — três vezes
+> neste projeto um defeito da imagem escapou de todos os outros portões.
 
 ### As validações AO VIVO — fora do gate, de propósito
 

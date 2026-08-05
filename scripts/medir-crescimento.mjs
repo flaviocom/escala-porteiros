@@ -27,7 +27,21 @@ const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..')
 const TETO_API = 1024 * 1024
 const ALARME = 0.60
 
-const arquivos = ['public/dados/blocos.json', 'public/dados/pessoas.json', 'public/dados/config.json']
+/*
+  🔴 MEDIA SÓ `public/dados/`, E QUEM É SERVIDO É `docs/dados/` — sexta auditoria externa, 05/08/2026.
+
+  As duas pastas são gêmeas por construção (o botão Publicar grava nas duas), mas o portão que
+  pergunta *"o dado ainda cabe onde vai ser servido?"* olhava para a que **não** é servida. Medido:
+  inflar `docs/dados/blocos.json` para 900 KB saía `EXIT=0`.
+
+  Mitigado pela auditoria adversarial, que compara os dois diretórios e morde — mas depender de outro
+  portão para cobrir o buraco deste é como não ter fronteira nenhuma. Agora ele mede as duas, e o
+  arquivo maior de cada par é o que vale.
+*/
+const arquivos = [
+  'public/dados/blocos.json', 'public/dados/pessoas.json', 'public/dados/config.json',
+  'docs/dados/blocos.json', 'docs/dados/pessoas.json', 'docs/dados/config.json',
+]
 const linhas = []
 let estourou = false
 
@@ -43,14 +57,18 @@ for (const rel of arquivos) {
 // Quanto tempo ainda cabe, no ritmo medido do próprio dado.
 const blocos = JSON.parse(readFileSync(join(RAIZ, 'public/dados/blocos.json'), 'utf8')).blocos
 const turnos = blocos.flatMap((b) => b.turnos)
-const bytesPorTurno = statSync(join(RAIZ, 'public/dados/blocos.json')).size / Math.max(1, turnos.length)
+const maiorBlocos = Math.max(
+  statSync(join(RAIZ, 'public/dados/blocos.json')).size,
+  statSync(join(RAIZ, 'docs/dados/blocos.json')).size,
+)
+const bytesPorTurno = maiorBlocos / Math.max(1, turnos.length)
 
 // Ritmo anual: conta os turnos do ano com mais dados, e não a média de um período parcial.
 const porAno = {}
 for (const t of turnos) porAno[t.data.slice(0, 4)] = (porAno[t.data.slice(0, 4)] ?? 0) + 1
 const turnosPorAno = Math.max(...Object.values(porAno), 1)
 const bytesPorAno = bytesPorTurno * turnosPorAno
-const anosAteOTeto = Math.floor((TETO_API - statSync(join(RAIZ, 'public/dados/blocos.json')).size) / bytesPorAno)
+const anosAteOTeto = Math.floor((TETO_API - maiorBlocos) / bytesPorAno)
 
 if (process.argv.includes('--json')) {
   console.log(JSON.stringify({ linhas, turnos: turnos.length, turnosPorAno, bytesPorAno, anosAteOTeto }, null, 2))

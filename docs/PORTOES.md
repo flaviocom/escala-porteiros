@@ -40,7 +40,7 @@ alguma tiver caractere de controle.
 
 ---
 
-## Os 20 passos do `npm run gate`
+## Os 24 passos do `npm run gate`
 
 ### 1. `typecheck` — `tsc --noEmit`, `strict` ligado
 Sem `strict`, o TypeScript nem estreita união discriminada, e metade das garantias de tipo do

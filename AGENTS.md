@@ -157,7 +157,7 @@ npm run dev
 **O GATE — nenhuma mudança significativa passa sem:**
 
 ```bash
-npm run gate      # 20 passos: typecheck · testes (2 fusos) · denominação · fontes · contagem · cadeia · genérico + autoteste · catálogo gerado · comandos citados · arquitetura · auditoria · regras mestras · build
+npm run gate      # 24 passos: typecheck · testes (2 fusos) · denominação · fontes · contagem · cadeia · genérico + autoteste · catálogo gerado · comandos citados · arquitetura · auditoria · regras mestras · build
 ```
 
 O que ele encadeia, e por que cada um existe:

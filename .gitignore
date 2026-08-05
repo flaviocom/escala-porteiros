@@ -29,3 +29,6 @@ dist/
 # porque cada script novo acrescenta um nome que ninguém lembra de listar. Pasta
 # cobre a CLASSE: script novo escreve aqui e já está coberto, sem editar este arquivo.
 capturas/
+
+# O selo do gate é local: ele descreve ESTA árvore, e não faz sentido versionado.
+node_modules/.selo-do-gate
