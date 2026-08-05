@@ -16,7 +16,7 @@
  * Uso: node scripts/autoteste-portao-generico.mjs
  */
 import { execFileSync } from 'node:child_process'
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -123,6 +123,20 @@ const CASOS = [
     esperaAchado: false,
   },
   {
+    nome: '🔴 "sem porteiro escalado" É achado — a frase que escapou de 4 termos',
+    arquivos: { 'src/admin/AbaAjustar.tsx': `const t = <span>sem porteiro escalado — não há o que ajustar</span>\n` },
+    esperaAchado: true,
+  },
+  {
+    // 🔴 O par do caso acima. O termo "porteiro" nasceu largo demais e acusou 9 linhas que eram o
+    //    NOME DO REPOSITÓRIO. Identidade de infraestrutura não vai para tela nenhuma.
+    nome: '🔴 `escala-porteiros` (slug do repositório) NÃO é achado',
+    arquivos: {
+      'src/admin/github.ts': `const REPO = 'escala-porteiros'\nconst CHAVE = 'escala-porteiros:cofre'\nconst M = 'ESCALA-PORTEIROS-COFRE-V1'\nconst u = 'https://flaviocom.github.io/escala-porteiros/'\n`,
+    },
+    esperaAchado: false,
+  },
+  {
     nome: 'fixture de teste com o nome do cliente NÃO é achado — teste não vai para o ar',
     arquivos: { 'src/dados/carregar.test.ts': `const doAr = { identidade: { titulo: 'Escala Porteiros', subtitulo: 'JD. São Luiz' } }\n` },
     esperaAchado: false,
@@ -136,8 +150,49 @@ const CASOS = [
   },
 ]
 
+/**
+ * 🔒 A AUTODEFESA MORDE?
+ *
+ * O portão confere as próprias expressões antes de medir. Aqui isso é PROVADO: uma cópia dele
+ * recebe um byte de backspace (0x08) dentro de uma regex — a corrupção exata que aconteceu três
+ * vezes em 05/08/2026 — e tem de morrer com saída 2 em vez de imprimir "0 achados".
+ *
+ * Sem este caso, a autodefesa seria mais uma peça que ninguém sabe se funciona.
+ */
+function autodefesaMorde() {
+  const raiz = mkdtempSync(join(tmpdir(), 'portao-doente-'))
+  try {
+    const fonte = readFileSync(PORTAO, 'utf8')
+    // Troca a borda `\b` de um termo pelo caractere de controle que o script mal-escrito produz.
+    const doente = fonte.replace(String.raw`\birm[ãa]os?\b`, `${String.fromCharCode(8)}irm[ãa]os?${String.fromCharCode(8)}`)
+    if (doente === fonte) return { ok: false, motivo: 'não consegui injetar a corrupção — o termo mudou de forma' }
+
+    const copia = join(raiz, 'portao.mjs')
+    writeFileSync(copia, doente, 'utf8')
+    mkdirSync(join(raiz, 'src'), { recursive: true })
+    writeFileSync(join(raiz, 'src', 'App.tsx'), LIMPO, 'utf8')
+
+    try {
+      execFileSync(process.execPath, [copia, '--raiz', raiz], { encoding: 'utf8' })
+      return { ok: false, motivo: 'o portão doente rodou e deu VERDE — a autodefesa não morde' }
+    } catch (e) {
+      if (e.status !== 2) return { ok: false, motivo: `esperava saída 2 (portão quebrado), veio ${e.status}` }
+      if (!String(e.stderr).includes('O PORTÃO ESTÁ QUEBRADO')) return { ok: false, motivo: 'saiu 2, mas sem dizer o motivo' }
+      return { ok: true }
+    }
+  } finally {
+    rmSync(raiz, { recursive: true, force: true })
+  }
+}
+
 console.log('AUTOTESTE — portão de produto genérico\n')
 let falhas = 0
+
+const defesa = autodefesaMorde()
+if (!defesa.ok) falhas++
+console.log(`  ${defesa.ok ? '✅' : '🔴'} 🔒 a AUTODEFESA morde: portão com regex corrompida morre em vez de dar verde`)
+if (!defesa.ok) console.log(`       ${defesa.motivo}`)
+
 for (const c of CASOS) {
   const r = medir(c.arquivos)
   const achou = r.achados.length > 0
@@ -148,6 +203,9 @@ for (const c of CASOS) {
   if (!ok && r.achados.length) console.log(`       ${r.achados.map((a) => `${a.arquivo}:${a.linha} ${a.termo}`).join(' · ')}`)
 }
 
-console.log(`\n  ${falhas ? '🔴' : '✅'} ${CASOS.length - falhas} de ${CASOS.length} casos corretos`)
+// O `+ 1` é o caso da autodefesa, que roda fora da lista. Contar só `CASOS.length` faria o próprio
+// autoteste medir menos do que diz — que é o defeito que ele existe para pegar.
+const total = CASOS.length + 1
+console.log(`\n  ${falhas ? '🔴' : '✅'} ${total - falhas} de ${total} casos corretos (${CASOS.length} de varredura + 1 de autodefesa)`)
 if (falhas) console.log('  O portão NÃO está medindo o que diz medir.')
 process.exit(falhas ? 1 : 0)

@@ -38,11 +38,44 @@ const RAIZ = argRaiz >= 0 ? process.argv[argRaiz + 1] : join(dirname(fileURLToPa
  * `package.json` e em documentação — coisas que não vão para a tela de ninguém. O que se mede é o
  * texto que o USUÁRIO LÊ, e esse vem sempre em uma destas formas.
  */
+/*
+  🔒 AUTODEFESA — o portão confere as PRÓPRIAS expressões antes de medir qualquer coisa.
+
+  Isto aconteceu TRÊS vezes em 05/08/2026: um `\b` escrito por script vira byte de backspace
+  (0x08) dentro da expressão. A regex continua sintaticamente válida, o portão roda, imprime
+  "termos procurados ..... 6 · achados ..... 0" — e o 0 é verdade sobre uma busca que não procura
+  nada. Das três, duas só apareceram por acaso.
+
+  Um portão que pode adoecer em silêncio não é portão. Aqui ele morre alto, antes de dar verde.
+*/
+function conferirAsProprias(termos) {
+  const doentes = termos.filter((t) => /[\u0000-\u0008\u000b\u000c\u000e-\u001f]/.test(t.re.source))
+  if (doentes.length) {
+    console.error('🔴 O PORTÃO ESTÁ QUEBRADO — não é o código que está limpo, é a busca que morreu.\n')
+    for (const d of doentes) {
+      const bytes = [...d.re.source].map((c) => (c.codePointAt(0) < 32 ? `<0x${c.codePointAt(0).toString(16).padStart(2, '0')}>` : c)).join('')
+      console.error(`   termo "${d.nome}" tem caractere de controle: /${bytes}/`)
+    }
+    console.error('\n   Causa conhecida: `\\b` escrito por script vira backspace (0x08).')
+    console.error('   Conserto: construir a expressão com `new RegExp(String.raw`...`, \'i\')`.')
+    process.exit(2)
+  }
+}
+
 const TERMOS = [
   { re: /JD\.?\s*S[ÃA]O\s*LUIZ/i, nome: 'JD. São Luiz' },
   { re: /Congrega[çc][ãa]o\s+Crist[ãa]/i, nome: 'Congregação Cristã' },
   { re: /Escala\s+(de\s+)?[Pp]orteiro/i, nome: 'Escala (de) Porteiros' },
   { re: /escala\s+de\s+porteiros\s+de\s+uma\s+congrega/i, nome: 'prompt do motor cravado' },
+  // 🔴 Este termo entrou DEPOIS, e por isso está aqui: a frase "sem porteiros escalados" na imagem
+  //    da Santa Ceia passou pelos 4 termos acima e só foi pega quando a imagem foi ABERTA e lida.
+  //    Todo achado que escapa do portão vira termo do portão — senão o portão não aprende.
+  //    ⚠️ E nasceu LARGO DEMAIS: com `\b` simples, acusou 10 linhas, das quais 9 eram o **nome do
+  //    repositório** — `escala-porteiros` como slug do GitHub, chave do cofre, marca do arquivo
+  //    cifrado e URL do site. Isso é identidade de INFRAESTRUTURA: não vai para tela nenhuma, e
+  //    trocar o repositório é outra tarefa. Portão que acusa o inocente é portão que alguém desliga.
+  //    A borda `(?<![-\w])…(?![-\w])` separa a palavra em prosa do pedaço de um identificador.
+  { re: new RegExp(String.raw`(?<![-\w])porteiro(s)?(?![-\w])`, 'i'), nome: 'ofício cravado ("porteiro")' },
   // "Irmão" é vocabulário de congregação. Ele vive em `config.identidade.pessoa` desde 05/08/2026 —
   // aqui se garante que não volte para dentro de um `placeholder` ou de um `<th>` sem ninguém ver.
   // 🔴 Este termo NASCEU INERTE. Escrito por script, o `\b` do JavaScript virou um byte de
@@ -70,6 +103,8 @@ const TERMOS = [
   Isenção que não é precisa é buraco: no dia em que alguém cravasse "JD. São Luiz" DENTRO deste
   arquivo — o lugar mais natural do mundo para fazer isso — o portão teria olhado para o outro lado.
 */
+conferirAsProprias(TERMOS)
+
 const PERMITIDOS = new Set([])
 
 /** Tira comentários e o conteúdo de blocos JSX de comentário, preservando o número da linha. */
@@ -81,6 +116,16 @@ function semComentarios(texto) {
   fora = fora.replace(/<!--[\s\S]*?-->/g, (m) => m.replace(/[^\n]/g, ' '))
   return fora
 }
+
+/*
+  🔴 O QUE FOI PULADO, CONTADO E IMPRESSO.
+
+  Ao ganhar a exclusão de `.test.ts`, a população varrida caiu de 38 para 29 arquivos — e o portão
+  seguiu dizendo só "arquivos varridos ..... 29", sem nenhuma pista de que 9 tinham saído. Portão
+  que mede menos do que diz é a forma mais silenciosa de perder cobertura: ninguém compara o número
+  de hoje com o de ontem. Agora os dois números aparecem juntos e a conta fecha à vista.
+*/
+const pulados = []
 
 function arquivos(dir, acc = []) {
   for (const nome of readdirSync(dir)) {
@@ -97,7 +142,7 @@ function arquivos(dir, acc = []) {
       esse nome não chegaria a tela nenhuma, e o preço da alternativa seria um portão que reprova o
       próprio teste que prova a correção — portão que atrapalha é portão que alguém desliga.
     */
-    if (/\.test\.(ts|tsx)$/.test(nome)) continue
+    if (/\.test\.(ts|tsx)$/.test(nome)) { pulados.push(relative(RAIZ, p).replace(/\\/g, '/')); continue }
     if (/\.(ts|tsx|html|css)$/.test(nome)) acc.push(p)
   }
   return acc
@@ -124,7 +169,8 @@ if (process.argv.includes('--json')) {
 } else {
   console.log(`PORTÃO — produto genérico (§0 do AGENTS.md)\n`)
   console.log(`  arquivos varridos ......... ${medidos}`)
-  console.log(`  isentos (declarados) ...... ${[...PERMITIDOS].join(', ')}`)
+  console.log(`  testes pulados ............ ${pulados.length} (fixture não vai para o ar)`)
+  console.log(`  isentos (declarados) ...... ${[...PERMITIDOS].join(', ') || '(nenhum)'}`)
   console.log(`  termos procurados ......... ${TERMOS.length}`)
   console.log(`  achados ................... ${achados.length}\n`)
   for (const a of achados) {

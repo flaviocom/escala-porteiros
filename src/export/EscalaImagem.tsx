@@ -213,7 +213,13 @@ export function EscalaImagem({ shifts, geradoEm, porTurno = 3, identidade }: Dad
                   </div>
                   {t.assignedBrothers.length === 0 ? (
                     <span style={{ fontSize: 20, fontWeight: 700, color: '#94a3b8' }}>
-                      sem porteiros escalados
+                      {/*
+                        🔴 Achado olhando o PIXEL, não o código — 05/08/2026. O portão de escopo
+                        varreu 38 arquivos e deu 0 achados; esta frase passou porque nenhum dos 5
+                        termos casava com "sem porteiros escalados". Só apareceu quando a imagem
+                        gerada foi de fato ABERTA e lida. Portão não substitui olhar.
+                      */}
+                      sem {identidade.pessoa.plural} escalados
                     </span>
                   ) : (
                     /*

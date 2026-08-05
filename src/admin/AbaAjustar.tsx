@@ -179,6 +179,7 @@ export const AbaAjustar: React.FC<Props> = ({ bloco, pessoas, fronteira, aoAlter
                   setSelecionado(selecionado?.turno === i && selecionado.pessoa === pessoa ? null : { turno: i, pessoa })
                 }
                 candidatas={selecionado?.turno === i ? candidatas(i, selecionado.pessoa) : []}
+                vocabulario={config.identidade.pessoa}
                 aoTrocar={(entrando) => selecionado && trocar(i, selecionado.pessoa, entrando)}
               />
             ))}
@@ -197,14 +198,16 @@ const LinhaTurno: React.FC<{
   aoSelecionar: (pessoa: string) => void
   candidatas: { p: Pessoa; pode: boolean; motivo: string }[]
   aoTrocar: (entrando: string) => void
-}> = ({ turno, alterado, nome, selecionado, aoSelecionar, candidatas, aoTrocar }) => {
+  /** Como este cliente chama quem é escalado — vem de `config.identidade.pessoa`. */
+  vocabulario: { singular: string; plural: string }
+}> = ({ turno, alterado, nome, selecionado, aoSelecionar, candidatas, aoTrocar, vocabulario }) => {
   if (turno.santaCeia) {
     return (
       <div className="px-4 py-3 rounded-xl border border-amber-200 bg-amber-50 text-sm">
         <span className="font-semibold text-amber-900">
           {formatarBR(turno.data)} · SANTA CEIA
         </span>
-        <span className="text-amber-700 text-xs ml-2">sem porteiro escalado — não há o que ajustar</span>
+        <span className="text-amber-700 text-xs ml-2">sem {vocabulario.singular.toLowerCase()} escalado — não há o que ajustar</span>
       </div>
     )
   }
