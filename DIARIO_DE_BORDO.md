@@ -284,3 +284,48 @@ Ceia — 07/06 preservado no histórico (o que os irmãos viram) e 16/08 no bloc
 
 Script de verificação: ninguém o chama, apagá-lo não muda comportamento — só perde a prova.
 Os nomes no `package.json` são atalhos; removê-los não afeta o GATE.
+
+---
+
+## DB-007 · 04/08/2026 — mapear o grafo antes de mexer, e o que ele denunciou
+
+**Solicitação:** [S-008](docs/solicitacoes/INDICE_DE_SOLICITACOES.md) — sexto "go".
+**Handoff:** [parte 6](docs/handoff/HANDOFF_2026-08-04-f.md).
+
+### O que se perguntou
+
+O ensaio da parte 5 provou o domínio. Mas provar o domínio só vale se for **o domínio que a tela
+usa** — e o site antigo tinha justamente lógica duplicada. Então: mapear o grafo de importações
+inteiro **antes** de tocar em qualquer coisa.
+
+A resposta foi boa: `Admin`, `AbaAjustar` e `ValidationView` importam do domínio, sem cópia
+paralela. O ensaio prova o motor certo. Mas o mapa expôs outra coisa.
+
+### Decisões
+
+| # | Decisão | Por quê |
+|---|---|---|
+| 1 | `BROTHERS` contém **todos**, com `ativo` | filtrar por `ativo` é decisão de quem **escala**, não de quem **desenha** — e o domínio já filtra no lugar certo (regra D8) |
+| 2 | Estatísticas **contam sempre** | o guard `if (counts[bId])` descartava turno em silêncio; contar sempre transforma dado estranho em linha visível |
+| 3 | Quem saiu aparece **marcado**, por último | some-lo apaga o passado; escondê-lo confunde com quem escala hoje |
+| 4 | Frente **"camada de tela"** na auditoria | teste de unidade cobre a raiz, não os consumidores: um `.filter(ativo)` de volta no componente deixaria o GATE verde |
+
+### O achado
+
+`definirPessoas` filtrava `.filter((p) => p.ativo)` — recriando na tela o órfão que
+`dominio/tipos.ts` proíbe em letra maiúscula, **três camadas acima de onde a regra foi escrita**.
+
+Medido ao vivo com o Carlos Henrique (36 turnos no passado) desativado: o código anterior mostrava
+o **id cru**, não achava nada na busca, e **sumia com os 36 turnos das estatísticas** — com o
+console **limpo**. Ausência de erro não é ausência de defeito.
+
+### O erro no meio do conserto
+
+A checagem nova acusou o **próprio comentário** que documenta o defeito. Régua que lê texto sobre
+código como código — mesma família de `SANTA CEIA` reprovado por conter "IA". Corrigida tirando
+comentários antes de medir, com `(?<!:)` para não engolir o `//` de URL.
+
+### Como reverter
+
+Três arquivos (`types/scheduler.ts`, `App.tsx`, `components/StatsView.tsx`) e um commit. Reverter
+devolve o defeito: quem sair do elenco perde o passado na tela.

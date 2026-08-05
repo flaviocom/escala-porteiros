@@ -5,7 +5,7 @@
 > **Última atualização:** 04/08/2026 · **Fuso:** America/São_Paulo
 >
 > **Cadeia de navegação, nesta ordem:**
-> **`ESTADO.md` (você está aqui)** → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-04-e.md) → [`BACKLOG.md`](BACKLOG.md)
+> **`ESTADO.md` (você está aqui)** → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-04-f.md) → [`BACKLOG.md`](BACKLOG.md)
 > *onde estamos · o que aconteceu na última sessão e por quê · o que fazer a seguir*
 >
 > **Roteador do projeto:** [`AGENTS.md`](AGENTS.md) ·
@@ -99,6 +99,12 @@ comentário). Consertados, com os casos reais virando teste permanente.
 ## O que está em curso
 
 **Nada em execução.** O backlog técnico está vazio pela segunda vez.
+
+🔴 **O achado mais consequente do dia veio de mapear o grafo de importações** (parte 6):
+`definirPessoas` filtrava por `ativo` e, com isso, **quem saísse do elenco perdia o passado na
+tela** — nome virava id cru, a busca não o achava, e os turnos dele sumiam das estatísticas. Sem
+erro, sem tela branca: **silencioso**. Latente hoje (as 16 pessoas estão ativas), certo no primeiro
+uso do recurso que originou o projeto. Corrigido, com 5 testes e uma frente nova na auditoria.
 
 **O cenário que originou o projeto está provado de ponta a ponta:** `npm run ensaio` tira o mais
 escalado, põe um irmão com as **quatro** famílias de restrição de uma vez, refaz a escala e mede

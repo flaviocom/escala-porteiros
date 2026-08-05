@@ -204,3 +204,23 @@ byte a byte idêntico. Achou um defeito real no produto: o motivo de barragem fi
 hook passou a estourar. **Hook que estoura falha ABERTO** — o comando seguinte, que ele existe para
 barrar, passou sem aviso. O pré-voo agora roda cada hook e este é o único item **obrigatório** do
 grupo MÉTODO. ERRO 36 e ERRO 37 em `padroes-globais@ee95d91`.
+
+---
+
+## [04/08/2026] Sessão 1, parte 6 — o grafo, e o passado que sumia na tela
+
+**Gatilho.** Sexto "go" (S-008), com um pedido de panorama no meio.
+
+- **Grafo de importações mapeado antes de mexer**: a tela usa o domínio que o ensaio provou, sem
+  caminho paralelo. A pergunta valia: o site antigo tinha lógica duplicada.
+- 🔴 **Achado:** `definirPessoas` filtrava por `ativo` → **quem sai do elenco perdia o passado na
+  tela**. Medido ao vivo (Carlos Henrique, 36 turnos): id cru no lugar do nome, busca vazia,
+  estatísticas sem os turnos dele. **Console limpo** — o defeito era silencioso.
+- **Corrigido**: `BROTHERS` com todos + `ativo`; filtrar é decisão de quem escala, não de quem
+  desenha. 5 testes (3 mordem) + frente "camada de tela" na auditoria adversarial.
+- 🔴 **Falso positivo da checagem nova**: acusou o comentário que documenta o defeito. Corrigido.
+
+**82 testes verdes em 2 fusos · auditoria 20 checagens, 0 achados · 17 documentos, 0 órfãos.**
+
+**Skills acionadas:** `graphify` (mapa antes de mexer), `engineering-loop`, `ponytail`,
+`documentacao-auditavel`, `loop-autonomo`.
