@@ -439,3 +439,44 @@ não era o documento.**
 
 `exportarCofre`/`importarCofre` em `cofre.ts` e dois componentes na tela. Remover não afeta quem já
 está configurado.
+
+---
+
+## DB-011 · 04/08/2026 — o encavalamento que não estava no DOM
+
+**Solicitação:** [S-011](docs/solicitacoes/INDICE_DE_SOLICITACOES.md).
+**Handoff:** [parte 8](docs/handoff/HANDOFF_2026-08-04-h.md).
+
+### O que a medição desmentiu
+
+O Flavio mandou a captura de novembro com os nomes sobrepostos. A hipótese óbvia era "a quebra de
+linha está errada". Medi antes de mexer:
+
+```
+ linha MANHÃ  topo 266  fundo 351
+ linha NOITE  topo 351  fundo 439      ← encosta, não sobrepõe
+```
+
+**No DOM não há sobreposição.** Ela existe só na **imagem**: a captura reproduz o layout num clone,
+e ali o ponto de quebra do `flex-wrap` diverge do original.
+
+### Decisões
+
+| # | Decisão | Por quê |
+|---|---|---|
+| 1 | **Eliminar** a quebra, não ajustá-la | ajustar o ponto de quebra trataria o sintoma e reabriria com qualquer nome mais longo; coluna fixa não tem ponto de decisão para o clone discordar |
+| 2 | Uma contagem de colunas para a imagem inteira | é o que alinha os nomes de um cartão para o outro, não só dentro da linha |
+| 3 | Seletor **só quando há escolha** | um mês em vista é o caso comum; ele não paga o preço da pergunta |
+| 4 | `<dialog>` nativo | a barra lateral tem rolagem própria e recortaria um painel absoluto; e vêm foco preso, `Esc` e fundo inerte de graça |
+| 5 | O botão diz **quantos arquivos** saem | a surpresa de download era o defeito, não o número de meses |
+
+### O erro na régua do teste
+
+`getByRole('button', { name: /Gerar/i })` casou com o botão de **fechar** — `title="Fechar sem
+gerar"`, e o nome acessível cai no `title` quando não há texto. Rótulo vazio, clique errado, produto
+certo. **Nome acessível não é texto visível.**
+
+### Como reverter
+
+`SeletorDeMeses.tsx` e a grade em `EscalaImagem.tsx`. Reverter devolve o encavalamento na imagem e
+os dez downloads de uma vez.
