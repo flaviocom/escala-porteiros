@@ -294,8 +294,10 @@ const PrimeiroAcesso: React.FC<{ aoAbrir: (s: Segredos) => void }> = ({ aoAbrir 
       {/* Os campos de senha só aparecem quando existe um segredo para proteger. */}
       {temSegredo && (
         <>
-          <Campo rotulo="Senha (mínimo 8 caracteres)" tipo="senha" valor={senha} aoMudar={setSenha} />
-          <Campo rotulo="Repita a senha" tipo="senha" valor={repetir} aoMudar={setRepetir} />
+          <Campo rotulo="Senha (mínimo 8 caracteres)" tipo="senha" valor={senha} aoMudar={setSenha}
+            nome="senha-do-cofre" autoCompletar="new-password" />
+          <Campo rotulo="Repita a senha" tipo="senha" valor={repetir} aoMudar={setRepetir}
+            nome="senha-do-cofre-repetida" autoCompletar="new-password" />
         </>
       )}
       <Campo
@@ -348,9 +350,19 @@ const Entrar: React.FC<{ aoAbrir: (s: Segredos) => void }> = ({ aoAbrir }) => {
 
   return (
     <Moldura titulo="Área administrativa" subtitulo="Escala de porteiros — JD. São Luiz">
-      <Campo rotulo="Senha" tipo="senha" valor={senha} aoMudar={setSenha} aoEnter={entrar} />
+      <p className="mb-4 text-sm leading-relaxed text-gray-600">
+        O token já está guardado neste aparelho, cifrado. Ele <strong>não é pedido de novo</strong> —
+        só esta senha, que é a chave que o abre.
+      </p>
+      <Campo rotulo="Senha" tipo="senha" valor={senha} aoMudar={setSenha} aoEnter={entrar}
+        nome="senha-do-cofre" autoCompletar="current-password" />
       {erro && <Aviso tom="erro">{erro}</Aviso>}
       <Botao aoClicar={entrar} ocupado={ocupado} icone={KeyRound}>Entrar</Botao>
+      <p className="mt-3 text-xs leading-relaxed text-gray-500">
+        Para não digitar nem isto: quando o navegador perguntar <strong>“salvar senha?”</strong>,
+        aceite. Da próxima vez ele preenche sozinho e você só clica em <em>Entrar</em>. Guardar a
+        senha no navegador é mais seguro do que este site guardá-la — o token continua cifrado.
+      </p>
       <button title="Apaga o token deste navegador para configurar de novo. Não revoga o token no GitHub"
         onClick={() => { if (confirm('Isto apaga o token guardado neste navegador. Continuar?')) { apagarCofre(); location.reload() } }}
         className="w-full mt-3 text-xs text-gray-400 hover:text-gray-600 underline"
@@ -1354,7 +1366,22 @@ const Moldura: React.FC<{ titulo: string; subtitulo: string; children: React.Rea
 const Campo: React.FC<{
   rotulo: string; tipo?: 'texto' | 'senha'; valor: string
   aoMudar: (v: string) => void; dica?: string; aoEnter?: () => void
-}> = ({ rotulo, tipo = 'texto', valor, aoMudar, dica, aoEnter }) => {
+  /**
+   * 🔴 `name` + `autocomplete` — acrescentados em 05/08/2026, e não são detalhe de formulário.
+   *
+   * Sem eles o Chrome NUNCA oferece "salvar senha", e o Flavio tinha de digitar a senha do cofre a
+   * cada visita. O pedido dele era "entrou uma vez, fica liberado".
+   *
+   * A saída certa é o gerenciador de senhas do navegador — não guardar o token em claro. O token
+   * continua cifrado; quem passa a lembrar a senha é o Chrome, que existe para isso e a guarda
+   * melhor do que qualquer coisa que este site pudesse inventar.
+   *
+   * ⚠️ Nos campos de TOKEN e CHAVE DO MOTOR o valor é `off`: eles não são a senha da pessoa, e
+   * oferecer para salvá-los junto faria o navegador propor a senha errada no retorno.
+   */
+  nome?: string
+  autoCompletar?: string
+}> = ({ rotulo, tipo = 'texto', valor, aoMudar, dica, aoEnter, nome, autoCompletar }) => {
   const [visivel, setVisivel] = useState(false)
   return (
     <label className="block mb-4">
@@ -1362,6 +1389,8 @@ const Campo: React.FC<{
       <div className="relative mt-1.5">
         <input
           type={tipo === 'senha' && !visivel ? 'password' : 'text'}
+          name={nome}
+          autoComplete={autoCompletar ?? (tipo === 'senha' ? 'off' : undefined)}
           value={valor}
           onChange={(e) => aoMudar(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && aoEnter?.()}
