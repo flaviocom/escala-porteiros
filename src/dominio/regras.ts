@@ -77,6 +77,14 @@ export interface Regra {
   id: string
   titulo: string
   familia: Familia
+  /**
+   * O que esta regra confere, em linguagem de quem NÃO construiu o sistema.
+   *
+   * 🔴 Existe porque o produto vai ser vendido. Quem escala dois turnos na portaria de um prédio
+   * precisa entender a conferência sem conhecer o vocabulário desta congregação — e sem conhecer
+   * o nosso. `medida` diz o NÚMERO; isto aqui diz o SENTIDO, que é o que falta para decidir.
+   */
+  explicacao: string
   avaliar(ctx: Contexto): ResultadoRegra
 }
 
@@ -118,6 +126,8 @@ const D1: Regra = {
   id: 'D1',
   titulo: 'Capacidade — cada turno com o número certo de pessoas',
   familia: 'DURA',
+  explicacao:
+    'Todo turno precisa ter exatamente o número de pessoas que ele pede. Com gente a menos, o posto fica descoberto; com gente a mais, alguém foi chamado à toa.',
   avaliar(ctx) {
     const v: Violacao[] = []
     let completos = 0
@@ -141,6 +151,8 @@ const D2: Regra = {
   id: 'D2',
   titulo: 'Sem repetição no mesmo dia',
   familia: 'DURA',
+  explicacao:
+    'Ninguém serve dois turnos no mesmo dia — nem manhã e noite do mesmo domingo.',
   avaliar(ctx) {
     const v: Violacao[] = []
     const porDia = new Map<DataISO, string[]>()
@@ -166,6 +178,8 @@ const D3: Regra = {
   id: 'D3',
   titulo: 'Dias permitidos — quem só pode em certos dias da semana',
   familia: 'DURA',
+  explicacao:
+    'Quem só pode em certos dias da semana aparece somente neles.',
   avaliar(ctx) {
     const v: Violacao[] = []
     let comRestricao = 0
@@ -195,6 +209,8 @@ const D4: Regra = {
   id: 'D4',
   titulo: 'Dias proibidos — quem nunca pode em certo dia da semana',
   familia: 'DURA',
+  explicacao:
+    'Quem nunca pode num certo dia da semana nunca é escalado nesse dia.',
   avaliar(ctx) {
     const v: Violacao[] = []
     let comRestricao = 0
@@ -224,6 +240,8 @@ const D5: Regra = {
   id: 'D5',
   titulo: 'Turnos permitidos — quem só pode em certo turno',
   familia: 'DURA',
+  explicacao:
+    'Quem só pode num turno — só de manhã, só à noite — não é escalado no outro.',
   avaliar(ctx) {
     const v: Violacao[] = []
     let comRestricao = 0
@@ -252,6 +270,8 @@ const D6: Regra = {
   id: 'D6',
   titulo: 'Ausências — férias, viagem, compromisso',
   familia: 'DURA',
+  explicacao:
+    'Quem avisou que estará fora (férias, viagem, compromisso) não é escalado nesses dias.',
   avaliar(ctx) {
     const v: Violacao[] = []
     let total = 0
@@ -282,6 +302,8 @@ const D7: Regra = {
   id: 'D7',
   titulo: 'Teto mensal — quem tem limite de escalas por mês',
   familia: 'DURA',
+  explicacao:
+    'Quem tem limite de quantas vezes pode servir por mês não passa desse limite.',
   avaliar(ctx) {
     const v: Violacao[] = []
     let comTeto = 0
@@ -325,6 +347,8 @@ const D8: Regra = {
   id: 'D8',
   titulo: 'Elenco — só quem está no elenco do bloco, e ativo',
   familia: 'DURA',
+  explicacao:
+    'Só entra na escala quem está na equipe e ativo hoje. Quem saiu continua aparecendo no passado já publicado, mas não é escalado para a frente.',
   avaliar(ctx) {
     const v: Violacao[] = []
     const elenco = new Set(ctx.bloco.elenco)
@@ -404,6 +428,8 @@ const D9: Regra = {
   id: 'D9',
   titulo: 'Santa Ceia — o dia do calendário está marcado, e não recebe ninguém',
   familia: 'DURA',
+  explicacao:
+    'Existem dias marcados no calendário em que ninguém deve ser escalado — aqui, a Santa Ceia. A conferência é contra o CALENDÁRIO, não contra a própria escala: se a marca se perder, ela acusa.',
   avaliar(ctx) {
     if (!ctx.config) return semConfig(D9.id, D9.titulo)
 
@@ -475,6 +501,8 @@ const D10: Regra = {
   id: 'D10',
   titulo: 'Coerência do piso declarado',
   familia: 'DURA',
+  explicacao:
+    'O intervalo mínimo que esta escala afirma ter garantido é conferido pessoa por pessoa. Serve para o número anunciado não ser maior do que a realidade.',
   avaliar(ctx) {
     const piso = ctx.bloco.pisoAlcancado
     if (piso == null)
@@ -517,6 +545,8 @@ const D11: Regra = {
   id: 'D11',
   titulo: 'Cobertura — o bloco tem os turnos que o período dele exige',
   familia: 'DURA',
+  explicacao:
+    'A escala cobre todos os dias e turnos que o período exige — nem falta dia, nem sobra dia que não é de culto. É o que impede publicar uma escala vazia ou pela metade.',
   avaliar(ctx) {
     const esperada = gradeEsperada(ctx)
     if (!esperada) return semConfig(D11.id, D11.titulo)
@@ -581,6 +611,8 @@ const Q1: Regra = {
   id: 'Q1',
   titulo: 'Distanciamento — cada um o mais longe possível da própria escala anterior',
   familia: 'QUALIDADE',
+  explicacao:
+    'Cada pessoa o mais longe possível da própria escala anterior. É o defeito que originou este projeto: alguém servindo quarta e voltando no sábado.',
   avaliar(ctx) {
     const linhas: Violacao[] = []
     let menorGlobal = Infinity
@@ -611,6 +643,8 @@ const Q2: Regra = {
   id: 'Q2',
   titulo: 'Equilíbrio de carga dentro do bloco',
   familia: 'QUALIDADE',
+  explicacao:
+    'A carga fica parecida entre quem não tem limite próprio. Quem tem teto mensal fica fora da comparação, porque joga outro jogo.',
   avaliar(ctx) {
     const contagem = new Map<string, number>()
     for (const id of ctx.bloco.elenco) contagem.set(id, 0)
@@ -661,6 +695,8 @@ const Q3: Regra = {
   id: 'Q3',
   titulo: 'Variedade de dia da semana — ninguém preso sempre no mesmo dia',
   familia: 'QUALIDADE',
+  explicacao:
+    'Ninguém preso sempre no mesmo dia da semana — quem sempre pega sábado acaba nunca indo ao culto de domingo com a família.',
   avaliar(ctx) {
     const violacoes: Violacao[] = []
     let avaliadas = 0
@@ -694,6 +730,8 @@ const Q4: Regra = {
   id: 'Q4',
   titulo: 'Variedade de companhia — evitar o mesmo grupo se repetindo',
   familia: 'QUALIDADE',
+  explicacao:
+    'Evita que o mesmo trio se repita muitas vezes. Não impede publicar; é para você saber.',
   avaliar(ctx) {
     const freq = new Map<string, number>()
     for (const t of turnosComGente(ctx.bloco)) {
@@ -718,6 +756,8 @@ const Q5: Regra = {
   id: 'Q5',
   titulo: 'Piso mensal — quem tem teto e ficou abaixo dele',
   familia: 'QUALIDADE',
+  explicacao:
+    'Quem tem um teto mensal e ficou bem abaixo dele. Pode ser injustiça de distribuição, ou pode ser a restrição dele funcionando.',
   avaliar(ctx) {
     const violacoes: Violacao[] = []
     const meses = [...new Set(turnosComGente(ctx.bloco).map((t) => mesDe(t.data)))].sort()

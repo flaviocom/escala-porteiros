@@ -22,7 +22,7 @@ import { ROTULO_TURNO } from '../dominio/tipos'
 import { construirGrade } from '../dominio/malha'
 import { gerar } from '../dominio/gerador'
 import { validar, resumir } from '../dominio/validacao'
-import { menorIntervalo } from '../dominio/regras'
+import { CATALOGO, menorIntervalo } from '../dominio/regras'
 import { diferencaEmDias, formatarBR, hojeSaoPaulo, NOMES_DIA_CURTO, somarDias } from '../dominio/datas'
 import { AbaAjustar } from './AbaAjustar'
 import { arbitrar, auditar, medir, pedirProposta, type Placar, type ProgressoMotor } from './motor'
@@ -386,6 +386,28 @@ export const Admin: React.FC<{ dados: DadosPublicados }> = ({ dados }) => {
   const [blocoOriginal, setBlocoOriginal] = useState<Bloco | null>(null)
   const [relatoGeracao, setRelatoGeracao] = useState<string>('')
 
+  /**
+   * 🔴 O INTERVALO MORA AQUI, e não dentro da aba — corrigido em 05/08/2026 a pedido do Flavio.
+   *
+   * *"Mesmo após gerada uma escala do dia 12/08 até 31/12, ela volta para 06/08."*
+   *
+   * A causa: a aba Gerar é montada por condição (`aba === 'gerar' && …`), então **trocar de aba a
+   * desmonta** e o React descarta o que estava digitado. Quem gerava, ia conferir em Ajustar e
+   * voltava, encontrava as datas de fábrica — e podia gerar outro período sem perceber.
+   *
+   * O padrão também estava errado: era *amanhã*. O certo é **o dia seguinte ao último turno já
+   * publicado**, que é onde a escala nova precisa começar para não deixar buraco nem sobrepor o que
+   * os irmãos já viram.
+   */
+  const inicioSugerido = useMemo(() => {
+    const ultimo = dados.blocos.flatMap((b) => b.turnos).map((t) => t.data).sort().at(-1)
+    const amanha = somarDias(hojeSaoPaulo(), 1)
+    // Se o publicado já acabou no passado, começar amanhã: continuar de trás seria criar escala velha.
+    return ultimo && diferencaEmDias(ultimo, amanha) < 0 ? somarDias(ultimo, 1) : amanha
+  }, [dados.blocos])
+  const [de, setDe] = useState(inicioSugerido)
+  const [ate, setAte] = useState(`${Number(inicioSugerido.slice(0, 4))}-12-31`)
+
   if (!segredos) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
@@ -465,6 +487,11 @@ export const Admin: React.FC<{ dados: DadosPublicados }> = ({ dados }) => {
             relato={relatoGeracao}
             segredos={segredos}
             fronteira={fronteira}
+            de={de}
+            ate={ate}
+            aoMudarDe={setDe}
+            aoMudarAte={setAte}
+            aoMudarPessoas={setPessoas}
             aoGerar={(b, r) => { setBlocoNovo(b); setBlocoOriginal(b); setRelatoGeracao(r) }}
           />
         )}
@@ -713,6 +740,124 @@ const Ausencias: React.FC<{ pessoa: Pessoa; aoAlterar: (m: (p: Pessoa) => Pessoa
   )
 }
 
+/**
+ * AUSÊNCIAS ANTES DE GERAR — a segunda porta para o mesmo dado.
+ *
+ * 🔴 Pedido do Flavio em 05/08/2026: *"não consigo colocar aqui um dia de férias combinado. Deveria
+ * ser no gerar escala. Pessoa, data inicial e data final, ANTES de gerar, porque a escala deverá
+ * considerar esta ausência."*
+ *
+ * O dado sempre existiu (`restricoes.ausencias`) e a regra D6 sempre o respeitou — mas o único lugar
+ * de cadastrá-lo era a aba Elenco, pessoa por pessoa. Na hora de gerar, que é quando alguém lembra
+ * das férias que o irmão avisou, era preciso sair, achar a pessoa, voltar.
+ *
+ * ⚠️ NÃO é uma cópia do dado: escreve na MESMA lista que o Elenco lê e que o gerador consulta. Duas
+ * cópias de uma regra é onde as duas divergem em silêncio — este projeto já pagou por isso.
+ */
+const AusenciasAntesDeGerar: React.FC<{
+  pessoas: Pessoa[]
+  de: string
+  ate: string
+  aoMudarPessoas: (p: Pessoa[]) => void
+}> = ({ pessoas, de, ate, aoMudarPessoas }) => {
+  const [quem, setQuem] = useState('')
+  const [inicio, setInicio] = useState('')
+  const [fim, setFim] = useState('')
+  const [motivo, setMotivo] = useState('')
+  const [erro, setErro] = useState('')
+
+  const ativos = pessoas.filter((p) => p.ativo)
+
+  /** Só as ausências que TOCAM o período — as de outro ano não informam nada aqui. */
+  const noPeriodo = pessoas.flatMap((p) =>
+    (p.restricoes.ausencias ?? [])
+      .map((a, i) => ({ pessoa: p, ausencia: a, indice: i }))
+      .filter(({ ausencia }) => !(diferencaEmDias(ausencia.fim, de) > 0 || diferencaEmDias(ate, ausencia.inicio) > 0)),
+  )
+
+  const remover = (pessoaId: string, indice: number) =>
+    aoMudarPessoas(pessoas.map((p) => p.id !== pessoaId ? p : {
+      ...p,
+      restricoes: { ...p.restricoes, ausencias: (p.restricoes.ausencias ?? []).filter((_, j) => j !== indice) },
+    }))
+
+  const acrescentar = () => {
+    setErro('')
+    if (!quem) return setErro('Escolha de quem é a ausência.')
+    if (!inicio || !fim) return setErro('Informe o primeiro e o último dia da ausência.')
+    if (diferencaEmDias(inicio, fim) < 0) return setErro('O último dia é anterior ao primeiro.')
+    aoMudarPessoas(pessoas.map((p) => p.id !== quem ? p : {
+      ...p,
+      restricoes: { ...p.restricoes, ausencias: [...(p.restricoes.ausencias ?? []), { inicio, fim, ...(motivo.trim() ? { motivo: motivo.trim() } : {}) }] },
+    }))
+    setQuem(''); setInicio(''); setFim(''); setMotivo('')
+  }
+
+  return (
+    <Cartao
+      titulo="Quem estará ausente no período"
+      subtitulo="Férias, viagem, compromisso. Cadastre ANTES de gerar — quem está ausente não é escalado naqueles dias."
+    >
+      {noPeriodo.length === 0 ? (
+        <p className="text-sm text-gray-500">Ninguém com ausência marcada dentro deste período.</p>
+      ) : (
+        <div className="mb-4 space-y-1.5">
+          {noPeriodo.map(({ pessoa, ausencia, indice }) => (
+            <div key={`${pessoa.id}-${indice}`} className="flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm">
+              <span className="flex-1">
+                <strong>{pessoa.nome}</strong> — de {formatarBR(ausencia.inicio)} a {formatarBR(ausencia.fim)}
+                {ausencia.motivo && <span className="text-gray-500"> · {ausencia.motivo}</span>}
+              </span>
+              <button title={`Tirar a ausência de ${pessoa.nome}`}
+                onClick={() => remover(pessoa.id, indice)}
+                className="rounded p-1 text-red-500 hover:bg-red-100"
+              >
+                <Trash2 className="h-4 w-4" />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div className="flex flex-wrap items-end gap-2">
+        <label className="text-xs text-gray-500">
+          quem
+          <select value={quem} onChange={(e) => setQuem(e.target.value)}
+            title="A pessoa que estará ausente"
+            className="mt-1 block min-w-[10rem] rounded-lg border border-gray-300 px-2 py-1.5 text-sm"
+          >
+            <option value="">escolha…</option>
+            {ativos.map((p) => <option key={p.id} value={p.id}>{p.nome}</option>)}
+          </select>
+        </label>
+        <label className="text-xs text-gray-500">
+          primeiro dia
+          <input type="date" value={inicio} onChange={(e) => setInicio(e.target.value)} title="Primeiro dia da ausência"
+            className="mt-1 block rounded-lg border border-gray-300 px-2 py-1.5 text-sm" />
+        </label>
+        <label className="text-xs text-gray-500">
+          último dia
+          <input type="date" value={fim} onChange={(e) => setFim(e.target.value)} title="Último dia da ausência (inclusive)"
+            className="mt-1 block rounded-lg border border-gray-300 px-2 py-1.5 text-sm" />
+        </label>
+        <input value={motivo} onChange={(e) => setMotivo(e.target.value)} placeholder="motivo (opcional)"
+          title="Aparece só aqui, para você lembrar depois"
+          className="min-w-[8rem] flex-1 rounded-lg border border-gray-300 px-2 py-1.5 text-sm" />
+        <button onClick={acrescentar} title="Marca a ausência. Ela vale na próxima vez que você gerar"
+          className="min-h-[2.75rem] rounded-lg bg-amber-500 px-4 text-sm font-semibold text-white hover:bg-amber-600"
+        >
+          Marcar ausência
+        </button>
+      </div>
+      {erro && <Aviso tom="erro">{erro}</Aviso>}
+      <p className="mt-3 text-xs leading-relaxed text-gray-500">
+        A ausência entra na escala <strong>quando você gerar</strong>. Se já havia uma escala gerada
+        nesta sessão, gere de novo para que ela passe a valer.
+      </p>
+    </Cartao>
+  )
+}
+
 // ===========================================================================
 // GERAR
 // ===========================================================================
@@ -724,11 +869,14 @@ const AbaGerar: React.FC<{
   relato: string
   segredos: Segredos
   fronteira: Record<string, string>
+  /** O intervalo vive no Admin: trocar de aba desmontava esta e apagava o que estava digitado. */
+  de: string
+  ate: string
+  aoMudarDe: (v: string) => void
+  aoMudarAte: (v: string) => void
+  aoMudarPessoas: (p: Pessoa[]) => void
   aoGerar: (b: Bloco | null, relato: string) => void
-}> = ({ dados, pessoas, blocoNovo, relato, segredos, aoGerar }) => {
-  const proximoDia = useMemo(() => somarDias(hojeSaoPaulo(), 1), [])
-  const [de, setDe] = useState(proximoDia)
-  const [ate, setAte] = useState(`${new Date().getFullYear()}-12-31`)
+}> = ({ dados, pessoas, blocoNovo, relato, segredos, de, ate, aoMudarDe, aoMudarAte, aoMudarPessoas, aoGerar }) => {
   const [ocupado, setOcupado] = useState(false)
   const [falha, setFalha] = useState<string>('')
   const [motorOcupado, setMotorOcupado] = useState<ProgressoMotor | null>(null)
@@ -786,11 +934,11 @@ const AbaGerar: React.FC<{
         <div className="flex flex-wrap gap-4 items-end">
           <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
             De
-            <input type="date" value={de} onChange={(e) => setDe(e.target.value)} className="block mt-1 px-3 py-2 border border-gray-300 rounded-xl text-sm" />
+            <input type="date" value={de} onChange={(e) => aoMudarDe(e.target.value)} className="block mt-1 px-3 py-2 border border-gray-300 rounded-xl text-sm" />
           </label>
           <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
             Até
-            <input type="date" value={ate} onChange={(e) => setAte(e.target.value)} className="block mt-1 px-3 py-2 border border-gray-300 rounded-xl text-sm" />
+            <input type="date" value={ate} onChange={(e) => aoMudarAte(e.target.value)} className="block mt-1 px-3 py-2 border border-gray-300 rounded-xl text-sm" />
           </label>
           <button title="Monta a escala buscando o maior espaçamento possível entre as escalas de cada um"
             onClick={executar}
@@ -806,6 +954,9 @@ const AbaGerar: React.FC<{
           {Object.keys(fronteira).length} com escala anterior a considerar na fronteira
         </p>
       </Cartao>
+
+      {/* Antes de gerar, e não depois: é aqui que alguém lembra das férias que o irmão avisou. */}
+      <AusenciasAntesDeGerar pessoas={pessoas} de={de} ate={ate} aoMudarPessoas={aoMudarPessoas} />
 
       {falha && (
         <Cartao titulo="Não foi possível gerar" tom="erro">
@@ -849,7 +1000,40 @@ const AbaGerar: React.FC<{
             </div>
           </Cartao>
 
-          <Cartao titulo="Proposta do motor" subtitulo="O algoritmo já entregou uma escala válida. O motor propõe a dele, e o portão julga as duas.">
+          {/*
+            🔴 *"Eu não entendi o que é a proposta do motor"* — Flavio, 05/08/2026.
+
+            E o subtítulo antigo pressupunha o vocabulário da casa: "o portão julga as duas" só
+            significa alguma coisa para quem já sabe o que é o portão. Recurso que ninguém entende é
+            recurso que ninguém usa — e, num produto para vender, é recurso que ninguém paga.
+          */}
+          <Cartao titulo="Segunda opinião do motor" subtitulo="Opcional. A escala que você já tem continua válida.">
+            <details className="mb-4 rounded-xl border border-gray-200 bg-gray-50 p-4">
+              <summary className="cursor-pointer text-sm font-bold text-gray-700">O que é isto, exatamente?</summary>
+              <div className="mt-2 space-y-2 text-sm leading-relaxed text-gray-600">
+                <p>
+                  A escala que está na tela foi montada pelo <strong>algoritmo</strong>: ele percorre
+                  os turnos em ordem e escolhe sempre quem está há mais tempo sem servir. É rápido,
+                  é sempre igual para a mesma entrada, e o resultado você já viu conferido acima.
+                </p>
+                <p>
+                  O <strong>motor</strong> monta uma <strong>segunda versão</strong> da mesma escala,
+                  olhando o período inteiro de uma vez em vez de turno a turno — e por isso às vezes
+                  acha um arranjo que distribui melhor. Ele tenta, mede o resultado contra as mesmas{' '}
+                  {CATALOGO.length} regras, e <strong>refaz até 3 vezes</strong> quando a própria
+                  proposta é reprovada.
+                </p>
+                <p className="rounded-lg border border-indigo-100 bg-indigo-50 p-3">
+                  🔒 <strong>Ele nunca decide sozinho.</strong> A proposta dele passa exatamente pelas
+                  mesmas regras que a do algoritmo. Se reprovar, não chega até você. Se passar, você
+                  vê <strong>as duas lado a lado</strong>, com os números de cada uma, e escolhe. Nada
+                  substitui a sua escala sem o seu clique.
+                </p>
+                <p className="text-xs text-gray-500">
+                  Não é obrigatório: sem ele, a escala do algoritmo publica normalmente.
+                </p>
+              </div>
+            </details>
             {!segredos.chaveMotor ? (
               <Aviso tom="atencao">
                 Não há chave do motor guardada neste navegador. A escala do algoritmo continua válida
@@ -953,28 +1137,57 @@ const AbaGerar: React.FC<{
             )}
           </Cartao>
 
-          <Cartao titulo="Conferência regra a regra">
+          {/*
+            🔴 A CONFERÊNCIA PRECISA SER LIDA POR QUEM NÃO CONSTRUIU O SISTEMA — pedido do Flavio em
+            05/08/2026, porque o produto vai ser vendido: *"precisa estar amigável até para quem vai
+            gerar uma escala de dois turnos para a portaria de um prédio"*.
+
+            O que faltava não era o número: era o SENTIDO. "60 dia(s) conferido(s)" não diz o que foi
+            conferido nem por que importa. Cada regra passou a trazer a explicação em linguagem comum
+            (`explicacao`, no catálogo), e o cabeçalho separa o que REPROVA do que só AVISA — antes
+            um ⚠️ e um 🔴 tinham o mesmo peso visual e ninguém sabia qual travava a publicação.
+          */}
+          <Cartao
+            titulo="Conferência regra a regra"
+            subtitulo={
+              `${relatorio.falhasDuras.length === 0 ? 'Nenhuma regra obrigatória violada' : `${relatorio.falhasDuras.length} regra(s) obrigatória(s) violada(s)`}` +
+              ` · ${relatorio.avisos.length} ponto(s) de atenção · ${relatorio.avaliadas} regras conferidas`
+            }
+          >
+            <div className="mb-4 flex flex-wrap gap-x-5 gap-y-1 text-xs text-gray-500">
+              <span className="flex items-center gap-1.5"><CheckCircle className="h-3.5 w-3.5 text-green-600" /> está certo</span>
+              <span className="flex items-center gap-1.5"><XCircle className="h-3.5 w-3.5 text-red-600" /> <strong>impede publicar</strong> até ser resolvido</span>
+              <span className="flex items-center gap-1.5"><AlertTriangle className="h-3.5 w-3.5 text-amber-500" /> só um aviso — <strong>não</strong> impede publicar</span>
+            </div>
             <div className="divide-y divide-gray-100 -my-2">
-              {relatorio.resultados.map((r) => (
-                <div key={r.id} className="py-3 flex items-start gap-3">
-                  <div className="mt-0.5 shrink-0">
-                    {r.status === 'ok' && <CheckCircle className="w-5 h-5 text-green-600" />}
-                    {r.status === 'falha' && <XCircle className="w-5 h-5 text-red-600" />}
-                    {r.status === 'aviso' && <AlertTriangle className="w-5 h-5 text-amber-500" />}
+              {relatorio.resultados.map((r) => {
+                const explicacao = CATALOGO.find((c) => c.id === r.id)?.explicacao
+                return (
+                  <div key={r.id} className="py-3.5 flex items-start gap-3">
+                    <div className="mt-0.5 shrink-0" title={r.familia === 'DURA' ? 'Regra obrigatória: violou, não publica' : 'Ponto de atenção: não impede publicar'}>
+                      {r.status === 'ok' && <CheckCircle className="w-5 h-5 text-green-600" />}
+                      {r.status === 'falha' && <XCircle className="w-5 h-5 text-red-600" />}
+                      {r.status === 'aviso' && <AlertTriangle className="w-5 h-5 text-amber-500" />}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-gray-900">
+                        {r.titulo.replace(/^[^—]+—\s*/, '')}
+                        {r.familia === 'QUALIDADE' && (
+                          <span className="ml-2 rounded bg-gray-100 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-gray-500">
+                            não impede publicar
+                          </span>
+                        )}
+                      </p>
+                      {explicacao && <p className="mt-0.5 text-xs leading-relaxed text-gray-600">{explicacao}</p>}
+                      <p className="mt-1 text-xs font-medium text-gray-500">{r.medida}</p>
+                      {r.violacoes.slice(0, 5).map((v, i) => (
+                        <p key={i} className="text-xs text-gray-600 mt-1">· {v.mensagem}</p>
+                      ))}
+                      {r.violacoes.length > 5 && <p className="text-xs text-gray-400 mt-1">e mais {r.violacoes.length - 5}</p>}
+                    </div>
                   </div>
-                  <div className="min-w-0">
-                    <p className="text-sm font-semibold text-gray-900">
-                      <span className="font-mono text-xs text-gray-400 mr-2">{r.id}</span>
-                      {r.titulo}
-                    </p>
-                    <p className="text-xs text-gray-500">{r.medida}</p>
-                    {r.violacoes.slice(0, 5).map((v, i) => (
-                      <p key={i} className="text-xs text-gray-600 mt-1">· {v.mensagem}</p>
-                    ))}
-                    {r.violacoes.length > 5 && <p className="text-xs text-gray-400 mt-1">e mais {r.violacoes.length - 5}</p>}
-                  </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           </Cartao>
 
@@ -1253,8 +1466,25 @@ const Historico: React.FC<{ segredos: Segredos }> = ({ segredos }) => {
     if (r.ok) carregar()
   }
 
+  /*
+   * *"Ao publicar, ele mantém o histórico e a versão está sendo usada. Isso é muito importante.
+   * Com descrição amigável ao usuário"* — Flavio, 05/08/2026.
+   *
+   * O histórico já existia e a etiqueta "no ar" já marcava a versão vigente. O que faltava era
+   * dizer, em português, O QUE ISSO SIGNIFICA: que nada é apagado, que voltar atrás não destrói a
+   * versão atual, e que a de cima é exatamente a que os irmãos estão vendo agora.
+   */
   return (
-    <Cartao titulo="Histórico de publicações" subtitulo="Cada publicação é um commit. Dá para ver o que mudou e voltar atrás.">
+    <Cartao
+      titulo="Histórico de publicações"
+      subtitulo="Toda publicação fica guardada. A de cima é a que está no ar agora."
+    >
+      <div className="mb-4 rounded-xl border border-gray-200 bg-gray-50 p-3 text-xs leading-relaxed text-gray-600">
+        Cada vez que você publica, a versão anterior <strong>não é apagada</strong> — ela fica aqui,
+        com data e o que mudou. Se algo sair errado, <strong>Voltar a esta versão</strong> republica a
+        escala como ela estava naquele dia; isso também vira uma publicação nova, então nada se perde
+        e dá para desfazer o desfazer.
+      </div>
       {!lista && !carregando && (
         <button title="Lista as publicações anteriores, com data e o que mudou"
           onClick={carregar}
