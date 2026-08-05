@@ -4,7 +4,7 @@
 > como reverter.** Documento **append-only**, fatiado por período ao estourar o teto. **Nada é
 > excluído, nunca.**
 >
-> **Cadeia de navegação:** [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-05-e.md) → [`BACKLOG.md`](BACKLOG.md)
+> **Cadeia de navegação:** [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-05-f.md) → [`BACKLOG.md`](BACKLOG.md)
 > **Roteador:** [`AGENTS.md`](AGENTS.md) ·
 > **Solicitações:** [`docs/solicitacoes/INDICE_DE_SOLICITACOES.md`](docs/solicitacoes/INDICE_DE_SOLICITACOES.md) ·
 > **Histórico:** [`docs/historico/INDICE.md`](docs/historico/INDICE.md)
@@ -1003,3 +1003,158 @@ fechada. O sinal é o número de **focáveis**, que mais que dobra com o painel 
 `git revert` do commit. Só a cor: `text-gray-600` volta a `text-gray-400` em `App.tsx`,
 `MultiSelect.tsx` e `Admin.tsx`, e `indigo-700` a `indigo-400`. ⚠️ `vivo:acessibilidade` fica
 vermelho — é para isso que ele existe.
+
+---
+
+## DB-022 · 05/08/2026 — 🔒 o gate foi verde sobre outra árvore, e eu escrevi o número no commit
+
+### A medição
+
+Com três auditores rodando em paralelo, um deles tinha um mutante vivo no disco no segundo em que
+rodei `git add -A && git commit`:
+
+```
+3f8e366 → src/dominio/datas.ts: return d.slice(0, 4)   ← o mês virou o ANO
+7af91e1 → return d.slice(0, 7)                          ← restaurado no commit seguinte
+3f8e366 NÃO tocou docs/assets/ · o bundle no ar sempre serviu slice(0, 7)
+```
+
+O commit entrou na história de `main` com o produto quebrado dentro, e a mensagem **afirma
+`EXIT_GATE=0`**.
+
+### A decisão, e o porquê
+
+**Nada mentiu.** O gate foi verde minutos antes, sobre uma árvore que já não era a mesma. Eu apliquei
+o veredito de um estado a outro — e o escrevi na mensagem do commit, que é onde ele vira registro
+permanente e é lido por quem vier depois.
+
+O commit **não é reescrito**. Pela mesma regra que proíbe reescrever escala publicada: apagar o erro
+apaga a informação mais valiosa, que é por que se acreditou nele. O commit fica, e este registro fica
+junto — quem fizer `bisect` naquele ponto encontra o mês errado, e agora sabe por quê.
+
+O conserto é mecânico, porque **disciplina falha e eu acabei de ser a prova**:
+
+- `npm run selo:gravar` é o **24º passo do gate** e guarda a impressão digital de todo arquivo
+  versionado (índice do git + hash do que estiver sujo);
+- `npm run selo:conferir`, antes de commitar, compara.
+
+> 🔴 **Um veredito só vale para o estado que ele mediu.** E isso não é uma regra sobre agentes
+> paralelos: vale para qualquer edição feita entre o gate e o commit — inclusive as minhas, que é o
+> caso comum e o mais fácil de não notar.
+
+### Como reverter
+
+Tirar `selo:gravar` do gate e apagar `scripts/selar-arvore.mjs`. Nada depende dele — e é exatamente
+por isso que ele demorou a existir.
+
+---
+
+## DB-023 · 05/08/2026 — o gate cobria o domínio até o osso e não tocava na tela
+
+### A medição
+
+`vite.config.ts` restringia o vitest a `src/**` com extensão `.test.ts`, e **não há um único teste de
+componente**. Nenhum dos 20 passos executava uma linha de `Admin.tsx`. O auditor desligou duas travas:
+
+```
+if (false && diferencaEmDias(de, hojeSaoPaulo()) > 0)      → gate EXIT=0
+const impedido = (relatorio ? !relatorio.aprovada : false)  → gate EXIT=0
+```
+
+A segunda é literalmente o defeito dos 73 turnos apagados de ontem, com o conserto desfeito.
+
+### A decisão, e o porquê
+
+**Não escrever teste de componente — tirar a decisão da tela.**
+
+Teste de componente exigiria `jsdom`, biblioteca de renderização e um jeito novo de escrever teste
+neste projeto. E resolveria o sintoma: a regra continuaria morando onde ninguém a alcança.
+
+Regra que decide **se publica ou não** é domínio. A tela pergunta e pinta. `travaDeDataRetroativa` e
+`publicacaoImpedida` foram para `blocos.ts`, com 9 testes das duas pontas, e `Admin.tsx` ficou com
+uma chamada no lugar de uma condição.
+
+⚠️ Fica **declarado como aberto**: outras decisões continuam na tela (qual aba abre, o que o botão
+desabilita, o que o `useMemo` recalcula). Elas não decidem o que vai ao ar. No dia em que uma decidir,
+ela desce para o domínio pelo mesmo caminho — e `.test.tsx` deixou de ser ignorado em silêncio, para
+que a alternativa também exista.
+
+### Como reverter
+
+`git revert` do commit. As duas funções voltam para dentro de `Admin.tsx`; os 9 testes ficam órfãos e
+o vitest reclama do import.
+
+---
+
+## DB-024 · 05/08/2026 — três correções da manhã estavam na variável errada
+
+### A medição
+
+O commit da manhã diz, **no próprio código**, que fechou o "reverter e publicar desfaz a reversão".
+Ele atualizou o retrato (`dados`). Mas `publicar()` não sobe `dados.pessoas` — sobe o estado
+`pessoas`, que nasce de um inicializador preguiçoso e nunca mais é reescrito.
+
+```
+reverter o elenco → mensagem verde → clicar Publicar → o nome revertido VOLTA
+```
+
+Com `config.json`, pior: `configMudou` comparava o estado velho com o retrato revertido, então a
+publicação seguinte **decidia ativamente** republicar a configuração antiga.
+
+E os campos De/Até não acompanhavam `dados`: depois de publicar jan→mar, continuavam em
+`De = 01/01/2027`, com cara de certo.
+
+### A decisão, e o porquê
+
+`aoReverter` sincroniza também o estado editável — e é **separado** de `aoGravar` de propósito: numa
+publicação com falha parcial, `dados.config` fica sendo o antigo porque não foi gravado, e copiá-lo de
+volta apagaria a edição que a pessoa ainda quer publicar. Reverter é o único caso em que o arquivo
+lido do passado **é** a intenção declarada.
+
+> 🔴 **A lição: uma correção que menciona o defeito no comentário não é uma correção verificada.** O
+> texto estava certo, a análise estava certa, e a variável era outra. Só a medição ao vivo separou as
+> duas coisas.
+
+### Como reverter
+
+`git revert`. `aoReverter` volta a ser `setDados`, e o defeito volta com ele.
+
+---
+
+## DB-025 · 05/08/2026 — oito fronteiras de portão, e a régua que separa afirmação de narrativa
+
+### A medição
+
+| portão | o que dizia medir | onde o defeito estava |
+|---|---|---|
+| contagem de regras | documento que desmente o catálogo | não casava **"as 16 regras"** — 16 lugares vivos |
+| genérico | nome de cliente no que vai ao ar | o **`README.md`** ficou de fora |
+| datas | `toISOString` não decide dia | **`Date.UTC(`**, a forma do defeito real |
+| regras-mestras | "tooltips em tudo" | piso de **90%** — 7 botões mudos aprovados |
+| crescimento | o dado cabe onde é servido | media `public/`, e serve-se `docs/` |
+| typecheck | `strict` ligado | **`vite.config.ts`** sem verificação nenhuma |
+| fatos | nenhum número decorado | **a contagem de testes** não era fato |
+| segunda régua | 8 promessas com teste | **nenhuma trava** para a próxima |
+
+Nenhum conta errado. Todos medem **menos do que a frase promete** — oitava vez que esta classe
+aparece no projeto.
+
+### A decisão que vale além destes oito
+
+Os dois padrões novos nasceram **largos** e acusaram inocentes: 9 linhas na contagem de regras, 7 na
+de testes. Todas eram **narrativa histórica** — *"o núcleo nasceu com 15 regras"*, *"passavam nos 232
+testes"* —, que é o registro de uma medição e a coisa mais valiosa que estes documentos guardam.
+
+> ⚠️ **Portão que acusa o inocente é portão que alguém desliga** — e aqui seria pior: alguém apagaria
+> a lição para calar o portão.
+
+Duas réguas fecham a classe, e valem para qualquer portão de número futuro:
+
+1. **artigo definido** separa "as 16 regras" (afirma o conjunto de hoje) de "com 15 regras" (conta uma
+   história);
+2. **número entre aspas é citação, não afirmação.**
+
+### Como reverter
+
+Cada portão tem o próprio `git revert`. ⚠️ Reverter o de contagem ou o de fatos deixa 16 documentos
+livres para mentir de novo — e a tela volta a poder contradizer a si mesma na mesma seção.

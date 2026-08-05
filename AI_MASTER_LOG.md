@@ -4,7 +4,7 @@
 > O **porquê** de cada decisão vive no [`DIARIO_DE_BORDO.md`](DIARIO_DE_BORDO.md); aqui fica o
 > registro do que foi feito, passo a passo.
 >
-> **Cadeia de navegação:** [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-05-e.md) → [`BACKLOG.md`](BACKLOG.md)
+> **Cadeia de navegação:** [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-05-f.md) → [`BACKLOG.md`](BACKLOG.md)
 > **Roteador:** [`AGENTS.md`](AGENTS.md) ·
 > **Solicitações:** [`docs/solicitacoes/INDICE_DE_SOLICITACOES.md`](docs/solicitacoes/INDICE_DE_SOLICITACOES.md) ·
 > **Fatias arquivadas:** [`docs/historico/INDICE.md`](docs/historico/INDICE.md)
@@ -367,5 +367,60 @@ Os três vermelhos foram medidos **no dado real**, antes e depois — e foi essa
 defeito que eu mesmo introduzi em D12 (o `slice` nos turnos em vez das violações), que os cinco
 testes novos não pegavam.
 
-**Handoff:** [`HANDOFF_2026-08-05-e.md`](docs/handoff/HANDOFF_2026-08-05-e.md) ·
+**Handoff:** [`HANDOFF_2026-08-05-f.md`](docs/handoff/HANDOFF_2026-08-05-f.md) ·
 **Diário:** DB-018 a DB-021.
+
+---
+
+## 05/08/2026 — sessão 2, parte 6: a sexta auditoria, em três frentes
+
+**Solicitação:** S-033 — a mesma instrução da anterior, reemitida: *"go workflow completo… em loop,
+sem parar… quem determina a ordem é você, sempre."*
+
+**Skills acionadas:** `engineering-loop` · `loop-autonomo` · `documentacao-auditavel` · `ponytail`
+(tirar a decisão da tela em vez de montar `jsdom`; `excetoEm` como propriedade e não como subsistema).
+
+### As três frentes, disjuntas por construção
+
+| frente | por que ela existe | achados |
+|---|---|---|
+| **o código que nasceu hoje** | correção recém-escrita é o código menos auditado do projeto — e neste projeto já aconteceu duas vezes de uma correção nascer com o defeito que ela fechava | 7 + 5 menores |
+| **o dado publicado, até o pixel** | o dado é o produto; medi-lo de fora é a única prova que não depende do código | 4 |
+| **os portões medem o que dizem?** | *"a fronteira do portão é onde o defeito mora"* já apareceu 7 vezes | 15 |
+
+**25 achados. Todos fechados.**
+
+### O que mais importa deste dia
+
+**1. O dado publicado está impecável**, e isso foi medido de oito ângulos independentes: as duas
+pastas idênticas byte a byte · o site no ar com sha256 igual ao do repositório · `conferirEsquema`
+com 0 problemas · **183/183 turnos e 543/543 nomes** conferindo turno a turno com a tela · fronteira
+contígua entre os blocos com o piso de 7 dias respeitado ATRAVESSANDO ela · as 17 regras e a segunda
+régua concordando · virada de ano em 6 fusos de UTC−11 a UTC+14.
+
+**2. Três correções da manhã estavam na variável errada.** Uma correção que menciona o defeito no
+comentário não é uma correção verificada.
+
+**3. O gate não executava uma linha da tela onde o Flavio clica** — e a resposta certa não foi montar
+teste de componente, foi **tirar a decisão da tela**.
+
+**4. O incidente do selo.** Um `git add -A` meu capturou o mutante de um auditor; o commit `3f8e366`
+está na história com o produto quebrado e a mensagem afirmando `EXIT_GATE=0`. Produção nunca recebeu
+o defeito. O commit não é reescrito, e o 24º passo do gate impede a repetição.
+
+### Frentes que NÃO renderam achado (medidas, não presumidas)
+
+A matemática do gerador contra o catálogo em fuzz de 400 rodadas: **286 escalas, 0 reprovadas**.
+`podeAssumir` × D3–D8 em 5.000 sorteios: **0 divergências**. As 8 chamadas de `fetch` conferindo
+status — o ponto mais bem defendido do código. Dezoito dos 20 passos do gate morderam nas duas pontas
+sob mutante injetado **em código**. Nenhum portão mente sobre o próprio tamanho: a doença deste
+projeto não é contar errado, é **a fronteira ser menor que a frase**.
+
+### O que ficou provado
+
+`EXIT_GATE=0` em **24 passos** (entraram `ensaio`, `tempo`, `imagem` e o selo) · **298 testes** ·
+**13 fatos medidos** · acessibilidade com 47/47 focáveis, 0 abaixo do contraste e 0 cortado a 200% ·
+33 mutantes injetados pelo auditor, e os que não mordiam passaram a morder.
+
+**Handoff:** [`HANDOFF_2026-08-05-f.md`](docs/handoff/HANDOFF_2026-08-05-f.md) ·
+**Diário:** DB-022 a DB-025.

@@ -5,7 +5,7 @@
 > **Última atualização:** 05/08/2026 · **Fuso:** America/São_Paulo
 >
 > **Cadeia de navegação, nesta ordem:**
-> **`ESTADO.md` (você está aqui)** → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-05-e.md) → [`BACKLOG.md`](BACKLOG.md)
+> **`ESTADO.md` (você está aqui)** → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-05-f.md) → [`BACKLOG.md`](BACKLOG.md)
 > *onde estamos · o que aconteceu na última sessão e por quê · o que fazer a seguir*
 >
 > **Reconstruir do zero (portabilidade entre IAs):** [`docs/RECONSTRUIR.md`](docs/RECONSTRUIR.md)
@@ -23,7 +23,30 @@ conferida.** O nome do cliente saiu do código e virou dado. As duas decisões q
 **foram tomadas pelo Flavio em 05/08** — a data de início (06/08) e o escopo de finalidade (fase 1,
 uso interno). O que falta é só o que depende das credenciais dele.
 
-## O mais recente: a quinta auditoria (05/08, noite)
+## O mais recente: a SEXTA auditoria (05/08, noite)
+
+**25 achados, todos fechados** — e ela mirou o que nenhuma outra podia mirar: **o código que tinha
+nascido horas antes**. Três correções da manhã estavam na **variável errada**:
+
+```
+reverter o elenco → mensagem verde → clicar Publicar → o nome revertido VOLTA
+```
+
+A correção tinha atualizado o *retrato* dos dados; o que sobe no arquivo é outro estado. Uma correção
+que menciona o defeito no comentário não é uma correção verificada.
+
+E o gate **não executava uma linha de `Admin.tsx`**: desligar a trava contra escala retroativa, ou o
+guarda dos 73 turnos, passava nos 20 passos. A resposta não foi montar teste de componente — foi
+**tirar a decisão da tela**, que é onde ela nunca deveria ter morado.
+
+🔒 **E um incidente meu**, que vale mais que qualquer achado: com auditores rodando em paralelo, um
+`git add -A` capturou um mutante e o commit `3f8e366` entrou na história com o produto quebrado
+dentro, afirmando `EXIT_GATE=0`. **Produção nunca recebeu o defeito.** O commit não é reescrito, e o
+24º passo do gate — o selo da árvore — impede a repetição.
+
+Detalhe em [`HANDOFF_2026-08-05-f.md`](docs/handoff/HANDOFF_2026-08-05-f.md).
+
+## A quinta auditoria (05/08, tarde)
 
 **21 achados, todos fechados.** Ela mirou o que as quatro anteriores não tinham olhado — entrada
 hostil, concorrência, a matemática do Jain, a imagem do WhatsApp, acessibilidade, `localStorage` —
@@ -42,7 +65,7 @@ Os outros dois vermelhos: `capacidade: 0` gerava 110 turnos com **zero pessoas**
 aprovavam (nasceu **D12**); e a ponte dado→tela não tinha **um único teste** — quatro mutantes que
 apagam a escala de todos os irmãos passavam em 232/232.
 
-Detalhe em [`HANDOFF_2026-08-05-e.md`](docs/handoff/HANDOFF_2026-08-05-e.md).
+Detalhe em [`HANDOFF_2026-08-05-f.md`](docs/handoff/HANDOFF_2026-08-05-f.md).
 
 ## O que aconteceu antes, em 05/08/2026
 
@@ -122,7 +145,7 @@ dias** sumiriam.
 **9. O caminho inteiro virou portão** (`npm run vivo:caminho`). Os outros cobrem cada peça; a
 sequência que a pessoa faz de verdade não era percorrida por ninguém.
 
-Detalhe completo em [`HANDOFF_2026-08-05-e.md`](docs/handoff/HANDOFF_2026-08-05-e.md).
+Detalhe completo em [`HANDOFF_2026-08-05-f.md`](docs/handoff/HANDOFF_2026-08-05-f.md).
 
 ## O que entrou em 04/08: a auditoria independente (P2.10)
 

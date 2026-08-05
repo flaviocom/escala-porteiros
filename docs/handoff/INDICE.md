@@ -9,8 +9,9 @@
 
 | Data | Handoff | O que aconteceu |
 |---|---|---|
-| 05/08/2026 | [`HANDOFF_2026-08-05-e.md`](HANDOFF_2026-08-05-e.md) | **Sessão 2, parte 5** — **quinta auditoria externa, 21 achados**. O pior repetia o de ontem por outra porta: publicar duas vezes na mesma sessão apagava a primeira publicação (55 turnos), e o guarda aprovava — porque recebia o retrato envelhecido. `capacidade: 0` passava pelas DUAS réguas. A ponte dado→tela não tinha um teste. |
-| 05/08/2026 | [`HANDOFF_2026-08-05-e.md`](HANDOFF_2026-08-05-e.md) | **Sessão 2, parte 4** — **4 auditorias externas, 48 achados, todos fechados**. A pior: gerar período MENOR apagava escala já divulgada (73 turnos medidos), e o conferidor aprovava. O caminho inteiro virou portão. |
+| 05/08/2026 | [`HANDOFF_2026-08-05-f.md`](HANDOFF_2026-08-05-f.md) | **Sessão 2, parte 6** — **sexta auditoria: 25 achados**, e três correções da MANHÃ estavam na variável errada. O gate não executava uma linha de `Admin.tsx`: dois mutantes desligavam a trava de data e o guarda dos 73 turnos com EXIT=0. Mais o incidente do selo — o gate foi verde sobre outra árvore. |
+| 05/08/2026 | [`HANDOFF_2026-08-05-f.md`](HANDOFF_2026-08-05-f.md) | **Sessão 2, parte 5** — **quinta auditoria externa, 21 achados**. O pior repetia o de ontem por outra porta: publicar duas vezes na mesma sessão apagava a primeira publicação (55 turnos), e o guarda aprovava — porque recebia o retrato envelhecido. `capacidade: 0` passava pelas DUAS réguas. A ponte dado→tela não tinha um teste. |
+| 05/08/2026 | [`HANDOFF_2026-08-05-f.md`](HANDOFF_2026-08-05-f.md) | **Sessão 2, parte 4** — **4 auditorias externas, 48 achados, todos fechados**. A pior: gerar período MENOR apagava escala já divulgada (73 turnos medidos), e o conferidor aprovava. O caminho inteiro virou portão. |
 | 05/08/2026 | [`HANDOFF_2026-08-05-c.md`](HANDOFF_2026-08-05-c.md) | **Sessão 2, parte 3** — a escala nova desmentia o site vigente em **87 turnos** (o Flavio pegou, nenhum portão pegou), trava de data retroativa, e a **configuração morta**: `identidade` existia desde o começo e nunca era lida. Portão de escopo + autoteste de 15 casos. |
 | 05/08/2026 | [`HANDOFF_2026-08-05-b.md`](HANDOFF_2026-08-05-b.md) | **Sessão 2, parte 2** — o projeto virou **produto genérico** (regra máxima no §0 do roteador). O furo do "fora da escala" no relatório, a **segunda régua** que existe para discordar, e o ambiente de teste do publicar. |
 | 05/08/2026 | [`HANDOFF_2026-08-05.md`](HANDOFF_2026-08-05.md) | **Sessão 2, parte 1** — entrar na administração virou **um clique**: a tela cobrava senha para cifrar um cofre VAZIO. E o campo de senha não tinha `autocomplete`, então o Chrome nunca oferecia lembrá-la. |
@@ -27,7 +28,7 @@
 
 ---
 
-**Handoff mais recente:** [`HANDOFF_2026-08-05-e.md`](HANDOFF_2026-08-05-e.md)
+**Handoff mais recente:** [`HANDOFF_2026-08-05-f.md`](HANDOFF_2026-08-05-f.md)
 
 Ligações: [`../solicitacoes/INDICE_DE_SOLICITACOES.md`](../solicitacoes/INDICE_DE_SOLICITACOES.md) ·
 [`../historico/INDICE.md`](../historico/INDICE.md) ·

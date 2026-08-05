@@ -6,7 +6,7 @@
 > **Última atualização:** 05/08/2026
 >
 > **Cadeia de navegação, nesta ordem:**
-> [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-05-e.md) → **`BACKLOG.md` (você está aqui)**
+> [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-05-f.md) → **`BACKLOG.md` (você está aqui)**
 >
 > **Roteador do projeto:** [`AGENTS.md`](AGENTS.md) ·
 > **Solicitações:** [`docs/solicitacoes/INDICE_DE_SOLICITACOES.md`](docs/solicitacoes/INDICE_DE_SOLICITACOES.md) ·
@@ -86,9 +86,22 @@ Medido: Williams com **7 intervalos de 1 dia**, **18 pares com ≤3 dias**, 6 oc
 > bloqueia o uso.** Estão aqui com `arquivo:linha` e reprodução — não como lembrete vago. Foram
 > separados por serem de risco baixo e escopo próprio; os graves já foram corrigidos.
 
+### Sexta auditoria externa — 05/08/2026, **25 achados, 0 abertos**
+
+Três frentes disjuntas: o código que nasceu hoje · o dado publicado até o pixel · os portões medem o
+que dizem. Detalhe em [`HANDOFF_2026-08-05-f.md`](docs/handoff/HANDOFF_2026-08-05-f.md) e no
+`DIARIO_DE_BORDO.md` (DB-022 a DB-025). Ficam aqui os que alguém precisa saber que existiram:
+
+| # | Item | Estado |
+|---|---|---|
+| P6.1 | 🔒 **O gate foi verde sobre OUTRA árvore.** Um `git add -A` capturou o mutante de um auditor; `3f8e366` está na história com `mesDe` devolvendo o ano, e a mensagem afirma `EXIT_GATE=0` | ✅ **FECHADO** — produção nunca recebeu (o commit não tocou `docs/assets/`). O commit **não é reescrito**; o 24º passo do gate é o selo da árvore, provado nas duas pontas |
+| P6.2 | 🔴 **Reverter e publicar em seguida DESFAZIA a reversão** — a correção da manhã mexeu no retrato, e o que sobe no arquivo é outro estado. Com `config.json`, a publicação seguinte republicava a configuração antiga **ativamente** | ✅ **FECHADO** — `aoReverter` sincroniza o estado editável, e é separado de `aoGravar` de propósito (falha parcial não pode apagar edição não publicada) |
+| P6.3 | 🔴 **O gate não executava uma linha de `Admin.tsx`.** Desligar a trava de data retroativa ou o guarda dos 73 turnos passava nos 20 passos | ✅ **FECHADO** — as duas decisões desceram para o domínio, com 9 testes. ⚠️ Declarado aberto: outras decisões seguem na tela, mas nenhuma decide o que vai ao ar |
+| P6.4 | 🔴 **Oito fronteiras de portão** — nenhum contava errado; todos mediam menos do que a frase prometia | ✅ **FECHADO** — e os dois padrões novos ganharam a régua que separa **afirmação de narrativa** (artigo definido; número entre aspas é citação) |
+
 ### Quinta auditoria externa — 05/08/2026, **21 achados, 0 abertos**
 
-Detalhe e medição em [`HANDOFF_2026-08-05-e.md`](docs/handoff/HANDOFF_2026-08-05-e.md) e no
+Detalhe e medição em [`HANDOFF_2026-08-05-f.md`](docs/handoff/HANDOFF_2026-08-05-f.md) e no
 `DIARIO_DE_BORDO.md` (DB-018 a DB-021). Ficam aqui os três vermelhos, porque são os que alguém
 precisa saber que existiram para não recriá-los:
 
