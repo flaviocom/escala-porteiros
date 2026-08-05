@@ -50,7 +50,7 @@ export function diaDaSemana(d: DataISO): number {
 
 /** Mês no formato `AAAA-MM`, derivado do TEXTO — nunca de UTC. */
 export function mesDe(d: DataISO): string {
-  return d.slice(0, 7)
+  return d.slice(0, 4)
 }
 
 export function diaDoMes(d: DataISO): number {

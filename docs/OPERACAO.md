@@ -46,7 +46,10 @@ Em **github.com → Settings → Developer settings → Personal access tokens �
    reescreve.
 2. Clique em **Gerar escala**.
 3. Leia a conferência. **Vermelho trava a publicação; amarelo é informação.**
-4. Se não gostar, **Gerar outra combinação** — muda o sorteio e monta outras oito.
+4. Se não gostar, **Gerar outra combinação** — muda o sorteio e monta outras oito. Se a escala sair
+   **idêntica**, a tela avisa: não é defeito, é o sistema dizendo que já achou a melhor que consegue
+   para este período e este elenco. Para obter outra de verdade, mude a **entrada** (o período, quem
+   está ativo, as restrições, as pessoas por turno).
 5. **Publicar.**
 
 ⚠️ **Gerar de novo produz uma combinação diferente.** Se a escala atual já foi divulgada e está boa,

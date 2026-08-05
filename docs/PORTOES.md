@@ -226,6 +226,28 @@ turnos, porque todos comparavam o site novo com o **dado** do site novo.
 
 > **Coerência interna não é verdade.** O que foi DIVULGADO é a referência.
 
+**`npm run vivo:acessibilidade`** — contraste, tamanho de fonte, foco de teclado e idioma, medidos
+na **tela renderizada** (uma classe do Tailwind não diz a cor final: herança, sobreposição e
+opacidade só se resolvem no navegador).
+
+> 🔴 **Ele media UMA cena, e por isso mentia.** Até 05/08/2026 media só o celular como a página
+> nasce — e o veredito *"contraste, foco de teclado e idioma dentro do piso WCAG AA"* era verdadeiro
+> **sobre 6 elementos focáveis**. A barra lateral inteira (busca, "Minha Escala", os dois filtros, os
+> botões de enviar) vive sob `hidden md:flex`: no celular tem retângulo zerado e fica fora da conta.
+> O desktop, nunca era visitado. A porta do administrativo, nunca.
+>
+> Rodado nas telas que faltavam, o **mesmo código de medição** achou 4 falhas WCAG AA — a pior,
+> *"Toque para configurar"* a **2,67:1**, que é o convite para o irmão de 60+ achar o próprio nome.
+
+Hoje ele mede **quatro cenas** — celular como nasce · celular com o painel aberto · desktop 1440px ·
+porta do administrativo — e **reprova se uma cena não abrir**: se o seletor do painel mudar de nome,
+`preparar` falha em silêncio e a cena volta a medir a tela fechada. O sinal é o número de
+**focáveis**, que dobra com o painel aberto; o portão compara as duas cenas e acusa.
+
+> **Portão que mede menos do que diz é pior que portão ausente**: ele responde "está tudo bem" a uma
+> pergunta maior do que a que ele fez. Sexta vez que esta classe aparece no projeto — e a primeira em
+> que a defesa é o próprio portão conferir o tamanho da população que mediu.
+
 ---
 
 ## Como acrescentar um portão

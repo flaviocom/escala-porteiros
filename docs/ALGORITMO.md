@@ -189,6 +189,27 @@ regerar exatamente o mesmo resultado.
 O botão **"gerar outra combinação"** muda a semente. Sem semente nova, oito versões seriam oito
 cópias.
 
+> 🔴 **E às vezes ele devolve a MESMA escala — de propósito, e a tela diz.** Medido pela quinta
+> auditoria externa em 05/08/2026: numa varredura de 8 períodos × 4 capacidades × 3 sementes, a
+> **versão gulosa venceu a cascata 67 de 96 vezes**. Nesses casos, dez sementes-base diferentes
+> produzem uma escala só — porque o guloso já é o ótimo que esta busca alcança, e a cascata nunca
+> escolhe pior que ele.
+>
+> Antes, a tela prometia *"pedir outra explora combinações diferentes"* e o Flavio ficava clicando
+> num botão que já tinha feito tudo o que podia. Agora, quando a escala sai idêntica, aparece
+> **"Saiu a mesma escala"** com o que mudar na ENTRADA (período, elenco ativo, restrições, pessoas
+> por turno) para obter outra de verdade.
+>
+> ⚠️ E o botão estava **um clique atrasado**: `setTimeout(executar, 30)` guardava o objeto função do
+> render anterior — e com ele a semente anterior. Medido ao vivo: o primeiro clique devolvia a escala
+> idêntica, byte a byte. A semente passou a ir por **argumento**, o que tira o valor do closure e
+> acaba com a classe inteira.
+
+**A versão 0 é registrada com `semente: null`, e não `0`.** Ela é o guloso puro: foi gerada **sem**
+semente e com `candidatos: 1`. Registrar `0` fazia a lista mentir sobre como reproduzi-la — quem
+tentasse com `semente: 0` e `candidatos: 3` obteria outra escala, e concluiria que o gerador não é
+determinístico.
+
 ---
 
 ## A concordância que não pode quebrar

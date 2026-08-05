@@ -113,7 +113,7 @@ Nenhuma seta aponta para dentro do domínio a partir de baixo. Nenhum ciclo.
 | `tipos.ts` | O modelo de dados | Um lugar só define o que é uma Pessoa, um Turno, um Bloco |
 | `datas.ts` | Tudo que é data | 🔴 **`toISOString()` é proibido no projeto** — devolve UTC, e às 21h de São Paulo já é o dia seguinte. Toda data passa por aqui |
 | `malha.ts` | Que dias têm turno | A malha é **dado**, não código. Já mudou uma vez |
-| `regras.ts` | As 16 regras | Ver [`CATALOGO_DE_REGRAS.md`](CATALOGO_DE_REGRAS.md) |
+| `regras.ts` | As 17 regras | Ver [`CATALOGO_DE_REGRAS.md`](CATALOGO_DE_REGRAS.md) |
 | `gerador.ts` | Monta a escala | Ver [`ALGORITMO.md`](ALGORITMO.md) |
 | `validacao.ts` | Roda o catálogo e resume | Separado das regras para o resumo não virar regra |
 | `blocos.ts` | Como os blocos se encaixam quando entra escala nova | 🔴 Estava escrito **duas vezes à mão** — na tela e no script —, e as duas divergiam. Fonte única, com teste |
@@ -123,8 +123,10 @@ Nenhuma seta aponta para dentro do domínio a partir de baixo. Nenhum ciclo.
 
 | Arquivo | Responsabilidade |
 |---|---|
-| `carregar.ts` | Baixa os 3 JSON, **completa o que faltar**, emenda os blocos em ordem, tenta 3× antes de desistir |
+| `main.tsx` | A porta: carrega os dados **antes** de montar a tela, roteia por hash, e envolve tudo num **`ErrorBoundary`** (`class Rede`). 🔴 Ele não existia até 05/08/2026 — `grep` devolvia zero. Um estouro no render derrubava a árvore inteira e a página ficava **em branco**, que é o desfecho que este arquivo declara, em letras grandes, como o pior possível |
+| `carregar.ts` | Baixa os 3 JSON, **completa o que faltar**, emenda os blocos em ordem, tenta 3× antes de desistir. `retratoPublicado()` remonta o retrato com o que **acabou de ser gravado** — reler da rede traria o dado ANTIGO, porque o Pages leva um minuto |
 | `filtrar.ts` | O filtro que a tabela e a exportação usam — **o mesmo**, para a imagem não sair diferente da tela |
+| `ponte-para-a-tela.test.ts` | 🔴 **A prova de que `carregar.ts` e `filtrar.ts` fazem o que dizem.** Nasceu em 05/08/2026: até então, quatro mutantes que apagam a escala de todos os irmãos (`assignedBrothers: []`, `date` fixa em 2000, `type` sempre `NOITE`, `filtrarTurnos` devolvendo `[]`) passavam nos 232 testes. O domínio estava coberto até o osso; **o caminho que a pessoa vê**, não |
 
 ### `src/admin/` — quem monta a escala
 

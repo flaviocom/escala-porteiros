@@ -138,7 +138,7 @@ quebrou exatamente aqui: o gerador tratava como teto e a validação cobrava com
 | `tipo` | `MANHA` · `TARDE` · `NOITE` (sem acento no dado; a tela acentua) |
 | `capacidade` | Quantas vagas |
 | `pessoas` | Os `id`s escalados |
-| `rotulo` | *(opcional)* Etiqueta na tela, ex.: `"ENSAIO"` |
+| `rotulo` | *(opcional)* Etiqueta na tela, ex.: `"ENSAIO"`. 🔴 Até 05/08/2026 esta linha era uma **promessa não cumprida**: o campo era gravado, viajava no `blocos.json` e era lido em **um** lugar — a aba Ajustar. O site público e a imagem do WhatsApp imprimiam `"ENSAIO"` **cravado no componente**, em todo turno de tarde. Hoje ele atravessa por `Shift.rotulo` e chega aos três |
 | `santaCeia` | *(opcional)* `true` = dia marcado, **sem ninguém**, e que não consome cota |
 
 ### 🔴 Como blocos que se sobrepõem são resolvidos
