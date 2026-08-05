@@ -6,13 +6,14 @@
 > **Cadeia de navegação:** [`ESTADO.md`](../../ESTADO.md) → [`handoff mais recente`](../handoff/INDICE.md) → [`BACKLOG.md`](../../BACKLOG.md)
 > **Roteador do projeto:** [`AGENTS.md`](../../AGENTS.md) · **Por quê de cada decisão:** [`DIARIO_DE_BORDO.md`](../../DIARIO_DE_BORDO.md)
 
-**Próximo identificador livre: S-012** — calculado sobre **todas** as fatias, nunca lido da última
+**Próximo identificador livre: S-013** — calculado sobre **todas** as fatias, nunca lido da última
 linha visível (é o ERRO 28 do catálogo de anteparos: após uma rotação, o maior ID some de vista).
 
 ---
 
 | ID | Data | Solicitação | Onde foi parar |
 |---|---|---|---|
+| **S-012** | 04/08/2026 | *"você não me disse se resolveu a questão do token… não houve uma maneira concreta de preparar o login via GitHub. Publicar na tela tem que estar habilitado — é a funcionalidade principal"* | Guia do token **dentro da tela**, fonte única com o verificador, recusas que nomeiam o campo · [handoff da parte 10](../handoff/HANDOFF_2026-08-04-j.md) · [DB-012](../../DIARIO_DE_BORDO.md) |
 | **S-011** | 04/08/2026 | *"os nomes estão encavalando, deveriam aparecer na mesma linha e alinhados. Poderia ter um seletor de mês para não disparar até 12 arquivos de uma única vez, use skills de ux"* | Grade de colunas fixas na imagem · seletor de meses em `<dialog>` nativo · [handoff da parte 8](../handoff/HANDOFF_2026-08-04-h.md) · [DB-011](../../DIARIO_DE_BORDO.md) |
 | **S-010** | 04/08/2026 | *"Onde está esse token do GitHub? Acho que isso não é necessário, né?"* → escolheu reusar o `GITHUB_PAT` existente → *"o melhor é você já deixar esse token embutido. Eu só coloco a senha"* | **Embutir é inviável** (repositório público + revogação automática do GitHub) · entregue o **cofre portátil**, que dá o mesmo conforto · [handoff da parte 7](../handoff/HANDOFF_2026-08-04-g.md) · [DB-010](../../DIARIO_DE_BORDO.md) |
 | **S-009** | 04/08/2026 | *"O arquivo da imagem da escala tem que ser como esse gerado neste caminho"* — `D:\Documentos\CCB_Escalas\Porteiros\escalaagosto2026.png`. Uma imagem, sem mais instrução: ela é a especificação | Layout próprio de exportação (`src/export/`), filtro unificado, corte de 5 dias removido · [handoff da parte 7](../handoff/HANDOFF_2026-08-04-g.md) · [DB-008](../../DIARIO_DE_BORDO.md) |

@@ -535,3 +535,38 @@ O piso é buscado por escolha gulosa **sem retrocesso**, e o docstring dizia "o 
 aceitou". É *o maior que esta busca conseguiu*. Medido: o piso 7 falha em 03/10/2026 e inverter o
 desempate daquele dia não destrava — evidência de que 6 está perto do limite real. Evidência, não
 prova. O texto foi corrigido; a busca, não. Trocá-la por uma com retrocesso é P4.9.
+
+---
+
+## DB-012 · 04/08/2026 — entregar um caminho não é o mesmo que explicá-lo
+
+**Solicitação:** [S-012](docs/solicitacoes/INDICE_DE_SOLICITACOES.md).
+**Handoff:** [parte 10](docs/handoff/HANDOFF_2026-08-04-j.md).
+
+### O diagnóstico dele, que estava certo
+
+*"Não houve uma maneira concreta de preparar o login."* Eu tinha explicado quatro opções, recomendado
+uma, e deixado um `.cmd` na Área de Trabalho. Nenhuma das três coisas é preparar o caminho:
+
+- o guia morava **longe de onde a pergunta aparece**;
+- o `.cmd` **nunca foi rodado por mim** — artefato não verificado entregue como caminho pronto;
+- e a mensagem de recusa **não dizia o que consertar**, que é onde a pessoa desiste.
+
+### Decisões
+
+| # | Decisão | Por quê |
+|---|---|---|
+| 1 | O guia vai **para dentro da tela** | quem trava, trava no primeiro acesso; instrução noutro lugar não é lida |
+| 2 | **Uma fonte só** (`COMO_CRIAR_O_TOKEN`) para o que a tela manda e o que o código exige | guia que envelhece separado do verificador vira instrução errada com cara de certa — e há teste provando que não divergem |
+| 3 | Cada recusa **nomeia o campo** | 404 num token fine-grained é *repositório não marcado*, não erro de digitação. Quem lê o código HTTP procura no lugar errado |
+| 4 | O `.cmd` só **abre a tela** | duas versões da mesma instrução divergem; uma delas fica errada e ninguém percebe |
+
+### A lição
+
+**Explicar opções não é preparar o caminho.** O trabalho não termina quando a alternativa existe no
+código — termina quando a pessoa consegue percorrê-la sozinha, do ponto em que está travada.
+
+### Como reverter
+
+`COMO_CRIAR_O_TOKEN` e `ComoCriarOToken` são aditivos: remover devolve as mensagens genéricas e tira
+o guia da tela.
