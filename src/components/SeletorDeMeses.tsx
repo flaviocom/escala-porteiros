@@ -107,18 +107,23 @@ export function SeletorDeMeses({ meses, aoConfirmar, aoFechar }: Props) {
         })}
       </div>
 
+      {/*
+        Alvos de 44px: medido num iPhone 13 em 04/08/2026, "Todos" e "Nenhum" saíam com 36px de
+        altura. É a mesma classe do defeito já corrigido nos alternadores de senha — dedo não tem
+        a precisão do ponteiro, e 8px a menos é a diferença entre tocar e errar.
+      */}
       <div className="mt-2 flex flex-wrap items-center gap-2 border-t border-gray-100 px-5 py-4">
         <button
           title="Marca todos os meses da lista"
           onClick={() => setMarcados(new Set(meses.map((m) => m.chave)))}
-          className="rounded-lg px-3 py-2 text-sm font-semibold text-indigo-700 hover:bg-indigo-50"
+          className="min-h-[2.75rem] rounded-lg px-4 text-sm font-semibold text-indigo-700 hover:bg-indigo-50"
         >
           Todos
         </button>
         <button
           title="Desmarca todos"
           onClick={() => setMarcados(new Set())}
-          className="rounded-lg px-3 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100"
+          className="min-h-[2.75rem] rounded-lg px-4 text-sm font-semibold text-slate-600 hover:bg-slate-100"
         >
           Nenhum
         </button>
