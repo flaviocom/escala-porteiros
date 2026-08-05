@@ -114,19 +114,68 @@ export async function publicarDados(
 }
 
 /** Confere se o token funciona e tem permissão de escrita, ANTES de o Flavio depender dele. */
+/** Onde se cria o token, com o que marcar. Um lugar só — a tela e o guia leem daqui. */
+export const COMO_CRIAR_O_TOKEN = {
+  url: 'https://github.com/settings/personal-access-tokens/new',
+  passos: [
+    { campo: 'Token name', valor: 'escala-porteiros' },
+    { campo: 'Expiration', valor: '1 year (ou o que preferir)' },
+    { campo: 'Repository access', valor: 'Only select repositories → escala-porteiros' },
+    { campo: 'Permissions', valor: 'Repository permissions → Contents: Read and write' },
+  ],
+} as const
+
+/**
+ * Confere o token ANTES de guardar — e diz o que CONSERTAR, não só que deu errado.
+ *
+ * 🔴 As mensagens eram genéricas ("O GitHub recusou o token (HTTP 404)"), e 404 é justamente a
+ * resposta mais confusa que existe aqui: num token fine-grained, **repositório não marcado** volta
+ * como *não encontrado*, não como *sem permissão*. Quem lê "404" procura erro de digitação e o
+ * problema está numa caixa de seleção da outra página.
+ *
+ * Cada recusa agora nomeia o campo exato a corrigir.
+ */
 export async function conferirToken(token: string): Promise<{ ok: boolean; detalhe: string }> {
   try {
     const r = await fetch(`https://api.github.com/repos/${DONO}/${REPO}`, {
       headers: cabecalhos(token),
       cache: 'no-store',
     })
+
+    if (r.status === 401) {
+      return {
+        ok: false,
+        detalhe:
+          'O GitHub não reconheceu este token. Confira se copiou o valor INTEIRO (ele aparece uma ' +
+          'única vez, logo depois de criado) — ou crie outro.',
+      }
+    }
+    if (r.status === 404) {
+      return {
+        ok: false,
+        detalhe:
+          `O token é válido, mas não enxerga o repositório ${REPO}. Em "Repository access", escolha ` +
+          `"Only select repositories" e marque ${REPO}. É o engano mais comum: o GitHub responde ` +
+          '"não encontrado" quando o repositório não está na lista do token.',
+      }
+    }
     if (!r.ok) return { ok: false, detalhe: `O GitHub recusou o token (HTTP ${r.status}).` }
+
     const j = await r.json()
-    if (!j.permissions?.push)
-      return { ok: false, detalhe: 'O token é válido, mas não tem permissão de escrita neste repositório.' }
+    if (!j.permissions?.push) {
+      return {
+        ok: false,
+        detalhe:
+          'O token enxerga o repositório, mas não pode escrever. Em "Repository permissions", ' +
+          'ponha "Contents" em "Read and write".',
+      }
+    }
     return { ok: true, detalhe: `Token válido, com escrita em ${j.full_name}.` }
   } catch (e) {
-    return { ok: false, detalhe: e instanceof Error ? e.message : String(e) }
+    return {
+      ok: false,
+      detalhe: `Não deu para falar com o GitHub: ${e instanceof Error ? e.message : String(e)}. Confira a conexão.`,
+    }
   }
 }
 

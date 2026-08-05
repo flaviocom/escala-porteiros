@@ -15,7 +15,7 @@ import {
 } from 'lucide-react'
 import { clsx } from 'clsx'
 import { abrirCofre, apagarCofre, cofreExiste, exportarCofre, gravarCofre, importarCofre, type Segredos } from './cofre'
-import { baixarPacoteManual, conferirToken, DESTINOS, historicoPublicacoes, publicarDados, reverterPara, type Publicacao } from './github'
+import { baixarPacoteManual, COMO_CRIAR_O_TOKEN, conferirToken, DESTINOS, historicoPublicacoes, publicarDados, reverterPara, type Publicacao } from './github'
 import type { DadosPublicados } from '../dados/carregar'
 import type { Bloco, Pessoa, TipoTurno } from '../dominio/tipos'
 import { ROTULO_TURNO } from '../dominio/tipos'
@@ -91,6 +91,62 @@ function LevarParaOutroAparelho() {
               Esconder
             </button>
           </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+/**
+ * 🔴 O PASSO A PASSO DO TOKEN, NA TELA ONDE A PESSOA ESTÁ TRAVADA.
+ *
+ * Ele existia num `.cmd` na Área de Trabalho — longe do lugar onde a pergunta aparece, e num
+ * arquivo que **nunca foi testado**. Guia que mora noutro lugar é guia que não se lê: quem chega
+ * aqui sem token precisa da instrução aqui, com os valores exatos e um botão que abre a página.
+ *
+ * Os valores vêm de `COMO_CRIAR_O_TOKEN`, no mesmo arquivo que confere o token — para o que a tela
+ * MANDA marcar e o que o código EXIGE nunca divergirem.
+ */
+function ComoCriarOToken() {
+  const [aberto, setAberto] = useState(false)
+
+  return (
+    <div className="mb-5 rounded-xl border border-gray-200 bg-gray-50">
+      <button title="Passo a passo para criar o token, com os valores exatos"
+        onClick={() => setAberto((v) => !v)}
+        className="flex min-h-[2.75rem] w-full items-center justify-between px-4 text-sm font-bold text-gray-700"
+      >
+        <span>Não tenho token — como criar (3 minutos)</span>
+        <span className="text-gray-400">{aberto ? '−' : '+'}</span>
+      </button>
+
+      {aberto && (
+        <div className="px-4 pb-4 text-sm text-gray-600">
+          <a
+            href={COMO_CRIAR_O_TOKEN.url}
+            target="_blank"
+            rel="noreferrer"
+            title="Abre a página do GitHub onde o token é criado"
+            className="mb-3 flex min-h-[2.75rem] items-center justify-center rounded-xl bg-gray-900 px-4 text-sm font-bold text-white hover:bg-black"
+          >
+            Abrir a página do GitHub →
+          </a>
+
+          <p className="mb-2 text-xs">Lá, preencha exatamente assim:</p>
+          <dl className="mb-3 overflow-hidden rounded-lg border border-gray-200 bg-white">
+            {COMO_CRIAR_O_TOKEN.passos.map((p, i) => (
+              <div key={p.campo} className={clsx('flex flex-col gap-0.5 px-3 py-2', i > 0 && 'border-t border-gray-100')}>
+                <dt className="text-[11px] font-bold uppercase tracking-wide text-gray-500">{p.campo}</dt>
+                <dd className="text-sm font-semibold text-gray-900">{p.valor}</dd>
+              </div>
+            ))}
+          </dl>
+
+          <p className="text-xs leading-relaxed text-gray-500">
+            Não marque mais nada. Um token que só escreve arquivo <strong>neste</strong> repositório não
+            alcança nenhum outro. Clique em <strong>Generate token</strong>, copie o valor — ele aparece
+            <strong> uma única vez</strong> — e cole aqui no campo abaixo.
+          </p>
         </div>
       )}
     </div>
@@ -186,6 +242,7 @@ const PrimeiroAcesso: React.FC<{ aoAbrir: (s: Segredos) => void }> = ({ aoAbrir 
         na mão. Se você esquecê-la, é só configurar de novo com um token novo.
       </p>
       <ColarCofre />
+      <ComoCriarOToken />
       <Campo rotulo="Senha (mínimo 8 caracteres)" tipo="senha" valor={senha} aoMudar={setSenha} />
       <Campo rotulo="Repita a senha" tipo="senha" valor={repetir} aoMudar={setRepetir} />
       <Campo
