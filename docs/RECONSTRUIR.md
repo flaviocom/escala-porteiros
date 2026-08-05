@@ -18,6 +18,7 @@
 | [`ALGORITMO.md`](ALGORITMO.md) | como a escala é montada, e o que o algoritmo não garante |
 | [`ARQUITETURA.md`](ARQUITETURA.md) | as camadas, medidas no grafo de importações |
 | [`OPERACAO.md`](OPERACAO.md) | como usar, como conferir, o que fazer quando dá errado |
+| [`INSTALAR.md`](INSTALAR.md) | do zero numa máquina nova, e como publicar para **outro cliente** |
 
 Registro histórico: [`handoff/INDICE.md`](handoff/INDICE.md) ·
 [`solicitacoes/INDICE_DE_SOLICITACOES.md`](solicitacoes/INDICE_DE_SOLICITACOES.md) ·

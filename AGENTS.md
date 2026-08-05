@@ -195,6 +195,7 @@ aqui. Escrito para quem **não participou de nada** — inclusive outra intelig�
 | Como a escala é montada, e o que o algoritmo **não** garante | [`docs/ALGORITMO.md`](docs/ALGORITMO.md) |
 | As camadas, medidas no grafo de importações | [`docs/ARQUITETURA.md`](docs/ARQUITETURA.md) |
 | Como usar, conferir, e o que fazer quando dá errado | [`docs/OPERACAO.md`](docs/OPERACAO.md) |
+| Instalar do zero, e publicar para **outro cliente** | [`docs/INSTALAR.md`](docs/INSTALAR.md) |
 
 ### O registro do que aconteceu
 

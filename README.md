@@ -92,7 +92,8 @@ O GATE encadeia **doze** passos. Os mais incomuns, e o porquê:
 participou de nada: o que é, por que cada decisão é como é, em que ordem reconstruir, e as
 armadilhas que já custaram caro aqui. Com [modelo de dados](docs/MODELO_DE_DADOS.md),
 [catálogo de regras](docs/CATALOGO_DE_REGRAS.md), [algoritmo](docs/ALGORITMO.md),
-[arquitetura](docs/ARQUITETURA.md) e [operação](docs/OPERACAO.md).
+[arquitetura](docs/ARQUITETURA.md), [operação](docs/OPERACAO.md) e
+[instalação do zero](docs/INSTALAR.md).
 
 ## Onde ler mais
 
