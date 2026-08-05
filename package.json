@@ -24,7 +24,9 @@
     "vivo:admin": "node scripts/validar-admin.mjs",
     "vivo:celular": "node scripts/validar-celular.mjs",
     "vivo:conferir": "node scripts/conferir-site-contra-dados.mjs",
-    "vivo:conferir-passado": "node scripts/conferir-historico-contra-site-antigo.mjs"
+    "vivo:conferir-passado": "node scripts/conferir-historico-contra-site-antigo.mjs",
+
+    "ensaio": "node scripts/ensaio-troca-de-elenco.mjs"
   },
   "dependencies": {
     "clsx": "^2.1.1",

@@ -565,6 +565,18 @@ export function podeAssumir(
   jaEscaladoNoDia: boolean,
   contagemNoMes: number,
 ): { pode: boolean; motivo?: string } {
+  /**
+   * 🔴 Rótulo que NUNCA some. `['noite']` (minúsculo, valor inválido — o literal é `'NOITE'`)
+   * produzia `ROTULO_TURNO['noite'] === undefined`, e `join` transforma `undefined` em string
+   * vazia: a pessoa via **"só pode "** e ficava sem o motivo.
+   *
+   * O tipo impede isso dentro do app, mas `pessoas.json` é um arquivo que alguém pode editar à mão
+   * — e foi exatamente assim que apareceu. Motivo mudo é pior que motivo feio: com o valor cru na
+   * tela (`só pode noite`) dá para desconfiar do dado; sem nada, procura-se defeito no gerador.
+   */
+  const rotuloDoTurno = (t: TipoTurno) => ROTULO_TURNO[t] ?? String(t)
+  const nomeDoDia = (d: number) => NOMES_DIA[d] ?? `dia ${d}`
+
   if (!pessoa.ativo) return { pode: false, motivo: 'fora do elenco' }
   if (jaEscaladoNoDia) return { pode: false, motivo: 'já está escalado neste dia' }
 
@@ -573,9 +585,9 @@ export function podeAssumir(
 
   if (r.diasProibidos?.includes(dia)) return { pode: false, motivo: `não pode em ${NOMES_DIA[dia]}` }
   if (r.diasPermitidos && !r.diasPermitidos.includes(dia))
-    return { pode: false, motivo: `só pode em ${r.diasPermitidos.map((d) => NOMES_DIA[d]).join(', ')}` }
+    return { pode: false, motivo: `só pode em ${r.diasPermitidos.map(nomeDoDia).join(', ')}` }
   if (r.turnosPermitidos && !r.turnosPermitidos.includes(turno.tipo))
-    return { pode: false, motivo: `só pode ${r.turnosPermitidos.map((t) => ROTULO_TURNO[t]).join(', ')}` }
+    return { pode: false, motivo: `só pode ${r.turnosPermitidos.map(rotuloDoTurno).join(', ')}` }
   if (r.tetoMensal != null && contagemNoMes >= r.tetoMensal)
     return { pode: false, motivo: `já atingiu o teto de ${r.tetoMensal} no mês` }
   for (const a of r.ausencias ?? []) {

@@ -100,6 +100,10 @@ comentário). Consertados, com os casos reais virando teste permanente.
 
 **Nada em execução.** O backlog técnico está vazio pela segunda vez.
 
+**O cenário que originou o projeto está provado de ponta a ponta:** `npm run ensaio` tira o mais
+escalado, põe um irmão com as **quatro** famílias de restrição de uma vez, refaz a escala e mede
+**11 promessas** — inclusive que o passado fica byte a byte idêntico. 11 de 11.
+
 **Na quinta parte**, sem tarefa na lista, a ordem foi conferir a afirmação mais consequente que
 nunca tinha sido testada: o histórico congelado foi montado a partir do **código** do site antigo,
 nunca contra o que ele **mostra na tela**. Conferido dia a dia:

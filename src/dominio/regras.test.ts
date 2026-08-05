@@ -12,7 +12,7 @@
  * teste, ele fica vermelho.
  */
 import { describe, expect, it } from 'vitest'
-import { CATALOGO, type Contexto } from './regras'
+import { CATALOGO, podeAssumir, type Contexto } from './regras'
 import { validar } from './validacao'
 import type { Bloco, Pessoa, Turno } from './tipos'
 
@@ -427,5 +427,56 @@ describe('cobertura do catálogo', () => {
     const rel = validar(ctxDe([turno('2026-09-06', 'NOITE', ['ana', 'bia'])], TRES))
     expect(rel.aprovada).toBe(false)
     expect(rel.falhasDuras.map((r) => r.id)).toContain('D1')
+  })
+})
+
+// ---------------------------------------------------------------------------
+// O MOTIVO NUNCA FICA MUDO
+//
+// Achado pelo ensaio de troca de elenco (04/08/2026): um `turnosPermitidos: ['noite']` — minúsculo,
+// valor inválido, porque o literal é `'NOITE'` — fazia `ROTULO_TURNO['noite']` virar `undefined`, e
+// `join` transforma `undefined` em **string vazia**. A mensagem saía como **"só pode "**, sem dizer
+// o quê. Passei duas rodadas procurando defeito no gerador por causa disso.
+//
+// O tipo impede dentro do app, mas `pessoas.json` é um arquivo que alguém pode editar à mão — e foi
+// exatamente assim que apareceu. Motivo mudo é pior que motivo feio: com o valor cru na tela
+// ("só pode noite") dá para desconfiar do dado; sem nada, procura-se no lugar errado.
+// ---------------------------------------------------------------------------
+describe('podeAssumir — o motivo nunca fica mudo', () => {
+  const turnoNoite: Turno = { data: '2026-10-04', tipo: 'NOITE', pessoas: [], capacidade: 3 }
+  const alguem = (restricoes: Pessoa['restricoes']): Pessoa =>
+    ({ id: 'x', nome: 'Fulano', ativo: true, restricoes })
+
+  it('turno com valor INVÁLIDO ainda produz motivo legível', () => {
+    const r = podeAssumir(alguem({ turnosPermitidos: ['noite' as unknown as 'NOITE'] }), turnoNoite, false, 0)
+    expect(r.pode).toBe(false)
+    expect(r.motivo).toBe('só pode noite')
+  })
+
+  it('dia da semana INVÁLIDO ainda produz motivo legível', () => {
+    const r = podeAssumir(alguem({ diasPermitidos: [9] }), turnoNoite, false, 0)
+    expect(r.pode).toBe(false)
+    expect(r.motivo).toBe('só pode em dia 9')
+  })
+
+  it('e o caso limpo continua com o rótulo bonito', () => {
+    const r = podeAssumir(alguem({ turnosPermitidos: ['MANHA'] }), turnoNoite, false, 0)
+    expect(r.pode).toBe(false)
+    expect(r.motivo).toBe('só pode Manhã')
+  })
+
+  it('nenhum motivo termina em espaço — a marca do rótulo que sumiu', () => {
+    const casos: Pessoa['restricoes'][] = [
+      { turnosPermitidos: ['xpto' as unknown as 'NOITE'] },
+      { diasPermitidos: [42] },
+      { diasProibidos: [0] },
+      { tetoMensal: 0 },
+    ]
+    for (const restricoes of casos) {
+      const r = podeAssumir(alguem(restricoes), { ...turnoNoite, data: '2026-10-04' }, false, 5)
+      expect(r.pode).toBe(false)
+      expect(r.motivo).toBeTruthy()
+      expect(r.motivo).toBe(r.motivo!.trimEnd())
+    }
   })
 })
