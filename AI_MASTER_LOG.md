@@ -4,7 +4,7 @@
 > O **porquê** de cada decisão vive no [`DIARIO_DE_BORDO.md`](DIARIO_DE_BORDO.md); aqui fica o
 > registro do que foi feito, passo a passo.
 >
-> **Cadeia de navegação:** [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-04-d.md) → [`BACKLOG.md`](BACKLOG.md)
+> **Cadeia de navegação:** [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-05-d.md) → [`BACKLOG.md`](BACKLOG.md)
 > **Roteador:** [`AGENTS.md`](AGENTS.md) ·
 > **Solicitações:** [`docs/solicitacoes/INDICE_DE_SOLICITACOES.md`](docs/solicitacoes/INDICE_DE_SOLICITACOES.md) ·
 > **Fatias arquivadas:** [`docs/historico/INDICE.md`](docs/historico/INDICE.md)
@@ -275,3 +275,43 @@ marca. 🔴 Dois defeitos da minha régua: "sem foco visível" era falso (`.focu
 
 **Skills acionadas:** `padrao-ouro` (o ciclo), `loop-autonomo`, `documentacao-auditavel`,
 `ponytail` (remover em vez de ligar o estado morto), `impeccable` (acessibilidade do seletor).
+
+---
+
+## 05/08/2026 — sessão 2: o dia das quatro auditorias
+
+**Solicitações atendidas:** S-013 a S-031 (ver
+[índice](docs/solicitacoes/INDICE_DE_SOLICITACOES.md)). As de maior consequência: a divergência de
+87 turnos (S-021), a regra máxima de escopo (S-017), a tolerância do teto (S-025), a finalidade em
+três fases (S-029) e a tolerância zero (S-031).
+
+**Quatro auditorias externas independentes, em frentes disjuntas — 48 achados, todos fechados e
+provados nas duas pontas:**
+
+| # | Frente | Achados | O pior dela |
+|---|---|---|---|
+| 1 | documentação × código | 15 | `config.identidade` existia em 3 lugares e **nunca era lida** |
+| 2 | portabilidade (só docs, código proibido) | 3 estruturais | o gerador **não tinha receita**: nem fórmula do piso, nem ordem de escolha |
+| 3 | regressões e fronteiras | 20 | `ultimoDiaDoMes` errava **só em UTC−3**, e o portão de fuso testa UTC+2 |
+| 4 | o caminho de publicação | 10 | gerar período **menor** apagava 73 turnos já divulgados, e o guarda aprovava |
+
+**O padrão que apareceu nas quatro:** *a fronteira do portão é onde o defeito mora.* Cinco vezes —
+`import` de imagem sem texto · `package.json` fora da varredura · aspas duplas · só `.md` · número
+antes da palavra. Cada achado que escapou virou critério novo.
+
+**O que ficou construído:**
+
+- **11 portões novos**: genérico + autoteste · catálogo gerado · comandos citados · arquitetura ·
+  fatos medidos · datas · citações · crescimento · tamanho de documentos · caminho inteiro · estado
+  entre abas.
+- **9 documentos de reconstrução**, sob [`docs/RECONSTRUIR.md`](docs/RECONSTRUIR.md) — para outra IA
+  reconstruir o produto sem ter participado de nada.
+- **O produto virou genérico**: nome, subtítulo, emblema e vocabulário são dado, com tela.
+- **A escala de 06/08 a 31/12** publicada, conferida ao vivo, com o passado de 01/03 a 05/08
+  congelado e a Santa Ceia errada de 07/06 preservada como ele mandou.
+
+**232 testes verdes em 2 fusos · GATE 20 passos, exit 0 · caminho inteiro percorrido num navegador.**
+
+**Skills acionadas:** `padrao-ouro` (o ciclo inteiro, quatro vezes), `loop-autonomo`,
+`documentacao-auditavel`, `deep-research` (a pesquisa sobre gerar N versões), `ponytail` (remover
+estado morto em vez de ligá-lo), `impeccable` (alvo de toque, contraste, foco).

@@ -4,7 +4,7 @@
 > como reverter.** Documento **append-only**, fatiado por período ao estourar o teto. **Nada é
 > excluído, nunca.**
 >
-> **Cadeia de navegação:** [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-04-d.md) → [`BACKLOG.md`](BACKLOG.md)
+> **Cadeia de navegação:** [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-05-d.md) → [`BACKLOG.md`](BACKLOG.md)
 > **Roteador:** [`AGENTS.md`](AGENTS.md) ·
 > **Solicitações:** [`docs/solicitacoes/INDICE_DE_SOLICITACOES.md`](docs/solicitacoes/INDICE_DE_SOLICITACOES.md) ·
 > **Histórico:** [`docs/historico/INDICE.md`](docs/historico/INDICE.md)
@@ -668,3 +668,174 @@ quando o trabalho ficou bom.
 era o único sem teste, porque testá-lo de verdade escreveria no repositório real. Virou um GitHub de
 mentira, com o código de produção intacto. E provei com infrator injetado, porque 10 verdes não
 distinguem teste bom de teste frouxo.
+
+---
+
+## DB-013 · 05/08/2026 — a escala nova desmentia o site que os irmãos já tinham
+
+### Solicitação (Flavio, verbatim)
+
+> *"Hoje, quarta-feira, na escala que estamos trabalhando agora, você já alterou o Williams por
+> Isaac, sem eu sequer ter solicitado alteração na escala nova. Note que isso é muito importante."*
+
+### Medição, não presunção
+
+Um script leu os dois sites num navegador de verdade e comparou dia a dia, de hoje em diante:
+
+```
+turnos comparáveis IGUAIS ....... 0
+turnos comparáveis DIVERGENTES .. 87
+```
+
+**Todos.** E **nenhum portão pegou** — todos comparavam o site novo com o **dado** do site novo.
+Coerência interna impecável enquanto a escala inteira contradizia o que a congregação tinha em mãos.
+
+### Decisão, e o porquê
+
+O bloco histórico foi recortado até **05/08 inclusive**, congelando 96 turnos, e a escala nova passa
+a começar em 06/08. O que já foi divulgado vira passado imutável.
+
+> **Coerência interna não é verdade.** O que foi DIVULGADO é a referência.
+
+E a instrução dele sobre a Santa Ceia foi obedecida ao pé da letra — *"se estava errada, mantenha;
+se a data já passou, mantenha"*: a Ceia de 07/06, errada no site antigo, está dentro do bloco
+congelado e **não foi tocada**.
+
+### Como reverter
+
+`git revert 47fb59f` devolve o recorte. O bloco congelado volta a terminar em 04/08 e a escala nova
+a começar em 05/08 — o que faria o site desmentir o turno de hoje outra vez.
+
+### Portão que nasceu disto
+
+`npm run vivo:divulgado -- --antigo <url>`. Ele **não existia**, e a medição que motivou o recorte
+tinha sido feita num arquivo solto, fora do repositório — número que ninguém consegue re-medir não é
+medição, é lembrança.
+
+---
+
+## DB-014 · 05/08/2026 — configuração morta: existia, e nunca era lida
+
+### Solicitação (Flavio, verbatim)
+
+> *"Coloque como regra máxima do escopo: é uma escala genérica, configurável, **mas genérica**, com
+> intenção de comercialização."*
+
+### O que a auditoria externa achou, horas depois
+
+O código dizia o contrário em **nove** lugares: cabeçalho do site (desktop e celular), cabeçalho da
+administração, tela de entrada, imagem do WhatsApp, nome do arquivo baixado, título da aba, os três
+prompts do motor, 24 ocorrências de "Irmão", e o **emblema importado**.
+
+E `config.identidade` **já existia** — no tipo, no dado publicado e no padrão de carregamento.
+**Nunca era lido.**
+
+### Decisão, e o porquê
+
+> **Configuração morta é pior que configuração ausente: ela parece que resolve.** Quem lesse o tipo
+> concluiria que o produto já era configurável e não procuraria mais.
+
+Título, subtítulo, emblema e vocabulário viraram dado com **tela**. O padrão do produto virou
+genérico ("Escala de plantões" / "Pessoa"), e o nome deste cliente vive só em `dados/`.
+
+⚠️ **Sem fallback que carregue o nome antigo.** A primeira correção deixou `?? 'Escala de Porteiros'`
+no JSX — pior que o defeito original: parece configurável e guarda o nome antigo como rede.
+
+### Como reverter
+
+`git revert c9fc6be`. Voltaria a cravar o nome — e a fechar a porta das fases 2 e 3.
+
+---
+
+## DB-015 · 05/08/2026 — o teto é máximo, não meta
+
+### Solicitação (Flavio, verbatim)
+
+> *"Elas têm um teto e elas não podem ultrapassar o teto, mas ficar abaixo, desde que não fiquem
+> muito abaixo, com tolerância. Tudo bem também."*
+
+### Decisão, e o porquê
+
+Q5 acusava **qualquer** valor abaixo do teto — o que transforma o aviso em ruído, e aviso que
+aparece sempre é aviso que ninguém lê. Duas mudanças:
+
+1. **tolerância de 1** — só avisa quem fica 2 ou mais abaixo. 🏠 **Convenção de casa, declarada**:
+   não há fonte externa para *"quanto abaixo do teto é demais"* numa escala de voluntários;
+2. **mês cortado não se julga** — era a origem dos dois avisos. Agosto entrava com 24 dos 31 dias.
+
+### O risco que isso cria, e como está travado
+
+Toda tolerância pode virar uma regra que nunca acusa — e regra que nunca acusa é indistinguível de
+regra apagada. Os testes cobrem os **dois lados**: 1 abaixo passa, **2 abaixo ainda acusa**.
+
+### Como reverter
+
+`TOLERANCIA_ABAIXO_DO_TETO = 0` em `src/dominio/regras.ts` e remover `mesInteiro`. Dois testes ficam
+vermelhos, que é o comportamento certo.
+
+---
+
+## DB-016 · 05/08/2026 — gerar um período menor apagava escala já divulgada
+
+### Como apareceu
+
+Quarta auditoria externa do dia, mirando o caminho que o Flavio ia percorrer: *ajustar elenco →
+gerar → publicar → mandar a URL*.
+
+### A medição, no dado real
+
+```
+publicado: 183 turnos  →  gerar 01/09 a 31/10  →  110 turnos
+PERDIDOS: 73 — novembro e dezembro inteiros, sem substituto
+```
+
+A montagem guardava só a **cabeça** do bloco anterior. A **cauda** sumia. E
+`conferirPassadoPreservado`, escrito no mesmo dia para provar que *"o passado não se reescreve"*,
+**aprovava** — porque contava só o que vinha antes do corte.
+
+> 🔴 **Um conferidor que prova metade da frase é pior que nenhum: ele dá licença.**
+
+### Decisão, e o porquê
+
+O bloco anterior passa a ser **partido em cabeça e cauda**. O bloco novo manda no período dele, e só
+nele. E o guarda — que vivia só num script declarado *"não é ferramenta de produção"* — foi **ligado
+na tela**, travando a publicação e dizendo **quais dias** sumiriam.
+
+### Como reverter
+
+`git revert 0c0f15d`. Voltaria a apagar a cauda em silêncio, no clique que ele daria hoje.
+
+---
+
+## DB-017 · 05/08/2026 — quatro auditorias, 48 achados, e o padrão que se repete
+
+### O que foi feito
+
+Quatro auditorias externas independentes, em frentes disjuntas: configuração morta (15) · teste de
+portabilidade da documentação (3 estruturais) · regressões e fronteiras (20) · o caminho de
+publicação (10). **Todos fechados e provados nas duas pontas.**
+
+### O padrão que apareceu nas quatro
+
+**A fronteira do portão é onde o defeito mora.** Em ordem de descoberta:
+
+| # | O portão media | O defeito estava |
+|---|---|---|
+| 1 | texto em `src/` | no `import` de uma imagem — que não tem texto |
+| 2 | `src/` + `index.html` | no `package.json` |
+| 3 | aspas simples | num `import` com aspas duplas |
+| 4 | só arquivos `.md` | num `console.log` de script |
+| 5 | número **depois** da palavra "gate" | num título com o número **antes** |
+
+Cada achado que escapou virou critério novo. E o portão de fatos — criado justamente para fechar
+essa classe — teve o **quarto** buraco de fronteira dentro dele.
+
+### A decisão de método que sai daqui
+
+Todo portão novo declara, no próprio cabeçalho, **o que ele decidiu não olhar**. Não como desculpa:
+como o primeiro lugar onde o próximo auditor vai procurar.
+
+### Como reverter
+
+Nenhuma destas correções deve ser revertida isoladamente — cada uma tem teste que fica vermelho.
+O `BACKLOG.md` lista as 48, com `arquivo:linha` e como reproduzir.

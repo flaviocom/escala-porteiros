@@ -40,7 +40,7 @@ alguma tiver caractere de controle.
 
 ---
 
-## Os 19 passos do `npm run gate`
+## Os 20 passos do `npm run gate`
 
 ### 1. `typecheck` — `tsc --noEmit`, `strict` ligado
 Sem `strict`, o TypeScript nem estreita união discriminada, e metade das garantias de tipo do
@@ -172,19 +172,30 @@ que é a que a área administrativa usa para publicar.
 **Por que 60% e não 90%:** sobra ano suficiente para arquivar sem pressa. Alarme que grita cedo
 demais é alarme que alguém desliga.
 
-### 17. `auditoria` — 20 ataques ao próprio código
+### 17. `tamanho-docs` — nenhum documento passou do teto do próprio regime
+**De onde vêm os tetos:** de `docs/regimes-documentos.json`, a declaração do PROJETO — não de um
+número escrito no script. O regime vem do **caminho**: raiz = **vivo** (400 linhas / 40 KB,
+carregado toda sessão) · subpasta = **referência** (800 / 100, lido sob demanda) · a lista
+`historico` = **append-only** (2.000, fatiado por período) · `docs/historico/` = **fatia fechada,
+isenta**, porque medir o passado imutável não faz sentido.
+**Diz também o MAIOR de cada regime**, para a folga ser visível antes de acabar.
+**Por que existe:** o `historico/INDICE.md` afirmava, desde o começo, que o teto era conferido
+*"no pré-voo **e no GATE**"* — e o GATE não tinha o passo. Quando a auditoria externa mostrou
+isso, a dívida foi **declarada** em vez de fechada; algumas horas depois, fechada.
+
+### 18. `auditoria` — 20 ataques ao próprio código
 Cada ataque **injeta um infrator** e exige que a validação o pegue. Frentes: validação, datas e fuso,
 gerador, dado publicado (inclusive *"os dois arquivos de dados são iguais?"* — que pegou um defeito
 real), e camada de tela.
 ⚠️ **Relatório sem achado é declarado SUSPEITO pelo próprio script**, com o motivo estrutural: quem
 auditou escreveu o código.
 
-### 18. `regras-mestras` — tooltip em todo botão
+### 19. `regras-mestras` — tooltip em todo botão
 **População:** 62 botões medidos.
 **Também mede:** clicáveis fora de `<button>` (div/span com `onClick` e sem papel declarado) — hoje 0
 — e aspas duplas dentro do atributo, que quebram o HTML em silêncio.
 
-### 19. `build` — compila e gera em `docs/`
+### 20. `build` — compila e gera em `docs/`
 
 ---
 

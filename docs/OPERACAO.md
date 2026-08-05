@@ -99,7 +99,7 @@ está errada** — e é melhor descobrir antes da congregação descobrir.
 npm run gate
 ```
 
-19 passos, **nesta ordem** — lida do `package.json`, não de memória:
+20 passos, **nesta ordem** — lida do `package.json`, não de memória:
 
 | # | Passo | O que prova |
 |---|---|---|
@@ -119,9 +119,10 @@ npm run gate
 | 14 | `datas` | `toISOString()` não decide dia nem mês em lugar nenhum |
 | 15 | `citacoes` | nenhuma citação `arquivo:linha` aponta para o vazio |
 | 16 | `crescimento` | o dado publicado ainda cabe onde vai ser servido |
-| 17 | `auditoria` | 20 ataques ao próprio código, com infrator injetado |
-| 18 | `regras-mestras` | tooltip em todo botão |
-| 19 | `build` | compila e gera em `docs/` |
+| 17 | `tamanho-docs` | nenhum documento passou do teto do regime dele (raiz 400 · subpasta 800 · append-only 2.000) |
+| 18 | `auditoria` | 20 ataques ao próprio código, com infrator injetado |
+| 19 | `regras-mestras` | tooltip em todo botão |
+| 20 | `build` | compila e gera em `docs/` |
 
 > ⚠️ Esta tabela já esteve **fora de ordem e incompleta**: listava 12 linhas para 15 comandos e
 > trocava `auditoria` de posição — achado por auditoria externa em 05/08/2026. Mexeu no `gate`,

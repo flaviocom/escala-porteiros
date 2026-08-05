@@ -16,7 +16,7 @@
  * Uso: node scripts/conferir-cadeia-de-navegacao.mjs
  */
 import { readFileSync, readdirSync } from 'node:fs'
-import { join, dirname } from 'node:path'
+import { join, dirname, relative, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..')
@@ -45,13 +45,38 @@ if (!ordenados.length) {
 }
 const MAIS_RECENTE = ordenados[ordenados.length - 1].n
 
-// Onde a cadeia é declarada, e como cada documento a escreve.
-const ONDE = [
-  { arquivo: 'AGENTS.md', gatilhos: [/handoff mais recente/i, /última sessão/i] },
-  { arquivo: 'ESTADO.md', gatilhos: [/handoff mais recente/i] },
-  { arquivo: 'BACKLOG.md', gatilhos: [/handoff mais recente/i] },
-  { arquivo: 'docs/handoff/INDICE.md', gatilhos: [/handoff mais recente/i] },
-]
+/*
+  🔴 DESCOBERTO, NÃO LISTADO — corrigido em 05/08/2026.
+
+  Esta lista tinha **quatro** arquivos, escritos à mão. E `AI_MASTER_LOG.md` e `DIARIO_DE_BORDO.md`
+  também declaram a cadeia, no cabeçalho, com a mesma frase — e eram **invisíveis** para este
+  portão. O `AI_MASTER_LOG` apontava para um handoff de 04/08 havia um dia inteiro, com o portão
+  verde ao lado.
+
+  É o mesmo padrão que apareceu em CINCO portões diferentes hoje: **a fronteira do portão é onde o
+  defeito mora.** Lista escrita à mão erra em silêncio; descoberta erra alto.
+
+  Agora: **todo `.md` que contenha a frase "handoff mais recente" é conferido**, e o número de
+  documentos medidos aparece no relatório — para alguém notar se um dia ele encolher.
+*/
+function todosOsDocumentos(dir = RAIZ, acc = []) {
+  for (const item of readdirSync(dir, { withFileTypes: true })) {
+    if (['node_modules', '.git', 'capturas', 'assets'].includes(item.name)) continue
+    const abs = join(dir, item.name)
+    if (item.isDirectory()) { todosOsDocumentos(abs, acc); continue }
+    if (!item.name.endsWith('.md')) continue
+    const rel = relative(RAIZ, abs).split(sep).join('/')
+    // Handoffs antigos CITAM o que era o mais recente na época — é o trabalho deles.
+    if (rel.startsWith('docs/handoff/HANDOFF_')) continue
+    if (rel.startsWith('docs/historico/')) continue
+    acc.push(rel)
+  }
+  return acc
+}
+
+const ONDE = todosOsDocumentos()
+  .filter((rel) => /handoff mais recente|última sessão/i.test(readFileSync(join(RAIZ, rel), 'utf8')))
+  .map((arquivo) => ({ arquivo, gatilhos: [/handoff mais recente/i, /última sessão/i] }))
 
 /** Linhas que se dizem "a mais recente" e apontam para um handoff que não é. */
 function conferirTexto(rotulo, texto, gatilhos, esperado) {

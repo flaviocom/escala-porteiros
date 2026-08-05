@@ -44,12 +44,26 @@ próximo leitor não confunda com defeito.
 
 ---
 
-**Estado dos tetos** — conferido por `checar-tamanho-docs.mjs`, que vive em
-`_padroes-globais/scripts/` e roda no **pré-voo**.
+**Estado dos tetos** — conferido por **`npm run tamanho-docs`**, dentro do `npm run gate`.
 
-> ⚠️ **Correção de 05/08/2026** (auditoria externa de documentação): esta linha dizia *"no pré-voo
-> **e no GATE**"*, e o GATE deste projeto **não tem** passo de tamanho de documento. O mesmo vale
-> para o "portão de órfãos" citado acima: ele não existe em `scripts/`. Duas regras afirmadas com
-> portão inexistente — exatamente o padrão de falha que o método nomeia (*"regra sem portão é
-> disciplina, e disciplina falha"*). Fica **declarado** em vez de escondido: quem quiser a garantia
-> tem de rodar o pré-voo, porque `npm run gate` não a dá.
+Ele lê os regimes de [`../regimes-documentos.json`](../regimes-documentos.json), que é a declaração
+deste projeto, e aplica o teto do regime de cada documento:
+
+| Regime | Vem de | Teto | Por quê |
+|---|---|---|---|
+| **vivo** | arquivo na raiz | 400 linhas / 40 KB | carregado toda sessão |
+| **referência** | arquivo em subpasta | 800 / 100 KB | lido sob demanda |
+| **append-only** | lista `historico` do JSON | 2.000 / 200 KB | cresce por natureza; **fatia-se por período** |
+| **fatia fechada** | `docs/historico/` | — | **isenta**: medir o passado imutável não faz sentido |
+
+Ele imprime também o **maior de cada regime**, para a folga ser visível antes de acabar.
+
+> ⚠️ **Como isto chegou aqui, e vale registrar.** Esta linha afirmava, desde o começo, que o teto era
+> *"conferido no pré-voo **e no GATE**"*. Em 05/08/2026 uma auditoria externa mostrou que o GATE
+> deste projeto **não tinha** esse passo. Naquele momento eu **declarei a dívida** em vez de
+> fechá-la — e regra declarada continua sendo regra sem portão. Horas depois, no mesmo dia, o portão
+> foi escrito, provado nas duas pontas (401 linhas na raiz reprova · 399 passa · fatia de 5.000
+> linhas no histórico é isenta) e ligado ao GATE.
+>
+> Fica o outro lado, ainda **declarado e aberto**: o **portão de órfãos** citado acima continua
+> vivendo só no pré-voo do método, não neste repositório.

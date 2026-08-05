@@ -74,7 +74,7 @@ npm run dev      # http://127.0.0.1:5173
 npm run gate     # typecheck · testes (2 fusos) · denominação · fontes · contagem · cadeia · genérico · auditoria · regras-mestras · build
 ```
 
-O GATE encadeia **dezenove** passos. Os mais incomuns, e o porquê:
+O GATE encadeia **vinte** passos. Os mais incomuns, e o porquê:
 
 | Passo | O que prova |
 |---|---|
