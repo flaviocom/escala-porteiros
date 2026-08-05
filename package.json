@@ -11,7 +11,7 @@
     "typecheck": "tsc --noEmit -p tsconfig.app.json",
     "test": "vitest run",
     "test:watch": "vitest",
-    "gate": "npm run typecheck && npm run test && npm run test:fuso:berlim && npm run denominacao && npm run fontes && npm run contagem && npm run cadeia && npm run generico && npm run generico:autoteste && npm run auditoria && npm run regras-mestras && npm run build",
+    "gate": "npm run typecheck && npm run test && npm run test:fuso:berlim && npm run denominacao && npm run fontes && npm run contagem && npm run cadeia && npm run generico && npm run generico:autoteste && npm run doc:regras:conferir && npm run auditoria && npm run regras-mestras && npm run build",
     "prebuild": "node -e \"require('node:fs').rmSync('docs/assets',{recursive:true,force:true})\"",
     "test:fuso:berlim": "node scripts/testar-em-outro-fuso.mjs",
     "denominacao": "node scripts/medir-denominacao-sem-ia.mjs",
@@ -22,6 +22,8 @@
     "regras-mestras": "node scripts/medir-regras-mestras.mjs",
     "generico": "node scripts/portao-generico.mjs",
     "generico:autoteste": "node scripts/autoteste-portao-generico.mjs",
+    "doc:regras": "node scripts/gerar-catalogo-de-regras.mjs",
+    "doc:regras:conferir": "node scripts/gerar-catalogo-de-regras.mjs --conferir",
 
     "_comentario_ao_vivo": "Abrem o site publicado num navegador de verdade. NÃO entram no `gate`: dependem da rede e do GitHub Pages, e portão que quebra por causa alheia é portão que alguém desliga. Rodar depois de publicar.",
     "vivo": "node scripts/validar-ao-vivo.mjs",

@@ -182,6 +182,22 @@ que `C:`. Clone numa pasta em `C:` para trabalhar, e traga de volta por `git pul
 
 ## 7. Onde ler o quê
 
+### 🔵 Nunca viu este projeto? Comece aqui
+
+**[`docs/RECONSTRUIR.md`](docs/RECONSTRUIR.md)** — o documento de portabilidade. Explica o que é o
+produto, por que cada decisão é como é, em que ordem reconstruir e quais armadilhas já custaram caro
+aqui. Escrito para quem **não participou de nada** — inclusive outra inteligência artificial.
+
+| Assunto | Documento |
+|---|---|
+| Os 3 arquivos JSON, campo a campo | [`docs/MODELO_DE_DADOS.md`](docs/MODELO_DE_DADOS.md) |
+| As 16 regras — ⚙️ **gerado do código** | [`docs/CATALOGO_DE_REGRAS.md`](docs/CATALOGO_DE_REGRAS.md) |
+| Como a escala é montada, e o que o algoritmo **não** garante | [`docs/ALGORITMO.md`](docs/ALGORITMO.md) |
+| As camadas, medidas no grafo de importações | [`docs/ARQUITETURA.md`](docs/ARQUITETURA.md) |
+| Como usar, conferir, e o que fazer quando dá errado | [`docs/OPERACAO.md`](docs/OPERACAO.md) |
+
+### O registro do que aconteceu
+
 | Vou mexer em… | Leia antes |
 |---|---|
 | Estado atual | [`ESTADO.md`](ESTADO.md) |

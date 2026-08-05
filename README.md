@@ -86,6 +86,14 @@ O GATE encadeia **doze** passos. Os mais incomuns, e o porquê:
 | `generico:autoteste` | prova que o portão acima **morde**: 15 casos, infratores e limpos |
 | `contagem` · `cadeia` | o catálogo de regras e a cadeia de documentos batem com o que se afirma |
 
+## Reconstruir do zero
+
+**[`docs/RECONSTRUIR.md`](docs/RECONSTRUIR.md)** — o produto inteiro explicado para quem não
+participou de nada: o que é, por que cada decisão é como é, em que ordem reconstruir, e as
+armadilhas que já custaram caro aqui. Com [modelo de dados](docs/MODELO_DE_DADOS.md),
+[catálogo de regras](docs/CATALOGO_DE_REGRAS.md), [algoritmo](docs/ALGORITMO.md),
+[arquitetura](docs/ARQUITETURA.md) e [operação](docs/OPERACAO.md).
+
 ## Onde ler mais
 
 | | |

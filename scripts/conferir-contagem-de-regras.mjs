@@ -17,7 +17,7 @@
  * Uso: node scripts/conferir-contagem-de-regras.mjs
  */
 import { readFileSync, writeFileSync, readdirSync } from 'node:fs'
-import { join, dirname } from 'node:path'
+import { join, dirname, relative, sep } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { createRequire } from 'node:module'
 
@@ -36,12 +36,37 @@ const DURAS = CATALOGO.filter((r) => r.familia === 'DURA').length
 const QUALIDADE = CATALOGO.filter((r) => r.familia === 'QUALIDADE').length
 const TOTAL = CATALOGO.length
 
-/** Documentos VIVOS — os que descrevem o sistema como ele é hoje. */
-const VIVOS = ['AGENTS.md', 'README.md', 'ESTADO.md', 'BACKLOG.md',
-  'docs/superpowers/specs/2026-08-04-area-administrativa-escala-design.md']
+/*
+  🔴 VARRE TUDO, E ISENTA POR DECLARAÇÃO — invertido em 05/08/2026.
 
-/** Append-only: registram o passado. Isentos por regra, e a isenção aparece no relatório. */
+  A primeira versão tinha uma LISTA FIXA de 5 documentos. Funciona enquanto ninguém escreve um
+  documento novo — e a auditoria externa pegou o buraco: `INDICE_DE_SOLICITACOES.md`,
+  `docs/handoff/INDICE.md`, `docs/historico/INDICE.md` e `INVENTARIO_DE_FONTES.md` não estavam nem
+  na lista nem nas isenções. Eram simplesmente **invisíveis**.
+
+  No mesmo dia nasceram seis documentos de reconstrução, todos citando o número de regras. Com a
+  lista fixa, os seis entrariam cegos.
+
+  Lista de permissão erra em silêncio; lista de exclusão erra alto. Agora o portão varre **todo
+  `.md` do repositório** e só pula o que está declarado abaixo — e imprime os dois números.
+*/
 const HISTORICOS = ['AI_MASTER_LOG.md', 'DIARIO_DE_BORDO.md', 'docs/handoff/', 'docs/historico/']
+
+/** Todo `.md` do repositório, menos `node_modules` e o que o histórico já cobre. */
+function todosOsDocumentos(dir = RAIZ, acc = []) {
+  for (const nome of readdirSync(dir, { withFileTypes: true })) {
+    if (nome.name === 'node_modules' || nome.name === '.git' || nome.name === 'capturas') continue
+    const abs = join(dir, nome.name)
+    if (nome.isDirectory()) { todosOsDocumentos(abs, acc); continue }
+    if (!nome.name.endsWith('.md')) continue
+    const rel = relative(RAIZ, abs).split(sep).join('/')
+    if (HISTORICOS.some((h) => rel === h || rel.startsWith(h))) continue
+    acc.push(rel)
+  }
+  return acc
+}
+
+const VIVOS = todosOsDocumentos().sort()
 
 /**
  * As formas em que a contagem aparece escrita. Cada uma diz qual número ela afirma.
@@ -112,7 +137,7 @@ for (const rel of VIVOS) {
   }
   problemas.push(...conferirTexto(rel, texto))
 }
-console.log(`  medidos: ${VIVOS.length} documento(s) vivo(s)`)
+console.log(`  medidos: ${VIVOS.length} documento(s) vivo(s) — descobertos, não listados à mão`)
 console.log(`  isentos: ${HISTORICOS.join(', ')} (append-only — registram o que era verdade então)\n`)
 
 if (problemas.length) {

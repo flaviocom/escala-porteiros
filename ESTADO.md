@@ -8,6 +8,7 @@
 > **`ESTADO.md` (você está aqui)** → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-05-c.md) → [`BACKLOG.md`](BACKLOG.md)
 > *onde estamos · o que aconteceu na última sessão e por quê · o que fazer a seguir*
 >
+> **Reconstruir do zero (portabilidade entre IAs):** [`docs/RECONSTRUIR.md`](docs/RECONSTRUIR.md)
 > **Roteador do projeto:** [`AGENTS.md`](AGENTS.md) ·
 > **Solicitações:** [`docs/solicitacoes/INDICE_DE_SOLICITACOES.md`](docs/solicitacoes/INDICE_DE_SOLICITACOES.md) ·
 > **Histórico:** [`docs/historico/INDICE.md`](docs/historico/INDICE.md) ·
