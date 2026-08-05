@@ -24,6 +24,7 @@ import { gerarVariasVersoes } from '../dominio/gerador'
 import { validar, resumir } from '../dominio/validacao'
 import { CATALOGO, menorIntervalo } from '../dominio/regras'
 import { conferirPorFora } from '../dominio/conferencia-independente'
+import { montarBlocosParaPublicar } from '../dominio/blocos'
 import { diferencaEmDias, formatarBR, hojeSaoPaulo, NOMES_DIA, NOMES_DIA_CURTO, somarDias } from '../dominio/datas'
 import { AbaAjustar } from './AbaAjustar'
 import { arbitrar, auditar, medir, pedirProposta, type Placar, type ProgressoMotor } from './motor'
@@ -1621,18 +1622,20 @@ const AbaPublicar: React.FC<{
   const [ocupado, setOcupado] = useState(false)
   const [resultado, setResultado] = useState<{ ok: boolean; texto: string } | null>(null)
 
-  const blocosParaPublicar = useMemo(() => {
-    if (!blocoNovo) return dados.blocos
-    const vespera = somarDias(blocoNovo.inicio, -1)
-    const anteriores = dados.blocos
-      .filter((b) => b.inicio < blocoNovo.inicio)
-      .map((b) => ({
-        ...b,
-        fim: b.fim > vespera ? vespera : b.fim,
-        turnos: b.turnos.filter((t) => diferencaEmDias(t.data, blocoNovo.inicio) > 0),
-      }))
-    return [...anteriores, blocoNovo]
-  }, [dados.blocos, blocoNovo])
+  /*
+    🔴 A MONTAGEM VIVE NO DOMÍNIO — unificada em 05/08/2026, por auditoria externa.
+
+    Esta lógica estava escrita duas vezes à mão: aqui e no `gerar-bloco.mjs`. E as duas divergiam —
+    o script pegava `blocos[0]` e montava `[truncado, novo]`, o que apagaria o bloco do meio no dia
+    em que houvesse três. Esta tela fazia certo; o script, não.
+
+    Fonte dupla é onde as duas versões divergem em silêncio, e a que erra é sempre a que ninguém
+    está olhando. Agora as duas chamam a mesma função, e ela tem teste.
+  */
+  const blocosParaPublicar = useMemo(
+    () => montarBlocosParaPublicar(dados.blocos, blocoNovo),
+    [dados.blocos, blocoNovo],
+  )
 
   const relatorio = useMemo(() => {
     if (!blocoNovo) return null

@@ -39,13 +39,15 @@ writeFileSync(
     "export * from '../src/dominio/regras'",
     "export * from '../src/dominio/validacao'",
     "export * from '../src/dominio/gerador'",
+    "export * from '../src/dominio/blocos'",
   ].join('\n'),
   'utf8',
 )
 esbuild.buildSync({ entryPoints: [entrada], outfile: saidaJs, format: 'esm', platform: 'node', bundle: true })
 
 const dominio = await import(pathToFileURL(saidaJs).href)
-const { construirGrade, gerarVariasVersoes, validar, resumir, menorIntervalo, formatarBR, diferencaEmDias } = dominio
+const { construirGrade, gerarVariasVersoes, validar, resumir, menorIntervalo, formatarBR, diferencaEmDias,
+  montarBlocosParaPublicar, conferirPassadoPreservado } = dominio
 
 // ---------------------------------------------------------------------------
 const args = process.argv.slice(2)
@@ -196,41 +198,26 @@ console.log(`\nSANTA CEIA: ${ceia.length} dia(s) — ${ceia.map((t) => `${format
 if (ESCREVER) {
   // O bloco anterior termina na VÉSPERA do novo. Deixar `fim` igual a `DE` criaria um dia
   // governado por dois blocos — resolvível, mas é o tipo de ambiguidade que vira defeito depois.
-  const vespera = dominio.somarDias(DE, -1)
-  const truncado = { ...historico, fim: vespera, turnos: historico.turnos.filter((t) => diferencaEmDias(t.data, DE) > 0) }
-
-  // Os anteriores ao último ficam INTOCADOS; só o último é truncado, porque só ele se sobrepõe.
-  const preservados = anteriores.slice(0, -1)
-  const novo = { versao: 1, blocos: [...preservados, truncado, r.bloco] }
-
   /*
-    🔒 CONTA ANTES E DEPOIS. Um bloco que some é passado reescrito, e passado reescrito é a única
-    coisa que este projeto promete nunca fazer. O número não pode ser presumido.
+    🔴 A MESMA FUNÇÃO DA TELA — unificada em 05/08/2026, por auditoria externa.
+
+    Este script montava `[truncado, r.bloco]` a partir de `blocos[0]`, e apagaria o bloco do meio
+    assim que houvesse três. A tela sempre fez certo. Duas implementações da mesma regra, e a que
+    errava era a que ninguém estava olhando.
   */
-  const turnosAntes = blocosArq.blocos.flatMap((b) => b.turnos).filter((t) => diferencaEmDias(t.data, DE) > 0).length
-  const turnosDepois = [...preservados, truncado].flatMap((b) => b.turnos).length
-  if (turnosDepois !== turnosAntes) {
+  const novo = { versao: 1, blocos: montarBlocosParaPublicar(blocosArq.blocos, r.bloco) }
+
+  const conta = conferirPassadoPreservado(blocosArq.blocos, novo.blocos, DE)
+  if (!conta.ok) {
     console.error(`
-🔴 PERDA DE PASSADO: antes do corte havia ${turnosAntes} turno(s) publicado(s); depois de montar, ${turnosDepois}.`)
+🔴 PERDA DE PASSADO: antes do corte havia ${conta.antes} turno(s); depois de montar, ${conta.depois}.`)
     console.error('   Nada foi gravado. Isto é passado sendo reescrito, e o produto promete que isso não acontece.')
     process.exit(3)
   }
   console.log(`
-  blocos anteriores preservados ... ${preservados.length}`)
-  console.log(`  passado conferido ............... ${turnosDepois} de ${turnosAntes} turno(s) antes do corte`)
-  /*
-    🔴 AS DUAS PASTAS, SEMPRE — achado da auditoria adversarial em 05/08/2026.
+  blocos no arquivo ............... ${novo.blocos.length}`)
+  console.log(`  passado conferido ............... ${conta.depois} de ${conta.antes} turno(s) antes do corte`)
 
-    Este script gravava só em `public/dados/` e contava com o `npm run build` para copiar para
-    `docs/`, que é o que o GitHub Pages serve. Funciona… enquanto alguém sempre lembrar de construir
-    logo depois. Entre uma coisa e outra, o repositório fica com **duas verdades**: o dado de origem
-    já com a escala nova e o dado servido ainda com a antiga.
-
-    É exatamente o modo de falha que `publicarDados` (a publicação pela tela) foi escrita para não
-    ter — ela grava nas duas. Não havia motivo para o script ser menos cuidadoso que o botão.
-
-    Quem pegou foi o auditor adversarial, com a pergunta *"os dois arquivos de dados são iguais?"*.
-  */
   const conteudo = JSON.stringify(novo, null, 2) + '\n'
   for (const pasta of ['public/dados', 'docs/dados']) {
     writeFileSync(join(RAIZ, pasta, 'blocos.json'), conteudo, 'utf8')
