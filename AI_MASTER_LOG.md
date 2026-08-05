@@ -192,3 +192,15 @@ anteparos, índice parado no 26 com 31 erros existentes, `ANTEPAROS.md` 133 linh
 `flaviocom/padroes-globais` (`b08b6ec`): 2 portões novos com autoteste nas duas pontas, catálogo
 dividido por assunto, e o pré-voo agora roda **todos** os autotestes antes de cada tarefa.
 Registrado como ERRO 32 e ERRO 35.
+
+**Continuação — o cenário do projeto, provado, e um anteparo que eu desliguei sem perceber.**
+`npm run ensaio` roda o pedido original de ponta a ponta: sai o mais escalado, entra um irmão com as
+**quatro** famílias de restrição, e a escala se refaz. **11 de 11 promessas**, inclusive o passado
+byte a byte idêntico. Achou um defeito real no produto: o motivo de barragem ficava **mudo**
+(`ROTULO_TURNO` de um literal inválido → `undefined` → `join` vira string vazia). Corrigido, 4 testes,
+3 deles mordem. 77 testes verdes em 2 fusos.
+
+🔴 **E o mais grave:** editando o TEXTO de um hook do método, uma crase fechou o template literal e o
+hook passou a estourar. **Hook que estoura falha ABERTO** — o comando seguinte, que ele existe para
+barrar, passou sem aviso. O pré-voo agora roda cada hook e este é o único item **obrigatório** do
+grupo MÉTODO. ERRO 36 e ERRO 37 em `padroes-globais@ee95d91`.
