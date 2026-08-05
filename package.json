@@ -38,6 +38,7 @@
     "vivo:identidade": "node scripts/validar-identidade-configuravel.mjs",
     "vivo:divulgado": "node scripts/comparar-com-site-divulgado.mjs",
     "vivo:abas": "node scripts/validar-estado-entre-abas.mjs",
+    "vivo:caminho": "node scripts/validar-caminho-do-flavio.mjs",
     "vivo:erro": "node scripts/validar-caminho-de-erro.mjs",
     "vivo:acessibilidade": "node scripts/medir-acessibilidade.mjs",
     "vivo:seletor": "node scripts/validar-seletor-de-meses.mjs",
