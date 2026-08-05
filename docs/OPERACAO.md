@@ -68,6 +68,27 @@ site em ~40 segundos.
 Se falhar no meio, a mensagem diz **o que já foi gravado** — para ninguém achar que nada subiu
 quando metade subiu.
 
+### Voltar a uma versão anterior
+
+O painel **Histórico de publicações**, no fim da aba Publicar, lista as últimas publicações. Ele abre
+**sem token** (histórico de repositório público qualquer um lê); os botões de voltar só aparecem com
+token, porque reverter é uma **escrita**.
+
+⚠️ **Cada publicação é um commit por arquivo**, então o que se reverte é `pessoas.json` **ou**
+`blocos.json` **ou** `config.json` — um de cada vez, nunca "tudo para aquele ponto". Isso importa: o
+elenco e a escala são coerentes entre si, e voltar só um dos dois quebra a coerência.
+
+Desde 05/08/2026 esse caminho tem guarda, e ele lê a versão **antes** de gravar:
+
+| o que a reversão faria | o que acontece |
+|---|---|
+| reescrever um dia que **já passou** | 🔴 **impedido**, nada é gravado — o site não desmente o que as pessoas já viram |
+| deixar alguém escalado **fora do elenco** | 🔴 **impedido** — a tela mostraria o código no lugar do nome |
+| mudar turnos **futuros** | ⚠️ pergunta, dizendo **quantos** — é para isso que reverter existe |
+
+> Antes desse guarda, medido pela sexta auditoria: voltar só o elenco deixaria **120 de 543 nomes
+> saindo como código cru em 70 dias**, e a mensagem de sucesso saía verde.
+
 ---
 
 ## Parte 2 — Como conferir que está certo

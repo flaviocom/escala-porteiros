@@ -125,11 +125,21 @@ regra sem regenerar → vermelho.
 **Critério:** todo `npm run <nome>` está no `package.json`; todo `node scripts/<arquivo>` existe em
 disco. **Achou defeito na primeira execução:** `npm run tempo`, citado na documentação, não existia.
 
-### 12. `arquitetura` — as duas invariantes que a documentação afirma
+### 12. `arquitetura` — as três invariantes que a documentação afirma
 1. `src/dominio/` **não importa nada de fora** (nem `../`, nem pacote externo).
 2. `conferencia-independente.ts` **não importa** `regras`, `validacao` nem `gerador`.
-**Por quê:** a segunda régua existe para **discordar**. Se alguém "aproveitar" uma função do
+3. **`docs/.nojekyll` existe.**
+**Por quê (2):** a segunda régua existe para **discordar**. Se alguém "aproveitar" uma função do
 catálogo ali, ela vira espelho — continua verde, continua concordando, e para de valer.
+
+**Por quê (3):** o arquivo foi criado no primeiro commit e **apagado** em `7078186`, sem registro em
+lugar nenhum — achado da sexta auditoria externa, 05/08/2026. Sem ele o GitHub Pages roda **Jekyll
+sobre os 30 Markdown de `docs/`** a cada push. Um `{%` ou um `---` no topo de um handoff futuro faz o
+build morrer, **o site ANTERIOR continua no ar**, e a tela de publicação já disse *"✅ escala
+publicada · o site mostra a escala nova em cerca de um minuto"*. Ninguém no painel descobre, porque
+`AbaPublicar` não busca a URL pública depois de gravar — o irmão ficaria com a escala do mês passado
+por tempo indeterminado. Um arquivo de 0 byte elimina a classe, e ele já sumiu uma vez sem ninguém
+ver: é o argumento inteiro para portão em vez de disciplina.
 
 ### 13. `fatos:conferir` — nenhum documento desmente um número medido
 **11 fatos**, todos de fonte executável: passos do gate (do `package.json`), casos do autoteste (da
