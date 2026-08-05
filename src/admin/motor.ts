@@ -101,6 +101,24 @@ function extrairJSON<T>(texto: string): T {
 // O contexto que o motor recebe
 // ---------------------------------------------------------------------------
 
+/**
+ * 🔴 COMO A ESCALA SE CHAMA — achado da auditoria externa de documentação, 05/08/2026.
+ *
+ * Os três prompts diziam *"escala de porteiros de uma congregação"* cravado no código. Vendido a
+ * uma portaria de prédio, o motor receberia "porteiros de uma congregação" e escreveria a
+ * justificativa em cima disso — o texto que o comprador lê na tela falaria de um lugar que não é o
+ * dele. A regra máxima de escopo (§0 do AGENTS.md) é explícita: genérico e configurável.
+ *
+ * O padrão sobrevive porque `identidade` é opcional no tipo antigo e porque uma configuração sem
+ * título preenchido não pode deixar o prompt sem sujeito.
+ */
+function comoSeChama(config?: Configuracao): string {
+  const t = config?.identidade?.titulo?.trim()
+  const s = config?.identidade?.subtitulo?.trim()
+  if (!t) return 'a escala de plantões'
+  return s ? `a ${t} (${s})` : `a ${t}`
+}
+
 function descreverPessoa(p: Pessoa): string {
   const r = p.restricoes
   const partes: string[] = []
@@ -123,6 +141,7 @@ function promptDoMes(
   ultimaEscala: Record<string, DataISO>,
   totalAcumulado: Record<string, number>,
   violacoesAnteriores?: string[],
+  config?: Configuracao,
 ): string {
   const elenco = pessoas.map(descreverPessoa).join('\n')
   const grade = turnos.map(descreverTurno).join('\n')
@@ -134,7 +153,7 @@ function promptDoMes(
     ? `\n\nATENÇÃO — a sua proposta anterior foi REPROVADA. Corrija exatamente isto:\n${violacoesAnteriores.map((v) => `- ${v}`).join('\n')}\n`
     : ''
 
-  return `Você está montando a escala de porteiros de uma congregação, para o mês ${mes}.
+  return `Você está montando ${comoSeChama(config)}, para o mês ${mes}.
 
 ELENCO E RESTRIÇÕES (obrigatórias, sem exceção):
 ${elenco}
@@ -216,7 +235,7 @@ export async function pedirProposta(
 
       let resposta: RespostaMes
       try {
-        const texto = await chamar(chave, promptDoMes(mes, paraEscalar, pessoas, ultimaEscala, total, violacoes))
+        const texto = await chamar(chave, promptDoMes(mes, paraEscalar, pessoas, ultimaEscala, total, violacoes, config))
         resposta = extrairJSON<RespostaMes>(texto)
       } catch (e) {
         const causa = (e as { causa?: FalhaMotor['causa'] }).causa ?? 'rede'
@@ -284,7 +303,7 @@ export async function pedirProposta(
 // ---------------------------------------------------------------------------
 
 /** Segunda opinião sobre uma escala já válida: o que a regra não pega. */
-export async function auditar(chave: string, bloco: Bloco, pessoas: Pessoa[]): Promise<string> {
+export async function auditar(chave: string, bloco: Bloco, pessoas: Pessoa[], config?: Configuracao): Promise<string> {
   const resumo = pessoas
     .map((p) => {
       const datas = bloco.turnos.filter((t) => t.pessoas.includes(p.id)).map((t) => t.data)
@@ -294,7 +313,7 @@ export async function auditar(chave: string, bloco: Bloco, pessoas: Pessoa[]): P
 
   const texto = await chamar(
     chave,
-    `Esta escala de porteiros JÁ PASSOU em todas as regras obrigatórias. Seu trabalho é uma segunda opinião: procurar o que uma regra não pega.
+    `Esta escala — ${comoSeChama(config)} — JÁ PASSOU em todas as regras obrigatórias. Seu trabalho é uma segunda opinião: procurar o que uma regra não pega.
 
 ${resumo}
 
@@ -316,10 +335,11 @@ export async function arbitrar(
   motivoFalha: string,
   pessoas: Pessoa[],
   turnoQueTravou?: { data: string; tipo: string; faltaram: number },
+  config?: Configuracao,
 ): Promise<string> {
   const texto = await chamar(
     chave,
-    `A escala de porteiros não pôde ser gerada.
+    `${comoSeChama(config).replace(/^a /, 'A ')} não pôde ser gerada.
 
 Motivo: ${motivoFalha}
 ${turnoQueTravou ? `Travou em ${formatarBR(turnoQueTravou.data)}, turno da ${turnoQueTravou.tipo}: faltaram ${turnoQueTravou.faltaram} pessoa(s).` : ''}

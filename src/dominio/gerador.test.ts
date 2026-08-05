@@ -37,7 +37,7 @@ const CONFIG: Configuracao = {
   capacidadePadrao: 3,
   malhaPadrao: MALHA_ATUAL,
   santaCeia: [],
-  identidade: { titulo: 'Teste', subtitulo: 'Teste' },
+  identidade: { titulo: 'Teste', subtitulo: 'Teste', pessoa: { singular: 'Pessoa', plural: 'pessoas' } },
 }
 
 function gradePadrao(inicio = SET_DEZ.inicio, fim = SET_DEZ.fim) {

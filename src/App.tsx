@@ -23,6 +23,9 @@ interface AppProps {
 }
 
 function App({ shifts, dados }: AppProps) {
+  // Como este cliente chama quem é escalado. Um apelido curto porque aparece em oito lugares da
+  // tela — e porque `dados.config.identidade.pessoa.singular` no meio de um `title` não se lê.
+  const voc = dados.config.identidade.pessoa;
   const [selectedBrotherIds, setSelectedBrotherIds] = useState<string[]>([]);
   const [selectedMonthStrs, setSelectedMonthStrs] = useState<string[]>([]);
   const [dateSearchQuery, setDateSearchQuery] = useState('');
@@ -106,7 +109,7 @@ function App({ shifts, dados }: AppProps) {
   const gerar = async (chaves: string[]) => {
     setIsGenerating(true);
     try {
-      await exportToImage(turnosVisiveis.filter((s) => chaves.includes(mesDeData(s.date))), dados.config.capacidadePadrao);
+      await exportToImage(turnosVisiveis.filter((s) => chaves.includes(mesDeData(s.date))), dados.config.capacidadePadrao, dados.config.identidade);
     } catch (e) {
       alert(e instanceof Error ? e.message : 'Não foi possível gerar a imagem.');
     } finally {
@@ -171,10 +174,17 @@ function App({ shifts, dados }: AppProps) {
       <div className="hidden md:flex items-center gap-3 mb-8">
         <img src={logo} alt="Logo CCB" className="h-10 w-auto object-contain" />
         <div>
+          {/*
+            🔴 O NOME VEM DA CONFIGURAÇÃO — achado da auditoria externa de documentação, 05/08/2026.
+            `config.identidade` existia no modelo de dados, no tipo e no padrão de carregamento —
+            e NUNCA era lido. Configuração morta: outro cliente teria de editar este arquivo para
+            trocar o nome do próprio site, o que contradiz a regra máxima de escopo (§0 do
+            AGENTS.md): "se varia de cliente para cliente e não tem tela, não existe como recurso".
+          */}
           <h1 className="text-base font-bold text-text-primary tracking-tight leading-none uppercase">
-            Escala Porteiros
+            {dados.config.identidade.titulo}
           </h1>
-          <p className="text-[10px] text-text-secondary mt-1 font-medium tracking-wider">JD. SÃO LUIZ - 2026</p>
+          <p className="text-[10px] text-text-secondary mt-1 font-medium tracking-wider">{dados.config.identidade.subtitulo}</p>
         </div>
       </div>
 
@@ -208,7 +218,7 @@ function App({ shifts, dados }: AppProps) {
               </div>
               <ChevronRight className={clsx("h-5 w-5 transition-transform", showMyShiftsOnly ? "rotate-90" : "")} />
             </button>
-            <button title="Escolher outro irmão para o filtro Minha Escala"
+            <button title={`Escolher outro ${voc.singular.toLowerCase()} para o filtro Minha Escala`}
               onClick={() => setShowBrotherPicker(true)}
               className="text-xs text-gray-400 hover:text-gray-600 text-right pr-1 underline"
             >
@@ -292,6 +302,7 @@ function App({ shifts, dados }: AppProps) {
 
           <div className="space-y-4 pl-3 border-l-2 border-gray-100 ml-2">
             <DateSearch
+              vocabulario={voc}
               value={dateSearchQuery}
               onChange={setDateSearchQuery}
               dateRange={dateRange}
@@ -302,7 +313,7 @@ function App({ shifts, dados }: AppProps) {
               options={brotherOptions}
               selected={selectedBrotherIds}
               onChange={setSelectedBrotherIds}
-              placeholder="Irmão"
+              placeholder={voc.singular}
               icon={LayoutGrid}
             />
 
@@ -318,7 +329,7 @@ function App({ shifts, dados }: AppProps) {
 
         {/* 3. ESTATÍSTICAS */}
         <div>
-          <button title="Quantos turnos cada irmão tem, mês a mês"
+          <button title={`Quantos turnos cada ${voc.singular.toLowerCase()} tem, mês a mês`}
             onClick={() => { setView('stats'); setIsMobileMenuOpen(false); }}
             className={clsx(
               "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200",
@@ -513,9 +524,9 @@ function App({ shifts, dados }: AppProps) {
               <img src={logo} alt="Logo CCB" className="h-8 w-auto object-contain shrink-0" />
               <div className="flex flex-col min-w-0">
                 <h1 className="text-xs font-bold text-text-primary tracking-tight leading-none uppercase truncate">
-                  Escala Porteiros
+                  {dados.config.identidade.titulo}
                 </h1>
-                <p className="text-[9px] text-text-secondary mt-0.5 font-medium tracking-wider truncate uppercase">JD. SÃO LUIZ-2026</p>
+                <p className="text-[9px] text-text-secondary mt-0.5 font-medium tracking-wider truncate uppercase">{dados.config.identidade.subtitulo}</p>
               </div>
             </div>
 
@@ -536,7 +547,7 @@ function App({ shifts, dados }: AppProps) {
               </button>
 
               {/* Filtros */}
-              <button title="Abre os filtros por irmão, mês e data"
+              <button title={`Abre os filtros por ${voc.singular.toLowerCase()}, mês e data`}
                 onClick={() => setIsMobileMenuOpen(true)}
                 className="flex items-center gap-1 text-action-primary text-xs font-bold whitespace-nowrap hover:bg-blue-50 px-2.5 py-2 rounded-xl transition-colors border border-blue-200"
               >
@@ -619,7 +630,7 @@ function App({ shifts, dados }: AppProps) {
           )}
 
           {view === 'stats' && (
-            <StatsView shifts={shifts} />
+            <StatsView shifts={shifts} vocabulario={voc} />
           )}
 
           {view === 'validation' && (

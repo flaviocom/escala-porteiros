@@ -344,7 +344,7 @@ const PrimeiroAcesso: React.FC<{ aoAbrir: (s: Segredos) => void }> = ({ aoAbrir 
   )
 }
 
-const Entrar: React.FC<{ aoAbrir: (s: Segredos) => void }> = ({ aoAbrir }) => {
+const Entrar: React.FC<{ aoAbrir: (s: Segredos) => void; identidade: Configuracao['identidade'] }> = ({ aoAbrir, identidade }) => {
   const [senha, setSenha] = useState('')
   const [erro, setErro] = useState('')
   const [ocupado, setOcupado] = useState(false)
@@ -359,7 +359,7 @@ const Entrar: React.FC<{ aoAbrir: (s: Segredos) => void }> = ({ aoAbrir }) => {
   }
 
   return (
-    <Moldura titulo="Área administrativa" subtitulo="Escala de porteiros — JD. São Luiz">
+    <Moldura titulo="Área administrativa" subtitulo={`${identidade.titulo} — ${identidade.subtitulo}`}>
       <p className="mb-4 text-sm leading-relaxed text-gray-600">
         O token já está guardado neste aparelho, cifrado. Ele <strong>não é pedido de novo</strong> —
         só esta senha, que é a chave que o abre.
@@ -432,7 +432,7 @@ export const Admin: React.FC<{ dados: DadosPublicados }> = ({ dados }) => {
   if (!segredos) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        {cofreExiste() ? <Entrar aoAbrir={setSegredos} /> : <PrimeiroAcesso aoAbrir={setSegredos} />}
+        {cofreExiste() ? <Entrar aoAbrir={setSegredos} identidade={config.identidade} /> : <PrimeiroAcesso aoAbrir={setSegredos} />}
       </div>
     )
   }
@@ -462,7 +462,7 @@ export const Admin: React.FC<{ dados: DadosPublicados }> = ({ dados }) => {
         <div className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between gap-4">
           <div className="min-w-0">
             <h1 className="text-base font-bold text-gray-900 truncate">Área administrativa</h1>
-            <p className="text-xs text-gray-500">Escala de porteiros · JD. São Luiz</p>
+            <p className="text-xs text-gray-500">{config.identidade.titulo} · {config.identidade.subtitulo}</p>
           </div>
           <div className="flex items-center gap-2 shrink-0">
             <a href="#/" className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 px-3 py-2">
@@ -1052,8 +1052,8 @@ const AbaGerar: React.FC<{
         `A data inicial (${formatarBR(de)}) é anterior a hoje (${formatarBR(hojeSaoPaulo())}).
 
 ` +
-          'Gerar para trás reescreveria turnos que os irmãos já viram — e o passado divulgado não se ' +
-          'reescreve. Escolha hoje ou uma data à frente.'
+          `Gerar para trás reescreveria turnos que ${config.identidade.pessoa.plural} já viram — e o passado ` +
+          'divulgado não se reescreve. Escolha hoje ou uma data à frente.'
       )
       return
     }
@@ -1157,6 +1157,65 @@ const AbaGerar: React.FC<{
           </span>
         </label>
         {/*
+          🔴 O NOME E O VOCABULÁRIO DA ESCALA — 05/08/2026, mesmo motivo que a linha acima.
+
+          `config.identidade` existia desde o começo no tipo, no dado e no padrão de carregamento —
+          e não era lido em lugar nenhum. Cabeçalho do site, cabeçalho daqui, imagem do WhatsApp,
+          nome do arquivo baixado, título da aba e os prompts do motor traziam "Escala Porteiros",
+          "JD. São Luiz" e "Irmão" cravados no código. Configuração morta é pior que configuração
+          ausente: ela parece que resolve.
+
+          O vocabulário está aqui e não numa aba separada porque é decisão de quem MONTA a escala, e
+          é o mesmo lugar onde ele já decide quantas pessoas por turno.
+        */}
+        <details className="mt-4 rounded-xl border border-gray-200 bg-gray-50 p-3">
+          <summary className="cursor-pointer text-sm font-semibold text-gray-700">
+            Nome da escala e como chamar quem é escalado
+          </summary>
+          <p className="mt-2 text-xs leading-relaxed text-gray-600">
+            Sai no cabeçalho do site, na imagem que vai para o WhatsApp, no nome do arquivo baixado e
+            no título da aba do navegador. Vale depois de <strong>publicar</strong>.
+          </p>
+          <div className="mt-3 grid gap-3 sm:grid-cols-2">
+            <label className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+              Título
+              <input
+                value={config.identidade.titulo}
+                title="O nome que aparece grande no cabeçalho — ex.: Escala de Recepção"
+                onChange={(e) => aoMudarConfig({ ...config, identidade: { ...config.identidade, titulo: e.target.value } })}
+                className="mt-1 block w-full rounded-xl border border-gray-300 px-3 py-2 text-sm font-normal normal-case tracking-normal text-gray-900"
+              />
+            </label>
+            <label className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+              Subtítulo
+              <input
+                value={config.identidade.subtitulo}
+                title="A linha menor embaixo do título — ex.: Unidade Centro. Pode ficar vazia"
+                onChange={(e) => aoMudarConfig({ ...config, identidade: { ...config.identidade, subtitulo: e.target.value } })}
+                className="mt-1 block w-full rounded-xl border border-gray-300 px-3 py-2 text-sm font-normal normal-case tracking-normal text-gray-900"
+              />
+            </label>
+            <label className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+              Como chamar (singular)
+              <input
+                value={config.identidade.pessoa.singular}
+                title="Ex.: Funcionário, Plantonista, Voluntário. Aparece no filtro e no cabeçalho da tabela"
+                onChange={(e) => aoMudarConfig({ ...config, identidade: { ...config.identidade, pessoa: { ...config.identidade.pessoa, singular: e.target.value } } })}
+                className="mt-1 block w-full rounded-xl border border-gray-300 px-3 py-2 text-sm font-normal normal-case tracking-normal text-gray-900"
+              />
+            </label>
+            <label className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+              Como chamar (plural)
+              <input
+                value={config.identidade.pessoa.plural}
+                title="Ex.: funcionários, plantonistas. Aparece no rodapé da imagem: “3 ___ por turno”"
+                onChange={(e) => aoMudarConfig({ ...config, identidade: { ...config.identidade, pessoa: { ...config.identidade.pessoa, plural: e.target.value } } })}
+                className="mt-1 block w-full rounded-xl border border-gray-300 px-3 py-2 text-sm font-normal normal-case tracking-normal text-gray-900"
+              />
+            </label>
+          </div>
+        </details>
+        {/*
           🔴 "GERAR OUTRA COMBINAÇÃO" — o pedido do Flavio de poder recusar e pedir outra.
           Só aparece depois que existe escala: antes dela o botão não teria o que substituir.
           Ele muda a SEMENTE, e é isso que faz a próxima rodada explorar caminhos diferentes —
@@ -1196,7 +1255,7 @@ const AbaGerar: React.FC<{
               onClick={async () => {
                 setMotorOcupado({ fase: 'Arbitragem', detalhe: 'pensando em como destravar…' })
                 try {
-                  setArbitragem(await arbitrar(segredos.chaveMotor!, falha, pessoas))
+                  setArbitragem(await arbitrar(segredos.chaveMotor!, falha, pessoas, undefined, config))
                 } catch (e) {
                   setMotorErro(e instanceof Error ? e.message : String(e))
                 } finally {
@@ -1299,7 +1358,7 @@ const AbaGerar: React.FC<{
                     setMotorOcupado({ fase: 'Auditoria', detalhe: 'procurando o que a regra não pega…' })
                     setMotorErro('')
                     try {
-                      setAuditoria(await auditar(segredos.chaveMotor!, blocoNovo, pessoas))
+                      setAuditoria(await auditar(segredos.chaveMotor!, blocoNovo, pessoas, config))
                     } catch (e) {
                       setMotorErro(e instanceof Error ? e.message : String(e))
                     } finally {

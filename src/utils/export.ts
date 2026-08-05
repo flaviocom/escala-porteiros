@@ -13,11 +13,11 @@
  * E quando o período passa de um mês, são **vários** arquivos: um por mês. Não é preferência —
  * uma imagem de cinco meses bate no teto de canvas do navegador e sai encolhida.
  */
-import { gerarImagensDaEscala } from '../export/gerarImagem'
+import { gerarImagensDaEscala, type Identidade } from '../export/gerarImagem'
 import type { Shift } from '../types/scheduler'
 
-export async function exportToImage(shifts: Shift[], porTurno: number): Promise<void> {
-  const imagens = await gerarImagensDaEscala(shifts, porTurno)
+export async function exportToImage(shifts: Shift[], porTurno: number, identidade: Identidade): Promise<void> {
+  const imagens = await gerarImagensDaEscala(shifts, porTurno, identidade)
   const arquivos = imagens.map((i) => new File([i.blob], i.nome, { type: 'image/png' }))
 
   // No celular, o compartilhamento nativo leva direto ao WhatsApp — que é o destino real da imagem.
@@ -32,7 +32,7 @@ export async function exportToImage(shifts: Shift[], porTurno: number): Promise<
     try {
       await navigator.share({
         files: arquivos,
-        title: 'Escala de Porteiros',
+        title: identidade.titulo,
         text: imagens.length > 1 ? `Escala de ${imagens.map((i) => i.periodo).join(', ')}` : undefined,
       })
       return

@@ -52,6 +52,18 @@ function ehAdmin(): boolean {
 
 carregarDados()
   .then((dados: DadosPublicados) => {
+    /*
+      🔴 O TÍTULO DA ABA TAMBÉM É CONFIGURAÇÃO — achado da auditoria externa, 05/08/2026.
+
+      O `index.html` é servido estático: não há como ele ler `config.json` no momento em que o
+      navegador o carrega. Por isso o título nasce genérico lá e é corrigido AQUI, no primeiro
+      instante em que a configuração existe de fato.
+
+      Vale a pena? Vale: o título da aba é o nome que o administrador vê no atalho da tela inicial
+      do celular, e é o texto que o WhatsApp mostra quando alguém compartilha o link.
+    */
+    document.title = `${dados.config.identidade.titulo} — ${dados.config.identidade.subtitulo}`
+
     const pintar = () => {
       raiz.render(
         <StrictMode>

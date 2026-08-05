@@ -484,7 +484,7 @@ const D9: Regra = {
       if (t.pessoas.length > 0)
         v.push({
           data: t.data,
-          mensagem: `${formatarBR(t.data)} é Santa Ceia e tem ${t.pessoas.length} pessoa(s) escalada(s) — não se escala porteiro nesse dia`,
+          mensagem: `${formatarBR(t.data)} é Santa Ceia e tem ${t.pessoas.length} pessoa(s) escalada(s) — não se escala ninguém nesse dia`,
         })
 
     // (2) 🔴 O QUE FALTAVA: conferir contra o CALENDÁRIO, que é a fonte.

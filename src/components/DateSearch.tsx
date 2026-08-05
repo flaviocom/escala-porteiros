@@ -3,14 +3,18 @@ import { Calendar as CalendarIcon, Search, X } from 'lucide-react';
 import { isSameDay, format } from 'date-fns';
 import { clsx } from 'clsx';
 
+/** Como este cliente chama quem é escalado — vem de `config.identidade.pessoa`. */
+export interface Vocabulario { singular: string; plural: string }
+
 interface DateSearchProps {
+  vocabulario: Vocabulario;
   value: string;
   onChange: (query: string) => void;
   onDateRangeChange: (range: { start: Date | null; end: Date | null } | null) => void;
   dateRange: { start: Date | null; end: Date | null } | null;
 }
 
-export const DateSearch: React.FC<DateSearchProps> = ({ value, onChange, onDateRangeChange, dateRange }) => {
+export const DateSearch: React.FC<DateSearchProps> = ({ value, onChange, onDateRangeChange, dateRange, vocabulario }) => {
   // Sync query with currentRange if it changes externally or via quick actions
   useEffect(() => {
     if (dateRange?.start && dateRange?.end) {
@@ -66,7 +70,7 @@ export const DateSearch: React.FC<DateSearchProps> = ({ value, onChange, onDateR
           type="text"
           value={value}
           onChange={handleTextChange}
-          placeholder="Buscar dia ou Irmão (ex: 25/12, segunda, Flávio)"
+          placeholder={`Buscar dia ou ${vocabulario.singular} (ex: 25/12, segunda, Flávio)`}
           className={clsx(
             "w-full pl-10 pr-24 h-12 bg-white rounded-xl text-sm text-gray-900 placeholder-gray-400 focus:outline-none transition-all shadow-sm",
             value || dateRange ? "border-2 border-amber-400" : "border border-gray-200 focus:ring-2 focus:ring-black/5 focus:border-gray-300"

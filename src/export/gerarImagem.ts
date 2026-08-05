@@ -33,6 +33,9 @@ const TETO_DE_ALTURA = 16384
 const MES_ARQUIVO = ['01-janeiro', '02-fevereiro', '03-marco', '04-abril', '05-maio', '06-junho',
   '07-julho', '08-agosto', '09-setembro', '10-outubro', '11-novembro', '12-dezembro']
 
+/** O nome que vai impresso na imagem — vem de `config.identidade`, nunca do código. */
+export interface Identidade { titulo: string; subtitulo: string; pessoa: { singular: string; plural: string } }
+
 export interface ImagemGerada {
   nome: string
   blob: Blob
@@ -51,7 +54,7 @@ function porMes(shifts: Shift[]): Shift[][] {
   return [...mapa.values()]
 }
 
-async function capturar(shifts: Shift[], porTurno: number): Promise<Blob> {
+async function capturar(shifts: Shift[], porTurno: number, identidade: Identidade): Promise<Blob> {
   // Fora da vista, mas RENDERIZADO: `display:none` não tem layout, e o que não tem layout não
   // vira imagem. Por isso vai para fora da tela, não para o nada.
   const palco = document.createElement('div')
@@ -66,7 +69,7 @@ async function capturar(shifts: Shift[], porTurno: number): Promise<Blob> {
     // como fato. Mas `capacidadePadrao` é editável pelo administrador: no dia em que ele mudasse, a
     // imagem que vai para o WhatsApp continuaria dizendo 3 — número errado, impresso como fato, no
     // documento que a congregação lê.
-    raiz.render(createElement(EscalaImagem, { shifts, geradoEm: new Date(), porTurno }))
+    raiz.render(createElement(EscalaImagem, { shifts, geradoEm: new Date(), porTurno, identidade }))
 
     // Espera o React pintar e as fontes assentarem. Sem isto, a primeira linha sai com a fonte
     // de fallback e a imagem fica com dois tipos diferentes — defeito que só aparece na 1ª geração.
@@ -120,18 +123,33 @@ async function capturar(shifts: Shift[], porTurno: number): Promise<Blob> {
  * Um mês só → um arquivo, como sempre foi. Vários meses → um arquivo por mês, porque é assim que a
  * escala é lida e é o único jeito de cada imagem caber no que o navegador desenha.
  */
-export async function gerarImagensDaEscala(shifts: Shift[], porTurno: number): Promise<ImagemGerada[]> {
+/**
+ * O título vira nome de arquivo: sem acento, sem espaço, sem maiúscula.
+ *
+ * `normalize('NFD')` separa a letra do acento; a faixa `̀-ͯ` são exatamente os acentos
+ * soltos, que então caem fora. É por isso que "Congregação" vira `congregacao` e não `congregao`.
+ */
+export function apelidoDeArquivo(titulo: string): string {
+  const limpo = titulo
+    .normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')
+  // Título só de símbolos (ou vazio) deixaria o arquivo começando com "-2026": nome quebrado.
+  return limpo || 'escala'
+}
+
+export async function gerarImagensDaEscala(shifts: Shift[], porTurno: number, identidade: Identidade): Promise<ImagemGerada[]> {
   if (!shifts.length) throw new Error('Não há turnos no período selecionado para gerar a imagem.')
 
   const meses = porMes(shifts)
   const imagens: ImagemGerada[] = []
+  const apelido = apelidoDeArquivo(identidade.titulo)
 
   for (const doMes of meses) {
     const d = doMes[0].date
-    const blob = await capturar(doMes, porTurno)
+    const blob = await capturar(doMes, porTurno, identidade)
     imagens.push({
       blob,
-      nome: `escala-porteiros-${d.getFullYear()}-${MES_ARQUIVO[d.getMonth()]}.png`,
+      nome: `${apelido}-${d.getFullYear()}-${MES_ARQUIVO[d.getMonth()]}.png`,
       periodo: `${MES_ARQUIVO[d.getMonth()].slice(3)} de ${d.getFullYear()}`,
     })
   }

@@ -21,12 +21,62 @@ export interface DadosPublicados {
   turnos: Turno[]
 }
 
+/**
+ * O padrão é GENÉRICO de propósito.
+ *
+ * Este é o único lugar do código onde um nome de escala pode aparecer — e por isso ele não pode ser
+ * o nome de um cliente. Quem instala o produto do zero e ainda não configurou nada tem de ver algo
+ * que não é de mais ninguém. O nome deste cliente mora em `public/dados/config.json`, que é dado.
+ */
 const CONFIG_PADRAO: Configuracao = {
   versao: 1,
   capacidadePadrao: 3,
   malhaPadrao: { regras: [] },
   santaCeia: [],
-  identidade: { titulo: 'Escala Porteiros', subtitulo: 'JD. São Luiz' },
+  identidade: { titulo: 'Escala de plantões', subtitulo: '', pessoa: { singular: 'Pessoa', plural: 'pessoas' } },
+}
+
+/**
+ * 🔴 COMPLETA O QUE O ARQUIVO PUBLICADO NÃO TROUXER — achado de 05/08/2026.
+ *
+ * `buscarJSON<Configuracao>('config.json', CONFIG_PADRAO)` só usa o padrão quando o download
+ * FALHA. Um `config.json` que baixa bem mas não tem um campo entrega `undefined` — com o
+ * TypeScript afirmando, na cara, que ali existe uma `string`. É a mentira mais cara que um tipo
+ * pode contar, porque some na revisão e aparece como "undefined" impresso na tela do usuário.
+ *
+ * Não é hipótese: o `config.json` que está no ar HOJE não tem `identidade.pessoa` — o campo nasceu
+ * agora. Sem esta função, a primeira abertura do site depois deste commit mostraria
+ * "Total de turnos por undefined". Publicar o dado novo conserta o sintoma; isto conserta a classe.
+ *
+ * Campo a campo, e não `{...padrao, ...lido}`: a mescla rasa devolveria `identidade` INTEIRO do
+ * arquivo — logo, sem `pessoa` — e o defeito passaria igual.
+ */
+export type ConfigLida = Omit<Partial<Configuracao>, 'identidade'> & {
+  // `Partial<T>` só afrouxa o primeiro nível: `identidade` viraria opcional, mas os campos DENTRO
+  // dela continuariam obrigatórios — que é exatamente o caso que esta função existe para tratar.
+  identidade?: Partial<Configuracao['identidade']> & { pessoa?: Partial<Configuracao['identidade']['pessoa']> }
+}
+
+export function completarConfig(lido: ConfigLida | null | undefined): Configuracao {
+  const c = lido ?? {}
+  const id = c.identidade ?? {}
+  const pessoa = id.pessoa ?? ({} as Partial<Configuracao['identidade']['pessoa']>)
+  return {
+    versao: c.versao ?? CONFIG_PADRAO.versao,
+    capacidadePadrao: c.capacidadePadrao ?? CONFIG_PADRAO.capacidadePadrao,
+    malhaPadrao: c.malhaPadrao ?? CONFIG_PADRAO.malhaPadrao,
+    santaCeia: c.santaCeia ?? CONFIG_PADRAO.santaCeia,
+    identidade: {
+      titulo: id.titulo?.trim() || CONFIG_PADRAO.identidade.titulo,
+      // O subtítulo pode ser vazio DE PROPÓSITO (nem todo cliente tem uma segunda linha), então
+      // aqui `??` e não `||`: string vazia é uma escolha, ausência é que não é.
+      subtitulo: id.subtitulo ?? CONFIG_PADRAO.identidade.subtitulo,
+      pessoa: {
+        singular: pessoa.singular?.trim() || CONFIG_PADRAO.identidade.pessoa.singular,
+        plural: pessoa.plural?.trim() || CONFIG_PADRAO.identidade.pessoa.plural,
+      },
+    },
+  }
 }
 
 async function buscarJSON<T>(caminho: string, padrao: T | null = null): Promise<T> {
@@ -67,11 +117,11 @@ export async function carregarDados(): Promise<DadosPublicados> {
   const [arqPessoas, arqBlocos, config] = await Promise.all([
     buscarJSON<ArquivoPessoas>('pessoas.json'),
     buscarJSON<ArquivoBlocos>('blocos.json'),
-    buscarJSON<Configuracao>('config.json', CONFIG_PADRAO),
+    buscarJSON<ConfigLida>('config.json', CONFIG_PADRAO),
   ])
   const pessoas = arqPessoas.pessoas
   definirPessoas(pessoas)
-  return { pessoas, blocos: arqBlocos.blocos, config, turnos: emendarBlocos(arqBlocos.blocos) }
+  return { pessoas, blocos: arqBlocos.blocos, config: completarConfig(config), turnos: emendarBlocos(arqBlocos.blocos) }
 }
 
 // ---------------------------------------------------------------------------

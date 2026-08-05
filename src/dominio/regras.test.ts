@@ -37,7 +37,7 @@ const CONFIG: Configuracao = {
   capacidadePadrao: 3,
   malhaPadrao: { regras: [] },
   santaCeia: ['2026-08-16'],
-  identidade: { titulo: 'Teste', subtitulo: 'Teste' },
+  identidade: { titulo: 'Teste', subtitulo: 'Teste', pessoa: { singular: 'Pessoa', plural: 'pessoas' } },
 }
 
 function ctxDe(

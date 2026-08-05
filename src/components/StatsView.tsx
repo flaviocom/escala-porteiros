@@ -8,9 +8,11 @@ import { ptBR } from 'date-fns/locale';
 
 interface StatsViewProps {
   shifts: Shift[];
+  /** Como este cliente chama quem é escalado — vem de `config.identidade.pessoa`. */
+  vocabulario: { singular: string; plural: string };
 }
 
-export const StatsView: React.FC<StatsViewProps> = ({ shifts }) => {
+export const StatsView: React.FC<StatsViewProps> = ({ shifts, vocabulario }) => {
   const stats = useMemo(() => {
     const counts: Record<string, { total: number; byMonth: Record<string, number> }> = {};
 
@@ -52,7 +54,7 @@ export const StatsView: React.FC<StatsViewProps> = ({ shifts }) => {
             Estatísticas de Distribuição
           </h3>
           <p className="text-text-xs text-text-secondary font-medium">
-            Total de turnos por irmão e mês
+            Total de turnos por {vocabulario.singular.toLowerCase()} e mês
           </p>
         </div>
       </div>
@@ -61,7 +63,7 @@ export const StatsView: React.FC<StatsViewProps> = ({ shifts }) => {
         <table className="min-w-full divide-y divide-border-subtle text-text-sm relative">
           <thead className="bg-surface-subtle sticky top-0 z-20 shadow-sm">
             <tr>
-              <th className="px-space-4 py-space-3 text-left font-semibold text-text-secondary uppercase tracking-wider text-text-xs sticky left-0 top-0 bg-surface-subtle z-30 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] border-b border-border-subtle">Irmão</th>
+              <th className="px-space-4 py-space-3 text-left font-semibold text-text-secondary uppercase tracking-wider text-text-xs sticky left-0 top-0 bg-surface-subtle z-30 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] border-b border-border-subtle">{vocabulario.singular}</th>
               <th className="px-space-4 py-space-3 text-center font-semibold text-action-primary uppercase tracking-wider text-text-xs bg-surface-subtle border-b border-border-subtle">Total</th>
               {months.map(m => (
                 <th key={m} className="px-space-2 py-space-3 text-center font-semibold text-text-secondary uppercase tracking-wider text-[10px] bg-surface-subtle border-b border-border-subtle">

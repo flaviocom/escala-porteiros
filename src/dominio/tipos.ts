@@ -174,5 +174,20 @@ export interface Configuracao {
   identidade: {
     titulo: string
     subtitulo: string
+    /**
+     * 🔴 COMO ESTE CLIENTE CHAMA QUEM É ESCALADO — 05/08/2026, regra máxima de escopo (§0).
+     *
+     * A tela dizia "Irmão", "irmãos por turno", "Buscar dia ou Irmão" em 24 lugares. É o vocabulário
+     * de uma congregação — correto aqui, errado em toda parte que o Flavio queira vender. O exemplo
+     * que ele próprio deu foi *"uma portaria de prédio"*: lá são funcionários, não irmãos.
+     *
+     * O modelo de domínio sempre chamou de `Pessoa`. Era só a TELA que falava outra língua.
+     */
+    pessoa: {
+      /** Como aparece sozinho, com maiúscula: "Irmão", "Funcionário", "Plantonista". */
+      singular: string
+      /** Como aparece em contagem, minúsculo: "irmãos", "funcionários". */
+      plural: string
+    }
   }
 }

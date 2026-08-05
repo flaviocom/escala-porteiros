@@ -104,9 +104,23 @@ export interface DadosImagem {
   geradoEm: Date
   /** Quantas vagas por turno — sai no rodapé, e muda se a congregação mudar a regra. */
   porTurno?: number
+  /**
+   * 🔴 O NOME NA IMAGEM VEM DA CONFIGURAÇÃO — achado da auditoria externa, 05/08/2026.
+   *
+   * Mesmo defeito que `porTurno` teve em 04/08: o cabeçalho da imagem afirmava *"Escala de
+   * Porteiros · Congregação Cristã no Brasil · JD. São Luiz"* como fato cravado. Esta imagem é o
+   * que sai no WhatsApp — é o documento mais visto do produto. Vendido a outro cliente, ele
+   * distribuiria a escala DELE com o nome de OUTRA congregação impresso.
+   *
+   * ⚠️ OBRIGATÓRIO de propósito. A primeira versão desta correção deixou `identidade?` opcional com
+   * `?? 'Escala de Porteiros'` no JSX. Isso é pior que o defeito original: dá a aparência de estar
+   * configurável e mantém o nome antigo como rede, de onde ele volta em silêncio no dia em que
+   * alguém esquecer de passar. Sem padrão, o compilador cobra.
+   */
+  identidade: { titulo: string; subtitulo: string; pessoa: { singular: string; plural: string } }
 }
 
-export function EscalaImagem({ shifts, geradoEm, porTurno = 3 }: DadosImagem) {
+export function EscalaImagem({ shifts, geradoEm, porTurno = 3, identidade }: DadosImagem) {
   const dias = porDia(shifts)
 
   /**
@@ -126,10 +140,10 @@ export function EscalaImagem({ shifts, geradoEm, porTurno = 3 }: DadosImagem) {
       }}>
         <div>
           <div style={{ fontSize: 46, fontWeight: 800, color: '#fff', letterSpacing: -0.5, lineHeight: 1.05 }}>
-            Escala de Porteiros
+            {identidade.titulo}
           </div>
           <div style={{ fontSize: 21, fontWeight: 600, color: 'rgba(255,255,255,.88)', marginTop: 8 }}>
-            Congregação Cristã no Brasil · JD. São Luiz
+            {identidade.subtitulo}
           </div>
         </div>
         <div style={{ textAlign: 'right' }}>
@@ -228,7 +242,7 @@ export function EscalaImagem({ shifts, geradoEm, porTurno = 3 }: DadosImagem) {
       })}
 
       <div style={{ textAlign: 'center', fontSize: 17, fontWeight: 700, color: '#64748b', padding: '14px 0 6px' }}>
-        Gerado em {br(geradoEm)} · {porTurno} irmãos por turno
+        Gerado em {br(geradoEm)} · {porTurno} {identidade.pessoa.plural} por turno
       </div>
     </div>
   )

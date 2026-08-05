@@ -3,15 +3,44 @@
   "capacidadePadrao": 3,
   "malhaPadrao": {
     "regras": [
-      { "diaSemana": 0, "turnos": ["MANHA", "NOITE"] },
-      { "diaSemana": 3, "turnos": ["NOITE"] },
-      { "diaSemana": 6, "turnos": ["NOITE"] },
-      { "diaSemana": 6, "turnos": ["TARDE"], "somenteOcorrencia": 1, "rotulo": "ENSAIO" }
+      {
+        "diaSemana": 0,
+        "turnos": [
+          "MANHA",
+          "NOITE"
+        ]
+      },
+      {
+        "diaSemana": 3,
+        "turnos": [
+          "NOITE"
+        ]
+      },
+      {
+        "diaSemana": 6,
+        "turnos": [
+          "NOITE"
+        ]
+      },
+      {
+        "diaSemana": 6,
+        "turnos": [
+          "TARDE"
+        ],
+        "somenteOcorrencia": 1,
+        "rotulo": "ENSAIO"
+      }
     ]
   },
-  "santaCeia": ["2026-08-16"],
+  "santaCeia": [
+    "2026-08-16"
+  ],
   "identidade": {
     "titulo": "Escala Porteiros",
-    "subtitulo": "JD. São Luiz"
+    "subtitulo": "JD. São Luiz",
+    "pessoa": {
+      "singular": "Irmão",
+      "plural": "irmãos"
+    }
   }
 }
