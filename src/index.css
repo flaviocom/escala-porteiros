@@ -243,3 +243,21 @@ body.is-exporting .gap-2,
 body.is-exporting .gap-2\.5 {
   gap: 12px !important;
 }
+/*
+ * Entrada da caixa de escolha de meses.
+ *
+ * Curva exponencial de saída (sem quique, sem elástico) e 180ms: rápido o bastante para não
+ * atrasar quem já sabe o que quer, longo o bastante para o olho acompanhar de onde a caixa veio.
+ *
+ * O `motion-reduce:open:animate-none` na própria caixa cobre quem pediu menos movimento — e a
+ * regra abaixo cobre o caso de a classe utilitária mudar de nome: reduzir movimento não pode
+ * depender de eu lembrar de escrever a variante.
+ */
+@keyframes surgir {
+  from { opacity: 0; transform: translateY(8px) scale(.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  dialog[open] { animation: none !important; }
+}

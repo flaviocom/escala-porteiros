@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { exportToImage } from './utils/export';
 import { filtrarTurnos } from './dados/filtrar';
+import { SeletorDeMeses, type MesDisponivel } from './components/SeletorDeMeses';
 import { Shift, BROTHERS } from './types/scheduler';
 import type { DadosPublicados } from './dados/carregar';
 import { mesDeData } from './dominio/datas';
@@ -29,6 +30,7 @@ function App({ shifts, dados }: AppProps) {
   const [view, setView] = useState<'schedule' | 'stats' | 'validation'>('schedule');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [escolhendoMeses, setEscolhendoMeses] = useState(false);
 
   // 🆕 E: Minha Escala — salva o nome do irmão no localStorage
   const [myBrotherId, setMyBrotherId] = useState<string | null>(() => {
@@ -81,20 +83,56 @@ function App({ shifts, dados }: AppProps) {
     setShowMyShiftsOnly(false);
   };
 
-  const handleExport = async () => {
-    if (isGenerating) return;
+  /** O que está aparecendo — mesma função de filtro que a tabela usa. */
+  const turnosVisiveis = useMemo(
+    () => filtrarTurnos(shifts, { selectedBrotherIds, selectedMonthStrs, dateSearchQuery, dateRange }),
+    [shifts, selectedBrotherIds, selectedMonthStrs, dateSearchQuery, dateRange]
+  );
+
+  /** Meses presentes no que está em vista, com quantos turnos cada um tem. */
+  const mesesEmVista = useMemo<MesDisponivel[]>(() => {
+    const mapa = new Map<string, number>();
+    for (const s of turnosVisiveis) {
+      const k = mesDeData(s.date);
+      mapa.set(k, (mapa.get(k) ?? 0) + 1);
+    }
+    return [...mapa.entries()].sort().map(([chave, turnos]) => ({
+      chave,
+      turnos,
+      rotulo: format(parseISO(chave + '-01'), 'MMMM yyyy', { locale: ptBR }),
+    }));
+  }, [turnosVisiveis]);
+
+  const gerar = async (chaves: string[]) => {
     setIsGenerating(true);
     try {
-      // Exporta EXATAMENTE o que está aparecendo — mesma função de filtro que a tabela usa.
-      await exportToImage(filtrarTurnos(shifts, {
-        selectedBrotherIds, selectedMonthStrs, dateSearchQuery, dateRange,
-      }));
+      await exportToImage(turnosVisiveis.filter((s) => chaves.includes(mesDeData(s.date))));
     } catch (e) {
       alert(e instanceof Error ? e.message : 'Não foi possível gerar a imagem.');
     } finally {
       setIsGenerating(false);
       setIsMobileMenuOpen(false);
     }
+  };
+
+  /**
+   * 🔴 Um mês em vista → gera direto. Vários → pergunta ANTES.
+   *
+   * A imagem sai uma por mês, então clicar com a escala inteira em vista disparava dez downloads
+   * de uma vez. Mas perguntar sempre cobraria um passo a mais do caso comum — que é mandar o mês
+   * corrente. A caixa só aparece quando há de fato o que escolher.
+   */
+  const handleExport = async () => {
+    if (isGenerating) return;
+    if (!turnosVisiveis.length) {
+      alert('Não há turnos no período selecionado para gerar a imagem.');
+      return;
+    }
+    if (mesesEmVista.length > 1) {
+      setEscolhendoMeses(true);
+      return;
+    }
+    await gerar(mesesEmVista.map((m) => m.chave));
   };
 
   // 🆕 Selecionar meu irmão
@@ -581,6 +619,14 @@ function App({ shifts, dados }: AppProps) {
           )}
         </div>
       </main>
+
+      {escolhendoMeses && (
+        <SeletorDeMeses
+          meses={mesesEmVista}
+          aoFechar={() => setEscolhendoMeses(false)}
+          aoConfirmar={(chaves) => { setEscolhendoMeses(false); gerar(chaves); }}
+        />
+      )}
     </div>
   );
 }
