@@ -224,3 +224,12 @@ grupo MÉTODO. ERRO 36 e ERRO 37 em `padroes-globais@ee95d91`.
 
 **Skills acionadas:** `graphify` (mapa antes de mexer), `engineering-loop`, `ponytail`,
 `documentacao-auditavel`, `loop-autonomo`.
+
+**Continuação da parte 6 — caminho de erro, régua por turno e acessibilidade.**
+`vivo:erro`: 8 checagens, nenhuma falha de carregamento deixa tela branca; corrigida uma mensagem
+que mandava "ajustar os filtros" sem filtro nenhum aplicado. `vivo:conferir` passou a medir **por
+turno** — a versão por dia aprovava manhã e noite trocadas, e eu tinha chamado aquilo de "543 nomes
+conferidos" (ERRO 32 na minha própria régua, no dia em que o escrevi). `vivo:acessibilidade`:
+contraste **159 → 0** sem trocar a paleta, e o botão do WhatsApp resolvido sem tocar no verde da
+marca. 🔴 Dois defeitos da minha régua: "sem foco visível" era falso (`.focus()` não dispara
+`:focus-visible`) e "159 textos" eram 8 combinações repetidas.
