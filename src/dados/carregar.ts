@@ -81,14 +81,47 @@ export function completarConfig(lido: ConfigLida | null | undefined): Configurac
   }
 }
 
+/**
+ * 🔴 TENTA DE NOVO ANTES DE DESISTIR — 05/08/2026.
+ *
+ * Um HTTP **503** do GitHub Pages, durante um deploy, apareceu numa validação ao vivo. Naquele
+ * instante o `config.json` não carregou e o site mostrou o nome GENÉRICO com a escala certa —
+ * meio estado esquisito, mas inofensivo.
+ *
+ * O que importa é o irmão: se o soluço tivesse pegado `blocos.json`, que **não tem padrão**, a tela
+ * teria mostrado **erro** para quem só queria saber se está escalado no domingo. Um blip de CDN
+ * dura menos de um segundo, e desistir na primeira tentativa transforma-o em tela de erro.
+ *
+ * Só repete o que **pode melhorar sozinho**: erro de rede e 5xx. Um **404 não se repete** — o
+ * arquivo não existe, e insistir três vezes só faz a pessoa esperar mais para ver a mesma coisa.
+ */
+const TENTATIVAS = 3
+const ESPERA_MS = 400
+
 async function buscarJSON<T>(caminho: string, padrao: T | null = null): Promise<T> {
-  const url = `${import.meta.env.BASE_URL}dados/${caminho}?v=${Date.now()}`
-  const resp = await fetch(url, { cache: 'no-store' })
-  if (!resp.ok) {
-    if (padrao !== null) return padrao
-    throw new Error(`Não foi possível carregar ${caminho} (HTTP ${resp.status})`)
+  let ultimoErro: unknown = null
+
+  for (let tentativa = 1; tentativa <= TENTATIVAS; tentativa++) {
+    try {
+      // `?v=` novo a cada tentativa: sem isso a segunda poderia ser servida do cache da primeira.
+      const url = `${import.meta.env.BASE_URL}dados/${caminho}?v=${Date.now()}-${tentativa}`
+      const resp = await fetch(url, { cache: 'no-store' })
+
+      if (resp.ok) return (await resp.json()) as T
+
+      // 🔴 `fetch` NÃO rejeita em erro de HTTP: 404 e 503 chegam aqui como resposta resolvida.
+      //    Sem este `if`, os dois seguiriam para o `.json()` e virariam erro de sintaxe.
+      ultimoErro = new Error(`Não foi possível carregar ${caminho} (HTTP ${resp.status})`)
+      if (resp.status < 500) break // 404, 403… não melhoram com insistência
+    } catch (e) {
+      ultimoErro = e // rede fora, DNS, conexão cortada — exatamente o que pode melhorar sozinho
+    }
+
+    if (tentativa < TENTATIVAS) await new Promise((r) => setTimeout(r, ESPERA_MS * tentativa))
   }
-  return (await resp.json()) as T
+
+  if (padrao !== null) return padrao
+  throw ultimoErro instanceof Error ? ultimoErro : new Error(`Não foi possível carregar ${caminho}`)
 }
 
 /**
