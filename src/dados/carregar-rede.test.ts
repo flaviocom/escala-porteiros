@@ -74,7 +74,11 @@ describe('carregar — soluço de rede não vira tela de erro', () => {
       if (k === 'blocos' && ++n === 1) throw new TypeError('Failed to fetch')
       return ok(corpoDe(k))
     })
-    await expect(carregarDados()).resolves.toBeTruthy()
+    // 🔴 Era `resolves.toBeTruthy()`, que passa com QUALQUER objeto — inclusive um sem escala
+    // nenhuma dentro. O que este teste promete é que o irmão VÊ A ESCALA depois do soluço.
+    const d = await carregarDados()
+    expect(n).toBe(2) // tentou de novo, e só uma vez
+    expect(d.turnos.length).toBeGreaterThan(0)
   })
 
   it('🔴 404 NÃO é repetido — o arquivo não existe, insistir só faz a pessoa esperar', async () => {

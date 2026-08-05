@@ -548,7 +548,12 @@ describe('Q4 — variedade de companhia', () => {
   })
 })
 
-describe('Q2 — equilíbrio de carga', () => {
+/*
+  Nome diferente do bloco lá de cima de propósito — quinta auditoria externa, 05/08/2026: eram dois
+  `describe('Q2 — equilíbrio de carga')` idênticos, e a saída do vitest mostrava o mesmo título duas
+  vezes. Quem lê o relatório procurando por que Q2 quebrou não sabe em qual dos dois olhar.
+*/
+describe('Q2 — quem saiu do elenco não conta', () => {
   /*
     🔴 Achado da auditoria externa de 05/08/2026: Q2 era a ÚNICA regra de contagem que percorria o
     `elenco` cru do bloco, e não `pessoasDoBloco`. Quem foi tirado da escala entrava com 0 turnos e
@@ -706,13 +711,100 @@ describe('Q5 — piso mensal', () => {
 })
 
 // ---------------------------------------------------------------------------
+// D12 — vaga
+// ---------------------------------------------------------------------------
+
+/**
+ * 🔴 O CASO QUE AS DUAS RÉGUAS APROVAVAM — quinta auditoria externa, 05/08/2026.
+ *
+ * `capacidadePadrao: 0` produzia 73 turnos com zero vagas e zero pessoas, e o veredito era
+ * *"Aprovada, sem ressalvas."* D1 conta `0 === 0` como completo; D11 compara a grade com ela mesma e
+ * casa; Q2 vê amplitude zero. A pergunta que faltava é anterior a todas: **o turno pediu um número
+ * que faz sentido?**
+ */
+describe('D12 — todo turno que existe pede pelo menos uma pessoa', () => {
+  it('🔴 turno com capacidade 0 REPROVA — era aprovado como "0 de 0 completo"', () => {
+    const rel = validar(ctxDe([turno('2026-09-02', 'NOITE', [], { capacidade: 0 })], TRES))
+    expect(rel.aprovada).toBe(false)
+    const d12 = rel.resultados.find((r) => r.id === 'D12')!
+    expect(d12.status).toBe('falha')
+    expect(d12.violacoes[0].mensagem).toContain('sem vaga')
+  })
+
+  it('🔴 a escala INTEIRA com capacidade 0 reprova, e não passa por vacuidade', () => {
+    const rel = validar(ctxDe(
+      [
+        turno('2026-09-02', 'NOITE', [], { capacidade: 0 }),
+        turno('2026-09-06', 'MANHA', [], { capacidade: 0 }),
+        turno('2026-09-09', 'NOITE', [], { capacidade: 0 }),
+      ],
+      TRES,
+    ))
+    expect(rel.aprovada).toBe(false)
+    expect(rel.resultados.find((r) => r.id === 'D12')!.violacoes).toHaveLength(3)
+    // E a prova de que o buraco era real: D1 continua achando tudo "completo".
+    expect(rel.resultados.find((r) => r.id === 'D1')!.status).toBe('ok')
+  })
+
+  it('🔴 turnos com vaga e NINGUÉM escalado também reprovam', () => {
+    const rel = validar(ctxDe(
+      [turno('2026-09-02', 'NOITE', []), turno('2026-09-09', 'NOITE', [])],
+      TRES,
+    ))
+    const d12 = rel.resultados.find((r) => r.id === 'D12')!
+    expect(d12.status).toBe('falha')
+    expect(d12.violacoes.some((v) => v.mensagem.includes('NINGUÉM escalado'))).toBe(true)
+  })
+
+  /**
+   * 🔴 ESTE TESTE NASCEU DE UM DEFEITO NA PRÓPRIA D12, medido no dado real em 05/08/2026.
+   *
+   * A primeira versão da regra fazia `for (const t of comGente.slice(0, 5))`, achando que estava
+   * limitando o número de mensagens. Estava limitando a CONFERÊNCIA: um turno sem vaga na posição 10
+   * saía aprovado. A regra escrita para fechar a classe "portão que mede menos do que diz" tinha o
+   * defeito dentro dela — e só apareceu porque a correção foi medida contra o dado real, não só
+   * contra o cenário que a inspirou.
+   */
+  it('🔴 turno sem vaga LONGE do começo também reprova — o `slice` limita o relato, não a busca', () => {
+    const turnos = Array.from({ length: 12 }, (_, i) =>
+      turno(`2026-09-${String(i + 1).padStart(2, '0')}`, 'NOITE', ['ana', 'bia', 'caio']),
+    )
+    turnos[10] = turno('2026-09-11', 'NOITE', [], { capacidade: 0 })
+    const rel = validar(ctxDe(turnos, TRES))
+    const d12 = rel.resultados.find((r) => r.id === 'D12')!
+    expect(d12.status).toBe('falha')
+    expect(d12.violacoes[0].mensagem).toContain('11/09/2026')
+  })
+
+  it('Santa Ceia tem capacidade 0 POR DEFINIÇÃO e não é violação', () => {
+    const rel = validar(ctxDe(
+      [
+        turno('2026-09-02', 'NOITE', ['ana', 'bia', 'caio']),
+        turno('2026-08-16', 'MANHA', [], { capacidade: 0, santaCeia: true }),
+      ],
+      TRES,
+      { inicio: '2026-08-16', fim: '2026-09-02' },
+    ))
+    expect(rel.resultados.find((r) => r.id === 'D12')!.status).toBe('ok')
+  })
+
+  it('a outra ponta: escala normal passa, e a medida conta vagas e escalações', () => {
+    const rel = validar(ctxDe([turno('2026-09-02', 'NOITE', ['ana', 'bia', 'caio'])], TRES))
+    const d12 = rel.resultados.find((r) => r.id === 'D12')!
+    expect(d12.status).toBe('ok')
+    expect(d12.medida).toContain('3 vaga(s)')
+    expect(d12.medida).toContain('3 escalação')
+  })
+})
+
+// ---------------------------------------------------------------------------
 // O portão do portão
 // ---------------------------------------------------------------------------
 
 describe('cobertura do catálogo', () => {
   it('🔒 TODA regra do catálogo tem teste — regra nova sem teste deixa isto vermelho', () => {
     const comTeste = new Set([
-      'D1', 'D2', 'D3', 'D4', 'D5', 'D6', 'D7', 'D8', 'D9', 'D10', 'D11',
+      'D1', 'D2', 'D3', 'D4', 'D5', 'D6', 'D7', 'D8', 'D9', 'D10', 'D11', 'D12',
       'Q1', 'Q2', 'Q3', 'Q4', 'Q5',
     ])
     const semTeste = CATALOGO.filter((r) => !comTeste.has(r.id)).map((r) => `${r.id} — ${r.titulo}`)

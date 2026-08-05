@@ -80,7 +80,7 @@ importar uma linha do catálogo. Monta a linha do tempo de cada pessoa, em vez d
 
 | | Validação (pública) | Conferir por fora (administrativo) |
 |---|---|---|
-| O que roda | as 16 regras do catálogo | uma implementação **independente** |
+| O que roda | as 17 regras do catálogo | uma implementação **independente** |
 | Para quê | mostrar que a escala está boa | **discordar**, se houver do que discordar |
 
 Se as duas concordam, a escala tem duas opiniões independentes a favor. Se discordam, **uma das duas

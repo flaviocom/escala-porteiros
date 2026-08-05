@@ -433,13 +433,23 @@ const D8: Regra = {
  */
 function gradeEsperada(ctx: Contexto): Turno[] | null {
   if (!ctx.config) return null
-  return construirGrade({
-    inicio: ctx.bloco.inicio,
-    fim: ctx.bloco.fim,
-    malha: ctx.bloco.malha,
-    capacidadePadrao: ctx.config.capacidadePadrao,
-    santaCeia: ctx.config.santaCeia,
-  })
+  /*
+    🔴 `construirGrade` passou a RECUSAR data impossível em 05/08/2026 (ver lá o porquê). Uma regra,
+    porém, não pode estourar: quem chama a validação espera um relatório, e um erro atravessando D11
+    derrubaria o julgamento das outras quinze junto. Bloco com data torta vira "não deu para conferir"
+    — que é o que `semConfig` já significa —, e o defeito de dado é acusado por `conferirEsquema`.
+  */
+  try {
+    return construirGrade({
+      inicio: ctx.bloco.inicio,
+      fim: ctx.bloco.fim,
+      malha: ctx.bloco.malha,
+      capacidadePadrao: ctx.config.capacidadePadrao,
+      santaCeia: ctx.config.santaCeia,
+    })
+  } catch {
+    return null
+  }
 }
 
 /**
@@ -642,6 +652,76 @@ const D11: Regra = {
       {
         id: D11.id, titulo: D11.titulo, familia: 'DURA',
         medida: `${ctx.bloco.turnos.length} turno(s) no bloco · ${esperada.length} previsto(s) pela malha do período`,
+      },
+      v,
+    )
+  },
+}
+
+/**
+ * 🔴 D12 EXISTE PORQUE D11 FECHOU UMA PONTA DO BURACO E DEIXOU A OUTRA ABERTA.
+ *
+ * D11 nasceu de um bloco com **zero turnos** que era aprovado. Achado da quinta auditoria externa,
+ * 05/08/2026: com **turnos e zero vagas**, as duas réguas continuavam aprovando — e a segunda
+ * também. Medido com `capacidadePadrao = 0`:
+ *
+ *     73 turnos · 0 vagas · 0 pessoas escaladas  →  "Aprovada, sem ressalvas."
+ *     2ª régua: "73 de 73 turnos com o número certo" · 0 furos de 7
+ *
+ * Nenhuma das duas errou por descuido. D1 pergunta *"o turno recebeu o que pediu?"* — e `0 === 0` é
+ * verdade. D11 compara a grade do bloco com a grade esperada, construída pela **mesma** função, com
+ * a mesma capacidade: elas casam perfeitamente. Q2 vê amplitude zero, que é equilíbrio perfeito.
+ *
+ * A pergunta que faltava é anterior a todas elas: **o turno pediu um número que faz sentido?** Um
+ * turno que existe no calendário e não chama ninguém não é um turno vazio — é um turno que não
+ * deveria estar ali. E o desfecho é o pior que este produto tem: uma tabela de nomes em branco
+ * publicada com o sistema dizendo que está tudo certo.
+ *
+ * ⚠️ Santa Ceia é a exceção LEGÍTIMA e a única: ela tem `capacidade: 0` por definição, porque vêm
+ * irmãos de outra igreja no lugar dos escalados. Por isso a regra roda sobre `turnosComGente`.
+ */
+const D12: Regra = {
+  id: 'D12',
+  titulo: 'Vaga — todo turno que existe pede pelo menos uma pessoa',
+  familia: 'DURA',
+  explicacao:
+    'Um turno que aparece no calendário precisa chamar pelo menos uma pessoa. Turno com zero vagas não fica "vazio": ele sai na escala como um dia sem ninguém, e nenhuma outra regra reclama — porque zero de zero está tecnicamente completo. A única exceção é a Santa Ceia, que não tem escala por definição.',
+  avaliar(ctx) {
+    const v: Violacao[] = []
+    const comGente = turnosComGente(ctx.bloco)
+
+    /*
+      ⚠️ FILTRA PRIMEIRO, FATIA DEPOIS. A primeira versão desta regra fazia
+      `for (const t of comGente.slice(0, 5))` — ou seja, só olhava os cinco PRIMEIROS turnos do
+      bloco, achando que estava limitando o número de mensagens. Medido no dado real, 05/08/2026: um
+      turno sem vaga na posição 10, no meio de uma escala boa, saía **aprovado**.
+
+      É a mesma classe que esta regra existe para fechar, cometida dentro dela: um portão que mede
+      menos do que diz. O `slice` limita o RELATÓRIO; a conferência é sobre todos.
+    */
+    const semVaga = comGente.filter((t) => t.capacidade < 1)
+    for (const t of semVaga.slice(0, 5)) {
+      v.push({
+        data: t.data,
+        mensagem: `${formatarBR(t.data)} ${ROTULO_TURNO[t.tipo]}: pede ${t.capacidade} pessoa(s) — turno sem vaga sai na escala como um dia sem ninguém`,
+      })
+    }
+    if (semVaga.length > 5) v.push({ mensagem: `… e mais ${semVaga.length - 5} turno(s) sem vaga` })
+
+    /*
+      E a soma: um bloco em que NINGUÉM foi escalado é vacuidade mesmo com capacidade válida — pode
+      vir de um bloco importado torto ou de um JSON editado à mão. D11 não pega, porque conta turnos.
+    */
+    const vagas = comGente.reduce((s, t) => s + t.capacidade, 0)
+    const escalados = comGente.reduce((s, t) => s + t.pessoas.length, 0)
+    if (comGente.length > 0 && escalados === 0 && semVaga.length === 0) {
+      v.push({ mensagem: `o bloco tem ${comGente.length} turno(s) e ${vagas} vaga(s), e NINGUÉM escalado em nenhum` })
+    }
+
+    return ok(
+      {
+        id: D12.id, titulo: D12.titulo, familia: 'DURA',
+        medida: `${comGente.length} turno(s) · ${vagas} vaga(s) · ${escalados} escalação(ões)`,
       },
       v,
     )
@@ -921,7 +1001,7 @@ const Q5: Regra = {
 
 // Deixaram de ser exportadas em 04/08/2026: eram superfície pública sem um único consumidor fora
 // deste arquivo. Quem precisa agrupar por família tem `familia` em cada resultado.
-const REGRAS_DURAS: Regra[] = [D1, D2, D3, D4, D5, D6, D7, D8, D9, D10, D11]
+const REGRAS_DURAS: Regra[] = [D1, D2, D3, D4, D5, D6, D7, D8, D9, D10, D11, D12]
 const REGRAS_QUALIDADE: Regra[] = [Q1, Q2, Q3, Q4, Q5]
 export const CATALOGO: Regra[] = [...REGRAS_DURAS, ...REGRAS_QUALIDADE]
 

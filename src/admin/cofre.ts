@@ -60,9 +60,27 @@ async function derivarChave(senha: string, sal: Uint8Array): Promise<CryptoKey> 
   )
 }
 
-/** Existe cofre neste navegador? */
+/**
+ * Existe cofre neste navegador?
+ *
+ * 🔴 Ele só perguntava `!== null` — quinta auditoria externa, 05/08/2026. Um valor corrompido (meia
+ * gravação, extensão que mexeu no armazenamento, cota estourada no meio) contava como cofre, e a
+ * tela de login respondia **"Senha incorreta."** para sempre: a senha certa também falha ao decifrar
+ * lixo. Há saída por "Esqueci a senha", mas a mensagem manda a pessoa procurar o erro onde ele não
+ * está.
+ *
+ * Agora "existe" significa **tem a forma de um cofre**. E `localStorage` pode lançar só de ser lido,
+ * com cookies bloqueados: aí não há cofre, que é a resposta certa e não uma tela branca.
+ */
 export function cofreExiste(): boolean {
-  return localStorage.getItem(CHAVE_ARMAZENAMENTO) !== null
+  try {
+    const bruto = localStorage.getItem(CHAVE_ARMAZENAMENTO)
+    if (!bruto) return false
+    const j = JSON.parse(bruto)
+    return typeof j?.sal === 'string' && typeof j?.iv === 'string' && typeof j?.dados === 'string'
+  } catch {
+    return false
+  }
 }
 
 /** Cria ou substitui o cofre. Sal e vetor novos a cada gravação. */

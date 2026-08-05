@@ -85,6 +85,47 @@ export function conferirPorFora(
   const noElenco = new Set(bloco.elenco)
   const comuns = bloco.turnos.filter((t) => !t.santaCeia)
 
+  /*
+    🔴 PROMESSA 0 — ESTÁ TUDO AQUI? Achado da quinta auditoria externa, 05/08/2026.
+
+    Esta régua existe para DISCORDAR da outra — e reproduzia exatamente a cegueira que fez D11
+    nascer: nenhuma das sete promessas perguntava se havia escala ali. Medido:
+
+        bloco com ZERO turnos ................ catálogo REPROVA (D11) · aqui: 0 furos de 7
+        73 turnos com capacidade 0 ........... catálogo APROVAVA    · aqui: 0 furos de 7
+        bloco declara nov e traz set ......... catálogo REPROVA     · aqui: 0 furos de 7
+
+    Uma segunda opinião que só sabe olhar o conteúdo não vê a ausência dele — e a tela vende esta
+    régua como maker–checker. Ela vem PRIMEIRO de propósito: se o bloco é vazio, tudo o que as outras
+    seis disserem é verdadeiro por vacuidade.
+  */
+  {
+    const furos: string[] = []
+    if (bloco.turnos.length === 0) {
+      furos.push(`o bloco de ${formatarBR(bloco.inicio)} a ${formatarBR(bloco.fim)} não tem um único turno`)
+    }
+    const semVaga = comuns.filter((t) => t.capacidade < 1)
+    for (const t of semVaga.slice(0, 5))
+      furos.push(`${formatarBR(t.data)} ${t.tipo}: pede ${t.capacidade} pessoa(s) — sai na escala como um dia sem ninguém`)
+    if (semVaga.length > 5) furos.push(`… e mais ${semVaga.length - 5} turno(s) sem vaga`)
+
+    const escalacoes = comuns.reduce((s, t) => s + t.pessoas.length, 0)
+    if (comuns.length > 0 && escalacoes === 0 && semVaga.length === 0)
+      furos.push(`${comuns.length} turno(s) no bloco e NINGUÉM escalado em nenhum deles`)
+
+    // E os turnos estão dentro do período que o bloco DECLARA? Um bloco que diz novembro e traz
+    // setembro passa por todas as outras promessas: cada turno, isolado, está perfeito.
+    const fora = bloco.turnos.filter(
+      (t) => diferencaEmDias(bloco.inicio, t.data) < 0 || diferencaEmDias(t.data, bloco.fim) < 0,
+    )
+    for (const t of fora.slice(0, 5))
+      furos.push(`${formatarBR(t.data)} está fora do período declarado (${formatarBR(bloco.inicio)} a ${formatarBR(bloco.fim)})`)
+    if (fora.length > 5) furos.push(`… e mais ${fora.length - 5} turno(s) fora do período`)
+
+    registrar('O bloco não está vazio, e o que está nele é do período que ele declara', furos,
+      `${bloco.turnos.length} turno(s) · ${comuns.reduce((s, t) => s + t.capacidade, 0)} vaga(s) · ${escalacoes} escalação(ões)`)
+  }
+
   // ── 1. Cada turno com o número certo ─────────────────────────────────────
   {
     const furos = comuns

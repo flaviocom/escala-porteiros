@@ -41,8 +41,15 @@ export function SeletorDeMeses({ meses, aoConfirmar, aoFechar }: Props) {
     return new Set(meses.some((m) => m.chave === atual) ? [atual] : meses.length ? [meses[0].chave] : [])
   })
 
+  /*
+    🔴 `showModal()` num diálogo JÁ ABERTO lança `InvalidStateError` — e o `StrictMode` roda os
+    efeitos duas vezes em desenvolvimento, então isto estourava exatamente onde ninguém olha: no
+    ambiente de quem está mexendo no código. Conferir `open` custa uma condição.
+  */
   useEffect(() => {
-    dialogo.current?.showModal()
+    const d = dialogo.current
+    if (d && !d.open) d.showModal()
+    return () => d?.close()
   }, [])
 
   const alternar = (chave: string) =>

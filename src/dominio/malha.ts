@@ -7,7 +7,7 @@
  *
  * Aqui a malha é **dado**. Trocar dias e turnos é editar configuração, não código.
  */
-import { diaDaSemana, diferencaEmDias, intervaloDeDatas, ocorrenciaNoMes, type DataISO } from './datas'
+import { diaDaSemana, diferencaEmDias, ehDataValida, intervaloDeDatas, ocorrenciaNoMes, type DataISO } from './datas'
 import type { Malha, Turno } from './tipos'
 
 export interface OpcoesMalha {
@@ -41,6 +41,22 @@ function regraValeEm(regra: Malha['regras'][number], data: DataISO): boolean {
  * dos irmãos escalados"*.
  */
 export function construirGrade(op: OpcoesMalha): Turno[] {
+  /*
+    🔴 DATA QUE NÃO EXISTE ENTRAVA E VIRAVA TURNO — quinta auditoria externa, 05/08/2026.
+
+    `ehDataValida` estava escrita, exportada e provada em quatro testes — e não tinha **um único
+    chamador em produção**. Medido: com `inicio = "2026-02-31"`, o produto gerava um turno em 31 de
+    fevereiro, pulava 01 a 03 de março, e o veredito era *"Aprovada, sem ressalvas."* Nenhuma das
+    dezesseis regras confere se a data existe no calendário, e nenhuma tem por quê: isso é conferência
+    de ENTRADA, e ela pertence à porta por onde a entrada passa.
+
+    Aqui é essa porta — a única por onde toda geração passa, tanto a da tela quanto a dos scripts.
+  */
+  if (!ehDataValida(op.inicio)) throw new Error(`Data inicial "${op.inicio}" não existe no calendário.`)
+  if (!ehDataValida(op.fim)) throw new Error(`Data final "${op.fim}" não existe no calendário.`)
+  for (const d of op.santaCeia ?? [])
+    if (!ehDataValida(d)) throw new Error(`Data de Santa Ceia "${d}" não existe no calendário.`)
+
   const ceias = new Set(op.santaCeia ?? [])
   const turnos: Turno[] = []
 

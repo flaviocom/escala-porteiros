@@ -17,6 +17,18 @@
  * ⚠️ Mede a TELA RENDERIZADA, não o CSS. Uma classe do Tailwind não diz a cor final: herança,
  * sobreposição e opacidade só se resolvem no navegador.
  *
+ * 🔴 E MEDE AS TELAS QUE A PESSOA ABRE — corrigido em 05/08/2026, quinta auditoria externa.
+ *
+ * Ele media UMA cena: o celular, como a página nasce. O veredito *"contraste, foco de teclado e
+ * idioma dentro do piso WCAG AA"* era verdadeiro — e era verdadeiro sobre **6 elementos focáveis**.
+ * A barra lateral inteira (busca, "Minha Escala", filtros de pessoa e mês, os dois botões de enviar)
+ * vive sob `hidden md:flex`: no celular ela tem `getBoundingClientRect()` zerado e ficava fora da
+ * conta; no desktop ela nunca era visitada; e a porta da área administrativa, nunca.
+ *
+ * Rodado nas telas que faltavam, o mesmo código de medição achou **4 falhas WCAG AA**. Portão que
+ * mede menos do que diz é pior que portão ausente: ele responde "está tudo bem" a uma pergunta
+ * maior do que a que ele fez.
+ *
  * Uso: node scripts/medir-acessibilidade.mjs [url]
  */
 import { chromium } from 'playwright'
@@ -29,11 +41,50 @@ console.log('♿ ACESSIBILIDADE — medida na tela, não no CSS\n')
 console.log(`  url ... ${URL}\n`)
 
 const navegador = await chromium.launch()
-const pagina = await navegador.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 3 })
-await pagina.goto(URL, { waitUntil: 'networkidle', timeout: 60_000 })
-await pagina.waitForTimeout(2500)
 
-const medida = await pagina.evaluate(({ PISO_NORMAL, PISO_GRANDE }) => {
+/**
+ * As cenas medidas, e por que cada uma existe.
+ *
+ * Uma cena é (tamanho de tela + endereço + o que se abriu antes de medir). Elas não se somam por
+ * gosto: cada uma esconde textos que as outras mostram, e foi exatamente nesse vão que as quatro
+ * falhas WCAG estavam.
+ */
+const CENAS = [
+  {
+    nome: 'celular, como a página nasce',
+    viewport: { width: 390, height: 844 },
+    hash: '',
+    preparar: async () => {},
+  },
+  {
+    nome: 'celular, painel de filtros ABERTO',
+    viewport: { width: 390, height: 844 },
+    hash: '',
+    // É o painel onde ficam a busca, "Minha Escala" e os dois filtros — tudo o que a pessoa usa
+    // para achar o próprio nome, e nada disso era medido.
+    preparar: async (p) => {
+      const botao = p.locator('button[title*="filtro" i], button[title*="Filtros" i]').first()
+      if (await botao.count()) await botao.click({ timeout: 5000 }).catch(() => {})
+      await p.waitForTimeout(600)
+    },
+  },
+  {
+    nome: 'desktop 1440px',
+    viewport: { width: 1440, height: 900 },
+    hash: '',
+    preparar: async (p) => { await p.waitForTimeout(600) },
+  },
+  {
+    nome: 'porta da área administrativa',
+    viewport: { width: 390, height: 844 },
+    hash: '#/admin',
+    preparar: async (p) => { await p.waitForTimeout(900) },
+  },
+]
+
+/** A medição, idêntica para toda cena — uma régua só, aplicada em quatro lugares. */
+async function medirCena(pagina) {
+  return await pagina.evaluate(({ PISO_NORMAL, PISO_GRANDE }) => {
   /** Luminância relativa, fórmula WCAG. */
   const lum = ([r, g, b]) => {
     const f = (v) => {
@@ -120,31 +171,83 @@ const medida = await pagina.evaluate(({ PISO_NORMAL, PISO_GRANDE }) => {
     lang: document.documentElement.lang,
     titulo: document.title,
   }
-}, { PISO_NORMAL, PISO_GRANDE })
+  }, { PISO_NORMAL, PISO_GRANDE })
+}
 
 /**
  * 🔴 FOCO SE MEDE TABULANDO. A primeira versão chamava `el.focus()` e lia o `outline` — e deu
  * "sem foco visível", **falso**. Foco programático não dispara `:focus-visible`, que é a condição
  * que o CSS moderno (e o Tailwind) usa para desenhar o anel. A régua acusava o site de um defeito
  * que era dela.
+ *
+ * 🔴 E o limite era 6 tabulações fixas — quinta auditoria externa, 05/08/2026. No desktop há 14
+ * focáveis e com o painel aberto há 22: o laço parava antes de a barra lateral começar. Agora ele
+ * anda até o foco VOLTAR ao primeiro elemento, com um teto generoso só para não girar para sempre.
  */
-const focos = []
-for (let i = 0; i < 6; i++) {
-  await pagina.keyboard.press('Tab')
-  focos.push(
-    await pagina.evaluate(() => {
+async function medirFoco(pagina) {
+  const focos = []
+  const vistos = new Set()
+  for (let i = 0; i < 60; i++) {
+    await pagina.keyboard.press('Tab')
+    const f = await pagina.evaluate(() => {
       const a = document.activeElement
       if (!a || a === document.body) return null
       const cs = getComputedStyle(a)
       const temAnel = cs.outlineStyle !== 'none' && parseFloat(cs.outlineWidth) > 0
-      return { tag: a.tagName, visivel: temAnel || cs.boxShadow !== 'none' }
-    }),
+      return {
+        tag: a.tagName,
+        marca: `${a.tagName}|${(a.textContent ?? '').trim().slice(0, 30)}|${a.className?.toString?.().slice(0, 30) ?? ''}`,
+        visivel: temAnel || cs.boxShadow !== 'none',
+      }
+    })
+    if (!f) continue
+    if (vistos.has(f.marca)) break // deu a volta — todo focável já foi visto
+    vistos.add(f.marca)
+    focos.push(f)
+  }
+  return focos
+}
+
+// ---------------------------------------------------------------------------
+// O laço das cenas
+// ---------------------------------------------------------------------------
+
+const porCena = []
+for (const cena of CENAS) {
+  const pagina = await navegador.newPage({ viewport: cena.viewport, deviceScaleFactor: 2 })
+  await pagina.goto(URL + cena.hash, { waitUntil: 'networkidle', timeout: 60_000 })
+  await pagina.waitForTimeout(2500)
+  await cena.preparar(pagina)
+
+  const m = await medirCena(pagina)
+  const focos = await medirFoco(pagina)
+  await pagina.close()
+
+  porCena.push({ cena: cena.nome, ...m, focaveis: focos.length, semAnel: focos.filter((f) => !f.visivel).length })
+  console.log(
+    `  ${cena.nome.padEnd(38)} ${String(m.medidos).padStart(5)} textos · ` +
+      `${String(focos.length).padStart(3)} focáveis · ${m.totalRuins} abaixo do contraste`,
   )
 }
-const tabulados = focos.filter(Boolean)
-const semAnel = tabulados.filter((f) => !f.visivel).length
+console.log()
 
-await pagina.screenshot({ path: 'capturas/acessibilidade.png' })
+/*
+  🔴 A CENA NÃO SE DILUI NO TOTAL. Somar tudo e imprimir um número faria uma falha de 4 telas
+  parecer pequena ao lado de 5 mil textos medidos. Cada achado carrega a cena em que apareceu, que
+  é a única informação que permite ir olhar.
+*/
+const medida = {
+  medidos: porCena.reduce((s, c) => s + c.medidos, 0),
+  totalRuins: porCena.reduce((s, c) => s + c.totalRuins, 0),
+  totalPequenos: porCena.reduce((s, c) => s + c.totalPequenos, 0),
+  ruins: porCena.flatMap((c) => c.ruins.map((r) => ({ ...r, cena: c.cena }))).sort((a, b) => a.razao - b.razao),
+  pequenos: porCena.flatMap((c) => c.pequenos.map((p) => ({ ...p, cena: c.cena }))),
+  lang: porCena[0].lang,
+  titulo: porCena[0].titulo,
+}
+const tabulados = { length: porCena.reduce((s, c) => s + c.focaveis, 0) }
+const semAnel = porCena.reduce((s, c) => s + c.semAnel, 0)
+
 await navegador.close()
 
 console.log(`  elementos de texto medidos ... ${medida.medidos}`)
@@ -159,13 +262,37 @@ if (medida.medidos < 20) {
   process.exit(1)
 }
 
+/*
+  🔒 E CADA CENA PRECISA TER MEDIDO ALGUMA COISA — a defesa contra o defeito que este portão teve.
+
+  Se o seletor do painel de filtros mudar de nome, `preparar` falha em silêncio e a cena passa a
+  medir a tela fechada de novo: o portão volta a dizer "tudo certo" sobre menos do que promete, e
+  ninguém percebe, porque o total continua grande. O número de FOCÁVEIS é o sinal: com o painel
+  aberto ele mais que triplica.
+*/
+for (const c of porCena) {
+  if (c.medidos < 20 || c.focaveis < 3) {
+    console.error(`🔴 a cena "${c.cena}" mediu ${c.medidos} textos e ${c.focaveis} focáveis — ela não abriu.`)
+    process.exit(1)
+  }
+}
+const comPainel = porCena.find((c) => c.cena.includes('filtros'))
+const semPainel = porCena.find((c) => c.cena.includes('nasce'))
+if (comPainel && semPainel && comPainel.focaveis <= semPainel.focaveis) {
+  console.error(
+    `🔴 o painel de filtros não abriu: ${comPainel.focaveis} focáveis com ele, ${semPainel.focaveis} sem. ` +
+      'A cena existe para medir a barra lateral, e ela continua escondida.',
+  )
+  process.exit(1)
+}
+
 const problemas = []
 
 if (medida.totalRuins) {
   problemas.push(`${medida.totalRuins} texto(s) abaixo do contraste mínimo`)
   console.log(`🔴 CONTRASTE ABAIXO DO PISO (WCAG AA) — ${medida.ruins.length} combinação(ões) distinta(s):\n`)
   for (const r of medida.ruins) {
-    console.log(`  ${String(r.razao).padStart(5)}:1  piso ${r.piso}:1 · ${r.tamanho}px · ${r.ocorrencias}× na tela`)
+    console.log(`  ${String(r.razao).padStart(5)}:1  piso ${r.piso}:1 · ${r.tamanho}px · ${r.ocorrencias}× · [${r.cena}]`)
     console.log(`         ${r.frente} sobre ${r.fundo}   ex.: "${r.texto}"`)
   }
   console.log()

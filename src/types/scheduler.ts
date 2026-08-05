@@ -41,6 +41,19 @@ export interface Shift {
   date: Date
   type: ShiftType
   assignedBrothers: string[] // IDs
+  /**
+   * 🔴 A ETIQUETA DO TURNO — atravessou a ponte em 05/08/2026, quinta auditoria externa.
+   *
+   * `Turno.rotulo` existe no modelo desde o começo, é gravado por `construirGrade`, vive no
+   * `blocos.json` e está documentado no `MODELO_DE_DADOS.md` como *"Etiqueta na tela, ex.: ENSAIO"*.
+   * Só que `paraShifts` não o copiava, e `Shift` não tinha o campo: ele era lido em **um** lugar, a
+   * aba Ajustar do administrador. O site público e a imagem do WhatsApp imprimiam **"ENSAIO" cravado
+   * no código** em todo turno de tarde.
+   *
+   * Numa portaria de prédio com turno de tarde, o documento que vai para os funcionários sairia com
+   * "ENSAIO" escrito — configuração morta é pior que configuração ausente, porque parece que resolve.
+   */
+  rotulo?: string
 }
 
 /**

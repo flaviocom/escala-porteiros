@@ -38,6 +38,62 @@ const TRES = [pessoa('ana'), pessoa('bia'), pessoa('caio')]
 const IDS = ['ana', 'bia', 'caio']
 const furosDe = (r: ReturnType<typeof conferirPorFora>) => r.comFuro.flatMap((a) => a.furos).join(' | ')
 
+/**
+ * 🔴 A CEGUEIRA QUE ELA REPRODUZIA — quinta auditoria externa, 05/08/2026.
+ *
+ * Esta régua existe para DISCORDAR da outra, e nenhuma das promessas perguntava se havia escala ali.
+ * Nos três casos abaixo ela dizia **0 furos**: bloco sem turno nenhum, bloco com turnos e zero
+ * vagas, e bloco que declara um mês e traz outro. Em dois deles o catálogo reprovava — ou seja, a
+ * "segunda opinião" concordava por vacuidade com o que não tinha olhado.
+ */
+describe('a segunda régua pergunta ANTES: está tudo aqui?', () => {
+  it('🔴 bloco com ZERO turnos tem furo — dizia "0 de 0 turnos com o número certo"', () => {
+    const r = conferirPorFora(bloco([], IDS, { inicio: '2026-09-01', fim: '2026-09-30' }), TRES, CONFIG)
+    expect(furosDe(r)).toContain('não tem um único turno')
+  })
+
+  it('🔴 turnos com capacidade 0 têm furo — o caso que NENHUMA das duas réguas via', () => {
+    const r = conferirPorFora(
+      bloco([turno('2026-09-06', 'NOITE', [], { capacidade: 0 })], IDS),
+      TRES,
+      CONFIG,
+    )
+    expect(furosDe(r)).toContain('sai na escala como um dia sem ninguém')
+  })
+
+  it('🔴 turnos com vaga e ninguém escalado têm furo', () => {
+    const r = conferirPorFora(
+      bloco([turno('2026-09-06', 'NOITE', []), turno('2026-09-13', 'NOITE', [])], IDS),
+      TRES,
+      CONFIG,
+    )
+    expect(furosDe(r)).toContain('NINGUÉM escalado')
+  })
+
+  it('🔴 turno fora do período que o bloco declara tem furo', () => {
+    const r = conferirPorFora(
+      bloco([turno('2026-09-06', 'NOITE', ['ana', 'bia', 'caio'])], IDS, {
+        inicio: '2026-11-01', fim: '2026-11-30',
+      }),
+      TRES,
+      CONFIG,
+    )
+    expect(furosDe(r)).toContain('fora do período declarado')
+  })
+
+  it('a outra ponta: bloco cheio e coerente NÃO acusa vacuidade', () => {
+    const r = conferirPorFora(
+      bloco([turno('2026-09-06', 'NOITE', ['ana', 'bia', 'caio'])], IDS, {
+        inicio: '2026-09-01', fim: '2026-09-30',
+      }),
+      TRES,
+      CONFIG,
+    )
+    const vacuidade = r.comFuro.find((a) => a.promessa.startsWith('O bloco não está vazio'))
+    expect(vacuidade).toBeUndefined()
+  })
+})
+
 describe('a segunda régua acha o furo sozinha', () => {
   it('turno com gente faltando', () => {
     const r = conferirPorFora(bloco([turno('2026-09-06', 'NOITE', ['ana', 'bia'])], IDS), TRES, CONFIG)

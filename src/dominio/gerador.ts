@@ -342,7 +342,16 @@ export function gerar(op: OpcoesGeracao): Resultado {
  */
 export interface VersaoGerada {
   resultado: Resultado
-  semente: number
+  /**
+   * 🔴 `null` NA VERSÃO 0, e isso importa — quinta auditoria externa, 05/08/2026.
+   *
+   * Ela era registrada com `semente: 0`, mas foi gerada **sem semente e com `candidatos: 1`**. Quem
+   * lesse a lista e tentasse refazê-la com `semente: 0` e `candidatos: 3` obteria outra escala — e
+   * concluiria que o gerador não é determinístico, quando o defeito estava no registro.
+   *
+   * `null` é a única resposta honesta: esta versão não tem semente porque não usou nenhuma.
+   */
+  semente: number | null
   jain: number
 }
 
@@ -398,7 +407,8 @@ export function gerarVariasVersoes(
       )
       jain = indiceDeJain(cargas)
     }
-    versoes.push({ resultado, semente: i === 0 ? 0 : semente, jain })
+    // `null` na versão 0: ela é o guloso puro, e não usou semente nenhuma. Ver `VersaoGerada`.
+    versoes.push({ resultado, semente: i === 0 ? null : semente, jain })
   }
 
   const validas = versoes.filter((v) => v.resultado.ok)

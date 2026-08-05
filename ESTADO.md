@@ -156,7 +156,7 @@ git clone https://github.com/flaviocom/escala-porteiros.git /c/.../build-escala-
 
 ## O que acabou de entrar
 
-**O núcleo, medido e testado.** 16 regras num catálogo único (11 duras + 5 de qualidade), cada uma
+**O núcleo, medido e testado.** 17 regras num catálogo único (12 duras + 5 de qualidade), cada uma
 com teste que **reprova um infrator injetado e aprova o caso limpo** — 55 testes verdes.
 
 **O gerador descobre o piso de distanciamento** em vez de recebê-lo cravado. Na escala real ele

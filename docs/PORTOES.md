@@ -156,11 +156,13 @@ que a cobrasse.** Quando alguém foi olhar, havia 4 usos e o `BACKLOG.md` declar
 seria mentir sobre o que se sabia naquele dia (e o número de pulados é impresso).
 **Critério:** o arquivo existe, e a linha existe.
 **Mais um nível, quando disponível:** se o documento cita um **símbolo** entre crases junto da linha
-— ``src/admin/Admin.tsx:1612 (`publicacaoEmVoo`)`` —
+— ``src/admin/Admin.tsx:49 (`gravacaoEmVoo`)`` —
 
-⚠️ **Este exemplo já apodreceu uma vez, em duas horas.** Ele dizia `:1611`, e uma edição no arquivo
-empurrou a linha para 1612 — o portão pegou no `gate` seguinte. É a demonstração mais barata
-possível de por que ele existe: nem o texto que ENSINA a citar consegue guardar uma coordenada., o portão exige que o símbolo esteja **perto** dela. É o
+⚠️ **Este exemplo já apodreceu TRÊS vezes em 24 horas.** Dizia `:1611`; uma edição empurrou para
+`:1612`; e em 05/08 a trava mudou de nome **e** de lugar — `publicacaoEmVoo` virou `gravacaoEmVoo` na
+linha 49, ao passar a cobrir também a reversão. Nas três o portão pegou no `gate` seguinte. É a
+demonstração mais barata possível de por que ele existe: nem o texto que ENSINA a citar consegue
+guardar uma coordenada — e é o SÍMBOLO, não o número, que faz a citação sobreviver., o portão exige que o símbolo esteja **perto** dela. É o
 que transforma a citação de coordenada em afirmação verificável.
 **Limite declarado:** ele não confere se a linha *diz* o que o documento afirma — isso exigiria
 entender a frase. Pega arquivo renomeado, apagado e linha além do fim, que é a maior parte.

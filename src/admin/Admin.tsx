@@ -16,8 +16,8 @@ import {
 import { clsx } from 'clsx'
 import { abrirCofre, apagarCofre, cofreExiste, exportarCofre, gravarCofre, importarCofre, type Segredos } from './cofre'
 import { baixarPacoteManual, COMO_CRIAR_O_TOKEN, conferirToken, DESTINOS, historicoPublicacoes, publicarDados, reverterPara, type Publicacao } from './github'
-import type { DadosPublicados } from '../dados/carregar'
-import type { Bloco, Configuracao, Pessoa, TipoTurno } from '../dominio/tipos'
+import { completarConfig, retratoPublicado, type ConfigLida, type DadosPublicados } from '../dados/carregar'
+import type { ArquivoBlocos, ArquivoPessoas, Bloco, Configuracao, Pessoa, TipoTurno } from '../dominio/tipos'
 import { ROTULO_TURNO } from '../dominio/tipos'
 import { construirGrade } from '../dominio/malha'
 import { gerarVariasVersoes } from '../dominio/gerador'
@@ -31,6 +31,35 @@ import { arbitrar, auditar, medir, pedirProposta, type Placar, type ProgressoMot
 import { Sparkles } from 'lucide-react'
 
 type Aba = 'elenco' | 'gerar' | 'ajustar' | 'conferir' | 'publicar'
+
+/**
+ * 🔴 P4.1 — UMA GRAVAÇÃO POR VEZ, e a trava mora FORA do componente.
+ *
+ * Achada pela auditoria independente de 04/08/2026: `AbaPublicar` é montada por condição, então
+ * **trocar de aba a desmonta** — mas a promessa que já está na rede continua correndo. Ao voltar,
+ * uma instância nova nascia com `ocupado = false` e deixava clicar Publicar de novo. Medido ao vivo:
+ * duas chamadas independentes à API, e a tela mostrando só o resultado da segunda.
+ *
+ * ⚠️ A trava é MODULAR de propósito: `useState` e `useRef` morrem com o componente, e é justamente
+ * a morte do componente que abre a porta. Um módulo sobrevive à troca de aba — e à do `Admin`.
+ *
+ * 🔴 Em 05/08/2026 ela passou a cobrir também a REVERSÃO, que grava os mesmos dois arquivos e
+ * escapava por não ser "publicação". Guarda o QUE está gravando, para a mensagem poder dizer.
+ */
+let gravacaoEmVoo: string | null = null
+
+/**
+ * 🔴 O MOTOR TAMBÉM TEM DE SOBREVIVER À TROCA DE ABA — quinta auditoria externa, 05/08/2026.
+ *
+ * `AbaGerar` guardava o progresso do motor em `useState` local. Trocar de aba apagava o indicador,
+ * **a chamada continuava correndo** (não há `AbortController`), e o operador clicava de novo: duas
+ * execuções do motor em paralelo, pagas. É o mesmo P4.1 que já tinha sido corrigido na publicação e
+ * não tinha sido corrigido aqui.
+ *
+ * Guarda o PROGRESSO, e não um `boolean`, para que a aba remontada volte mostrando em que fase a
+ * chamada está — em vez de nascer limpa sobre um trabalho que continua correndo.
+ */
+let motorEmVoo: ProgressoMotor | null = null
 
 // ===========================================================================
 // PORTA — login
@@ -376,7 +405,7 @@ const Entrar: React.FC<{ aoAbrir: (s: Segredos) => void; identidade: Configuraca
       </p>
       <button title="Apaga o token deste navegador para configurar de novo. Não revoga o token no GitHub"
         onClick={() => { if (confirm('Isto apaga o token guardado neste navegador. Continuar?')) { apagarCofre(); location.reload() } }}
-        className="w-full mt-3 text-xs text-gray-400 hover:text-gray-600 underline"
+        className="w-full mt-3 text-xs text-gray-600 hover:text-gray-800 underline"
       >
         Esqueci a senha — configurar de novo
       </button>
@@ -388,7 +417,22 @@ const Entrar: React.FC<{ aoAbrir: (s: Segredos) => void; identidade: Configuraca
 // ADMIN
 // ===========================================================================
 
-export const Admin: React.FC<{ dados: DadosPublicados }> = ({ dados }) => {
+export const Admin: React.FC<{ dados: DadosPublicados }> = ({ dados: dadosIniciais }) => {
+  /**
+   * 🔴 O RETRATO DO PUBLICADO É ESTADO, NÃO PROP — quinta auditoria externa, 05/08/2026.
+   *
+   * `carregarDados()` roda uma vez, no `main.tsx`. Enquanto este objeto era uma prop congelada,
+   * **publicar duas vezes na mesma sessão apagava a primeira publicação** — a segunda montava os
+   * blocos contra o retrato de antes da primeira. Medido: out→dez sumia inteiro (55 turnos), e o
+   * guarda do passado aprovava com `perdidos: 0`, porque recebia o mesmo retrato envelhecido.
+   *
+   * A `fronteira` saía do mesmo lugar: para gerar janeiro, a última escala de alguém era lida como
+   * 27/09 em vez de 27/12 — e o gerador o escalava em 01/01, um dia depois de servir em 31/12.
+   *
+   * Agora, quem grava atualiza o retrato com o que gravou (`retratoPublicado`). Ver ali por que
+   * reler da rede seria pior.
+   */
+  const [dados, setDados] = useState<DadosPublicados>(dadosIniciais)
   const [segredos, setSegredos] = useState<Segredos | null>(null)
   const [aba, setAba] = useState<Aba>('elenco')
   const [pessoas, setPessoas] = useState<Pessoa[]>(() => dados.pessoas.map((p) => ({ ...p, restricoes: { ...p.restricoes } })))
@@ -456,6 +500,30 @@ export const Admin: React.FC<{ dados: DadosPublicados }> = ({ dados }) => {
     const fimDoAno = `${anoDoInicio}-12-31`
     return diferencaEmDias(inicioSugerido, fimDoAno) >= 30 ? fimDoAno : `${anoDoInicio + 1}-12-31`
   })
+
+  /**
+   * 🔴 UMA GRAVAÇÃO POR VEZ — e ela cobre PUBLICAR **e** REVERTER, desde 05/08/2026.
+   *
+   * A trava de P4.1 olhava só o botão Publicar. `Voltar a esta versão`, logo abaixo na mesma tela,
+   * grava **os mesmos arquivos** e não a consultava. Como são arquivos diferentes, não há colisão de
+   * `sha` no GitHub e o 409 não salva: o desfecho é elenco antigo com escala nova, e o sintoma que
+   * chega ao irmão é o **id cru no lugar do nome**.
+   *
+   * `gravacaoEmVoo` (módulo) é a AUTORIDADE: ela sobrevive à desmontagem da aba e até à do `Admin`
+   * inteiro, que é a porta por onde a trava anterior escapava. O estado ao lado existe só para o
+   * botão poder ficar cinza — os dois são escritos sempre juntos, pelas duas funções abaixo.
+   */
+  const [gravando, setGravando] = useState<string | null>(gravacaoEmVoo)
+  const tomarGravacao = (oQue: string): boolean => {
+    if (gravacaoEmVoo) return false
+    gravacaoEmVoo = oQue
+    setGravando(oQue)
+    return true
+  }
+  const soltarGravacao = () => {
+    gravacaoEmVoo = null
+    setGravando(null)
+  }
 
   if (!segredos) {
     return (
@@ -561,7 +629,17 @@ export const Admin: React.FC<{ dados: DadosPublicados }> = ({ dados }) => {
           <AbaConferirPorFora bloco={blocoNovo} pessoas={pessoas} config={config} fronteira={fronteira} />
         )}
         {aba === 'publicar' && (
-          <AbaPublicar dados={dados} pessoas={pessoas} config={config} blocoNovo={blocoNovo} segredos={segredos} />
+          <AbaPublicar
+            dados={dados}
+            pessoas={pessoas}
+            config={config}
+            blocoNovo={blocoNovo}
+            segredos={segredos}
+            aoGravar={setDados}
+            gravando={gravando}
+            tomarGravacao={tomarGravacao}
+            soltarGravacao={soltarGravacao}
+          />
         )}
       </main>
     </div>
@@ -823,8 +901,16 @@ const AusenciasAntesDeGerar: React.FC<{
 
   const ativos = pessoas.filter((p) => p.ativo)
 
-  /** Só as ausências que TOCAM o período — as de outro ano não informam nada aqui. */
-  const noPeriodo = pessoas.flatMap((p) =>
+  /**
+   * Só as ausências que TOCAM o período — as de outro ano não informam nada aqui.
+   *
+   * 🔴 E só de quem está ATIVO — quinta auditoria externa, 05/08/2026. Ela percorria `pessoas` cru,
+   * então listava a ausência de gente que já saiu da escala. É a mesma reclamação do Flavio que
+   * originou `pessoasDoBloco` em `regras.ts`: *"eu deixei o Thiago de fora; você, ainda assim,
+   * contou ele. Quem está fora da escala não deve ser contado para nada."* A porta era outra, e o
+   * conserto de lá não tinha chegado até aqui.
+   */
+  const noPeriodo = ativos.flatMap((p) =>
     (p.restricoes.ausencias ?? [])
       .map((a, i) => ({ pessoa: p, ausencia: a, indice: i }))
       .filter(({ ausencia }) => !(diferencaEmDias(ausencia.fim, de) > 0 || diferencaEmDias(ate, ausencia.inicio) > 0)),
@@ -990,7 +1076,7 @@ const AbaConferirPorFora: React.FC<{
                 {a.furos.slice(0, 5).map((f, i) => (
                   <p key={i} className="mt-1 text-xs text-red-700">· {f}</p>
                 ))}
-                {a.furos.length > 5 && <p className="mt-1 text-xs text-gray-400">e mais {a.furos.length - 5}</p>}
+                {a.furos.length > 5 && <p className="mt-1 text-xs text-gray-600">e mais {a.furos.length - 5}</p>}
               </div>
             </div>
           ))}
@@ -1064,7 +1150,15 @@ const AbaGerar: React.FC<{
   const [falha, setFalha] = useState<string>('')
   /** Muda a cada "gerar outra combinação" — é o que faz a próxima rodada explorar outro caminho. */
   const [sementeBase, setSementeBase] = useState(1)
-  const [motorOcupado, setMotorOcupado] = useState<ProgressoMotor | null>(null)
+  /** A última rodada devolveu a MESMA escala? Acontece, e a tela tem de dizer em vez de fingir. */
+  const [repetiu, setRepetiu] = useState(false)
+  /** Nasce do que está em voo: a aba remontada volta mostrando a fase, não uma tela limpa. */
+  const [motorOcupado, setMotorOcupadoLocal] = useState<ProgressoMotor | null>(motorEmVoo)
+  /** Os dois são escritos SEMPRE juntos — o módulo é a autoridade, o estado só pinta. */
+  const setMotorOcupado = (p: ProgressoMotor | null) => {
+    motorEmVoo = p
+    setMotorOcupadoLocal(p)
+  }
   const [motorErro, setMotorErro] = useState<string>('')
   const [propostaMotor, setPropostaMotor] = useState<{ bloco: Bloco; explicacao: string } | null>(null)
   const [auditoria, setAuditoria] = useState<string>('')
@@ -1081,7 +1175,25 @@ const AbaGerar: React.FC<{
     return f
   }, [dados, de])
 
-  const executar = () => {
+  /**
+   * 🔴 A SEMENTE VEM POR ARGUMENTO — quinta auditoria externa, 05/08/2026.
+   *
+   * "Não gostei — gerar outra combinação" fazia `setSementeBase(n => n + 100)` e, na linha seguinte,
+   * `setTimeout(executar, 30)`. O `setTimeout` guarda o **objeto função deste render**, e o render
+   * novo cria outro `executar`: o agendado continuava sendo o velho, com a semente velha. Medido ao
+   * vivo, o botão ficava permanentemente **um clique atrasado** — o primeiro clique devolvia a
+   * escala idêntica (7036 caracteres, byte a byte), e só do segundo em diante mudava.
+   *
+   * Passar a semente como argumento tira o valor do closure e acaba com a classe inteira.
+   */
+  const executar = (semente: number = sementeBase) => {
+    if (motorEmVoo) {
+      setFalha(
+        `O motor está trabalhando (${motorEmVoo.fase}). Espere ele terminar antes de gerar outra escala — ` +
+          'senão o placar compararia a escala nova com uma proposta feita para a anterior.',
+      )
+      return
+    }
     /**
      * 🔴 A TRAVA DE VERDADE — o `min` do campo de data é DICA, não garantia.
      *
@@ -1111,12 +1223,20 @@ const AbaGerar: React.FC<{
       era deixar a pessoa chegar até lá para descobrir. **Conferir antes custa uma linha; descobrir
       depois custa a confiança de quem achou que tinha quebrado alguma coisa.**
     */
-    const grade = construirGrade({
-      inicio: de, fim: ate,
-      malha: config.malhaPadrao,
-      capacidadePadrao: config.capacidadePadrao,
-      santaCeia: config.santaCeia,
-    })
+    // `construirGrade` recusa data que não existe no calendário (ver `malha.ts`). A tela usa
+    // `<input type="date">`, que já barra 31/02 — mas o valor também chega de estado e de URL.
+    let grade
+    try {
+      grade = construirGrade({
+        inicio: de, fim: ate,
+        malha: config.malhaPadrao,
+        capacidadePadrao: config.capacidadePadrao,
+        santaCeia: config.santaCeia,
+      })
+    } catch (e) {
+      setFalha(e instanceof Error ? e.message : String(e))
+      return
+    }
     if (grade.length === 0) {
       const dias = [...new Set(config.malhaPadrao.regras.map((r) => NOMES_DIA[r.diaSemana]))].join(', ')
       setFalha(
@@ -1145,7 +1265,7 @@ const AbaGerar: React.FC<{
        */
       const escolha = gerarVariasVersoes(
         { inicio: de, fim: ate, grade, pessoas, elenco, malha: config.malhaPadrao, ultimaEscalaAnterior: fronteira },
-        8, 3, sementeBase,
+        8, 3, semente,
       )
       const r = escolha.melhor
       const validas = escolha.versoes.filter((v) => v.resultado.ok).length
@@ -1158,6 +1278,16 @@ const AbaGerar: React.FC<{
         )
         return
       }
+      /*
+        🔴 ÀS VEZES NÃO EXISTE OUTRA COMBINAÇÃO MELHOR, E ISSO PRECISA SER DITO.
+
+        Medido pela quinta auditoria externa: numa varredura de 8 períodos × 4 capacidades × 3
+        sementes, a versão gulosa (a que não usa semente) venceu a cascata **67 de 96 vezes**. Nesses
+        casos, dez sementes-base diferentes produzem uma escala só — e a tela dizia "pedir outra
+        explora combinações diferentes", deixando o Flavio clicando num botão que já tinha feito tudo
+        o que podia.
+      */
+      setRepetiu(blocoNovo != null && JSON.stringify(r.bloco.turnos) === JSON.stringify(blocoNovo.turnos))
       aoGerar(r.bloco, r.relato, validas)
     }, 50)
   }
@@ -1189,7 +1319,8 @@ const AbaGerar: React.FC<{
             <input type="date" min={de || hojeSaoPaulo()} value={ate} onChange={(e) => aoMudarAte(e.target.value)} className="block mt-1 px-3 py-2 border border-gray-300 rounded-xl text-sm" />
           </label>
           <button title="Monta a escala buscando o maior espaçamento possível entre as escalas de cada um"
-            onClick={executar}
+            /* `onClick={executar}` passaria o MouseEvent como semente — o TypeScript pegou. */
+            onClick={() => executar()}
             disabled={ocupado}
             className="px-5 py-2.5 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 disabled:bg-gray-400 flex items-center gap-2"
           >
@@ -1288,12 +1419,25 @@ const AbaGerar: React.FC<{
         {blocoNovo && !ocupado && (
           <div className="mt-4 rounded-xl border border-gray-200 bg-gray-50 p-3">
             <button
-              onClick={() => { setSementeBase((n) => n + 100); setTimeout(executar, 30) }}
+              onClick={() => {
+                // A semente vai por ARGUMENTO: ler `sementeBase` aqui traria o valor do render velho.
+                const nova = sementeBase + 100
+                setSementeBase(nova)
+                executar(nova)
+              }}
               title="Descarta esta escala e monta outra, explorando combinações diferentes"
               className="flex min-h-[2.75rem] items-center gap-2 rounded-xl border border-gray-300 bg-white px-4 text-sm font-semibold text-gray-700 hover:bg-gray-100"
             >
               <RefreshCw className="h-4 w-4" /> Não gostei — gerar outra combinação
             </button>
+            {repetiu && (
+              <p className="mt-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs leading-relaxed text-amber-900">
+                <strong>Saiu a mesma escala.</strong> As combinações novas foram montadas e comparadas,
+                e nenhuma superou esta — ela continua sendo a melhor que o sistema encontra para este
+                período e este elenco. Para obter uma escala realmente diferente, mude alguma coisa da
+                entrada: o período, quem está ativo, as restrições ou as pessoas por turno.
+              </p>
+            )}
             {/*
               🔴 A FRASE SÓ VALE PARA A ESCALA DO ALGORITMO — achado da auditoria externa, 05/08/2026.
 
@@ -1336,6 +1480,7 @@ const AbaGerar: React.FC<{
           {segredos.chaveMotor && !arbitragem && (
             <button title="Sugere o que afrouxar, em que ordem, e o que cada caminho custa"
               onClick={async () => {
+                if (motorEmVoo) return
                 setMotorOcupado({ fase: 'Arbitragem', detalhe: 'pensando em como destravar…' })
                 try {
                   setArbitragem(await arbitrar(segredos.chaveMotor!, falha, pessoas, undefined, config))
@@ -1420,8 +1565,10 @@ const AbaGerar: React.FC<{
               <div className="flex flex-wrap gap-2">
                 <button title="O motor monta a própria versão. Ela só chega ao placar se passar nas mesmas regras"
                   onClick={async () => {
+                    if (motorEmVoo) return
                     setMotorErro('')
                     setPropostaMotor(null)
+                    setMotorOcupado({ fase: 'Proposta', detalhe: 'preparando o pedido…' })
                     try {
                       const r = await pedirProposta(segredos.chaveMotor!, blocoNovo, pessoas, fronteira, config, setMotorOcupado)
                       if (r.ok) setPropostaMotor({ bloco: r.proposta.bloco, explicacao: r.proposta.explicacao })
@@ -1438,6 +1585,7 @@ const AbaGerar: React.FC<{
                 </button>
                 <button title="Segunda opinião sobre o que a regra não pega: mesmo grupo repetido, alguém sempre no mesmo dia"
                   onClick={async () => {
+                    if (motorEmVoo) return
                     setMotorOcupado({ fase: 'Auditoria', detalhe: 'procurando o que a regra não pega…' })
                     setMotorErro('')
                     try {
@@ -1464,7 +1612,16 @@ const AbaGerar: React.FC<{
               </div>
             )}
 
-            {propostaMotor && (
+            {/*
+              🔴 A PROPOSTA É DE UM PERÍODO — quinta auditoria externa, 05/08/2026.
+
+              O motor preserva `inicio`/`fim` do bloco que recebeu. Gerar outro período com a
+              proposta na tela fazia o placar comparar a escala nova com uma proposta construída
+              sobre a ANTIGA — e "Usar a proposta do motor" trocava a escala por uma de outro
+              período, sem que nada perguntasse nada. O bloco carrega as próprias datas: basta
+              conferi-las, sem estado novo para manter em dia.
+            */}
+            {propostaMotor && propostaMotor.bloco.inicio === blocoNovo.inicio && propostaMotor.bloco.fim === blocoNovo.fim && (
               <>
                 <div className="mt-5 overflow-x-auto">
                   <table className="w-full text-sm">
@@ -1501,7 +1658,7 @@ const AbaGerar: React.FC<{
                 >
                   Usar a proposta do motor
                 </button>
-                <p className="text-xs text-gray-400 mt-2">
+                <p className="text-xs text-gray-600 mt-2">
                   A escala do motor só chegou até aqui porque passou nas mesmas regras obrigatórias da
                   do algoritmo. Escolher é seu.
                 </p>
@@ -1561,7 +1718,7 @@ const AbaGerar: React.FC<{
                       {r.violacoes.slice(0, 5).map((v, i) => (
                         <p key={i} className="text-xs text-gray-600 mt-1">· {v.mensagem}</p>
                       ))}
-                      {r.violacoes.length > 5 && <p className="text-xs text-gray-400 mt-1">e mais {r.violacoes.length - 5}</p>}
+                      {r.violacoes.length > 5 && <p className="text-xs text-gray-600 mt-1">e mais {r.violacoes.length - 5}</p>}
                     </div>
                   </div>
                 )
@@ -1595,22 +1752,6 @@ const AbaGerar: React.FC<{
 // PUBLICAR
 // ===========================================================================
 
-/**
- * 🔴 P4.1 — UMA PUBLICAÇÃO POR VEZ, e a trava mora FORA do componente.
- *
- * Achado pela auditoria independente de 04/08/2026, corrigido em 05/08 antes da primeira
- * publicação real: `AbaPublicar` é montada por condição, então **trocar de aba a desmonta** — mas
- * a promessa que já está na rede continua correndo. Ao voltar, uma instância nova nascia com
- * `ocupado = false` e deixava clicar Publicar de novo. Medido ao vivo: duas chamadas independentes
- * à API, e a tela mostrando só o resultado da segunda — a primeira sumia sem confirmação nem erro.
- *
- * Num commit de escala, isso é publicação duplicada ou fora de ordem sem ninguém perceber.
- *
- * ⚠️ A trava é MODULAR de propósito: `useState` e `useRef` morrem com o componente, e é justamente
- * a morte do componente que abre a porta. Um módulo sobrevive à troca de aba.
- */
-let publicacaoEmVoo = false
-
 const AbaPublicar: React.FC<{
   dados: DadosPublicados
   pessoas: Pessoa[]
@@ -1618,7 +1759,12 @@ const AbaPublicar: React.FC<{
   config: Configuracao
   blocoNovo: Bloco | null
   segredos: Segredos
-}> = ({ dados, pessoas, config, blocoNovo, segredos }) => {
+  /** Atualiza o retrato do publicado com o que ACABOU de ser gravado. Ver `retratoPublicado`. */
+  aoGravar: (d: DadosPublicados) => void
+  gravando: string | null
+  tomarGravacao: (oQue: string) => boolean
+  soltarGravacao: () => void
+}> = ({ dados, pessoas, config, blocoNovo, segredos, aoGravar, gravando, tomarGravacao, soltarGravacao }) => {
   const [ocupado, setOcupado] = useState(false)
   const [resultado, setResultado] = useState<{ ok: boolean; texto: string } | null>(null)
 
@@ -1649,11 +1795,10 @@ const AbaPublicar: React.FC<{
 
   const publicar = async () => {
     if (relatorio && !relatorio.aprovada) return
-    if (publicacaoEmVoo) {
-      setResultado({ ok: false, texto: 'Já há uma publicação em andamento. Espere ela terminar — publicar duas vezes pode gravar fora de ordem.' })
+    if (!tomarGravacao('publicação')) {
+      setResultado({ ok: false, texto: `Já há ${gravacaoEmVoo} em andamento. Espere ela terminar — gravar duas vezes ao mesmo tempo pode deixar o site com metade dos dados de cada uma.` })
       return
     }
-    publicacaoEmVoo = true
     setOcupado(true)
     setResultado(null)
     const passos: string[] = []
@@ -1677,6 +1822,8 @@ const AbaPublicar: React.FC<{
     passos.push(rp.ok ? '✅ elenco publicado' : `🔴 elenco: ${rp.erro}`)
     gravados.push(...rp.commits.map((c) => c.caminho))
     tudoOk = tudoOk && rp.ok
+    let gravouConfig = false
+    let gravouBlocos = false
 
     // 🔴 A CONFIGURAÇÃO TAMBÉM PUBLICA — desde 05/08/2026, quando ela virou editável na tela.
     //
@@ -1691,6 +1838,7 @@ const AbaPublicar: React.FC<{
       passos.push(rc.ok ? '✅ configuração publicada' : `🔴 configuração: ${rc.erro}`)
       gravados.push(...rc.commits.map((c) => c.caminho))
       tudoOk = tudoOk && rc.ok
+      gravouConfig = rc.ok
     }
 
     if (blocoNovo && tudoOk) {
@@ -1703,9 +1851,29 @@ const AbaPublicar: React.FC<{
       passos.push(rb.ok ? '✅ escala publicada' : `🔴 escala: ${rb.erro}`)
       gravados.push(...rb.commits.map((c) => c.caminho))
       tudoOk = tudoOk && rb.ok
+      gravouBlocos = rb.ok
     }
 
-    publicacaoEmVoo = false
+    /*
+      🔴 O RETRATO EM MEMÓRIA ENVELHECIA — quinta auditoria externa, 05/08/2026.
+
+      Sem isto, a segunda publicação da sessão montava os blocos contra o retrato de ANTES da
+      primeira, e apagava o que a primeira acabara de pôr no ar. Ver o comentário do `useState` de
+      `dados`, no `Admin`, para a medição.
+
+      Campo a campo, e só o que foi **de fato gravado**: numa falha parcial, dizer que a escala nova
+      está no ar quando o commit dela não passou seria trocar um retrato velho por um retrato falso —
+      e o falso é pior, porque o guarda do passado passaria a comparar com algo que não existe.
+    */
+    if (rp.ok || gravouConfig || gravouBlocos) {
+      aoGravar(retratoPublicado(
+        rp.ok ? pessoas : dados.pessoas,
+        gravouBlocos ? blocosParaPublicar : dados.blocos,
+        gravouConfig ? config : dados.config,
+      ))
+    }
+
+    soltarGravacao()
     setOcupado(false)
     setResultado({
       ok: tudoOk,
@@ -1788,7 +1956,8 @@ const AbaPublicar: React.FC<{
             ? 'Você entrou sem token — publique pelo botão ao lado, em duas paradas'
             : 'Grava a escala no repositório. O site atualiza em cerca de um minuto, sem sair do ar'}
             onClick={publicar}
-            disabled={ocupado || impedido || semToken}
+            /* `gravando` cobre a REVERSÃO, que grava os mesmos arquivos logo abaixo nesta tela. */
+            disabled={ocupado || impedido || semToken || gravando !== null}
             className="px-5 py-2.5 bg-green-600 text-white rounded-xl text-sm font-bold hover:bg-green-700 disabled:bg-gray-300 flex items-center gap-2"
           >
             {ocupado ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
@@ -1860,7 +2029,13 @@ const AbaPublicar: React.FC<{
         )}
       </Cartao>
 
-      <Historico segredos={segredos} />
+      <Historico
+        segredos={segredos}
+        dados={dados}
+        aoGravar={aoGravar}
+        tomarGravacao={tomarGravacao}
+        soltarGravacao={soltarGravacao}
+      />
     </>
   )
 }
@@ -1876,7 +2051,13 @@ const AbaPublicar: React.FC<{
  * como uma publicação nova. O erro continua registrado no histórico — e saber que ele existiu é o
  * que impede repeti-lo. Um "desfazer" que apaga o rastro rouba justamente a informação mais útil.
  */
-const Historico: React.FC<{ segredos: Segredos }> = ({ segredos }) => {
+const Historico: React.FC<{
+  segredos: Segredos
+  dados: DadosPublicados
+  aoGravar: (d: DadosPublicados) => void
+  tomarGravacao: (oQue: string) => boolean
+  soltarGravacao: () => void
+}> = ({ segredos, dados, aoGravar, tomarGravacao, soltarGravacao }) => {
   const [lista, setLista] = useState<Publicacao[] | null>(null)
   const [carregando, setCarregando] = useState(false)
   const [erro, setErro] = useState('')
@@ -1903,10 +2084,43 @@ const Historico: React.FC<{ segredos: Segredos }> = ({ segredos }) => {
       'O site mostra a versão restaurada em cerca de um minuto.'
     )) return
 
+    /*
+      🔴 A REVERSÃO GRAVA OS MESMOS ARQUIVOS QUE O PUBLICAR — quinta auditoria externa, 05/08/2026.
+
+      Ela não consultava a trava por não se chamar "publicação". Como o GitHub só devolve 409 quando
+      o MESMO arquivo colide, os dois caminhos rodando juntos não dão erro nenhum: o desfecho é
+      elenco antigo com escala nova, e o sintoma que chega ao irmão é o id cru no lugar do nome.
+    */
+    if (!tomarGravacao('reversão')) {
+      setAviso({ ok: false, texto: 'Já há uma gravação em andamento. Espere ela terminar — as duas escrevem nos mesmos arquivos.' })
+      return
+    }
+
     setRevertendo(`${p.sha}|${arquivo}`)
     setAviso(null)
     const r = await reverterPara(segredos.tokenGitHub, arquivo, p.sha, quando)
     setRevertendo('')
+
+    /*
+      🔴 E O RETRATO EM MEMÓRIA TEM DE ACOMPANHAR.
+
+      Sem isto, reverter o elenco e publicar em seguida republicava o elenco velho por cima da
+      reversão — desfazendo, em silêncio, o que a pessoa acabou de fazer. `reverterPara` já lê o
+      conteúdo para poder gravá-lo; só faltava devolvê-lo.
+    */
+    if (r.ok && r.conteudo) {
+      if (arquivo === 'pessoas.json') {
+        const lido = (r.conteudo as ArquivoPessoas)?.pessoas
+        if (Array.isArray(lido)) aoGravar(retratoPublicado(lido, dados.blocos, dados.config))
+      } else if (arquivo === 'blocos.json') {
+        const lido = (r.conteudo as ArquivoBlocos)?.blocos
+        if (Array.isArray(lido)) aoGravar(retratoPublicado(dados.pessoas, lido, dados.config))
+      } else if (arquivo === 'config.json') {
+        aoGravar(retratoPublicado(dados.pessoas, dados.blocos, completarConfig(r.conteudo as ConfigLida)))
+      }
+    }
+
+    soltarGravacao()
     setAviso(
       r.ok
         ? { ok: true, texto: `"${arquivo}" voltou para a versão de ${quando}. O site atualiza em cerca de um minuto.` }
@@ -2096,7 +2310,7 @@ const Campo: React.FC<{
           </button>
         )}
       </div>
-      {dica && <span className="block text-[11px] text-gray-400 mt-1 leading-snug">{dica}</span>}
+      {dica && <span className="block text-[11px] text-gray-600 mt-1 leading-snug">{dica}</span>}
     </label>
   )
 }

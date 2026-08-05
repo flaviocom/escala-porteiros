@@ -88,7 +88,7 @@ Medido: Williams com **7 intervalos de 1 dia**, **18 pares com ≤3 dias**, 6 oc
 
 | # | Item | Onde | Como reproduzir |
 |---|---|---|---|
-| P4.1 | 🟠 **Publicação concorrente entre abas.** `AbaPublicar` é desmontada ao trocar de aba, mas a promessa em voo não é cancelada; ao voltar, uma instância nova nasce com `ocupado=false` e permite clicar de novo. O resultado da primeira some sem confirmação nem erro | `src/admin/Admin.tsx:1612` (`publicacaoEmVoo`), `:1652` | ✅ **FECHADO 05/08** — trava modular (sobrevive à troca de aba, que era a causa). ⚠️ as linhas citadas antes (`226-228`, `758-759`) envelheceram no mesmo dia: **citação de linha em documento vivo apodrece**, e a auditoria externa pegou |
+| P4.1 | 🟠 **Publicação concorrente entre abas.** `AbaPublicar` é desmontada ao trocar de aba, mas a promessa em voo não é cancelada; ao voltar, uma instância nova nasce com `ocupado=false` e permite clicar de novo. O resultado da primeira some sem confirmação nem erro | `src/admin/Admin.tsx:49` (`gravacaoEmVoo`) | ✅ **FECHADO 05/08** — trava modular (sobrevive à troca de aba, que era a causa). **Ampliada no mesmo dia** pela quinta auditoria: ela olhava só o Publicar, e `Voltar a esta versão` grava os MESMOS arquivos — por isso virou `gravacaoEmVoo`, e o motor ganhou a sua (`motorEmVoo`). ⚠️ terceira vez que a citação desta linha apodrece em 24 h: **coordenada em documento vivo não se guarda**, e é o portão de citações que segura |
 | P4.2 | 🟠 **A mensagem amigável do token é código morto no caso mais comum.** `gravarArquivo` sempre faz um GET antes do PUT; `shaAtual` só trata 404 como especial, então um 401 sai como *"Não consegui ler … (HTTP 401)"* e a frase *"confira se ele expirou ou foi revogado"* nunca é alcançada. E 403 de limite de requisições e 500 do GitHub são rotulados como "token recusado" | `src/admin/github.ts:50-59`, `:61-89`, `:117-131` | ✅ **FECHADO 05/08** — fonte única de recusa; 401 no GET agora fala em token. 5 testes |
 | P4.3 | 🟠 **`validar-admin.mjs` dá falso vermelho fora do build de produção.** Procura `assets/index-*.js`; em `npm run dev` o script é `/src/main.tsx`, o `.find()` volta `undefined` e o teste da criptografia quebra **antes** de rodar — parecendo que a cifra falhou | `scripts/validar-admin.mjs:44-45` | `npm run vivo:admin http://localhost:5173` |
 | P4.4 | ⚪ **Corpo não-JSON em HTTP 200 vaza erro em inglês.** Todo `await r.json()` sem guarda: uma página de erro de intermediário vira `Unexpected token in JSON…` na tela, quebrando a convenção pt-BR | `src/admin/github.ts` (5 pontos) | ✅ **FECHADO 05/08** — `lerJSON` devolve frase em pt-BR, não SyntaxError |
@@ -152,7 +152,7 @@ Medido: Williams com **7 intervalos de 1 dia**, **18 pares com ≤3 dias**, 6 oc
 | # | Item | Estado |
 |---|---|---|
 | P3.1 | Modelo de dados: `pessoas.json`, `blocos.json`, `config.json` | ✅ 04/08 |
-| P3.2 | Catálogo de regras executável — **11 duras + 5 de qualidade**, cada uma com teste das duas pontas | ✅ 04/08 — 55 testes |
+| P3.2 | Catálogo de regras executável — **12 duras + 5 de qualidade**, cada uma com teste das duas pontas | ✅ 04/08 — 55 testes |
 | P3.3 | Carga inicial: congelar 01/03 → 04/08, **contando as duas pontas** (ERRO 23) | ✅ 04/08 — 184/549/549 |
 | P3.4 | Algoritmo com piso **descoberto** por busca | ✅ 04/08 — piso 6, tentou 9/8/7 |
 | P3.5 | Site público lendo os JSON | ✅ 04/08 — validado ao vivo |

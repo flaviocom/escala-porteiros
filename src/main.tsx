@@ -1,4 +1,4 @@
-import { StrictMode } from 'react'
+import { Component, StrictMode, type ReactNode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
@@ -40,6 +40,59 @@ function mostrarErro(erro: unknown) {
 }
 
 /**
+ * 🔴 A REDE QUE NÃO EXISTIA — quinta auditoria externa, 05/08/2026.
+ *
+ * Este arquivo declara, em letras grandes, que *"tela branca sem explicação é o pior desfecho
+ * possível"* — e o `.catch(mostrarErro)` abaixo cobre **só** a promessa de carregamento. Qualquer
+ * erro lançado durante o RENDER (uma leitura de `localStorage` bloqueada por política de cookies,
+ * um dado publicado com forma inesperada, um componente que estoura numa borda) derrubava a árvore
+ * inteira, e o React desmonta tudo deixando a página em branco. O projeto não tinha um único
+ * `ErrorBoundary`: `grep` devolvia zero.
+ *
+ * Ele existe para uma coisa só: transformar um estouro em texto que a pessoa entende, com o botão
+ * de recarregar ao lado. Não tenta consertar nada — tentar seria adivinhar.
+ *
+ * ⚠️ `ErrorBoundary` PRECISA ser classe: o React não oferece equivalente em hook, e é o único lugar
+ * deste projeto onde uma classe é a escolha certa em vez da preguiçosa.
+ */
+class Rede extends Component<{ children: ReactNode }, { erro: Error | null }> {
+  state: { erro: Error | null } = { erro: null }
+
+  static getDerivedStateFromError(erro: Error) {
+    return { erro }
+  }
+
+  componentDidCatch(erro: Error) {
+    // O console é onde quem administra procura. A tela fica com a mensagem em português.
+    console.error('🔴 A tela estourou durante o render:', erro)
+  }
+
+  render() {
+    if (!this.state.erro) return this.props.children
+    return (
+      <div style={{ padding: '2rem', fontFamily: 'system-ui, sans-serif', maxWidth: 560, margin: '0 auto' }}>
+        <h1 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '0.75rem' }}>
+          Alguma coisa travou ao montar a tela
+        </h1>
+        <p style={{ color: '#475569', lineHeight: 1.6, marginBottom: '1rem' }}>
+          A escala publicada não foi afetada — o problema é só na exibição, neste aparelho. Recarregue
+          a página; se continuar, avise o Flavio e mostre a linha cinza abaixo.
+        </p>
+        <button title="Recarrega a página"
+          onClick={() => location.reload()}
+          style={{ padding: '0.6rem 1.1rem', borderRadius: 10, border: '1px solid #cbd5e1', background: '#fff', fontWeight: 600, cursor: 'pointer' }}
+        >
+          Tentar de novo
+        </button>
+        <pre style={{ marginTop: '1.5rem', fontSize: '0.75rem', color: '#94a3b8', whiteSpace: 'pre-wrap' }}>
+          {this.state.erro.message}
+        </pre>
+      </div>
+    )
+  }
+}
+
+/**
  * Roteamento por hash, em 6 linhas, em vez de uma biblioteca.
  *
  * São duas telas. `react-router` traria ~10 kB e uma API inteira para resolver uma decisão que cabe
@@ -67,7 +120,9 @@ carregarDados()
     const pintar = () => {
       raiz.render(
         <StrictMode>
-          {ehAdmin() ? <Admin dados={dados} /> : <App shifts={paraShifts(dados.turnos)} dados={dados} />}
+          <Rede>
+            {ehAdmin() ? <Admin dados={dados} /> : <App shifts={paraShifts(dados.turnos)} dados={dados} />}
+          </Rede>
         </StrictMode>,
       )
     }

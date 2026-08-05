@@ -73,22 +73,39 @@ describe('geração com elenco folgado', () => {
     expect(r.relato).toContain('Piso alcançado')
   })
 
+  /*
+    🔴 OS DOIS TESTES DO PISO PASSAVAM POR VACUIDADE — quinta auditoria externa, 05/08/2026.
+
+    Eles eram `if (min != null) expect(...)` e `.filter(x => x.min != null && …)`. Com um mutante que
+    faz `menorIntervalo` devolver `null` sempre — ou seja, com a régua do piso completamente cega —,
+    este arquivo saía **23/23 verde**. Quem matou o mutante na suíte inteira foi `regras.test.ts`,
+    por acaso: o teste que carrega a promessa central deste projeto não a provava.
+
+    A correção é contar quantos foram DE FATO medidos, e exigir que sejam quase todos. Sem esse
+    número, "ninguém ficou abaixo do piso" e "não medi ninguém" são a mesma frase verde.
+  */
   it('🔴 o piso descoberto é REAL — ninguém fica abaixo dele', () => {
     if (!r.ok) throw new Error(r.motivo)
     const ctx = { bloco: r.bloco, pessoas: pessoas(16), ultimaEscalaAnterior: {}, config: CONFIG }
+    let medidos = 0
     for (const p of pessoas(16)) {
       const min = menorIntervalo(ctx, p.id)
-      if (min != null) expect(min).toBeGreaterThanOrEqual(r.pisoAlcancado)
+      if (min == null) continue // quem tem uma escala só não tem intervalo — é o único caso legítimo
+      medidos++
+      expect(min).toBeGreaterThanOrEqual(r.pisoAlcancado)
     }
+    // Num período de quatro meses com 16 pessoas, todo mundo é escalado mais de uma vez.
+    expect(medidos).toBe(16)
   })
 
   it('🔴 conserta o defeito medido no site antigo: ninguém com intervalo de 1 ou 3 dias', () => {
     if (!r.ok) throw new Error(r.motivo)
     const ctx = { bloco: r.bloco, pessoas: pessoas(16), ultimaEscalaAnterior: {}, config: CONFIG }
-    const curtos = pessoas(16)
-      .map((p) => ({ nome: p.nome, min: menorIntervalo(ctx, p.id) }))
-      .filter((x) => x.min != null && x.min <= 3)
-    expect(curtos).toEqual([])
+    const medidas = pessoas(16).map((p) => ({ nome: p.nome, min: menorIntervalo(ctx, p.id) }))
+    // A população medida, ANTES do filtro: sem isto, `min` sempre `null` faria a lista sair vazia
+    // e o teste verde — que é exatamente o mutante que passava.
+    expect(medidas.filter((x) => x.min != null)).toHaveLength(16)
+    expect(medidas.filter((x) => x.min != null && x.min <= 3)).toEqual([])
   })
 
   it('🔒 o que o gerador produz PASSA na validação — gerador e regras não divergem', () => {
@@ -183,6 +200,9 @@ describe('🔴 a FRONTEIRA com o bloco anterior', () => {
     })
     if (!r.ok) throw new Error(r.motivo)
     const primeiros = r.bloco.turnos.filter((t) => t.data === '2026-09-02') // 1ª quarta
+    // A população medida, antes de percorrer: um filtro que não casa com nada faria o `for` não
+    // rodar e o teste passar sem ter olhado a fronteira. É o mesmo defeito dos testes do piso.
+    expect(primeiros.length).toBeGreaterThan(0)
     for (const t of primeiros) {
       expect(t.pessoas).not.toContain('p1')
       expect(t.pessoas).not.toContain('p2')
@@ -251,14 +271,39 @@ describe('🔴 gerar várias versões sem quebrar a conferência', () => {
     expect(JSON.stringify(k1.bloco.turnos)).toBe(JSON.stringify(guloso.bloco.turnos))
   })
 
-  it('todas as versões geradas continuam VÁLIDAS pelas 16 regras', () => {
+  /*
+    🔴 "GERO 8 VERSÕES E ESCOLHO A MELHOR" PODIA SER "GERO 1" — quinta auditoria externa, 05/08/2026.
+
+    Este teste tinha `if (!v.resultado.ok) continue` e media `versoes.length`, que `gerador.ts`
+    preenche mesmo quando a versão falha. Com um mutante em que **as 7 versões sorteadas devolvem
+    `{ok:false}` sempre**, a suíte inteira saía 232/232 verde — e os três testes vizinhos também
+    não pegavam: "a PRIMEIRA versão é o guloso" olha `versoes[0]`, e "a escolhida nunca tem piso
+    pior" compara a melhor com `versoes[0]`, o que é verdadeiro por construção.
+
+    Ou seja: a frase que a tela mostra ao Flavio — *"esta escala é a melhor de 8 versões"* — não
+    tinha um teste que a sustentasse. Agora tem, e ele conta quantas DERAM CERTO.
+  */
+  it('todas as versões geradas continuam VÁLIDAS pelas 16 regras — e elas EXISTEM', () => {
     const { versoes } = gerarVariasVersoes(base, 5, 3, 100)
     expect(versoes.length).toBe(5)
-    for (const v of versoes) {
-      if (!v.resultado.ok) continue
+    const boas = versoes.filter((v) => v.resultado.ok)
+    // A população medida: sem esta linha, cinco fracassos passariam como cinco sucessos.
+    expect(boas).toHaveLength(5)
+    for (const v of boas) {
+      if (!v.resultado.ok) throw new Error('impossível — já filtrado')
       const rel = validar({ bloco: v.resultado.bloco, pessoas: pessoas(16), ultimaEscalaAnterior: {}, config: CONFIG })
       expect(rel.falhasDuras.map((f) => f.id)).toEqual([])
     }
+  })
+
+  it('🔴 as versões SORTEADAS são diferentes entre si — senão "8 versões" são 8 cópias', () => {
+    const { versoes } = gerarVariasVersoes(base, 5, 3, 100)
+    const assinaturas = new Set(
+      versoes.filter((v) => v.resultado.ok).map((v) => JSON.stringify(v.resultado.ok && v.resultado.bloco.turnos)),
+    )
+    // Não se exige 5 distintas: com este elenco, duas sementes podem convergir. Exige-se que a
+    // exploração TENHA ACONTECIDO — uma assinatura só significaria que a semente não faz nada.
+    expect(assinaturas.size).toBeGreaterThan(1)
   })
 
   it('a PRIMEIRA versão é o guloso puro — a rede, caso as sorteadas saiam piores', () => {
@@ -266,7 +311,9 @@ describe('🔴 gerar várias versões sem quebrar a conferência', () => {
     const guloso = gerar(base)
     if (!versoes[0].resultado.ok || !guloso.ok) throw new Error('não gerou')
     expect(JSON.stringify(versoes[0].resultado.bloco.turnos)).toBe(JSON.stringify(guloso.bloco.turnos))
-    expect(versoes[0].semente).toBe(0)
+    // `null`, e não `0`: ela não usou semente nenhuma, e registrar `0` fazia a lista mentir sobre
+    // como reproduzi-la (`semente: 0` + `candidatos: 3` dá outra escala). Ver `VersaoGerada`.
+    expect(versoes[0].semente).toBeNull()
   })
 
   it('🔴 a escolhida nunca tem piso PIOR que a do guloso — a cascata não pode regredir', () => {

@@ -162,7 +162,7 @@ const r = escolha.melhor
 console.log(`VERSÕES INTERNAS COMPARADAS: ${escolha.versoes.length} (${escolha.descartadas} não fecharam)`)
 for (const [i, v] of escolha.versoes.entries()) {
   const marca = v.resultado === escolha.melhor ? '→' : ' '
-  const como = i === 0 ? 'guloso puro' : `semente ${v.semente}`
+  const como = v.semente == null ? 'guloso puro (sem semente)' : `semente ${v.semente}`
   console.log(`  ${marca} versão ${i + 1} (${como}): ` +
     (v.resultado.ok ? `piso ${v.resultado.bloco.pisoAlcancado} · Jain ${v.jain.toFixed(4)}` : 'não fechou'))
 }

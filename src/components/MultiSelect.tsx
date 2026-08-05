@@ -78,7 +78,7 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
           )}
 
           {selected.length === 0 && (
-            <span className="text-gray-400 text-sm truncate">{placeholder}</span>
+            <span className="text-gray-600 text-sm truncate">{placeholder}</span>
           )}
 
           {selected.length > 0 && (
@@ -154,7 +154,7 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
             );
           })}
           {options.length === 0 && (
-            <div className="px-4 py-2 text-sm text-gray-400 text-center">
+            <div className="px-4 py-2 text-sm text-gray-600 text-center">
               Nenhuma opção encontrada
             </div>
           )}

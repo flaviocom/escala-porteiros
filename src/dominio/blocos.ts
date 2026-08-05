@@ -93,5 +93,20 @@ export function conferirPassadoPreservado(
   const sobreviveram = new Set(depois.map(chave))
   const perdidos = [...new Set(antes.filter((t) => !sobreviveram.has(chave(t))).map((t) => t.data))]
 
-  return { antes: antes.length, depois: depois.length, ok: perdidos.length === 0, perdidos }
+  /*
+    🔴 `ok` OLHAVA SÓ `perdidos` — quinta auditoria externa, 05/08/2026.
+
+    A chave é `data|tipo` e mora num `Set`, então dois blocos que se sobrepõem podem trazer o MESMO
+    turno duas vezes: perder uma das cópias faz `antes` cair sem que nenhuma chave suma, e `perdidos`
+    sai vazio com o total menor. O conferidor aprovava uma perda que ele mesmo tinha acabado de
+    contar. É o mesmo defeito da cauda, um nível abaixo: medir uma coisa e julgar por outra.
+
+    As duas condições agora precisam valer. `depois > antes` é permitido: o bloco novo pode acrescentar.
+  */
+  return {
+    antes: antes.length,
+    depois: depois.length,
+    ok: perdidos.length === 0 && depois.length >= antes.length,
+    perdidos,
+  }
 }

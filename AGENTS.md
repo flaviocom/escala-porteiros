@@ -121,7 +121,7 @@ regras da do algoritmo antes de chegar à tela de publicação.
    que as pessoas viram.
 2. **Pessoa sai da escala sendo desativada, nunca apagada.** *Por quê:* os blocos passados a
    referenciam por `id`; apagar o registro deixa o histórico com nomes órfãos.
-3. **Toda regra do catálogo tem validação executável** — hoje são **11 duras + 5 de qualidade**, e o teste `regras.test.ts` fica vermelho se alguém acrescentar regra sem cobertura — assim como `npm run contagem`, que reprova documento vivo declarando um número que o catálogo desmente. *Por quê:* o site antigo promete na
+3. **Toda regra do catálogo tem validação executável** — hoje são **12 duras + 5 de qualidade**, e o teste `regras.test.ts` fica vermelho se alguém acrescentar regra sem cobertura — assim como `npm run contagem`, que reprova documento vivo declarando um número que o catálogo desmente. *Por quê:* o site antigo promete na
    especificação que valida espaçamento e capacidade, e o código não valida nem um nem outro. Regra
    escrita e não executada é o defeito que este projeto existe para não repetir.
 4. **O portão prova as duas pontas** — reprova a escala com infrator injetado **e** aprova a limpa.

@@ -50,13 +50,15 @@ export const ScheduleTable: React.FC<ScheduleTableProps> = ({
     return Object.entries(groups).sort((a, b) => a[0].localeCompare(b[0]));
   }, [finalShifts]);
 
+  // 🔴 O `setTimeout` não era cancelado ao desmontar (quinta auditoria externa, 05/08/2026): trocar
+  //    de aba antes dos 300 ms deixava um temporizador vivo mexendo em algo que já saiu da tela.
   useEffect(() => {
-    if (!hasScrolled.current && scrollRef.current && months.length > 0) {
-      setTimeout(() => {
-        scrollRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }, 300);
-      hasScrolled.current = true;
-    }
+    if (hasScrolled.current || !scrollRef.current || months.length === 0) return;
+    hasScrolled.current = true;
+    const t = setTimeout(() => {
+      scrollRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 300);
+    return () => clearTimeout(t);
   }, [months]);
 
   let firstUpcomingShiftId: string | null = null;
@@ -67,7 +69,18 @@ export const ScheduleTable: React.FC<ScheduleTableProps> = ({
 
   const getBrotherName = (id: string) => BROTHERS.find(b => b.id === id)?.name || id;
 
-  const ShiftBadge = ({ type }: { type: string }) => {
+  /*
+    🔴 A SEGUNDA LINHA VEM DO DADO, NÃO DO CÓDIGO — quinta auditoria externa, 05/08/2026.
+
+    Aqui estava `if (type === 'TARDE') … ENSAIO`, cravado: **todo** turno de tarde imprimia "ENSAIO",
+    viesse o rótulo de onde viesse. `Turno.rotulo` existe no modelo, é gravado por `construirGrade`,
+    vive no `blocos.json` e é documentado como "Etiqueta na tela, ex.: ENSAIO" — e era lido em um
+    único lugar, a aba Ajustar. O site que os irmãos abrem e a imagem do WhatsApp não o consultavam.
+
+    Agora o rótulo do dado manda, e a segunda linha só aparece quando ele existe. Uma escala sem
+    ensaio nenhum não imprime a palavra em lugar nenhum.
+  */
+  const ShiftBadge = ({ type, rotulo }: { type: string; rotulo?: string }) => {
     if (type === 'SANTA_CEIA') {
       return (
         <span className="px-2 py-1 inline-flex items-center gap-1 text-[10px] font-bold rounded-full bg-red-50 text-red-700 border border-red-200 uppercase tracking-tight">
@@ -85,13 +98,13 @@ export const ScheduleTable: React.FC<ScheduleTableProps> = ({
 
     const Icon = config.icon;
 
-    if (type === 'TARDE') {
+    if (rotulo) {
       return (
-        <div className="flex flex-col items-center justify-center bg-orange-50 border border-orange-100 rounded-lg px-3 py-1">
-          <CloudSun className="h-4 w-4 text-orange-700 mb-0.5" />
-          <span className="text-[10px] font-bold text-orange-800 leading-none">TARDE</span>
-          <span className="text-[9px] font-bold text-orange-700 uppercase mt-0.5 leading-none tracking-wider">
-            ENSAIO
+        <div className={clsx('flex flex-col items-center justify-center rounded-lg border px-3 py-1', config.bg, config.border)}>
+          <Icon className={clsx('h-4 w-4 mb-0.5', config.text)} />
+          <span className={clsx('text-[10px] font-bold leading-none', config.text)}>{type}</span>
+          <span className={clsx('text-[10px] font-bold uppercase mt-0.5 leading-none tracking-wider', config.text)}>
+            {rotulo}
           </span>
         </div>
       );
@@ -189,7 +202,7 @@ export const ScheduleTable: React.FC<ScheduleTableProps> = ({
 
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-4">
-                        <ShiftBadge type={shift.type} />
+                        <ShiftBadge type={shift.type} rotulo={shift.rotulo} />
                         {shift.type === 'SANTA_CEIA' && (
                           <div className="h-1.5 w-1.5 rounded-full bg-red-500 animate-ping" />
                         )}

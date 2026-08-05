@@ -30,13 +30,21 @@ interface RespostaConteudo {
   content?: string
 }
 
+/*
+  🔴 SEM TOKEN, NÃO SE MANDA `Authorization` — achado da quinta auditoria externa, 05/08/2026.
+
+  O cabeçalho saía como `Bearer ` (vazio) quando o Flavio entrava sem token, e o GitHub responde
+  **401 a um cabeçalho inválido mesmo em repositório público**. Ou seja: mandar credencial vazia é
+  pior que não mandar nenhuma — sem o cabeçalho, o histórico de um repositório público é legível
+  anonimamente, e o painel funciona para quem publica à mão.
+*/
 function cabecalhos(token: string) {
-  return {
-    Authorization: `Bearer ${token}`,
+  const base = {
     Accept: 'application/vnd.github+json',
     'X-GitHub-Api-Version': '2022-11-28',
     'Content-Type': 'application/json',
   }
+  return token ? { ...base, Authorization: `Bearer ${token}` } : base
 }
 
 /** UTF-8 → base64, sem quebrar em acento (`btoa` sozinho quebra em "Luíz"). */
@@ -321,16 +329,23 @@ export async function lerDadosNoCommit(token: string, nome: string, sha: string)
  * razões: o histórico **nada perde** (o erro continua registrado, e saber que ele existiu é o que
  * impede repeti-lo); a operação usa o mesmo caminho já provado da publicação; e é o que "voltar para
  * como estava em tal dia" significa para quem administra.
+ *
+ * 🔴 E ELA DEVOLVE O CONTEÚDO RESTAURADO — quinta auditoria externa, 05/08/2026.
+ *
+ * Sem isso, quem chamou continuava com o retrato anterior na memória: reverter o elenco e publicar
+ * em seguida republicava o elenco velho por cima da reversão. O conteúdo já é lido aqui para poder
+ * gravar; devolvê-lo custa uma propriedade e fecha a porta.
  */
 export async function reverterPara(
   token: string,
   nome: string,
   sha: string,
   quando: string,
-): Promise<ResultadoPublicacao> {
+): Promise<ResultadoPublicacao & { conteudo?: unknown }> {
   try {
     const conteudo = await lerDadosNoCommit(token, nome, sha)
-    return await publicarDados(token, nome, conteudo, `volta ${nome} para a versão de ${quando}`)
+    const r = await publicarDados(token, nome, conteudo, `volta ${nome} para a versão de ${quando}`)
+    return { ...r, conteudo: r.ok ? conteudo : undefined }
   } catch (e) {
     return { ok: false, commits: [], erro: e instanceof Error ? e.message : String(e) }
   }

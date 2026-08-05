@@ -21,6 +21,41 @@ interface AppProps {
   dados: DadosPublicados;
 }
 
+/**
+ * 🔴 AS DUAS PORTAS DO `localStorage`, E AS DUAS PODEM LANÇAR.
+ *
+ * Com cookies bloqueados, **ler** `localStorage` já lança `SecurityError`; com a cota cheia ou em
+ * modo privado de alguns navegadores, **escrever** lança `QuotaExceededError`. Nos dois casos o que
+ * está em jogo é uma preferência de conforto — qual é o seu nome, e se o filtro "Minha Escala" fica
+ * ligado. Nenhuma delas vale uma tela em branco para quem só quer ver se está escalado no domingo.
+ *
+ * Falhar em silêncio aqui é a decisão certa, e é diferente de falhar em silêncio num dado: a pessoa
+ * percebe na hora que a preferência não ficou guardada, e pode escolher de novo.
+ */
+function lerPreferencia(chave: string): string | null {
+  try {
+    return localStorage.getItem(chave);
+  } catch {
+    return null;
+  }
+}
+
+function gravarPreferencia(chave: string, valor: string): void {
+  try {
+    localStorage.setItem(chave, valor);
+  } catch {
+    /* preferência não guardada — a tela continua funcionando exatamente igual */
+  }
+}
+
+function apagarPreferencia(chave: string): void {
+  try {
+    localStorage.removeItem(chave);
+  } catch {
+    /* idem */
+  }
+}
+
 function App({ shifts, dados }: AppProps) {
   // Como este cliente chama quem é escalado. Um apelido curto porque aparece em oito lugares da
   // tela — e porque `dados.config.identidade.pessoa.singular` no meio de um `title` não se lê.
@@ -43,20 +78,47 @@ function App({ shifts, dados }: AppProps) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [escolhendoMeses, setEscolhendoMeses] = useState(false);
 
-  // 🆕 E: Minha Escala — salva o nome do irmão no localStorage
-  const [myBrotherId, setMyBrotherId] = useState<string | null>(() => {
-    return localStorage.getItem('myBrotherId');
-  });
-  const [showMyShiftsOnly, setShowMyShiftsOnly] = useState<boolean>(() => {
-    return localStorage.getItem('showMyShiftsOnly') === 'true';
-  });
+  /*
+    🔴 `localStorage` PODE LANÇAR — quinta auditoria externa, 05/08/2026.
+
+    Estas duas leituras estavam nuas dentro do inicializador de `useState` do componente raiz. Com
+    cookies bloqueados (Safari em navegação privada, política de empresa, extensão de privacidade), o
+    **mero acesso** a `localStorage` lança `SecurityError` — e, sem `ErrorBoundary` no projeto, a
+    página fica em branco. É exatamente o desfecho que o `main.tsx` declara como o pior possível:
+    *"tela branca sem explicação"*. O `.catch(mostrarErro)` de lá só cobre a promessa de carregamento.
+
+    Não há nada a decidir aqui: preferência guardada é conforto, e conforto não derruba escala.
+  */
+  const [myBrotherId, setMyBrotherId] = useState<string | null>(() => lerPreferencia('myBrotherId'));
+  const [showMyShiftsOnly, setShowMyShiftsOnly] = useState<boolean>(
+    () => lerPreferencia('showMyShiftsOnly') === 'true',
+  );
   const [showBrotherPicker, setShowBrotherPicker] = useState(false);
   const [brotherSearch, setBrotherSearch] = useState('');
 
   // Persistir estado do filtro
   useEffect(() => {
-    localStorage.setItem('showMyShiftsOnly', showMyShiftsOnly.toString());
+    gravarPreferencia('showMyShiftsOnly', showMyShiftsOnly.toString());
   }, [showMyShiftsOnly]);
+
+  /*
+    🔴 O ID GUARDADO PODE NÃO EXISTIR MAIS — quinta auditoria externa, 05/08/2026.
+
+    `myBrotherId` nunca era conferido contra o elenco. Se a pessoa sai do `pessoas.json` — o que
+    "Voltar a esta versão" no Histórico provoca —, `myBrother` fica `undefined` e a barra volta a
+    dizer "Toque para configurar"; mas o efeito abaixo continuava filtrando por um id que não existe,
+    e a tela mostrava **"Nenhum turno encontrado · Tente ajustar os filtros"**.
+
+    Quem lê isso conclui que não está escalado. É a pior mentira que esta tela pode contar, e ela sai
+    exatamente para quem já configurou o nome — ou seja, para quem mais confia nela.
+  */
+  useEffect(() => {
+    if (myBrotherId && !BROTHERS.some((b) => b.id === myBrotherId)) {
+      setMyBrotherId(null);
+      setShowMyShiftsOnly(false);
+      apagarPreferencia('myBrotherId');
+    }
+  }, [myBrotherId]);
 
   // 🆕 Quando "Minha Escala" está ativo, filtra pelo meu irmão
   useEffect(() => {
@@ -86,12 +148,23 @@ function App({ shifts, dados }: AppProps) {
 
   const activeFiltersCount = selectedBrotherIds.length + selectedMonthStrs.length + (dateSearchQuery ? 1 : 0) + (dateRange ? 1 : 0);
 
+  /*
+    🔴 "LIMPAR FILTROS" NÃO APAGAVA O NOME — quinta auditoria externa, 05/08/2026.
+
+    Ele desligava `showMyShiftsOnly` e deixava `myBrotherId` gravado. Num aparelho compartilhado — e
+    numa congregação isso é o caso comum, o celular que fica na secretaria — o próximo visitante
+    abria o site já com o nome de outra pessoa configurado, sem ter escolhido nada.
+
+    Limpar é limpar: quem clica aqui está dizendo "quero ver a escala inteira, do zero".
+  */
   const clearFilters = () => {
     setSelectedBrotherIds([]);
     setSelectedMonthStrs([]);
     setDateSearchQuery('');
     setDateRange(null);
     setShowMyShiftsOnly(false);
+    setMyBrotherId(null);
+    apagarPreferencia('myBrotherId');
   };
 
   /** O que está aparecendo — mesma função de filtro que a tabela usa. */
@@ -149,7 +222,7 @@ function App({ shifts, dados }: AppProps) {
   // 🆕 Selecionar meu irmão
   const handleSelectMyBrother = (id: string) => {
     setMyBrotherId(id);
-    localStorage.setItem('myBrotherId', id);
+    gravarPreferencia('myBrotherId', id);
     setShowMyShiftsOnly(true);
     setShowBrotherPicker(false);
     setBrotherSearch('');
@@ -198,7 +271,7 @@ function App({ shifts, dados }: AppProps) {
 
       {/* Título Mobile */}
       <div className="md:hidden mb-5 text-center">
-        <h2 className="text-sm font-bold text-gray-400 uppercase tracking-[0.2em]">Filtros e Opções</h2>
+        <h2 className="text-sm font-bold text-gray-600 uppercase tracking-[0.2em]">Filtros e Opções</h2>
       </div>
 
       {/* 🆕 E: MINHA ESCALA (destaque especial) */}
@@ -228,7 +301,7 @@ function App({ shifts, dados }: AppProps) {
             </button>
             <button title={`Escolher outro ${voc.singular.toLowerCase()} para o filtro Minha Escala`}
               onClick={() => setShowBrotherPicker(true)}
-              className="text-xs text-gray-400 hover:text-gray-600 text-right pr-1 underline"
+              className="text-xs text-gray-600 hover:text-gray-800 text-right pr-1 underline"
             >
               Trocar nome
             </button>
@@ -242,7 +315,7 @@ function App({ shifts, dados }: AppProps) {
               <User className="w-5 h-5 text-indigo-600" />
             </div>
             <div className="flex-1 text-left">
-              <div className="text-xs text-indigo-400 leading-none mb-0.5">Toque para configurar</div>
+              <div className="text-xs text-indigo-700 leading-none mb-0.5">Toque para configurar</div>
               <div>Minha Escala</div>
             </div>
             <ChevronRight className="h-5 w-5 text-indigo-400" />

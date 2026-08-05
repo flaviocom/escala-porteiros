@@ -12,7 +12,7 @@
 
 ## Como o catálogo funciona
 
-São **16 regras**: **11 duras** e **5 de qualidade**. A diferença é o que acontece quando
+São **17 regras**: **12 duras** e **5 de qualidade**. A diferença é o que acontece quando
 falham:
 
 | Família | Falha vira | Bloqueia publicar? |
@@ -44,6 +44,7 @@ ninguém notar.
 | **D9** | Santa Ceia — o dia do calendário está marcado, e não recebe ninguém | Existem dias marcados no calendário em que ninguém deve ser escalado — aqui, a Santa Ceia. A conferência é contra o CALENDÁRIO, não contra a própria escala: se a marca se perder, ela acusa. |
 | **D10** | Coerência do piso declarado | O intervalo mínimo que esta escala afirma ter garantido é conferido pessoa por pessoa. Serve para o número anunciado não ser maior do que a realidade. |
 | **D11** | Cobertura — o bloco tem os turnos que o período dele exige | A escala cobre todos os dias e turnos que o período exige — nem falta dia, nem sobra dia que não é de culto. É o que impede publicar uma escala vazia ou pela metade. |
+| **D12** | Vaga — todo turno que existe pede pelo menos uma pessoa | Um turno que aparece no calendário precisa chamar pelo menos uma pessoa. Turno com zero vagas não fica "vazio": ele sai na escala como um dia sem ninguém, e nenhuma outra regra reclama — porque zero de zero está tecnicamente completo. A única exceção é a Santa Ceia, que não tem escala por definição. |
 
 ---
 
@@ -63,7 +64,7 @@ ninguém notar.
 
 | O quê | Onde |
 |---|---|
-| As 16 regras | `src/dominio/regras.ts` (a constante `CATALOGO`) |
+| As 17 regras | `src/dominio/regras.ts` (a constante `CATALOGO`) |
 | Os testes das duas pontas | `src/dominio/regras.test.ts` |
 | A conferência independente (outra régua) | `src/dominio/conferencia-independente.ts` |
 | A tela que mostra o resultado | `src/components/ValidationView.tsx` (público) e a aba **Conferir** (administrativo) |

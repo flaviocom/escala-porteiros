@@ -27,7 +27,18 @@ const FONTE = 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif'
 /** Cada turno tem uma família de cor — a mesma da tela, para quem vê os dois reconhecer. */
 const TURNO = {
   'MANHÃ': { rotulo: 'MANHÃ', pilula: '#fffbeb', borda: '#fcd34d', texto: '#b45309', bloco: 'linear-gradient(160deg,#fbbf24,#f59e0b)' },
-  'TARDE': { rotulo: 'TARDE\nENSAIO', pilula: '#fff7ed', borda: '#fdba74', texto: '#c2410c', bloco: 'linear-gradient(160deg,#fb923c,#ef4444)' },
+  /*
+    🔴 "ENSAIO" saiu daqui em 05/08/2026 — quinta auditoria externa.
+
+    Estava cravado no rótulo da TARDE, então a imagem que vai para o WhatsApp imprimia a palavra em
+    todo turno de tarde, viesse o rótulo do dado ou não. A etiqueta agora vem de `Shift.rotulo`, que
+    é o campo que o modelo sempre teve para isso — ver `types/scheduler.ts`.
+
+    E a cor da TARDE deixou de terminar em vermelho: o bloco de data ficava a um tom do vermelho da
+    Santa Ceia, e quem procura "o dia vermelho" na imagem confundia os dois. Âmbar→laranja mantém a
+    família da tarde sem invadir a única cor que precisa ser inconfundível.
+  */
+  'TARDE': { rotulo: 'TARDE', pilula: '#fff7ed', borda: '#fdba74', texto: '#c2410c', bloco: 'linear-gradient(160deg,#fb923c,#ea580c)' },
   'NOITE': { rotulo: 'NOITE', pilula: '#eef2ff', borda: '#c7d2fe', texto: '#4338ca', bloco: 'linear-gradient(160deg,#6366f1,#4f46e5)' },
   'SANTA_CEIA': { rotulo: 'SANTA CEIA', pilula: '#fef2f2', borda: '#fca5a5', texto: '#b91c1c', bloco: 'linear-gradient(160deg,#ef4444,#b91c1c)' },
 } satisfies Record<ShiftType, { rotulo: string; pilula: string; borda: string; texto: string; bloco: string }>
@@ -160,7 +171,12 @@ export function EscalaImagem({ shifts, geradoEm, porTurno = 3, identidade }: Dad
               background: TURNO[t].pilula, border: `2px solid ${TURNO[t].borda}`, color: TURNO[t].texto,
               borderRadius: 999, padding: '7px 18px', fontSize: 16, fontWeight: 800, letterSpacing: 0.6,
             }}>
-              {t === 'TARDE' ? 'TARDE (ENSAIO)' : t === 'SANTA_CEIA' ? 'SANTA CEIA' : t}
+              {/*
+                A legenda nomeia o TURNO. As etiquetas do dado (ex.: ENSAIO) aparecem no cartão de
+                cada dia, onde valem — aqui elas mentiriam, porque não valem para todos os turnos
+                daquele tipo.
+              */}
+              {TURNO[t].rotulo}
             </div>
           ))}
         </div>
@@ -209,7 +225,18 @@ export function EscalaImagem({ shifts, geradoEm, porTurno = 3, identidade }: Dad
                     borderRadius: 12, padding: '9px 0', width: 118, flexShrink: 0, textAlign: 'center',
                     fontSize: 15, fontWeight: 800, letterSpacing: 0.8, lineHeight: 1.25, whiteSpace: 'pre-line',
                   }}>
-                    {TURNO[t.type].rotulo}
+                    {/*
+                      A etiqueta do DADO entra como segunda linha; sem ela, só o turno.
+
+                      🔴 E não repete o que já está na primeira: a Santa Ceia tem `rotulo: 'SANTA
+                      CEIA'` no dado E `SANTA CEIA` como nome do turno, então a primeira versão desta
+                      correção imprimiu **"SANTA CEIA / SANTA CEIA"** na pílula de 16/08. Nenhum teste
+                      pegou; apareceu ao ABRIR a imagem gerada — como o "ENSAIO" cravado, e como o
+                      "sem porteiros escalados" antes dele. A imagem tem de ser olhada.
+                    */}
+                    {t.rotulo && t.rotulo !== TURNO[t.type].rotulo
+                      ? `${TURNO[t.type].rotulo}\n${t.rotulo}`
+                      : TURNO[t.type].rotulo}
                   </div>
                   {t.assignedBrothers.length === 0 ? (
                     <span style={{ fontSize: 20, fontWeight: 700, color: '#94a3b8' }}>

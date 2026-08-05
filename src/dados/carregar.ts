@@ -10,7 +10,7 @@
  * "publiquei e não mudou nada" viraria o bug mais comum do produto.
  */
 import type { ArquivoBlocos, ArquivoPessoas, Bloco, Configuracao, Pessoa, Turno } from '../dominio/tipos'
-import { diferencaEmDias, type DataISO } from '../dominio/datas'
+import { diferencaEmDias, ehDataValida, type DataISO } from '../dominio/datas'
 import { definirPessoas, type Shift, type ShiftType } from '../types/scheduler'
 
 export interface DadosPublicados {
@@ -165,6 +165,28 @@ export function emendarBlocos(blocos: Bloco[]): Turno[] {
   )
 }
 
+/**
+ * 🔴 O RETRATO DO QUE ACABOU DE SER GRAVADO — quinta auditoria externa, 05/08/2026.
+ *
+ * `carregarDados()` roda **uma vez**, no topo do módulo. O objeto que ela devolve ficava congelado
+ * no closure da tela, e a área administrativa media tudo contra ele: a montagem dos blocos, o guarda
+ * do passado e a fronteira ("quem trabalhou na véspera não entra no dia 1").
+ *
+ * Medido: publicar out→dez e, **sem recarregar**, publicar jan→jun apagava out→dez inteiro — 55
+ * turnos — e o guarda criado para impedir exatamente isso dizia `ok: true, perdidos: 0`. Ele não
+ * errou: recebeu o retrato de antes da primeira publicação, onde aqueles turnos ainda não existiam.
+ * **Um guarda só é tão bom quanto o argumento que lhe entregam.**
+ *
+ * Recarregar da rede seria pior: o GitHub Pages leva cerca de um minuto para servir o arquivo novo,
+ * então buscar de novo logo depois de publicar traria de volta o dado ANTIGO. Quem sabe a verdade,
+ * neste instante, é quem acabou de gravar — e é isto que esta função monta.
+ */
+export function retratoPublicado(pessoas: Pessoa[], blocos: Bloco[], config: Configuracao): DadosPublicados {
+  // `BROTHERS` alimenta as telas herdadas: sem isto, um nome recém-publicado sairia como id cru.
+  definirPessoas(pessoas)
+  return { pessoas, blocos, config, turnos: emendarBlocos(blocos) }
+}
+
 export async function carregarDados(): Promise<DadosPublicados> {
   const [arqPessoas, arqBlocos, config] = await Promise.all([
     buscarJSON<ArquivoPessoas>('pessoas.json'),
@@ -207,8 +229,21 @@ export function conferirEsquema(pessoas: Pessoa[], blocos: Bloco[]): string[] {
     if (!p.nome?.trim()) problemas.push(`"${p.id}" está sem nome — a tela mostraria o id cru`)
   }
 
+  /*
+    🔴 `ehDataValida` TINHA 4 TESTES E NENHUM CHAMADOR — quinta auditoria externa, 05/08/2026.
+
+    Ela existe, está certa, é exportada, é provada nos dois lados — e nunca era chamada em produção.
+    Código inerte que parece cobertura. Medido pelo auditor: com `inicio = "2026-02-31"`, o produto
+    **gera um turno em 31/02/2026** (data que não existe), pula 01 a 03 de março, e o veredito sai
+    *"Aprovada, sem ressalvas."* Nenhuma das 16 regras confere se a data existe; nenhuma tem por quê.
+
+    Aqui é o lugar: este é o portão que pergunta se o arquivo publicado é internamente coerente.
+  */
   for (const b of blocos) {
+    if (b.inicio && !ehDataValida(b.inicio)) problemas.push(`bloco "${b.id}": início "${b.inicio}" não é uma data que existe`)
+    if (b.fim && !ehDataValida(b.fim)) problemas.push(`bloco "${b.id}": fim "${b.fim}" não é uma data que existe`)
     for (const t of b.turnos ?? []) {
+      if (!ehDataValida(t.data)) problemas.push(`turno com data "${t.data}", que não existe no calendário`)
       for (const id of t.pessoas ?? []) {
         if (!vistos.has(id)) problemas.push(`${t.data} ${t.tipo}: escala "${id}", que não existe em pessoas.json`)
       }
@@ -251,6 +286,8 @@ export function paraShifts(turnos: Turno[]): Shift[] {
     date: dataLocal(t.data),
     type: t.santaCeia ? 'SANTA_CEIA' : TIPO_PARA_TELA[t.tipo],
     assignedBrothers: t.pessoas,
+    // A etiqueta do dado, e não uma cravada no componente. Ver `Shift.rotulo`.
+    ...(t.rotulo ? { rotulo: t.rotulo } : {}),
   }))
 }
 

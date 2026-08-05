@@ -35,18 +35,49 @@ export const DateSearch: React.FC<DateSearchProps> = ({ value, onChange, onDateR
     dele, sem nada mudar na tela.
   */
 
-  // Clear active filter when dateRange is null
-  useEffect(() => {
-    if (!dateRange) {
-    }
-  }, [dateRange]);
+  /*
+    🔴 O `useEffect` de corpo VAZIO foi removido em 05/08/2026 — quinta auditoria externa.
 
+    Era `useEffect(() => { if (!dateRange) {} }, [dateRange])`: sobrevivente da mesma limpeza descrita
+    logo acima, e a única coisa que ele fazia era rodar a cada mudança. Código que não faz nada mas
+    parece que faz é pior que código ausente — o próximo leitor procura o efeito e não acha.
+  */
+
+  /** O rótulo que os atalhos escrevem na caixa. Mesma forma do efeito acima, num lugar só. */
+  const rotuloDoIntervalo = (): string | null => {
+    if (!dateRange?.start || !dateRange?.end) return null;
+    return isSameDay(dateRange.start, dateRange.end)
+      ? format(dateRange.start, 'dd/MM/yyyy')
+      : `${format(dateRange.start, 'dd/MM')} - ${format(dateRange.end, 'dd/MM')}`;
+  };
+
+  /*
+    🔴 DIGITAR DEPOIS DE UM ATALHO ZERAVA A ESCALA — quinta auditoria externa, 05/08/2026.
+
+    Clicar "Este Mês" escreve `01/08 - 31/08` **nesta caixa**, que é a mesma em que a pessoa digita.
+    O filtro tolerava esse texto só enquanto o intervalo existisse, e por igualdade EXATA. Bastava
+    uma tecla: `onDateRangeChange(null)` derrubava o intervalo, o texto continuava lá, e
+    `"01/08 - 31/08F"` virava busca literal — que não casa com data, dia da semana nem nome. Zero
+    turnos, tela em branco, e para voltar era preciso apagar 15 caracteres que a pessoa não escreveu.
+
+    A correção pergunta o que de fato aconteceu: se o que estava na caixa era o rótulo do atalho, o
+    que a pessoa acrescentou é o que ela quis buscar — e é só isso que fica.
+  */
   const handleTextChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value;
-    onChange(val);
-    if (val) {
-      onDateRangeChange(null);
+    let val = e.target.value;
+    const rotulo = rotuloDoIntervalo();
+    const mexeuNoRotulo = rotulo !== null && value === rotulo;
+
+    if (mexeuNoRotulo) {
+      if (val.startsWith(rotulo)) val = val.slice(rotulo.length);      // digitou no fim
+      else if (rotulo.startsWith(val)) val = '';                        // apagou com backspace
+      // Editou no meio: sobra o que o navegador entregou — não há como adivinhar melhor que isso.
     }
+
+    onChange(val);
+    // Mexer no rótulo do atalho é DESFAZER o atalho, mesmo que o resultado seja texto vazio: sem
+    // isto, o efeito lá em cima reescreveria o rótulo e a tecla da pessoa não teria efeito nenhum.
+    if (val || mexeuNoRotulo) onDateRangeChange(null);
   };
 
   // Os atalhos rápidos (15 dias / semana / mês) vivem no App, não aqui — este componente

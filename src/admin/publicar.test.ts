@@ -208,7 +208,10 @@ describe('publicar — quando dá errado no meio', () => {
     const r = await publicarDados(TOKEN_FALSO, 'blocos.json', ESCALA, 'escala')
 
     expect(r.ok).toBe(false)
-    expect(r.erro).toBeTruthy()
+    // O QUE o motivo diz, e não só que existe: `toBeTruthy()` passaria com a string "undefined".
+    expect(r.erro).toContain('Failed to fetch')
+    // E nada foi gravado — que é a parte que importa para quem publica.
+    expect(r.commits).toEqual([])
   })
 })
 

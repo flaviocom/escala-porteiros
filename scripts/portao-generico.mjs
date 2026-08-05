@@ -104,6 +104,33 @@ const TERMOS = [
   //    Construído por `RegExp` + `String.raw`, o escape sobrevive a qualquer script que reescreva
   //    este arquivo — e o autoteste ao lado prova que ele morde.
   { re: new RegExp(String.raw`\birm[ãa]os?\b`, 'i'), nome: 'vocabulário de congregação ("irmão")' },
+  /*
+    🔴 "ENSAIO" — terceiro achado que escapa deste portão e vira termo dele, 05/08/2026.
+
+    O rótulo estava cravado em DOIS lugares: `ScheduleTable` imprimia "ENSAIO" em todo turno de
+    tarde do site público, e `EscalaImagem` levava "TARDE\nENSAIO" e "TARDE (ENSAIO)" para a imagem
+    que vai ao WhatsApp. Uma portaria de prédio com turno de tarde receberia a palavra impressa no
+    documento que manda para os funcionários.
+
+    É o mesmo furo de "sem porteiros escalados": o portão varria 38 arquivos, dava 0 achados, e o
+    termo não estava na lista. Todo achado que escapa vira termo — senão o portão não aprende.
+
+    A etiqueta agora vem de `Turno.rotulo`, que é dado. O termo continua aqui para o dia em que
+    alguém a escrever de volta no componente.
+
+    ⚠️ E ele nasceu LARGO DEMAIS, como o de "porteiro" antes dele. Rodado sem fronteira, acusou dois
+    inocentes: `malha.ts`, onde `rotulo: 'ENSAIO'` é **o dado** — o exemplo do campo configurável que
+    esta correção existe para usar —, e o comando `npm run ensaio`, que é "ensaio" no sentido de
+    simulação e não vai para tela nenhuma. Portão que acusa o inocente é portão que alguém desliga.
+
+    A fronteira é `.tsx`, e ela é a definição exata do problema: **o que renderiza**. Em dado a
+    palavra é legítima; em componente, é texto cravado.
+  */
+  {
+    re: new RegExp(String.raw`(?<![-\w])ensaio(?![-\w])`, 'i'),
+    nome: 'etiqueta cravada ("ensaio") — use `Turno.rotulo`',
+    apenas: /\.tsx$/,
+  },
 ]
 
 /**
@@ -214,7 +241,12 @@ for (const abs of alvos) {
   if (PERMITIDOS.has(rel)) continue
   const linhas = semComentarios(readFileSync(abs, 'utf8')).split(/\r?\n/)
   linhas.forEach((linha, i) => {
-    for (const t of TERMOS) if (t.re.test(linha)) achados.push({ arquivo: rel, linha: i + 1, termo: t.nome, texto: linha.trim().slice(0, 110) })
+    for (const t of TERMOS) {
+      // `apenas` é a fronteira DECLARADA de um termo. Sem ela, vale em toda parte — que é o padrão
+      // certo: um termo só ganha fronteira quando se provou que ela é necessária, com o motivo ao lado.
+      if (t.apenas && !t.apenas.test(rel)) continue
+      if (t.re.test(linha)) achados.push({ arquivo: rel, linha: i + 1, termo: t.nome, texto: linha.trim().slice(0, 110) })
+    }
   })
 }
 
