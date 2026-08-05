@@ -207,8 +207,26 @@ const PrimeiroAcesso: React.FC<{ aoAbrir: (s: Segredos) => void }> = ({ aoAbrir 
   const [erro, setErro] = useState('')
   const [ocupado, setOcupado] = useState(false)
 
+  /**
+   * 🔴 SEM SEGREDO, SEM SENHA — corrigido em 05/08/2026, a pedido do Flavio.
+   *
+   * A senha existe por UM motivo: cifrar o token no `localStorage`. Quando não há token nem chave do
+   * motor, o cofre é um objeto vazio — e a tela estava exigindo oito caracteres para proteger nada.
+   *
+   * Quem só quer ENTRAR e olhar a escala pagava um pedágio inventado, com dois campos de senha e um
+   * campo de token que ele não tem. Pior: os dados são públicos (o repositório é público), então a
+   * senha não guardava sequer sigilo — guardava apenas o token, que ali não existia.
+   *
+   * Agora há dois caminhos, e o de cima não pede nada.
+   */
+  const entrarSemGuardarNada = () => aoAbrir({ tokenGitHub: '' })
+
+  /** Só há o que proteger se houver um segredo para guardar. */
+  const temSegredo = Boolean(token.trim() || chaveMotor.trim())
+
   const criar = async () => {
     setErro('')
+    if (!temSegredo) return entrarSemGuardarNada()
     if (senha.length < 8) return setErro('A senha precisa ter ao menos 8 caracteres.')
     if (senha !== repetir) return setErro('As duas senhas não são iguais.')
     /**
@@ -236,15 +254,50 @@ const PrimeiroAcesso: React.FC<{ aoAbrir: (s: Segredos) => void }> = ({ aoAbrir 
 
   return (
     <Moldura titulo="Configurar o acesso" subtitulo="Só desta vez, neste aparelho">
-      <p className="text-sm text-gray-600 mb-5 leading-relaxed">
-        A sua senha não fica guardada em lugar nenhum — ela é a <strong>chave que decifra</strong> o
-        token. Sem ela, o que ficar neste navegador é ruído, mesmo para quem estiver com o aparelho
-        na mão. Se você esquecê-la, é só configurar de novo com um token novo.
+      <p className="text-sm text-gray-600 mb-4 leading-relaxed">
+        Você não precisa de token nem de senha para <strong>entrar e trabalhar</strong>. Elas só
+        entram em cena se você quiser que este aparelho <strong>guarde</strong> o token — e aí a
+        senha é a chave que o decifra.
       </p>
+
+      {/* O caminho de cima não pede nada, porque não guarda nada. */}
+      <div className="mb-5 rounded-xl border-2 border-indigo-200 bg-indigo-50/60 p-4">
+        <button
+          onClick={entrarSemGuardarNada}
+          title="Entra agora, sem senha e sem guardar nada neste navegador"
+          className="flex min-h-[2.75rem] w-full items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 text-sm font-bold text-white hover:bg-indigo-700"
+        >
+          <KeyRound className="h-4 w-4" />
+          Entrar agora — sem senha, sem token
+        </button>
+        <p className="mt-2.5 text-xs leading-relaxed text-gray-600">
+          Você gera a escala, confere regra a regra, ajusta turno a turno e baixa os arquivos.
+          <strong> Nada é guardado neste navegador</strong> — por isso não há o que proteger com
+          senha. Só o botão <em>Publicar</em> fica de fora, e a tela ensina a subir o arquivo pelo
+          GitHub com o seu login normal, sem token nenhum.
+        </p>
+      </div>
+
+      <details className="mb-5">
+        <summary className="cursor-pointer text-sm font-bold text-gray-700">
+          Prefiro guardar o token neste aparelho (aí sim tem senha)
+        </summary>
+        <p className="mt-2 text-xs leading-relaxed text-gray-500">
+          Vale a pena quando você publica com frequência: o botão <em>Publicar</em> passa a
+          funcionar e você não repete o processo. O token fica cifrado aqui, e a senha é a única
+          coisa que o abre.
+        </p>
+      </details>
+
       <ColarCofre />
       <ComoCriarOToken />
-      <Campo rotulo="Senha (mínimo 8 caracteres)" tipo="senha" valor={senha} aoMudar={setSenha} />
-      <Campo rotulo="Repita a senha" tipo="senha" valor={repetir} aoMudar={setRepetir} />
+      {/* Os campos de senha só aparecem quando existe um segredo para proteger. */}
+      {temSegredo && (
+        <>
+          <Campo rotulo="Senha (mínimo 8 caracteres)" tipo="senha" valor={senha} aoMudar={setSenha} />
+          <Campo rotulo="Repita a senha" tipo="senha" valor={repetir} aoMudar={setRepetir} />
+        </>
+      )}
       <Campo
         rotulo="Token do GitHub (opcional)"
         tipo="senha"
@@ -265,9 +318,16 @@ const PrimeiroAcesso: React.FC<{ aoAbrir: (s: Segredos) => void }> = ({ aoAbrir 
         dica="Sem ela, o algoritmo continua gerando e validando — só não há proposta nem explicação do motor."
       />
       {erro && <Aviso tom="erro">{erro}</Aviso>}
-      <Botao aoClicar={criar} ocupado={ocupado} icone={KeyRound}>
-        {token.trim() ? 'Conferir o token e guardar' : 'Entrar sem token'}
-      </Botao>
+      {/*
+        O botão de baixo só existe quando há segredo a guardar. Sem isso, ele ficava idêntico ao de
+        cima, dois botões iguais na mesma tela — e botão repetido faz a pessoa procurar a diferença
+        que não existe.
+      */}
+      {temSegredo && (
+        <Botao aoClicar={criar} ocupado={ocupado} icone={KeyRound}>
+          Conferir e guardar com senha
+        </Botao>
+      )}
     </Moldura>
   )
 }

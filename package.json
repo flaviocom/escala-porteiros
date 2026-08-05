@@ -28,6 +28,7 @@
     "vivo:conferir": "node scripts/conferir-site-contra-dados.mjs",
     "vivo:conferir-passado": "node scripts/conferir-historico-contra-site-antigo.mjs",
 
+    "vivo:entrar": "node scripts/validar-entrar-sem-senha.mjs",
     "vivo:quem-saiu": "node scripts/validar-quem-saiu.mjs",
     "vivo:erro": "node scripts/validar-caminho-de-erro.mjs",
     "vivo:acessibilidade": "node scripts/medir-acessibilidade.mjs",
