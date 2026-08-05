@@ -105,9 +105,12 @@ function ColarCofre() {
 
   if (!aberto) {
     return (
+      // 🔴 Alvo de toque, DE NOVO. Botão em forma de link nasce com a altura do texto — 16px aqui —
+      // e é a terceira vez nesta sessão que a mesma classe aparece em código novo. O piso de 44px
+      // não pode viver na minha cabeça; vive no portão `vivo:celular`, que foi quem pegou este.
       <button title="Se você já configurou noutro aparelho, traga o cofre de lá em vez de cadastrar tudo de novo"
         onClick={() => setAberto(true)}
-        className="mb-4 text-xs font-bold text-indigo-600 hover:underline"
+        className="mb-4 -ml-2 flex min-h-[2.75rem] items-center px-2 text-xs font-bold text-indigo-600 hover:underline"
       >
         Já configurei noutro aparelho — colar o código de lá
       </button>
