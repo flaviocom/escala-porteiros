@@ -9,7 +9,7 @@
  */
 import { chromium } from 'playwright'
 import { spawn } from 'node:child_process'
-import { mkdirSync, statSync, readFileSync } from 'node:fs'
+import { mkdirSync, statSync, readFileSync, rmSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -53,22 +53,35 @@ try {
   const botao = pagina.getByRole('button', { name: /Enviar Escala/i }).first()
   if (!(await botao.count())) throw new Error('não achei o botão de enviar a escala')
 
-  const esperaDownload = pagina.waitForEvent('download', { timeout: 60_000 })
+  // Um mes -> um arquivo. Varios meses -> um POR MES: e o unico jeito de cada imagem caber no
+  // teto de canvas do navegador (16384px). Coletamos todos os downloads, nao so o primeiro.
+  const baixados = []
+  pagina.on('download', (d) => baixados.push(d))
   await botao.click()
-  const download = await esperaDownload
+  for (let i = 0; i < 60 && baixados.length === 0; i++) await pagina.waitForTimeout(500)
+  if (!baixados.length) throw new Error('o clique nao gerou download nenhum')
+  // Espera parar de chegar arquivo novo.
+  let antes = -1
+  while (antes !== baixados.length) { antes = baixados.length; await pagina.waitForTimeout(1500) }
+
+  console.log(`  arquivos gerados ...... ${baixados.length}`)
+  const download = baixados[0]
 
   const destino = join(SAIDA, `exemplo-${MES}.png`)
   await download.saveAs(destino)
   const kb = Math.round(statSync(destino).size / 1024)
 
-  // Dimensoes lidas do cabecalho do PNG (bytes 16..24) — sem dependencia nova para uma leitura
-  // de 8 bytes. Sem isto, "gerou o arquivo" nao distingue a imagem certa de um PNG de 1 pixel.
-  const cab = readFileSync(destino).subarray(16, 24)
-  const largura = cab.readUInt32BE(0)
-  const altura = cab.readUInt32BE(4)
-  console.log(`  dimensoes ............. ${largura} x ${altura}`)
-  if (largura !== 1440) throw new Error(`largura ${largura}, esperada 1440 — o layout mudou de tamanho`)
-  if (altura < 600) throw new Error(`altura ${altura} — a imagem saiu curta demais para uma escala`)
+  // Confere TODOS, nao so o primeiro: um mes pode sair encolhido e os outros nao.
+  for (const d of baixados) {
+    const tmp = join(SAIDA, `_conf-${d.suggestedFilename()}`)
+    await d.saveAs(tmp)
+    const c = readFileSync(tmp).subarray(16, 24)
+    const l = c.readUInt32BE(0), a2 = c.readUInt32BE(4)
+    console.log(`    ${d.suggestedFilename().padEnd(42)} ${l} x ${a2}`)
+    if (l !== 1440) throw new Error(`${d.suggestedFilename()}: largura ${l}, esperada 1440 — o navegador encolheu`)
+    if (a2 > 16384) throw new Error(`${d.suggestedFilename()}: altura ${a2} acima do teto do canvas`)
+    rmSync(tmp, { force: true })
+  }
 
   console.log(`  nome sugerido pelo site: ${download.suggestedFilename()}`)
   console.log(`  salvo em .............. ${destino}  (${kb} KB)`)

@@ -5,10 +5,19 @@
  * do tamanho da janela, do que está rolado, do filtro visual nem do CSS `is-exporting` que a versão
  * anterior usava para forçar largura e cor no meio da captura.
  *
- * Duas consequências práticas, e as duas eram defeito antes:
- *   · **não há mais fatia de 10 dias.** O período inteiro sai na imagem — era a tela que não
- *     aguentava, não o formato.
- *   · a imagem fica igual em qualquer aparelho, porque nada nela vem do aparelho.
+ * 🔴 UMA IMAGEM POR MÊS, E ISTO É O CORAÇÃO DO ARQUIVO.
+ *
+ * A versão anterior fatiava a escala em **5 dias** para exportar. Tirei o corte — e, ao gerar o
+ * período inteiro (131 dias), o resultado foi **969 × 16384**: o navegador **corta o canvas em
+ * 16384px** e, para caber, encolheu a largura de 1440 para 969. A imagem saía **truncada e
+ * distorcida, sem erro nenhum**. Eu tinha trocado uma falha declarada por uma falha silenciosa.
+ *
+ * Fatiar por **mês** é o que resolve, e não é remendo: é como a escala é usada. O arquivo que o
+ * Flavio manda hoje no WhatsApp é de um mês; uma imagem de cinco meses teria 16 mil pixels de
+ * altura e ninguém conseguiria ler no celular.
+ *
+ * E cada imagem é **conferida depois de pronta**: se a largura sair diferente de 1440, o navegador
+ * encolheu — e aí é erro, não arquivo.
  */
 import { createRoot } from 'react-dom/client'
 import { createElement } from 'react'
@@ -18,9 +27,31 @@ import type { Shift } from '../types/scheduler'
 
 const LARGURA = 1440
 
-export async function gerarImagemDaEscala(shifts: Shift[]): Promise<Blob> {
-  if (!shifts.length) throw new Error('Não há turnos no período selecionado para gerar a imagem.')
+/** Teto do canvas nos navegadores. Passar disto não dá erro: dá imagem encolhida. */
+const TETO_DE_ALTURA = 16384
 
+const MES_ARQUIVO = ['01-janeiro', '02-fevereiro', '03-marco', '04-abril', '05-maio', '06-junho',
+  '07-julho', '08-agosto', '09-setembro', '10-outubro', '11-novembro', '12-dezembro']
+
+export interface ImagemGerada {
+  nome: string
+  blob: Blob
+  /** Rótulo legível do que está nesta imagem — vai para a mensagem quando são várias. */
+  periodo: string
+}
+
+/** Separa por mês, preservando a ordem cronológica. */
+function porMes(shifts: Shift[]): Shift[][] {
+  const mapa = new Map<string, Shift[]>()
+  for (const s of [...shifts].sort((a, b) => a.date.getTime() - b.date.getTime())) {
+    const k = `${s.date.getFullYear()}-${s.date.getMonth()}`
+    if (!mapa.has(k)) mapa.set(k, [])
+    mapa.get(k)!.push(s)
+  }
+  return [...mapa.values()]
+}
+
+async function capturar(shifts: Shift[]): Promise<Blob> {
   // Fora da vista, mas RENDERIZADO: `display:none` não tem layout, e o que não tem layout não
   // vira imagem. Por isso vai para fora da tela, não para o nada.
   const palco = document.createElement('div')
@@ -40,14 +71,33 @@ export async function gerarImagemDaEscala(shifts: Shift[]): Promise<Blob> {
     const alvo = palco.firstElementChild as HTMLElement | null
     if (!alvo) throw new Error('Falha ao montar o layout da imagem.')
 
+    const altura = alvo.scrollHeight
+    if (altura > TETO_DE_ALTURA) {
+      // Falhar aqui é melhor que entregar a imagem encolhida que o navegador produziria.
+      throw new Error(
+        `Este período daria uma imagem de ${altura}px de altura, acima do limite de ${TETO_DE_ALTURA}px ` +
+        'do navegador. Gere por mês.',
+      )
+    }
+
     const blob = await toBlob(alvo, {
       pixelRatio: 1,
       backgroundColor: '#eceff5',
       width: LARGURA,
-      height: alvo.scrollHeight,
+      height: altura,
       cacheBust: true,
     })
     if (!blob) throw new Error('Falha ao gerar a imagem.')
+
+    // 🔒 Confere o que SAIU, não o que foi pedido. Quando o navegador encolhe para caber no teto,
+    // ele não avisa: devolve um PNG menor, distorcido, com cara de arquivo bom.
+    const bitmap = await createImageBitmap(blob)
+    const largura = bitmap.width
+    bitmap.close()
+    if (largura !== LARGURA) {
+      throw new Error(`A imagem saiu com ${largura}px de largura em vez de ${LARGURA}px — o navegador a encolheu.`)
+    }
+
     return blob
   } finally {
     // `unmount` síncrono dentro do próprio ciclo do React dispara aviso; adiar um tique resolve.
@@ -56,4 +106,29 @@ export async function gerarImagemDaEscala(shifts: Shift[]): Promise<Blob> {
       palco.remove()
     }, 0)
   }
+}
+
+/**
+ * Uma imagem por mês do período selecionado.
+ *
+ * Um mês só → um arquivo, como sempre foi. Vários meses → um arquivo por mês, porque é assim que a
+ * escala é lida e é o único jeito de cada imagem caber no que o navegador desenha.
+ */
+export async function gerarImagensDaEscala(shifts: Shift[]): Promise<ImagemGerada[]> {
+  if (!shifts.length) throw new Error('Não há turnos no período selecionado para gerar a imagem.')
+
+  const meses = porMes(shifts)
+  const imagens: ImagemGerada[] = []
+
+  for (const doMes of meses) {
+    const d = doMes[0].date
+    const blob = await capturar(doMes)
+    imagens.push({
+      blob,
+      nome: `escala-porteiros-${d.getFullYear()}-${MES_ARQUIVO[d.getMonth()]}.png`,
+      periodo: `${MES_ARQUIVO[d.getMonth()].slice(3)} de ${d.getFullYear()}`,
+    })
+  }
+
+  return imagens
 }
