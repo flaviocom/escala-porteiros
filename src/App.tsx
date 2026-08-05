@@ -312,8 +312,10 @@ function App({ shifts, dados }: AppProps) {
           onClick={handleExport}
           disabled={isGenerating}
           className={clsx(
-            "w-full flex items-center justify-center gap-2 px-4 py-4 rounded-xl text-base font-bold text-white transition-all duration-200 shadow-md",
-            isGenerating ? "bg-gray-400 cursor-not-allowed" : "bg-[#25D366] hover:bg-[#128C7E] shadow-green-200"
+            "w-full flex items-center justify-center gap-2 px-4 py-4 rounded-xl text-base font-bold transition-all duration-200 shadow-md",
+            // Texto ESCURO sobre o verde da marca: branco sobre #25D366 dá 1,98:1 (piso 4,5:1).
+            // Escurecer o fundo tiraria o verde do WhatsApp; escurecer o texto dá ~9:1 e mantém a cor.
+            isGenerating ? "bg-gray-400 text-white cursor-not-allowed" : "bg-[#25D366] text-[#0a3d22] hover:bg-[#1fb457] shadow-green-200"
           )}
         >
           {isGenerating ? (
@@ -518,8 +520,8 @@ function App({ shifts, dados }: AppProps) {
           onClick={handleExport}
           disabled={isGenerating}
           className={clsx(
-            "md:hidden hide-on-export fixed bottom-6 right-4 z-40 text-white rounded-2xl px-4 py-3.5 shadow-lg transition-all active:scale-95 flex items-center gap-2",
-            isGenerating ? "bg-gray-400 cursor-not-allowed" : "bg-[#25D366] hover:bg-[#128C7E] shadow-[#25D366]/40"
+            "md:hidden hide-on-export fixed bottom-6 right-4 z-40 rounded-2xl px-4 py-3.5 shadow-lg transition-all active:scale-95 flex items-center gap-2",
+            isGenerating ? "bg-gray-400 text-white cursor-not-allowed" : "bg-[#25D366] text-[#0a3d22] hover:bg-[#1fb457] shadow-[#25D366]/40"
           )}
           title="Enviar Escala p/ WhatsApp"
         >

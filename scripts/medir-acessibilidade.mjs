@@ -1,0 +1,201 @@
+/**
+ * ♿ A ESCALA É LEGÍVEL PARA QUEM VAI LÊ-LA?
+ *
+ * Quem usa este site são 16 irmãos porteiros, vários com mais de 60 anos, quase sempre no celular,
+ * muitas vezes dentro da igreja — luz baixa, tela pequena, pressa. Contraste e tamanho de texto aqui
+ * não são refinamento: são a diferença entre ler e não ler.
+ *
+ * Isto nunca tinha sido medido. Tooltip e alvo de toque foram (parte 4); **contraste, tamanho de
+ * fonte e navegação por teclado, não**.
+ *
+ * O que se mede, e por quê:
+ *   · contraste texto/fundo — piso WCAG AA: 4,5:1 para texto normal, 3:1 para texto grande
+ *   · tamanho de fonte      — abaixo de 12px é ilegível no celular para quem tem presbiopia
+ *   · foco visível          — quem navega por teclado precisa ver onde está
+ *   · idioma declarado      — `lang="pt-BR"` é o que faz o leitor de tela pronunciar em português
+ *
+ * ⚠️ Mede a TELA RENDERIZADA, não o CSS. Uma classe do Tailwind não diz a cor final: herança,
+ * sobreposição e opacidade só se resolvem no navegador.
+ *
+ * Uso: node scripts/medir-acessibilidade.mjs [url]
+ */
+import { chromium } from 'playwright'
+
+const URL = process.argv[2] ?? 'https://flaviocom.github.io/escala-porteiros/'
+const PISO_NORMAL = 4.5
+const PISO_GRANDE = 3.0
+
+console.log('♿ ACESSIBILIDADE — medida na tela, não no CSS\n')
+console.log(`  url ... ${URL}\n`)
+
+const navegador = await chromium.launch()
+const pagina = await navegador.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 3 })
+await pagina.goto(URL, { waitUntil: 'networkidle', timeout: 60_000 })
+await pagina.waitForTimeout(2500)
+
+const medida = await pagina.evaluate(({ PISO_NORMAL, PISO_GRANDE }) => {
+  /** Luminância relativa, fórmula WCAG. */
+  const lum = ([r, g, b]) => {
+    const f = (v) => {
+      const c = v / 255
+      return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4
+    }
+    return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b)
+  }
+  const razao = (a, b) => {
+    const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p)
+    return (x + 0.05) / (y + 0.05)
+  }
+  const cor = (s) => {
+    const m = s.match(/rgba?\(([^)]+)\)/)
+    if (!m) return null
+    const p = m[1].split(',').map((x) => parseFloat(x))
+    // Transparente: a cor efetiva é a de trás; devolvemos null e subimos na árvore.
+    if (p.length > 3 && p[3] === 0) return null
+    return [p[0], p[1], p[2]]
+  }
+  /** Fundo efetivo: sobe na árvore até achar quem realmente pinta. */
+  const fundoDe = (el) => {
+    let n = el
+    while (n && n !== document.documentElement) {
+      const c = cor(getComputedStyle(n).backgroundColor)
+      if (c) return c
+      n = n.parentElement
+    }
+    return [255, 255, 255]
+  }
+
+  const ruins = []
+  const pequenos = []
+  let medidos = 0
+
+  for (const el of document.querySelectorAll('body *')) {
+    // Só elementos que REALMENTE mostram texto próprio.
+    const proprio = [...el.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim().length > 1)
+    if (!proprio) continue
+    const r = el.getBoundingClientRect()
+    if (r.width === 0 || r.height === 0) continue
+    const cs = getComputedStyle(el)
+    if (cs.visibility === 'hidden' || cs.display === 'none' || cs.opacity === '0') continue
+
+    const frente = cor(cs.color)
+    if (!frente) continue
+    const tamanho = parseFloat(cs.fontSize)
+    const negrito = parseInt(cs.fontWeight, 10) >= 700
+    const grande = tamanho >= 24 || (tamanho >= 18.66 && negrito)
+    const piso = grande ? PISO_GRANDE : PISO_NORMAL
+
+    medidos++
+    const fundo = fundoDe(el)
+    const rz = razao(frente, fundo)
+    const texto = el.textContent.trim().slice(0, 28)
+    const rgb = (c) => `rgb(${c.join(',')})`
+    if (rz < piso) {
+      ruins.push({ texto, razao: Math.round(rz * 100) / 100, piso, tamanho, frente: rgb(frente), fundo: rgb(fundo) })
+    }
+    if (tamanho < 12) pequenos.push({ texto, tamanho, classe: el.className?.toString?.().slice(0, 40) ?? '' })
+  }
+
+  /**
+   * 🔴 AGRUPADO POR ESTILO, não por ocorrência. A primeira versão dizia "159 textos abaixo do
+   * contraste" — mas eram **3 combinações** de cor/fundo/tamanho repetidas em 131 dias. Um número
+   * grande sobre pouca coisa distinta faz procurar um problema sistêmico onde há três ajustes.
+   */
+  const agrupar = (lista, chave) => {
+    const m = new Map()
+    for (const x of lista) {
+      const k = chave(x)
+      if (!m.has(k)) m.set(k, { ...x, ocorrencias: 0 })
+      m.get(k).ocorrencias++
+    }
+    return [...m.values()]
+  }
+
+  return {
+    medidos,
+    ruins: agrupar(ruins, (r) => `${r.frente}|${r.fundo}|${r.tamanho}`).sort((a, b) => a.razao - b.razao),
+    totalRuins: ruins.length,
+    pequenos: agrupar(pequenos, (p) => `${p.tamanho}|${p.classe}`),
+    totalPequenos: pequenos.length,
+    lang: document.documentElement.lang,
+    titulo: document.title,
+  }
+}, { PISO_NORMAL, PISO_GRANDE })
+
+/**
+ * 🔴 FOCO SE MEDE TABULANDO. A primeira versão chamava `el.focus()` e lia o `outline` — e deu
+ * "sem foco visível", **falso**. Foco programático não dispara `:focus-visible`, que é a condição
+ * que o CSS moderno (e o Tailwind) usa para desenhar o anel. A régua acusava o site de um defeito
+ * que era dela.
+ */
+const focos = []
+for (let i = 0; i < 6; i++) {
+  await pagina.keyboard.press('Tab')
+  focos.push(
+    await pagina.evaluate(() => {
+      const a = document.activeElement
+      if (!a || a === document.body) return null
+      const cs = getComputedStyle(a)
+      const temAnel = cs.outlineStyle !== 'none' && parseFloat(cs.outlineWidth) > 0
+      return { tag: a.tagName, visivel: temAnel || cs.boxShadow !== 'none' }
+    }),
+  )
+}
+const tabulados = focos.filter(Boolean)
+const semAnel = tabulados.filter((f) => !f.visivel).length
+
+await pagina.screenshot({ path: 'capturas/acessibilidade.png' })
+await navegador.close()
+
+console.log(`  elementos de texto medidos ... ${medida.medidos}`)
+console.log(`  abaixo do contraste mínimo ... ${medida.totalRuins}`)
+console.log(`  fonte menor que 12px ......... ${medida.totalPequenos}`)
+console.log(`  idioma declarado ............. ${medida.lang || '(vazio)'}`)
+console.log(`  título da aba ................ ${medida.titulo || '(vazio)'}\n`)
+
+// 🔒 Medir zero elementos é defeito de leitura, não página sem texto.
+if (medida.medidos < 20) {
+  console.error(`🔴 só ${medida.medidos} elementos de texto medidos — a página não renderizou ou o seletor quebrou.`)
+  process.exit(1)
+}
+
+const problemas = []
+
+if (medida.totalRuins) {
+  problemas.push(`${medida.totalRuins} texto(s) abaixo do contraste mínimo`)
+  console.log(`🔴 CONTRASTE ABAIXO DO PISO (WCAG AA) — ${medida.ruins.length} combinação(ões) distinta(s):\n`)
+  for (const r of medida.ruins) {
+    console.log(`  ${String(r.razao).padStart(5)}:1  piso ${r.piso}:1 · ${r.tamanho}px · ${r.ocorrencias}× na tela`)
+    console.log(`         ${r.frente} sobre ${r.fundo}   ex.: "${r.texto}"`)
+  }
+  console.log()
+}
+
+// ⚠️ AVISO, não reprovação — e a diferença é deliberada.
+//
+// Contraste tem piso normativo (WCAG AA). **Tamanho de fonte não tem**: os 12px são régua minha.
+// Rótulo em caixa-alta, negrito e com espaçamento largo é legível a 10px, e a informação
+// principal (o número do dia, 24px; os nomes, 14px) está muito acima disso.
+//
+// Reprovar por régua de gosto deixa o portão vermelho para sempre — e portão cronicamente
+// vermelho é portão que alguém aprende a ignorar, junto com os achados de verdade que ele leva.
+if (medida.totalPequenos) {
+  console.log(`⚠️ TEXTO ABAIXO DE 12px — ${medida.pequenos.length} caso(s), para decisão de quem desenha:\n`)
+  for (const p of medida.pequenos) console.log(`  ${p.tamanho}px · ${p.ocorrencias}× na tela   ex.: "${p.texto}"`)
+  console.log()
+}
+
+if (medida.lang !== 'pt-BR') problemas.push(`idioma "${medida.lang || 'vazio'}" — o leitor de tela vai pronunciar em inglês`)
+
+console.log(`  foco visível ao tabular ...... ${tabulados.length - semAnel} de ${tabulados.length} elementos`)
+if (!tabulados.length) problemas.push('nada recebe foco ao tabular — navegação por teclado impossível')
+else if (semAnel) problemas.push(`${semAnel} elemento(s) sem anel de foco visível`)
+
+console.log('─'.repeat(70))
+if (problemas.length) {
+  console.error(`\n🔴 ${problemas.join(' · ')}\n`)
+  process.exit(1)
+}
+console.log('\n✅ Contraste, foco de teclado e idioma dentro do piso WCAG AA.')
+if (medida.totalPequenos) console.log('   (o aviso de tamanho de fonte acima é recomendação, não norma.)')
+console.log()

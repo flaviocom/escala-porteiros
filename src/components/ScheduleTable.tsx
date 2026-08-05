@@ -138,7 +138,7 @@ export const ScheduleTable: React.FC<ScheduleTableProps> = ({
   const ShiftBadge = ({ type }: { type: string }) => {
     if (type === 'SANTA_CEIA') {
       return (
-        <span className="px-2 py-1 inline-flex items-center gap-1 text-[10px] font-bold rounded-full bg-red-50 text-red-600 border border-red-200 uppercase tracking-tight">
+        <span className="px-2 py-1 inline-flex items-center gap-1 text-[10px] font-bold rounded-full bg-red-50 text-red-700 border border-red-200 uppercase tracking-tight">
           <AlertCircle className="h-3 w-3" />
           SANTA CEIA
         </span>
@@ -146,8 +146,8 @@ export const ScheduleTable: React.FC<ScheduleTableProps> = ({
     }
 
     const config = {
-      'MANHÃ': { bg: 'bg-amber-50', text: 'text-amber-600', border: 'border-amber-100', icon: Sun },
-      'TARDE': { bg: 'bg-orange-50', text: 'text-orange-600', border: 'border-orange-100', icon: CloudSun },
+      'MANHÃ': { bg: 'bg-amber-50', text: 'text-amber-800', border: 'border-amber-100', icon: Sun },
+      'TARDE': { bg: 'bg-orange-50', text: 'text-orange-800', border: 'border-orange-100', icon: CloudSun },
       'NOITE': { bg: 'bg-indigo-50', text: 'text-indigo-600', border: 'border-indigo-100', icon: MoonStar },
     }[type] || { bg: 'bg-gray-50', text: 'text-gray-600', border: 'border-gray-200', icon: Clock };
 
@@ -156,8 +156,8 @@ export const ScheduleTable: React.FC<ScheduleTableProps> = ({
     if (type === 'TARDE') {
       return (
         <div className="flex flex-col items-center justify-center bg-orange-50 border border-orange-100 rounded-lg px-3 py-1">
-          <CloudSun className="h-4 w-4 text-orange-500 mb-0.5" />
-          <span className="text-[10px] font-bold text-orange-600 leading-none">TARDE</span>
+          <CloudSun className="h-4 w-4 text-orange-700 mb-0.5" />
+          <span className="text-[10px] font-bold text-orange-800 leading-none">TARDE</span>
           <span className="text-[9px] font-bold text-orange-700 uppercase mt-0.5 leading-none tracking-wider">
             ENSAIO
           </span>
@@ -213,10 +213,10 @@ export const ScheduleTable: React.FC<ScheduleTableProps> = ({
               const isToday = isSameDay(shift.date, today);
 
               const typeConfig = {
-                'MANHÃ': { bg: 'bg-amber-500', text: 'text-white', sub: 'text-amber-700', border: 'border-amber-200' },
-                'TARDE': { bg: 'bg-orange-500', text: 'text-white', sub: 'text-orange-700', border: 'border-orange-200' },
+                'MANHÃ': { bg: 'bg-amber-700', text: 'text-white', sub: 'text-amber-800', border: 'border-amber-200' },
+                'TARDE': { bg: 'bg-orange-700', text: 'text-white', sub: 'text-orange-800', border: 'border-orange-200' },
                 'NOITE': { bg: 'bg-indigo-600', text: 'text-white', sub: 'text-indigo-800', border: 'border-indigo-200' },
-                'SANTA_CEIA': { bg: 'bg-red-600', text: 'text-white', sub: 'text-red-800', border: 'border-red-200' }
+                'SANTA_CEIA': { bg: 'bg-red-700', text: 'text-white', sub: 'text-red-800', border: 'border-red-200' }
               }[shift.type] || { bg: 'bg-blue-600', text: 'text-white', sub: 'text-blue-800', border: 'border-blue-200' };
 
               return (
@@ -232,7 +232,7 @@ export const ScheduleTable: React.FC<ScheduleTableProps> = ({
                   <div className="flex p-4 sm:p-5 gap-4 sm:gap-6 items-center">
                     <div className="flex flex-col items-center justify-start min-w-[85px] sm:min-w-[100px]">
                       {isToday && (
-                        <span className="mb-2 px-2 py-0.5 bg-amber-500 text-white text-[10px] font-black rounded-full uppercase tracking-tighter animate-pulse shadow-sm">
+                        <span className="mb-2 px-2 py-0.5 bg-amber-700 text-white text-[10px] font-black rounded-full uppercase tracking-tighter animate-pulse shadow-sm">
                           HOJE
                         </span>
                       )}
@@ -240,7 +240,7 @@ export const ScheduleTable: React.FC<ScheduleTableProps> = ({
                         "w-14 h-14 sm:w-16 sm:h-16 flex flex-col items-center justify-center rounded-2xl transition-all shadow-md",
                         typeConfig.bg, typeConfig.text
                       )}>
-                        <span className="text-xs sm:text-sm font-bold leading-none uppercase opacity-90">
+                        <span className="text-xs sm:text-sm font-bold leading-none uppercase">
                           {format(shift.date, 'MMM', { locale: ptBR }).replace('.', '')}
                         </span>
                         <span className="text-2xl sm:text-3xl font-black leading-none mt-1">
