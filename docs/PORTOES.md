@@ -115,7 +115,7 @@ viva) e **`escala-porteiros` como slug não pode acusar**.
 regra sem regenerar → vermelho.
 
 ### 11. `doc:comandos` — todo comando citado existe
-**População:** os 15 documentos vivos · isentos os append-only.
+**População:** os 17 documentos vivos · isentos os append-only.
 **Critério:** todo `npm run <nome>` está no `package.json`; todo `node scripts/<arquivo>` existe em
 disco. **Achou defeito na primeira execução:** `npm run tempo`, citado na documentação, não existia.
 

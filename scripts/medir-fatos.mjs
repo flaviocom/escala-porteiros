@@ -119,7 +119,15 @@ const FATOS = [
   {
     chave: 'documentos vivos varridos',
     valor: numeroEm(comandos, /documentos vivos varridos \.+ (\d+)/),
-    padroes: [/mede \*\*(\d+) documentos\*\*/gi, /descoberta de (\d+)/gi],
+    // ⚠️ ALARGADOS: a primeira versão exigia a palavra "documentos" COLADA no número, e deixou
+    //    passar "agora descobre e mede **15**." — a frase mais natural de todas. Padrão que só pega
+    //    a forma que o autor imaginou é padrão que cobre o autor, não o texto.
+    padroes: [
+      /mede \*\*(\d+)(?: documentos)?\*\*/gi,
+      /descoberta de (\d+)/gi,
+      /(\d+) documentos vivos/gi,
+      /documentos vivos[^|\n]{0,20}?(\d+)/gi,
+    ],
     fonte: 'node scripts/conferir-comandos-da-documentacao.mjs',
   },
   {

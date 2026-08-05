@@ -18,10 +18,12 @@
 
 ## Em uma frase
 
-**O produto está no ar, auditado por fora, e virou GENÉRICO** — o nome do cliente saiu do código e
-virou dado. Falta uma decisão do Flavio (abaixo) e as duas credenciais.
+**O produto está no ar, auditado por fora, e a escala de 06/08 a 31/12 está publicada e conferida.**
+O nome do cliente saiu do código e virou dado. As duas decisões que estavam pendentes **foram
+tomadas pelo Flavio em 05/08** — a data de início (06/08) e o escopo de finalidade (fase 1, uso
+interno). O que falta é só o que depende das credenciais dele.
 
-## 🔴 O que aconteceu em 05/08/2026, e o que ainda depende dele
+## O que aconteceu em 05/08/2026
 
 **1. A escala nova desmentia o site que a congregação já tem o link — em TODOS os turnos.**
 O Flavio viu antes de mim: hoje, 05/08, a escala nova trocava uma pessoa sem ninguém ter pedido.
@@ -36,10 +38,9 @@ Re-medível a qualquer momento:
 npm run vivo:divulgado -- --antigo https://flaviocom.github.io/escala-irmaos-2026-mar/
 ```
 
-> ⏳ **A decisão que é do Flavio, e a única coisa que trava publicar:** de **06/08 em diante, 84
-> turnos mudam** em relação ao que o site antigo mostra. É o esperado — a escala nova conserta o
-> distanciamento —, mas **amanhã é aviso curto**. Se preferir, ele diz uma data de início mais à
-> frente e o bloco é regerado.
+> ✅ **DECIDIDO em 05/08: começa em 06/08 mesmo.** De 06/08 em diante, **84 turnos mudam** em relação
+> ao que o site antigo mostra — é o esperado, a escala nova conserta o distanciamento. Ele optou por
+> avisar os irmãos em vez de adiar o início.
 
 **2. §0: o produto é genérico — e o código dizia o contrário.**
 A regra máxima que ele instituiu (*"é uma escala genérica, configurável, mas genérica, com intenção
@@ -72,7 +73,7 @@ tela (usava o guloso; a tela compara 8 versões) e gravava em **uma pasta só**.
 [`docs/RECONSTRUIR.md`](docs/RECONSTRUIR.md): modelo de dados, catálogo de regras (⚙️ **gerado do
 código**, com portão que reprova se divergir), algoritmo, arquitetura (grafo de importações
 **medido**), operação e instalação do zero. O portão `contagem` foi **invertido**: tinha lista fixa
-de 5 documentos e deixava 4 invisíveis; agora descobre e mede **15**.
+de 5 documentos e deixava 4 invisíveis; agora descobre e mede **17 documentos**.
 
 **7. A finalidade ficou escrita, em três fases** (decisão dele, S-029). **Hoje o produto atende UMA
 congregação, e só ela** — os porteiros da comum do Jd. São Luiz. Outras comuns e a venda são planos
