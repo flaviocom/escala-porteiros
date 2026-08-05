@@ -85,11 +85,39 @@ await conferir('os botões têm alvo de toque de pelo menos 40px de altura', asy
   }
 })
 
-await conferir('dá para digitar a senha no celular', async () => {
-  const campo = pagina.locator('input[type="password"]').first()
-  await campo.fill('teste-de-toque-123')
+/**
+ * ⚠️ Esta checagem já mediu a coisa errada. Ela pegava `input[type=password]` PRIMEIRO da tela e
+ * lia o valor depois — mas digitar no campo do token faz os campos de senha nascerem, o React
+ * redesenha, e o "primeiro" passa a ser outro elemento. O portão acusava o produto por defeito da
+ * própria régua. Agora o campo é escolhido pelo RÓTULO, que não muda de dono.
+ */
+await conferir('dá para digitar no celular sem perder o texto', async () => {
+  const campo = pagina.getByLabel(/Token do GitHub/i).first()
+  await campo.click()
+  await campo.type('teste-de-toque-123', { delay: 10 })
   const v = await campo.inputValue()
-  return { ok: v === 'teste-de-toque-123', detalhe: 'campo aceita digitação' }
+  return { ok: v === 'teste-de-toque-123', detalhe: v === 'teste-de-toque-123' ? 'o texto chegou inteiro' : `veio "${v}"` }
+})
+
+/**
+ * 🔴 O CAMPO NÃO PODE FUGIR DE DEBAixO DO DEDO — portão criado em 05/08/2026.
+ *
+ * Medido num iPhone 13: os campos de senha nasciam ACIMA do token e empurravam 176 px o campo em
+ * que a pessoa estava digitando. Com o teclado aberto, isso é perder a linha no meio de um token
+ * de 90 caracteres. Movidos para baixo, o deslocamento é ZERO.
+ *
+ * ⚠️ Mede a posição no DOCUMENTO, não na janela: `boundingBox()` muda com a rolagem e mediria o
+ * navegador rolando, não o layout se movendo. Foi assim que a primeira medição errou por 360 px.
+ */
+await conferir('o campo em que se digita NÃO se desloca ao redesenhar', async () => {
+  const campo = pagina.getByLabel(/Token do GitHub/i).first()
+  const onde = () => campo.evaluate((el) => el.getBoundingClientRect().top + window.scrollY)
+  const antes = await onde()
+  await campo.fill('')
+  await campo.type('github_pat_de_teste', { delay: 8 })
+  await pagina.waitForTimeout(500)
+  const desloc = Math.abs((await onde()) - antes)
+  return { ok: desloc <= 24, detalhe: `${desloc.toFixed(0)} px de deslocamento (teto: 24)` }
 })
 
 console.log('CHECAGENS')

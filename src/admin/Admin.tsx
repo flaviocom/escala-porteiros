@@ -292,15 +292,6 @@ const PrimeiroAcesso: React.FC<{ aoAbrir: (s: Segredos) => void }> = ({ aoAbrir 
 
       <ColarCofre />
       <ComoCriarOToken />
-      {/* Os campos de senha só aparecem quando existe um segredo para proteger. */}
-      {temSegredo && (
-        <>
-          <Campo rotulo="Senha (mínimo 8 caracteres)" tipo="senha" valor={senha} aoMudar={setSenha}
-            nome="senha-do-cofre" autoCompletar="new-password" />
-          <Campo rotulo="Repita a senha" tipo="senha" valor={repetir} aoMudar={setRepetir}
-            nome="senha-do-cofre-repetida" autoCompletar="new-password" />
-        </>
-      )}
       <Campo
         rotulo="Token do GitHub (opcional)"
         tipo="senha"
@@ -320,6 +311,24 @@ const PrimeiroAcesso: React.FC<{ aoAbrir: (s: Segredos) => void }> = ({ aoAbrir 
         aoMudar={setChaveMotor}
         dica="Sem ela, o algoritmo continua gerando e validando — só não há proposta nem explicação do motor."
       />
+      {/*
+        🔴 OS CAMPOS DE SENHA NASCEM ABAIXO DO TOKEN — e a ordem não é estética.
+
+        Eles ficavam ACIMA. Medido num iPhone 13 em 05/08/2026: ao digitar o token, o campo em que a
+        pessoa estava digitando **saltava 184 px para cima**, porque dois campos nasciam em cima dele
+        e empurravam tudo. O texto e o foco sobreviviam — mas com o teclado aberto o campo foge de
+        debaixo do dedo, e quem digita um token de 90 caracteres perde a linha.
+
+        Abaixo, nada do que já estava na tela se move.
+      */}
+      {temSegredo && (
+        <>
+          <Campo rotulo="Senha (mínimo 8 caracteres)" tipo="senha" valor={senha} aoMudar={setSenha}
+            nome="senha-do-cofre" autoCompletar="new-password" />
+          <Campo rotulo="Repita a senha" tipo="senha" valor={repetir} aoMudar={setRepetir}
+            nome="senha-do-cofre-repetida" autoCompletar="new-password" />
+        </>
+      )}
       {erro && <Aviso tom="erro">{erro}</Aviso>}
       {/*
         O botão de baixo só existe quando há segredo a guardar. Sem isso, ele ficava idêntico ao de
@@ -1366,7 +1375,13 @@ const AbaGerar: React.FC<{
                     </div>
                     <div className="min-w-0">
                       <p className="text-sm font-semibold text-gray-900">
-                        {r.titulo.replace(/^[^—]+—\s*/, '')}
+                        {/*
+                          Tira o prefixo técnico ("Capacidade — ") e devolve a maiúscula: sem isto
+                          o título vira "cada turno com o número certo…", em minúscula, e um título
+                          em minúscula parece frase quebrada, não cabeçalho. Achado na verificação
+                          visual de 05/08/2026 — o DOM estava certo e o olho não.
+                        */}
+                        {(() => { const t = r.titulo.replace(/^[^—]+—\s*/, ''); return t.charAt(0).toUpperCase() + t.slice(1) })()}
                         {r.familia === 'QUALIDADE' && (
                           <span className="ml-2 rounded bg-gray-100 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-gray-500">
                             não impede publicar
