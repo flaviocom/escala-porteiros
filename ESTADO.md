@@ -5,7 +5,7 @@
 > **Última atualização:** 04/08/2026 · **Fuso:** America/São_Paulo
 >
 > **Cadeia de navegação, nesta ordem:**
-> **`ESTADO.md` (você está aqui)** → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-04-j.md) → [`BACKLOG.md`](BACKLOG.md)
+> **`ESTADO.md` (você está aqui)** → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-05.md) → [`BACKLOG.md`](BACKLOG.md)
 > *onde estamos · o que aconteceu na última sessão e por quê · o que fazer a seguir*
 >
 > **Roteador do projeto:** [`AGENTS.md`](AGENTS.md) ·

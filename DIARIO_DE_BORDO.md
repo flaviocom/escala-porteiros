@@ -570,3 +570,49 @@ código — termina quando a pessoa consegue percorrê-la sozinha, do ponto em q
 
 `COMO_CRIAR_O_TOKEN` e `ComoCriarOToken` são aditivos: remover devolve as mensagens genéricas e tira
 o guia da tela.
+
+---
+
+## 05/08/2026 — entrar na administração: a senha que protegia o vazio
+
+**Solicitação:** *"Eu não consigo logar porque pede token do GitHub. Eu não tenho token. Quais são
+as opções para eu entrar sem digitar token?"* — e, depois, *"entrou uma vez, fica liberado?"*
+
+### A decisão que exigiu julgamento
+
+O token já era opcional. O reflexo seria responder "é só deixar o campo vazio" e encerrar. Mas o
+incômodo dele apontava para outra coisa: **a tela ainda exigia SENHA**.
+
+A senha existe por um motivo só — cifrar o token no `localStorage`. Sem token e sem chave do motor,
+o cofre é um objeto vazio. A tela pedia oito caracteres para proteger nada, e nem sigilo comprava: o
+repositório é público. Quem só queria olhar a escala pagava pedágio inventado.
+
+**Decisão:** a proteção passa a ser proporcional ao que existe para proteger. Sem segredo, sem
+senha, sem cofre. *Reverter:* devolver a validação incondicional de senha em `criar()`.
+
+### A decisão que eu quase errei
+
+Ele pediu para "ficar liberado". O caminho fácil seria guardar o token **em claro** no
+`localStorage` e não pedir nada. Recusei: qualquer um que abrisse o navegador dele publicaria na
+escala da congregação.
+
+A saída certa era o **gerenciador de senhas do navegador** — o campo não tinha `name` nem
+`autocomplete`, e por isso o Chrome nunca se ofereceu para lembrar. O token continua cifrado; quem
+lembra a senha é o navegador, que faz isso melhor do que qualquer coisa que este site inventasse.
+*Reverter:* tirar os atributos dos três campos de senha.
+
+### O erro de comunicação que custou confiança
+
+Ele perguntou se os projetos tinham sido misturados, e depois lembrou que eu havia reportado erro na
+escala. Os dois vinham da mesma falha minha: **relatei "a escala está com erro" sem dizer QUAL
+site**. O defeito é no antigo; o novo estava certo o tempo todo (131/131 dias, 543 nomes, 0
+divergências, conferido ao vivo).
+
+Nome do sistema junto com o defeito, sempre. Sem isso, um relatório correto vira alarme falso sobre
+o produto errado.
+
+### E a régua do portão nasceu errada
+
+`input[type="password"]` contava também o campo do token e o da chave do motor — o portão acusou
+"2 campos de senha" numa tela sem nenhum. Passou a medir pelo **rótulo**. Um portão que reprova o
+produto por defeito da própria régua é o mais convincente dos mentirosos: o vermelho parece achado.
