@@ -7,7 +7,7 @@
  * o 0 era verdade sobre uma busca que não procurava nada. Passou por verde.
  *
  * Quando o termo foi consertado, ele achou uma ocorrência real no primeiro segundo
- * (`Admin.tsx:1055`). Ou seja: entre o portão inerte e o portão vivo, a diferença era um defeito de
+ * (uma frase de tela em `Admin.tsx` que dizia "os irmãos já viram"). Ou seja: entre o portão inerte e o portão vivo, a diferença era um defeito de
  * verdade — e nada além deste autoteste teria mostrado a diferença.
  *
  * A regra do método: *o portão prova as DUAS pontas*. Reprovar o infrator não basta (um portão

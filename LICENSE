@@ -1,0 +1,31 @@
+Copyright (c) 2026 Flávio Oliveira. Todos os direitos reservados.
+
+TODOS OS DIREITOS RESERVADOS — software proprietário.
+
+Este repositório é público para que a congregação que o utiliza possa consultar a escala e para que
+o funcionamento do produto seja auditável. **Ser público não o torna livre.**
+
+NÃO é concedida permissão para:
+  · usar este software, no todo ou em parte, para operar outra escala;
+  · copiar, modificar, mesclar, publicar, distribuir, sublicenciar ou vender cópias;
+  · criar obra derivada.
+
+É PERMITIDO, sem pedir:
+  · ler o código e a documentação;
+  · estudá-los para aprender;
+  · citá-los, com atribuição.
+
+Para usar o produto na sua congregação, casa de oração ou empresa, fale com o autor:
+brflaviooliveira@gmail.com
+
+--------------------------------------------------------------------------------------------------
+POR QUE PROPRIETÁRIA, E NÃO ABERTA
+
+Esta escolha é reversível e foi feita em 05/08/2026, quando o projeto passou a declarar suas três
+fases (`docs/FINALIDADE_E_FASES.md`): hoje ele atende **uma** congregação; vender é a fase 3.
+
+Uma licença permissiva (MIT, Apache) é a decisão que **não tem volta**: publicada uma vez, qualquer
+cópia feita sob ela continua livre para sempre, mesmo que o repositório mude de licença depois.
+Escolher proprietária agora preserva as duas saídas — abrir depois é um commit; fechar depois, não.
+
+Isto não é conselho jurídico. Se a fase 3 chegar, vale conferir com quem seja advogado.

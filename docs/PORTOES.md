@@ -51,8 +51,14 @@ projeto some.
 método, com prejuízo registrado.
 
 ### 3. `test:fuso:berlim` — a mesma suíte em `Europe/Berlin`
-**Critério:** o script primeiro **prova que o fuso mudou** (compara a data local antes e depois), e
-só então roda. Sem essa prova, um `TZ` ignorado pelo sistema faria o passo passar sem testar nada.
+**Critério:** o script primeiro **prova que o fuso mudou** — ele compara `getTimezoneOffset()` e
+exige que fique **negativo** — e só então roda.
+
+🔴 **E esse mecanismo tem um ponto cego, medido em 05/08/2026:** exigir offset negativo significa
+testar sempre num fuso POSITIVO (Berlim). Um defeito que só morde em fuso negativo — como o
+`Date.UTC` misturado com getters locais em `ultimoDiaDoMes` — passa por aqui intacto. A tese *"em
+UTC−3 um defeito de fuso é invisível"* tem um inverso, e ele custou uma regressão viva em produção.
+Por isso funções de data ganham teste de **valor absoluto**, que não depende do fuso de quem roda. Sem essa prova, um `TZ` ignorado pelo sistema faria o passo passar sem testar nada.
 Em UTC−3 um defeito de fuso é invisível: o dia só vira no fim da tarde.
 
 ### 4. `denominacao` — nenhum jargão comoditizado em texto que alguém lê

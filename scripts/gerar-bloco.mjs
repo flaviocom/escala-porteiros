@@ -57,7 +57,19 @@ const ESCREVER = args.includes('--escrever')
 const pessoasArq = JSON.parse(readFileSync(join(RAIZ, 'public/dados/pessoas.json'), 'utf8'))
 const blocosArq = JSON.parse(readFileSync(join(RAIZ, 'public/dados/blocos.json'), 'utf8'))
 const pessoas = pessoasArq.pessoas
-const historico = blocosArq.blocos[0]
+/*
+  🔴 TODOS OS BLOCOS ANTERIORES, NÃO SÓ O PRIMEIRO — achado da auditoria externa de 05/08/2026.
+
+  Isto era `blocosArq.blocos[0]`, e a gravação montava `[truncado, novo]`. Com dois blocos
+  funcionava; **no dia em que houvesse três, rodar este script apagaria o do meio** — passado
+  publicado, reescrito, em silêncio. E a tela já produz N blocos (`[...anteriores, novo]`), então o
+  terceiro é questão de tempo.
+
+  Agora todos os anteriores sobrevivem; só o ÚLTIMO é truncado na véspera do novo, que é o único que
+  se sobrepõe ao período que vai ser gerado.
+*/
+const anteriores = blocosArq.blocos.filter((b) => b.inicio < DE)
+const historico = anteriores[anteriores.length - 1] ?? blocosArq.blocos[0]
 
 // 🔴 A CONFIGURAÇÃO VEM DO DADO, NUNCA DO CÓDIGO — corrigido em 04/08/2026 por auditoria.
 //
@@ -72,7 +84,7 @@ const historico = blocosArq.blocos[0]
 // em silêncio, que é a forma exata do defeito que originou o projeto (o site antigo tem a Ceia em
 // 07/06 porque a data estava no código).
 //
-// A tela nunca teve esse problema: `Admin.tsx:504-509` sempre leu `dados.config`.
+// A tela nunca teve esse problema: o `Admin` sempre leu `dados.config`.
 const config = JSON.parse(readFileSync(join(RAIZ, 'public/dados/config.json'), 'utf8'))
 const SANTA_CEIA = config.santaCeia
 const MALHA = config.malhaPadrao
@@ -92,7 +104,7 @@ const CAPACIDADE = config.capacidadePadrao
  *
  * ⚠️ Falha HONESTA (o gerador disse que não deu, em vez de entregar escala pela metade), mas com
  * diagnóstico que apontava para o lugar errado: parecia falta de gente, era data contaminada. A tela
- * já filtrava certo (`Admin.tsx:1035`); era só este script que não.
+ * já filtrava certo (o `useMemo` da fronteira, em `AbaGerar`); era só este script que não.
  */
 const fronteira = {}
 for (const t of historico.turnos) {
@@ -186,7 +198,26 @@ if (ESCREVER) {
   // governado por dois blocos — resolvível, mas é o tipo de ambiguidade que vira defeito depois.
   const vespera = dominio.somarDias(DE, -1)
   const truncado = { ...historico, fim: vespera, turnos: historico.turnos.filter((t) => diferencaEmDias(t.data, DE) > 0) }
-  const novo = { versao: 1, blocos: [truncado, r.bloco] }
+
+  // Os anteriores ao último ficam INTOCADOS; só o último é truncado, porque só ele se sobrepõe.
+  const preservados = anteriores.slice(0, -1)
+  const novo = { versao: 1, blocos: [...preservados, truncado, r.bloco] }
+
+  /*
+    🔒 CONTA ANTES E DEPOIS. Um bloco que some é passado reescrito, e passado reescrito é a única
+    coisa que este projeto promete nunca fazer. O número não pode ser presumido.
+  */
+  const turnosAntes = blocosArq.blocos.flatMap((b) => b.turnos).filter((t) => diferencaEmDias(t.data, DE) > 0).length
+  const turnosDepois = [...preservados, truncado].flatMap((b) => b.turnos).length
+  if (turnosDepois !== turnosAntes) {
+    console.error(`
+🔴 PERDA DE PASSADO: antes do corte havia ${turnosAntes} turno(s) publicado(s); depois de montar, ${turnosDepois}.`)
+    console.error('   Nada foi gravado. Isto é passado sendo reescrito, e o produto promete que isso não acontece.')
+    process.exit(3)
+  }
+  console.log(`
+  blocos anteriores preservados ... ${preservados.length}`)
+  console.log(`  passado conferido ............... ${turnosDepois} de ${turnosAntes} turno(s) antes do corte`)
   /*
     🔴 AS DUAS PASTAS, SEMPRE — achado da auditoria adversarial em 05/08/2026.
 

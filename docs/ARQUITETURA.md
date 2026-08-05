@@ -87,8 +87,17 @@ admin      → dados, dominio
 components → dados, dominio, types
 dados      → dominio, types
 export     → types
+types      → dominio
 utils      → export, types
 raiz       → admin, components, dados, dominio, types, utils
+```
+
+⚠️ São **7** arestas. A primeira versão desta lista trazia 6 — faltava `types → dominio` — num
+parágrafo que se anuncia como *"medido, não descrito de memória"*. Achado por auditoria externa em
+05/08/2026. Reconferir é uma linha:
+
+```bash
+npm run arquitetura
 ```
 
 Nenhuma seta aponta para dentro do domínio a partir de baixo. Nenhum ciclo.

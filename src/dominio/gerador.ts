@@ -350,6 +350,12 @@ export interface EscolhaDeVersoes {
   melhor: Resultado
   /** Todas as tentativas, para a tela poder dizer o que foi comparado. */
   versoes: VersaoGerada[]
+  /**
+   * ⚠️ Sem leitor hoje (auditoria externa, 05/08/2026): `Admin.tsx` recalcula o complemento à mão,
+   * e `gerar-bloco.mjs` imprime este campo. Fica porque é a resposta direta de "quantas das oito
+   * não fecharam?", e recalcular na tela é a fonte dupla que este projeto evita. O caminho certo é
+   * a tela passar a lê-lo — não este campo sumir.
+   */
   descartadas: number
 }
 

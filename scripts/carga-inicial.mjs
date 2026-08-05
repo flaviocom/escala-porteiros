@@ -21,6 +21,7 @@
 import { writeFileSync, mkdirSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { hojeSaoPaulo } from './lib/dominio.mjs'
 
 const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..')
 
@@ -190,7 +191,17 @@ const blocos = {
       id: 'bloco-historico-2026-03',
       inicio: '2026-03-01',
       fim: ATE,
-      geradoEm: new Date().toISOString().slice(0, 10),
+      /*
+        🔴 `hojeSaoPaulo()`, NUNCA `new Date().toISOString().slice(0, 10)` — P4.7, fechado 05/08/2026.
+
+        `toISOString()` devolve UTC. Às 21h de São Paulo já é o dia seguinte em UTC, então esta linha
+        gravaria uma data de geração **um dia à frente** para quem rodasse o script à noite — e
+        `datas.ts` inteiro existe para impedir exatamente isso. Era o único ponto do repositório que
+        ainda usava a forma perigosa.
+
+        Agora vem do MESMO código do produto, via `scripts/lib/dominio.mjs`. Sem cópia paralela.
+      */
+      geradoEm: await hojeSaoPaulo(),
       origem: 'importado',
       pisoAlcancado: null,
       elenco: IRMAOS.map((i) => i.id),

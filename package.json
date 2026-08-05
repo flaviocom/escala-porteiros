@@ -11,7 +11,7 @@
     "typecheck": "tsc --noEmit -p tsconfig.app.json",
     "test": "vitest run",
     "test:watch": "vitest",
-    "gate": "npm run typecheck && npm run test && npm run test:fuso:berlim && npm run denominacao && npm run fontes && npm run contagem && npm run cadeia && npm run generico && npm run generico:autoteste && npm run doc:regras:conferir && npm run doc:comandos && npm run arquitetura && npm run fatos:conferir && npm run auditoria && npm run regras-mestras && npm run build",
+    "gate": "npm run typecheck && npm run test && npm run test:fuso:berlim && npm run denominacao && npm run fontes && npm run contagem && npm run cadeia && npm run generico && npm run generico:autoteste && npm run doc:regras:conferir && npm run doc:comandos && npm run arquitetura && npm run fatos:conferir && npm run datas && npm run citacoes && npm run crescimento && npm run auditoria && npm run regras-mestras && npm run build",
     "prebuild": "node -e \"require('node:fs').rmSync('docs/assets',{recursive:true,force:true})\"",
     "test:fuso:berlim": "node scripts/testar-em-outro-fuso.mjs",
     "denominacao": "node scripts/medir-denominacao-sem-ia.mjs",
@@ -47,7 +47,10 @@
     "doc:comandos": "node scripts/conferir-comandos-da-documentacao.mjs",
     "arquitetura": "node scripts/conferir-arquitetura.mjs",
     "fatos": "node scripts/medir-fatos.mjs",
-    "fatos:conferir": "node scripts/medir-fatos.mjs --conferir"
+    "fatos:conferir": "node scripts/medir-fatos.mjs --conferir",
+    "datas": "node scripts/portao-datas.mjs",
+    "citacoes": "node scripts/conferir-citacoes.mjs",
+    "crescimento": "node scripts/medir-crescimento.mjs"
   },
   "dependencies": {
     "clsx": "^2.1.1",

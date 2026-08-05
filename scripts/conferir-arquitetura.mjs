@@ -33,13 +33,33 @@ function arquivos(dir, acc = []) {
   return acc
 }
 
-/** Todo `from '...'` de um arquivo, com a linha em que aparece. */
+/**
+ * Toda dependência declarada num arquivo, com a linha.
+ *
+ * 🔴 ASPAS DUPLAS TAMBÉM — achado da auditoria externa de 05/08/2026.
+ *
+ * A primeira versão casava só aspas simples: `/from\s+'([^']+)'/`. O auditor injetou
+ * `import clsx from "clsx"` dentro de `src/dominio/` e este portão imprimiu, sem piscar,
+ * *"✅ O domínio não importa nada de fora dele"*. A mesma injeção com aspas simples era acusada
+ * corretamente — a outra ponta funcionava, e foi isso que escondeu o buraco.
+ *
+ * O projeto **não tem linter** forçando um estilo de aspas, então a porta estava escancarada
+ * justamente na invariante que o `ARQUITETURA.md` chama de *"a pior falha possível"*.
+ *
+ * Cobre também `import()` dinâmico, `require()` e o import só de efeito colateral — todos saíam do
+ * domínio pelo mesmo motivo: ninguém tinha escrito o padrão deles.
+ */
 function importacoes(abs) {
   const texto = readFileSync(path.join(RAIZ, abs), 'utf8')
-  return [...texto.matchAll(/from\s+'([^']+)'/g)].map((m) => ({
-    alvo: m[1],
-    linha: texto.slice(0, m.index).split('\n').length,
-  }))
+  const formas = [
+    /from\s+["']([^"']+)["']/g,
+    /import\s*\(\s*["']([^"']+)["']\s*\)/g,
+    /require\s*\(\s*["']([^"']+)["']\s*\)/g,
+    /import\s+["']([^"']+)["']/g,
+  ]
+  return formas.flatMap((re) =>
+    [...texto.matchAll(re)].map((m) => ({ alvo: m[1], linha: texto.slice(0, m.index).split('\n').length })),
+  )
 }
 
 const doDominio = arquivos(path.join(RAIZ, 'src', 'dominio')).map((a) => path.relative(RAIZ, a).split(path.sep).join('/'))
@@ -66,7 +86,9 @@ const SEGUNDA_REGUA = 'src/dominio/conferencia-independente.ts'
 const PROIBIDO_PARA_A_SEGUNDA_REGUA = ['regras', 'validacao', 'gerador']
 
 for (const imp of importacoes(SEGUNDA_REGUA)) {
-  const nome = imp.alvo.replace(/^\.\//, '')
+  // 🔴 Tira `./` **e qualquer extensão**: `'./regras.js'` escapava da comparação por igualdade
+  //    exata contra `['regras','validacao','gerador']` — segundo achado do mesmo auditor.
+  const nome = imp.alvo.replace(/^\.\//, '').replace(/\.(ts|tsx|js|mjs)$/, '')
   if (PROIBIDO_PARA_A_SEGUNDA_REGUA.includes(nome)) {
     achados.push({
       invariante: 'a segunda régua é independente',

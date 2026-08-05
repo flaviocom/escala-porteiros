@@ -29,7 +29,9 @@ const HISTORICOS = ['AI_MASTER_LOG.md', 'DIARIO_DE_BORDO.md', 'docs/handoff/', '
 
 function documentos(dir = RAIZ, acc = []) {
   for (const item of readdirSync(dir, { withFileTypes: true })) {
-    if (['node_modules', '.git', 'capturas', 'docs/assets'].includes(item.name)) continue
+    // 🔴 `item.name` é o nome-base, então 'docs/assets' NUNCA casava — exclusão que o autor
+    //    acreditava ter e não tinha. Sem efeito hoje (não há `.md` lá), mas a crença era falsa.
+    if (['node_modules', '.git', 'capturas', 'assets'].includes(item.name)) continue
     const abs = join(dir, item.name)
     if (item.isDirectory()) { documentos(abs, acc); continue }
     if (!item.name.endsWith('.md')) continue

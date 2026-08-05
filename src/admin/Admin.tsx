@@ -11,7 +11,7 @@
 import React, { useMemo, useState } from 'react'
 import {
   AlertTriangle, CheckCircle, Download, Eye, EyeOff, KeyRound, Loader2, LogOut, Plus, RefreshCw,
-  History, RotateCcw, Save, ShieldCheck, Trash2, Upload, X, XCircle,
+  History, RotateCcw, ShieldCheck, Trash2, Upload, X, XCircle,
 } from 'lucide-react'
 import { clsx } from 'clsx'
 import { abrirCofre, apagarCofre, cofreExiste, exportarCofre, gravarCofre, importarCofre, type Segredos } from './cofre'
@@ -536,7 +536,6 @@ export const Admin: React.FC<{ dados: DadosPublicados }> = ({ dados }) => {
             relato={relatoGeracao}
             versoesComparadas={versoesComparadas}
             segredos={segredos}
-            fronteira={fronteira}
             de={de}
             ate={ate}
             aoMudarDe={setDe}
@@ -1034,7 +1033,21 @@ const AbaGerar: React.FC<{
   blocoNovo: Bloco | null
   relato: string
   segredos: Segredos
-  fronteira: Record<string, string>
+  /*
+    🔴 A PROP `fronteira` FOI REMOVIDA — achado da auditoria externa de 05/08/2026.
+
+    Ela era declarada aqui e passada pelo `Admin`, mas **nunca aparecia na desestruturação** — um
+    `useMemo` local, logo abaixo, a sombreava. Quem lesse o `Admin` concluiria que a geração usa a
+    fronteira de lá; não usa.
+
+    E as duas divergiam: a do `Admin` é chaveada por `blocoNovo.inicio` e fica `{}` enquanto não há
+    bloco; a local é chaveada por `de`. Mudar "De" depois de gerar recalculava só a local, e o
+    relatório desta aba podia divergir do das abas Conferir e Publicar — duas noções da mesma coisa,
+    que é a fonte dupla que este projeto inteiro existe para evitar.
+
+    A local fica, porque é a certa para esta aba: ela precisa da fronteira do período que está sendo
+    DIGITADO, não do que já foi gerado.
+  */
   /** O intervalo vive no Admin: trocar de aba desmontava esta e apagava o que estava digitado. */
   de: string
   ate: string
@@ -1280,12 +1293,31 @@ const AbaGerar: React.FC<{
             >
               <RefreshCw className="h-4 w-4" /> Não gostei — gerar outra combinação
             </button>
-            <p className="mt-2 text-xs leading-relaxed text-gray-600">
-              Esta escala é a melhor de <strong>{versoesComparadas} versões</strong> que o sistema montou e
-              comparou internamente — primeiro pelo espaçamento entre as escalas de cada um, e
-              depois pelo equilíbrio de carga. Pedir outra explora combinações diferentes; a
-              anterior não volta sozinha.
-            </p>
+            {/*
+              🔴 A FRASE SÓ VALE PARA A ESCALA DO ALGORITMO — achado da auditoria externa, 05/08/2026.
+
+              Aceitar a proposta do motor chama `aoGerar` com dois argumentos, então
+              `versoesComparadas` voltava a 0 e a tela dizia "a melhor de **0** versões" — o defeito
+              que o estado tinha acabado de subir para o `Admin` para corrigir, voltando por outra
+              porta. E mesmo com o número certo a frase seria FALSA aqui: a escala do motor não foi
+              escolhida entre N versões, foi proposta por ele e aprovada no portão.
+
+              Por isso a condição não é "tem número", é **de onde a escala veio**.
+            */}
+            {blocoNovo.origem === 'algoritmo' && versoesComparadas > 0 ? (
+              <p className="mt-2 text-xs leading-relaxed text-gray-600">
+                Esta escala é a melhor de <strong>{versoesComparadas} versões</strong> que o sistema montou e
+                comparou internamente — primeiro pelo espaçamento entre as escalas de cada um, e
+                depois pelo equilíbrio de carga. Pedir outra explora combinações diferentes; a
+                anterior não volta sozinha.
+              </p>
+            ) : (
+              <p className="mt-2 text-xs leading-relaxed text-gray-600">
+                Esta escala veio <strong>do motor</strong> e passou no portão determinístico — as 16 regras
+                foram conferidas do mesmo jeito. Pedir outra monta uma escala pelo algoritmo, comparando
+                várias versões internamente.
+              </p>
+            )}
           </div>
         )}
         <p className="text-xs text-gray-500 mt-3">
@@ -2086,4 +2118,3 @@ function linhasDoPlacar(a: Placar, b: Placar) {
   ] as { rotulo: string; a: React.ReactNode; b: React.ReactNode; melhor?: 'a' | 'b' }[]
 }
 
-export { Save }

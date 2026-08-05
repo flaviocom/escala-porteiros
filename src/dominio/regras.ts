@@ -112,8 +112,13 @@ const turnosComGente = (b: Bloco) => b.turnos.filter((t) => !t.santaCeia)
  * de qualquer escolha. O defeito era só do RELATÓRIO. Mas relatório errado sobre escala certa é
  * exatamente o que faz alguém desconfiar da escala certa.
  *
- * Quem NÃO usa isto, de propósito: D8, cujo trabalho é justamente achar quem foi escalado sem
+ * Quem NÃO usa isto, de propósito: **D8**, cujo trabalho é justamente achar quem foi escalado sem
  * poder — ela precisa enxergar quem está fora.
+ *
+ * ⚠️ Esta lista de exceções JÁ ESTEVE ERRADA. Ela dizia "D8" como se fosse a única, e **Q2 era uma
+ * segunda, não declarada** — descoberta por auditoria externa em 05/08/2026, porque Q2 lê o elenco
+ * do BLOCO e a varredura da correção procurou por `ctx.pessoas`. Ao acrescentar regra que conta
+ * gente, a pergunta é: **ela usa `pessoasDoBloco`? Se não, por quê, e está escrito aqui?**
  */
 function pessoasDoBloco(ctx: Contexto): Pessoa[] {
   const elenco = new Set(ctx.bloco.elenco)
@@ -687,14 +692,31 @@ const Q2: Regra = {
     'A carga fica parecida entre quem não tem limite próprio. Quem tem teto mensal fica fora da comparação, porque joga outro jogo. Avisa quando a diferença entre quem mais pegou e quem menos pegou passa de **2 turnos**.',
   avaliar(ctx) {
     const contagem = new Map<string, number>()
-    for (const id of ctx.bloco.elenco) contagem.set(id, 0)
+    /*
+      🔴 `pessoasDoBloco`, NÃO `ctx.bloco.elenco` — achado da auditoria externa de 05/08/2026.
+
+      Q2 era a ÚNICA regra de contagem que ainda percorria o `elenco` cru. Em 05/08 o Flavio pediu
+      que quem está fora da escala não fosse contado para nada, e nove regras foram corrigidas —
+      esta escapou, porque ela lê o elenco do BLOCO, não `ctx.pessoas`, e a busca de então procurou
+      pelo segundo.
+
+      Medido pelo auditor: desativando alguém e tirando-o dos turnos, Q2 passava a dizer
+      *"entre 0 e 17 turnos (diferença de 17)"* e a listar *"Adilson: 0 turno(s)"* — textualmente a
+      reclamação dele (*"deixei o Thiago de fora e você contou ele"*), na única regra que sobrou.
+
+      ⚠️ E havia um segundo furo junto: um `id` no `elenco` que não existisse em `pessoas.json` caía
+      em `undefined == null` → `true` → entrava em `semTeto` com 0 turnos, derrubando a amplitude.
+      `pessoasDoBloco` resolve os dois, porque parte de quem EXISTE e está ativo.
+    */
+    const naEscala = pessoasDoBloco(ctx)
+    for (const p of naEscala) contagem.set(p.id, 0)
     for (const t of turnosComGente(ctx.bloco))
-      for (const id of t.pessoas) contagem.set(id, (contagem.get(id) ?? 0) + 1)
+      for (const id of t.pessoas) if (contagem.has(id)) contagem.set(id, (contagem.get(id) ?? 0) + 1)
 
     // Quem tem teto mensal joga outro jogo: comparar com quem não tem acusaria uma
     // desigualdade que é a regra funcionando, não falhando.
     const semTeto = [...contagem.entries()].filter(
-      ([id]) => ctx.pessoas.find((p) => p.id === id)?.restricoes.tetoMensal == null,
+      ([id]) => naEscala.find((p) => p.id === id)?.restricoes.tetoMensal == null,
     )
     if (!semTeto.length)
       return { id: Q2.id, titulo: Q2.titulo, familia: 'QUALIDADE', status: 'ok', medida: 'todos têm teto mensal — nada a comparar', violacoes: [] }
@@ -811,11 +833,30 @@ const Q4: Regra = {
  */
 const TOLERANCIA_ABAIXO_DO_TETO = 1
 
-/** Último dia do mês `AAAA-MM`. O dia 0 do mês seguinte é o último do atual, e o JS acerta ano. */
-function ultimoDiaDoMes(mes: string): DataISO {
+/**
+ * Último dia do mês `AAAA-MM`. O dia 0 do mês seguinte é o último do atual, e o JS acerta o ano.
+ *
+ * 🔴 `new Date(ano, m, 0)` — LOCAL. Não `Date.UTC`, e a diferença é um defeito de verdade.
+ *
+ * A primeira versão desta função, escrita em 05/08/2026, misturava as duas convenções: montava o
+ * instante em **UTC** e o lia com `deData()`, que usa os getters **locais**. Em `America/Sao_Paulo`
+ * (UTC−3), a meia-noite UTC do dia 31 é 21h do dia **30** — e a função devolvia o **penúltimo** dia
+ * de TODOS os meses. Medido: `2026-12` → `2026-12-30`; `2024-02` → `2024-02-28`.
+ *
+ * O efeito: `mesInteiro()`, logo abaixo, ficava um dia permissivo. Um bloco terminando em 30/11
+ * passava por "novembro inteiro", e Q5 cobrava a cota mensal cheia de quem teve o mês faltando um
+ * dia — exatamente o aviso falso que a mudança daquele dia existia para eliminar.
+ *
+ * ⚠️ E O PORTÃO DE FUSO ERA CEGO A ISSO, POR CONSTRUÇÃO. `test:fuso:berlim` roda em UTC+2, onde
+ * `Date.UTC(ano, m, 0)` cai no mesmo dia local — o defeito **só** aparece em fuso NEGATIVO, e o
+ * único fuso alternativo testado é o positivo. A tese escrita em `RECONSTRUIR.md` (*"em UTC−3 um
+ * defeito de fuso é invisível"*) tem um inverso, e este é ele.
+ *
+ * Por isso o teste ao lado afirma valores absolutos, que não dependem de qual fuso está rodando.
+ */
+export function ultimoDiaDoMes(mes: string): DataISO {
   const [ano, m] = mes.split('-').map(Number)
-  const d = new Date(Date.UTC(ano, m, 0))
-  return deData(d)
+  return deData(new Date(ano, m, 0))
 }
 
 const Q5: Regra = {

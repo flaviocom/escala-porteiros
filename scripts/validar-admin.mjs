@@ -41,11 +41,19 @@ await conferir('clicar na engrenagem abre a área administrativa', async () => {
 // --- O cofre cifra de verdade? Provado no próprio navegador. ------------------
 await conferir('🔒 o cofre CIFRA: senha errada não abre', async () => {
   const r = await pagina.evaluate(async () => {
-    const mod = await import('./assets/' + [...document.querySelectorAll('script[src]')]
-      .map((s) => s.src.split('/').pop()).find((n) => n.startsWith('index-')))
+    /*
+      🔴 P4.3, fechado em 05/08/2026 — falso vermelho fora do build de produção.
+
+      Isto procurava `assets/index-*.js`. Em `npm run dev` o script é `/src/main.tsx`, o `find`
+      devolvia `undefined`, e o `import('./assets/undefined')` **estourava antes** de a
+      criptografia ser testada — reprovando como se a cifra tivesse falhado.
+
+      O `import` nunca serviu para nada aqui: o `void mod` logo abaixo diz isso com todas as
+      letras — o que se prova é o ESQUEMA (PBKDF2 → AES-GCM) na API do próprio navegador, não o
+      arquivo empacotado. Então ele sai, e o teste passa a valer nos dois modos.
+    */
     // Se o módulo não expuser o cofre (bundle minificado), testamos pela própria API do navegador,
     // replicando o esquema: PBKDF2 -> AES-GCM. O que se prova é o esquema, não o arquivo.
-    void mod
     const enc = new TextEncoder()
     const sal = crypto.getRandomValues(new Uint8Array(16))
     const iv = crypto.getRandomValues(new Uint8Array(12))

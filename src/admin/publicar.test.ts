@@ -132,6 +132,42 @@ describe('publicar — quando dá errado no meio', () => {
     expect(r.commits.map((c) => c.caminho)).toEqual(['public/dados/blocos.json'])
   })
 
+  /*
+    🔴 P5.2 — a falha no MEIO tem de dizer O QUE FAZER, não só o que aconteceu.
+
+    Duas pastas: a origem e a que o GitHub Pages serve. Se a primeira grava e a segunda recusa — 409
+    de outra pessoa publicando ao mesmo tempo, limite de requisições, rede caindo —, o repositório
+    fica com duas verdades e o site continua no ar mostrando a ANTERIOR, sem erro nenhum. É o modo
+    de falha mais silencioso deste produto.
+
+    Saber que parou no meio não basta: a pessoa precisa saber que **repetir conserta**, porque a
+    publicação grava as duas. Sem essa frase, ela vê metade do trabalho feito e não ousa repetir.
+  */
+  it('🔴 falha no MEIO diz quantas pastas foram, que o site mostra a anterior, e que repetir conserta', async () => {
+    githubDeMentira({
+      existentes: { 'public/dados/blocos.json': 'a', 'docs/dados/blocos.json': 'b' },
+      falharEm: { caminho: 'docs/dados/blocos.json', status: 409 },
+    })
+    const r = await publicarDados(TOKEN_FALSO, 'blocos.json', ESCALA, 'escala')
+
+    expect(r.ok).toBe(false)
+    expect(r.erro).toMatch(/parou no meio/i)
+    expect(r.erro).toMatch(/1 de 2 pastas/i)
+    expect(r.erro).toMatch(/escala ANTERIOR/i)
+    expect(r.erro).toMatch(/publique de novo/i)
+    expect(r.erro).toMatch(/não estraga/i)
+  })
+
+  it('🔴 a outra ponta: falhando a PRIMEIRA, não fala em "parou no meio" — nada foi gravado', async () => {
+    githubDeMentira({
+      existentes: { 'public/dados/blocos.json': 'a', 'docs/dados/blocos.json': 'b' },
+      falharEm: { caminho: 'public/dados/blocos.json', status: 409 },
+    })
+    const r = await publicarDados(TOKEN_FALSO, 'blocos.json', ESCALA, 'escala')
+    expect(r.ok).toBe(false)
+    expect(r.erro).not.toMatch(/parou no meio/i)
+  })
+
   it('falhando a PRIMEIRA, nada é gravado e a lista volta vazia', async () => {
     const gravadas = githubDeMentira({
       existentes: { 'public/dados/blocos.json': 'a', 'docs/dados/blocos.json': 'b' },

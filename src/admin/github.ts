@@ -131,6 +131,9 @@ async function gravarArquivo(token: string, caminho: string, conteudo: string, m
  *
  * @param nome  `blocos.json`, `pessoas.json` ou `config.json`
  */
+/** Quebra de linha por código: este arquivo já foi reescrito por script, e a barra some. */
+const QUEBRA = String.fromCharCode(10)
+
 export async function publicarDados(
   token: string,
   nome: string,
@@ -147,7 +150,31 @@ export async function publicarDados(
     }
     return { ok: true, commits }
   } catch (e) {
-    return { ok: false, commits, erro: e instanceof Error ? e.message : String(e) }
+    const erro = e instanceof Error ? e.message : String(e)
+    /*
+      🔴 FALHA NO MEIO DEIXA AS DUAS PASTAS DIFERENTES — P5.2, tratado em 05/08/2026.
+
+      `PASTAS` são duas: a origem e a que o GitHub Pages serve. Se a primeira grava e a segunda
+      recusa (409 de outra pessoa publicando, limite de requisições, rede caindo), o repositório
+      fica com **duas verdades** — e o site continua no ar, mostrando a antiga, sem erro nenhum.
+      É o modo de falha mais silencioso deste produto.
+
+      A resposta já dizia o que foi gravado. Faltava dizer **o que fazer**: publicar de novo
+      resolve, porque a publicação escreve as duas. Sem essa frase, a pessoa vê metade do
+      trabalho feito e não sabe se pode repetir sem estragar.
+    */
+    const faltou = PASTAS.length - commits.length
+    const parcial = commits.length > 0 && faltou > 0
+    return {
+      ok: false,
+      commits,
+      erro: parcial
+        ? `${erro}${QUEBRA}${QUEBRA}⚠️ A publicação parou no meio: ${commits.length} de ${PASTAS.length} pastas foram gravadas ` +
+          `(${commits.map((c) => c.caminho).join(', ')}). O site ainda mostra a escala ANTERIOR. ` +
+          'Resolva o motivo acima e **publique de novo** — a publicação grava as duas pastas, ' +
+          'então repetir conserta; não estraga.'
+        : erro,
+    }
   }
 }
 

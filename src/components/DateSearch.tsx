@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { Calendar as CalendarIcon, Search, X } from 'lucide-react';
 import { isSameDay, format } from 'date-fns';
 import { clsx } from 'clsx';
@@ -26,12 +26,18 @@ export const DateSearch: React.FC<DateSearchProps> = ({ value, onChange, onDateR
     }
   }, [dateRange]);
 
-  const [, setActiveFilter] = useState<'15days' | 'week' | 'month' | null>(null);
+  /*
+    🔴 O `useState` fantasma foi removido em 05/08/2026 — achado de auditoria externa.
+
+    Era `const [, setActiveFilter] = useState(...)`: o valor descartado no próprio destructuring, e o
+    setter chamado 4 vezes, **sempre com `null`**. Os atalhos de período migraram para o `App`, e esta
+    cópia local ficou — estado que existe, é escrito, e ninguém lê. O React re-renderizava por causa
+    dele, sem nada mudar na tela.
+  */
 
   // Clear active filter when dateRange is null
   useEffect(() => {
     if (!dateRange) {
-      setActiveFilter(null);
     }
   }, [dateRange]);
 
@@ -40,7 +46,6 @@ export const DateSearch: React.FC<DateSearchProps> = ({ value, onChange, onDateR
     onChange(val);
     if (val) {
       onDateRangeChange(null);
-      setActiveFilter(null);
     }
   };
 
@@ -53,7 +58,6 @@ export const DateSearch: React.FC<DateSearchProps> = ({ value, onChange, onDateR
       const [year, month, day] = e.target.value.split('-').map(Number);
       const date = new Date(year, month - 1, day);
 
-      setActiveFilter(null);
       onDateRangeChange({ start: date, end: date });
       // Query update handled by useEffect
     }
@@ -83,7 +87,6 @@ export const DateSearch: React.FC<DateSearchProps> = ({ value, onChange, onDateR
               onClick={() => {
                 onChange('');
                 onDateRangeChange(null);
-                setActiveFilter(null);
               }}
               className="flex items-center text-red-500 hover:text-red-700 hover:bg-red-50 p-1 rounded-md transition-colors"
               title="Limpar busca"

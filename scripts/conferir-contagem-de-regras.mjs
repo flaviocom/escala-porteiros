@@ -58,7 +58,19 @@ function todosOsDocumentos(dir = RAIZ, acc = []) {
     if (nome.name === 'node_modules' || nome.name === '.git' || nome.name === 'capturas') continue
     const abs = join(dir, nome.name)
     if (nome.isDirectory()) { todosOsDocumentos(abs, acc); continue }
-    if (!nome.name.endsWith('.md')) continue
+    /*
+      🔴 CÓDIGO TAMBÉM — achado da auditoria externa de 05/08/2026.
+
+      Este portão varria só `.md`, e por isso deixou passar `ensaio-troca-de-elenco.mjs`, que
+      imprimia na SAÍDA *"válida pelas 15 regras"* para um catálogo de 16 — três linhas depois de
+      imprimir "16 de 16". O cabeçalho do próprio arquivo registrava que o erro tinha sido achado, e
+      a correção foi para o comentário, não para a linha que o operador lê.
+
+      Número em comentário e em `console.log` apodrece igual a número em documento. A fronteira do
+      portão era o formato do arquivo, e o defeito estava do outro lado dela.
+    */
+    if (!/\.(md|mjs|ts|tsx)$/.test(nome.name)) continue
+    if (/\.test\.(ts|tsx)$/.test(nome.name)) continue
     const rel = relative(RAIZ, abs).split(sep).join('/')
     if (HISTORICOS.some((h) => rel === h || rel.startsWith(h))) continue
     acc.push(rel)

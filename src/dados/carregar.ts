@@ -139,7 +139,24 @@ export function emendarBlocos(blocos: Bloco[]): Turno[] {
       // Um bloco só governa o que está dentro do próprio intervalo.
       if (diferencaEmDias(bloco.inicio, t.data) < 0) continue
       if (diferencaEmDias(t.data, bloco.fim) < 0) continue
-      porChave.set(`${t.data}|${t.tipo}|${t.santaCeia ? 'sc' : ''}`, t)
+      /*
+        🔴 A CHAVE É DATA + TIPO. E SÓ — achado da auditoria externa de 05/08/2026.
+
+        Ela incluía `santaCeia`, então o MESMO dia e turno, marcado num bloco e não marcado no
+        outro, tinha duas chaves e **os dois sobreviviam à emenda**. Resultado medido: 16/08 MANHÃ
+        aparecendo duas vezes — uma como Santa Ceia vazia, outra com três pessoas escaladas ao lado.
+        Que é a forma exata do defeito que originou este projeto.
+
+        A regra desta função é uma só, e está escrita no `MODELO_DE_DADOS.md`: **o bloco que começa
+        depois manda no trecho compartilhado**. Qualquer coisa a mais na chave é uma exceção
+        silenciosa a ela.
+
+        ⚠️ E ninguém validava o resultado: D9 julga um bloco por vez, e `vivo:conferir` compara a
+        tela com o dado **já emendado** — coerência interna perfeita sobre um dia duplicado. Hoje o
+        botão Publicar poda o bloco anterior, então não estava no ar; bloco importado e JSON editado
+        à mão são caminhos que o produto prevê.
+      */
+      porChave.set(`${t.data}|${t.tipo}`, t)
     }
   }
   const peso: Record<Turno['tipo'], number> = { MANHA: 0, TARDE: 1, NOITE: 2 }
@@ -154,9 +171,60 @@ export async function carregarDados(): Promise<DadosPublicados> {
     buscarJSON<ArquivoBlocos>('blocos.json'),
     buscarJSON<ConfigLida>('config.json', CONFIG_PADRAO),
   ])
-  const pessoas = arqPessoas.pessoas
+  const pessoas = arqPessoas?.pessoas ?? []
+  const blocos = arqBlocos?.blocos ?? []
+  conferirEsquema(pessoas, blocos)
   definirPessoas(pessoas)
-  return { pessoas, blocos: arqBlocos.blocos, config: completarConfig(config), turnos: emendarBlocos(arqBlocos.blocos) }
+  return { pessoas, blocos, config: completarConfig(config), turnos: emendarBlocos(blocos) }
+}
+
+/**
+ * 🔴 O DADO PUBLICADO É COERENTE? — P5.4, fechado em 05/08/2026.
+ *
+ * `config.json` tinha `completarConfig`. `pessoas.json` e `blocos.json` não tinham nada: um `id`
+ * duplicado, ou um turno citando alguém que não existe no elenco, passava direto — e o sintoma
+ * conhecido é o **id cru aparecendo na tela** no lugar do nome, que já aconteceu neste projeto.
+ *
+ * ⚠️ **NÃO derruba o site.** Estes são defeitos de dado, não de código: quem abre o link quer ver
+ * a escala, e uma tela branca por causa de um id repetido seria uma cura pior que a doença. O
+ * aviso vai para o **console**, onde quem administra encontra, e a tela continua servindo o que
+ * dá para servir.
+ *
+ * O que ele NÃO faz: julgar regra de escala. Isso é do catálogo (`regras.ts`). Aqui só se
+ * pergunta se o arquivo é internamente coerente.
+ */
+export function conferirEsquema(pessoas: Pessoa[], blocos: Bloco[]): string[] {
+  // Construída assim, e não com `\n` literal, porque este arquivo já foi reescrito por script mais
+  // de uma vez hoje — e a barra invertida some no caminho, virando quebra de linha de verdade.
+  const quebra = String.fromCharCode(10)
+  const problemas: string[] = []
+  const vistos = new Set<string>()
+
+  for (const p of pessoas) {
+    if (!p?.id) { problemas.push(`pessoa sem \`id\`: ${JSON.stringify(p)?.slice(0, 60)}`); continue }
+    if (vistos.has(p.id)) problemas.push(`\`id\` repetido em pessoas.json: "${p.id}"`)
+    vistos.add(p.id)
+    if (!p.nome?.trim()) problemas.push(`"${p.id}" está sem nome — a tela mostraria o id cru`)
+  }
+
+  for (const b of blocos) {
+    for (const t of b.turnos ?? []) {
+      for (const id of t.pessoas ?? []) {
+        if (!vistos.has(id)) problemas.push(`${t.data} ${t.tipo}: escala "${id}", que não existe em pessoas.json`)
+      }
+      const repetidos = (t.pessoas ?? []).filter((x, i, a) => a.indexOf(x) !== i)
+      if (repetidos.length) problemas.push(`${t.data} ${t.tipo}: "${repetidos[0]}" aparece duas vezes no mesmo turno`)
+    }
+  }
+
+  if (problemas.length) {
+    console.warn(
+      `🔴 O dado publicado tem ${problemas.length} incoerência(s). A escala continua sendo mostrada; ` +
+        'conserte no arquivo e publique de novo:' +
+        problemas.slice(0, 20).map((p) => `${quebra}  · ${p}`).join(''),
+    )
+  }
+  return problemas
 }
 
 // ---------------------------------------------------------------------------

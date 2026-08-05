@@ -7,7 +7,7 @@
  *   restrições, e eu preciso redistribuir a escala de acordo com as nossas regras."*
  *
  * A tela que faz isso existe e foi validada ao vivo. Mas **validar a tela não é validar o cenário**:
- * a tela renderiza, os botões respondem, a validação mostra 15 regras. Nada disso responde à
+ * a tela renderiza, os botões respondem, a validação mostra as regras. Nada disso responde à
  * pergunta que importa — *quando alguém sai e alguém entra com restrições novas, a escala se refaz
  * inteira, válida, e o passado fica intocado?*
  *
@@ -261,5 +261,5 @@ if (falhas.length) {
 
 console.log('─'.repeat(70))
 console.log('\n✅ Sai gente, entra gente com quatro restrições, e a escala se refaz inteira:')
-console.log('   válida pelas 15 regras, equilibrada, distante — e com o passado intacto.')
+console.log('   válida pelo catálogo inteiro, equilibrada, distante — e com o passado intacto.')
 console.log('   É o pedido original, medido e não presumido.\n')

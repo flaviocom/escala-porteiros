@@ -74,7 +74,7 @@ limpar. Nada de comparador lado a lado.
 
 ## 🔴 O CONFLITO QUE ESTA PESQUISA CRIA — e é ele que exige decisão, não a técnica
 
-`gerador.ts:125` carrega uma promessa **declarada e deliberada**:
+`gerador.ts` (a promessa daquele dia; hoje ela é *"não há sorteio IRREPRODUZÍVEL"*, ver `src/dominio/gerador.ts` — `mulberry32`) carrega uma promessa **declarada e deliberada**:
 
 > *"A escolha de quem entra é determinística: mesma entrada, mesma escala. **Sem sorteio** — uma
 > escala que muda a cada abertura da tela seria impossível de conferir."*

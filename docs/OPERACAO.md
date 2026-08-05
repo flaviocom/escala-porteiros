@@ -99,26 +99,33 @@ está errada** — e é melhor descobrir antes da congregação descobrir.
 npm run gate
 ```
 
-16 passos, nesta ordem:
+19 passos, **nesta ordem** — lida do `package.json`, não de memória:
 
-| Passo | O que prova |
-|---|---|
-| `typecheck` | `strict` ligado |
-| `test` | a suíte **completa**, nunca escopada |
-| `test:fuso:berlim` | a mesma suíte noutro fuso, **depois de provar que o fuso mudou** — em UTC−3 um defeito de fuso é invisível |
-| `denominacao` | nenhum jargão comoditizado em texto que alguém lê |
-| `fontes` | nenhuma fonte externa chamada sem estar declarada no inventário |
-| `contagem` | nenhum documento vivo declara um número de regras que o catálogo desmente |
-| `cadeia` | os documentos apontam para o handoff que É o mais recente |
-| `generico` | nenhum nome de cliente cravado no código (§0) |
-| `generico:autoteste` | prova que o portão acima **morde** — 21 casos, mais a autodefesa |
-| `doc:regras:conferir` | o catálogo de regras documentado bate com o código |
-| `auditoria` | 20 ataques ao próprio código, com infrator injetado |
-| `doc:comandos` | todo `npm run` citado na documentação existe de verdade |
-| `arquitetura` | o domínio continua sendo uma ilha; a segunda régua não virou espelho da primeira |
-| `fatos` | nenhum documento vivo desmente um número **medido** (passos do gate, casos de autoteste, piso…) |
-| `regras-mestras` | tooltip em todo botão |
-| `build` | compila e gera em `docs/` |
+| # | Passo | O que prova |
+|---|---|---|
+| 1 | `typecheck` | `strict` ligado — sem ele o TypeScript nem estreita união discriminada |
+| 2 | `test` | a suíte **completa**, nunca escopada |
+| 3 | `test:fuso:berlim` | a mesma suíte noutro fuso, **depois de provar que o fuso mudou** |
+| 4 | `denominacao` | nenhum jargão comoditizado em texto que alguém lê |
+| 5 | `fontes` | nenhuma fonte externa chamada sem estar declarada no inventário |
+| 6 | `contagem` | nenhum documento **ou código** declara um número de regras que o catálogo desmente |
+| 7 | `cadeia` | os documentos apontam para o handoff que É o mais recente |
+| 8 | `generico` | nenhum nome de cliente cravado (§0) |
+| 9 | `generico:autoteste` | prova que o de cima **morde** — e que a autodefesa dele morde |
+| 10 | `doc:regras:conferir` | o catálogo de regras documentado bate com o código |
+| 11 | `doc:comandos` | todo comando citado na documentação existe de verdade |
+| 12 | `arquitetura` | o domínio continua sendo ilha; a 2ª régua não virou espelho |
+| 13 | `fatos:conferir` | nenhum documento vivo desmente um número **medido** |
+| 14 | `datas` | `toISOString()` não decide dia nem mês em lugar nenhum |
+| 15 | `citacoes` | nenhuma citação `arquivo:linha` aponta para o vazio |
+| 16 | `crescimento` | o dado publicado ainda cabe onde vai ser servido |
+| 17 | `auditoria` | 20 ataques ao próprio código, com infrator injetado |
+| 18 | `regras-mestras` | tooltip em todo botão |
+| 19 | `build` | compila e gera em `docs/` |
+
+> ⚠️ Esta tabela já esteve **fora de ordem e incompleta**: listava 12 linhas para 15 comandos e
+> trocava `auditoria` de posição — achado por auditoria externa em 05/08/2026. Mexeu no `gate`,
+> mexe aqui no mesmo passo.
 
 ### As validações AO VIVO — fora do gate, de propósito
 

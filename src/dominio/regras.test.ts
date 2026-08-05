@@ -548,6 +548,47 @@ describe('Q4 — variedade de companhia', () => {
   })
 })
 
+describe('Q2 — equilíbrio de carga', () => {
+  /*
+    🔴 Achado da auditoria externa de 05/08/2026: Q2 era a ÚNICA regra de contagem que percorria o
+    `elenco` cru do bloco, e não `pessoasDoBloco`. Quem foi tirado da escala entrava com 0 turnos e
+    derrubava a amplitude — textualmente a reclamação do Flavio, na única regra que sobrou.
+  */
+  it('🔴 quem NÃO está mais no elenco não entra na comparação de carga', () => {
+    const gente = [pessoa('ana'), pessoa('bia'), pessoa('caio'), pessoa('fora', { ativo: false })]
+    const r = rodar('Q2', ctxDe([
+      turno('2026-09-02', 'NOITE', ['ana', 'bia', 'caio']),
+      turno('2026-09-09', 'NOITE', ['ana', 'bia', 'caio']),
+      turno('2026-09-16', 'NOITE', ['ana', 'bia', 'caio']),
+    ], gente, { elenco: ['ana', 'bia', 'caio', 'fora'] }))
+
+    expect(r.status).toBe('ok')
+    expect(r.medida).not.toContain('FORA')
+  })
+
+  it('🔴 e um id do elenco que NEM EXISTE em pessoas.json também não conta', () => {
+    const r = rodar('Q2', ctxDe([
+      turno('2026-09-02', 'NOITE', ['ana', 'bia']),
+      turno('2026-09-09', 'NOITE', ['ana', 'bia']),
+      turno('2026-09-16', 'NOITE', ['ana', 'bia']),
+    ], [pessoa('ana'), pessoa('bia')], { elenco: ['ana', 'bia', 'fantasma'] }))
+
+    expect(r.status).toBe('ok')
+  })
+
+  it('a outra ponta: desigualdade REAL entre quem está na escala continua sendo acusada', () => {
+    const gente = [pessoa('ana'), pessoa('bia')]
+    const r = rodar('Q2', ctxDe([
+      turno('2026-09-02', 'NOITE', ['ana']),
+      turno('2026-09-09', 'NOITE', ['ana']),
+      turno('2026-09-16', 'NOITE', ['ana']),
+      turno('2026-09-23', 'NOITE', ['ana']),
+    ], gente, { elenco: ['ana', 'bia'] }))
+
+    expect(r.status).toBe('aviso')
+  })
+})
+
 describe('Q5 — piso mensal', () => {
   const teto3 = [pessoa('ana', { restricoes: { tetoMensal: 3 } }), pessoa('bia'), pessoa('caio')]
 

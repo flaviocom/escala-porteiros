@@ -1,10 +1,13 @@
 /**
  * GERA `docs/CATALOGO_DE_REGRAS.md` A PARTIR DO CÓDIGO — e reprova se o arquivo estiver velho.
  *
- * 🔴 POR QUE GERADO, E NÃO ESCRITO À MÃO. Este projeto já teve, no mesmo dia, um documento vivo
- * dizendo "15 de 15" para um catálogo de 16, outro dizendo "as 15 regras", e um comentário de
- * componente dizendo "10 regras duras" onde havia 11. Três lugares errados sobre a coisa mais fácil
- * de conferir do sistema.
+ * 🔴 POR QUE GERADO, E NÃO ESCRITO À MÃO. Num único dia, este projeto teve **três** lugares
+ * afirmando um total de regras menor que o real — dois documentos vivos e um comentário de
+ * componente —, sobre a coisa mais fácil de conferir do sistema.
+ *
+ * ⚠️ Os números daquele episódio não estão escritos aqui de propósito: eles são contagens de
+ * catálogo, e um portão irmão (`npm run contagem`) reprovaria este próprio arquivo por citá-los.
+ * A ironia é o argumento — nem o texto que EXPLICA o defeito consegue guardar um número à mão.
  *
  * Documentação que descreve código muda quando o código muda — **se for gerada**. Escrita à mão,
  * ela apodrece em silêncio, e apodrece exatamente onde alguém confia nela para não ler o código.

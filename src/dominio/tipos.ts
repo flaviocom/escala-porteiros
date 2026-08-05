@@ -138,6 +138,16 @@ export interface Bloco {
   elenco: string[]
   malha: Malha
   turnos: Turno[]
+  /**
+   * ⚠️ ESCRITO E NUNCA LIDO — declarado em 05/08/2026 por auditoria externa, e mantido de propósito.
+   *
+   * `carga-inicial.mjs` grava aqui a proveniência do bloco congelado — inclusive a explicação da
+   * Santa Ceia de 07/06 estar errada no site antigo. **Nenhuma tela mostra.**
+   *
+   * Fica porque o dado publicado é o registro de longo prazo do projeto, e quem abrir o
+   * `blocos.json` daqui a dois anos vai querer saber de onde aquele bloco veio. Não é código morto:
+   * é nota de rodapé no dado. Se um dia virar tela, ela lê daqui.
+   */
   observacao?: string
   /**
    * A semente que produziu esta escala, quando ela veio de uma busca com sorteio (GRASP).

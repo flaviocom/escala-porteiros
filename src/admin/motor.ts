@@ -233,13 +233,36 @@ export async function pedirProposta(
         detalhe: tentativa === 1 ? 'pedindo a proposta…' : `corrigindo (tentativa ${tentativa} de ${MAX_TENTATIVAS})…`,
       })
 
+      /*
+        🔴 RESPOSTA MALFORMADA NÃO DESCARTA O TRABALHO INTEIRO — P4.8, fechado em 05/08/2026.
+
+        Antes, este `catch` devolvia `{ ok: false }` para QUALQUER erro. Uma falha de validação
+        ganhava 3 tentativas com a correção na mão; um JSON truncado ganhava **zero** — e levava
+        junto os meses já aceitos, num bloco de cinco meses.
+
+        Modelo de linguagem devolve JSON cortado com alguma frequência; é a falha mais banal do
+        caminho, e era a única sem rede.
+
+        ⚠️ **A distinção que importa:** rede fora, chave errada ou crédito zerado **não melhoram com
+        insistência** — abortam na hora, como antes. Só a resposta malformada é retentada, e o
+        motor é avisado do que fez de errado, exatamente como acontece com violação de regra.
+      */
       let resposta: RespostaMes
       try {
         const texto = await chamar(chave, promptDoMes(mes, paraEscalar, pessoas, ultimaEscala, total, violacoes, config))
         resposta = extrairJSON<RespostaMes>(texto)
       } catch (e) {
         const causa = (e as { causa?: FalhaMotor['causa'] }).causa ?? 'rede'
-        return { ok: false, motivo: e instanceof Error ? e.message : String(e), causa }
+        const motivo = e instanceof Error ? e.message : String(e)
+
+        if (causa === 'resposta-invalida' && tentativa < MAX_TENTATIVAS) {
+          violacoes = [
+            'A sua resposta anterior não era JSON válido e foi descartada. ' +
+              'Responda SOMENTE com o objeto JSON pedido, sem texto antes ou depois, sem cercas de código.',
+          ]
+          continue
+        }
+        return { ok: false, motivo, causa }
       }
 
       // Reconstrói os turnos a partir da resposta, ignorando o que o motor tenha inventado.

@@ -59,8 +59,13 @@ try {
   console.log('DEPOIS DE GERAR')
   for (const [k, v] of Object.entries(antes)) console.log(`  ${k.padEnd(8)} ${v ?? '(não encontrado)'}`)
 
-  if (!antes.versoes || antes.versoes === '0') {
-    problemas.push(`logo após gerar, a tela já diz "melhor de ${antes.versoes} versões"`)
+  // Toda medição precisa EXISTIR logo após gerar. Sem isto, um rótulo que mudou de texto vira
+  // "não encontrado" nas duas leituras, e o portão acabaria aprovando a própria cegueira.
+  for (const [k, v] of Object.entries(antes)) {
+    if (v == null) problemas.push(`"${k}" não foi encontrado logo após gerar — o rótulo mudou na tela?`)
+  }
+  if (antes.versoes === '0') {
+    problemas.push('logo após gerar, a tela já diz "melhor de 0 versões"')
   }
 
   // Passeia por todas as outras abas e volta.
@@ -74,6 +79,22 @@ try {
   const depois = await afirmacoes(p)
   console.log('\nDEPOIS DE PASSEAR POR 4 ABAS E VOLTAR')
   for (const [k, v] of Object.entries(depois)) {
+    /*
+      🔴 AUSENTE NÃO É IGUAL — achado da auditoria externa de 05/08/2026.
+
+      A primeira versão comparava só `v === antes[k]`. Quando o texto da tela muda e o regex deixa
+      de casar, os dois lados viram `null`, e `null === null` contava como ✅. Três das quatro
+      medições podiam virar inertes **em silêncio**, imprimindo "✅ piso (não encontrado)".
+
+      Provado pelo auditor: renomear "Piso alcançado:" na tela fez este portão sair 0, com o próprio
+      rótulo dizendo que não achou. É o padrão que o `RECONSTRUIR.md` batiza de "portão que mede
+      menos do que diz" — vivo dentro do portão mais novo do projeto.
+    */
+    if (v == null) {
+      problemas.push(`"${k}" não foi encontrado na tela — a medição virou inerte, não passou`)
+      console.log(`  🔴 ${k.padEnd(8)} (não encontrado) — medição inerte`)
+      continue
+    }
     const igual = v === antes[k]
     console.log(`  ${igual ? '✅' : '🔴'} ${k.padEnd(8)} ${v ?? '(não encontrado)'}${igual ? '' : `  ← era ${antes[k]}`}`)
     if (!igual) problemas.push(`"${k}" mudou sozinho ao trocar de aba: ${antes[k]} → ${v}`)
