@@ -6,7 +6,7 @@
 > **Cadeia de navegação:** [`ESTADO.md`](../../ESTADO.md) → [`handoff mais recente`](../handoff/INDICE.md) → [`BACKLOG.md`](../../BACKLOG.md)
 > **Roteador do projeto:** [`AGENTS.md`](../../AGENTS.md) · **Por quê de cada decisão:** [`DIARIO_DE_BORDO.md`](../../DIARIO_DE_BORDO.md)
 
-**Próximo identificador livre: S-013** — calculado sobre **todas** as fatias, nunca lido da última
+**Próximo identificador livre: S-021** — calculado sobre **todas** as fatias, nunca lido da última
 linha visível (é o ERRO 28 do catálogo de anteparos: após uma rotação, o maior ID some de vista).
 
 ---
@@ -14,6 +14,14 @@ linha visível (é o ERRO 28 do catálogo de anteparos: após uma rotação, o m
 | ID | Data | Solicitação | Onde foi parar |
 |---|---|---|---|
 | **S-012** | 04/08/2026 | *"você não me disse se resolveu a questão do token… não houve uma maneira concreta de preparar o login via GitHub. Publicar na tela tem que estar habilitado — é a funcionalidade principal"* | Guia do token **dentro da tela**, fonte única com o verificador, recusas que nomeiam o campo · [handoff da parte 10](../handoff/HANDOFF_2026-08-04-j.md) · [DB-012](../../DIARIO_DE_BORDO.md) |
+| **S-013** | 05/08/2026 | *"não quero ter que digitar token do GitHub para entrar. Quais são as opções para eu entrar sem digitar token?"* | Entrar virou **um clique**: sem segredo a guardar, não há senha a pedir · `vivo:entrar` 11/11 · [handoff 05/08](../handoff/HANDOFF_2026-08-05.md) |
+| **S-014** | 05/08/2026 | *"entrou uma vez, você grava o token e me deixa liberado. É possível?"* | O token já ficava; faltava `autocomplete` para o navegador oferecer lembrar a senha · [handoff 05/08](../handoff/HANDOFF_2026-08-05.md) |
+| **S-015** | 05/08/2026 | *"a escala volta para 06/08 mesmo depois de gerada"* · *"a conferência não está amigável"* · *"não entendi a proposta do motor"* · *"quero marcar férias antes de gerar"* · *"o publicar mantém histórico?"* | Cinco frentes: intervalo elevado ao Admin · 16 regras com `explicacao` · motor explicado · ausências na aba Gerar · histórico descrito · `vivo:gerar` 17/17 · [handoff 05/08-b](../handoff/HANDOFF_2026-08-05-b.md) |
+| **S-016** | 05/08/2026 | *"você testou o publicar num ambiente de teste?"* | GitHub de mentira exercitando `publicarDados` real: 10 testes, provados com 2 infratores injetados · [handoff 05/08-b](../handoff/HANDOFF_2026-08-05-b.md) |
+| **S-017** | 05/08/2026 | *"é uma escala genérica, configurável, com intenção de comercialização. Coloque como regra máxima do escopo"* | **§0 do [`AGENTS.md`](../../AGENTS.md)** — regra máxima, com o que obriga em cada decisão e a dívida declarada |
+| **S-018** | 05/08/2026 | *"deixei o Thiago de fora e você contou ele. Pode o sistema gerar escala contando quem está de fora?"* | 🔴 Defeito real no RELATÓRIO (9 regras recortadas); o gerador nunca escalou quem está fora — medido em `gerador.ts:133` · [handoff 05/08-b](../handoff/HANDOFF_2026-08-05-b.md) |
+| **S-019** | 05/08/2026 | *"quero outra aba, uma conferência por auditoria de outro agente que não o mesmo que criou"* | **Segunda régua** sem uma linha de `regras.ts` + aba "Conferir por fora" que mostra o cruzamento e declara o próprio limite · [handoff 05/08-b](../handoff/HANDOFF_2026-08-05-b.md) |
+| **S-020** | 05/08/2026 | *"o motor pode gerar duas, três versões e comparar qual é a melhor. É coerente? É necessário? Pesquise profundamente"* | Pesquisa delegada — decisão registrada em `SPECS/` antes de qualquer implementação |
 | **S-011** | 04/08/2026 | *"os nomes estão encavalando, deveriam aparecer na mesma linha e alinhados. Poderia ter um seletor de mês para não disparar até 12 arquivos de uma única vez, use skills de ux"* | Grade de colunas fixas na imagem · seletor de meses em `<dialog>` nativo · [handoff da parte 8](../handoff/HANDOFF_2026-08-04-h.md) · [DB-011](../../DIARIO_DE_BORDO.md) |
 | **S-010** | 04/08/2026 | *"Onde está esse token do GitHub? Acho que isso não é necessário, né?"* → escolheu reusar o `GITHUB_PAT` existente → *"o melhor é você já deixar esse token embutido. Eu só coloco a senha"* | **Embutir é inviável** (repositório público + revogação automática do GitHub) · entregue o **cofre portátil**, que dá o mesmo conforto · [handoff da parte 7](../handoff/HANDOFF_2026-08-04-g.md) · [DB-010](../../DIARIO_DE_BORDO.md) |
 | **S-009** | 04/08/2026 | *"O arquivo da imagem da escala tem que ser como esse gerado neste caminho"* — `D:\Documentos\CCB_Escalas\Porteiros\escalaagosto2026.png`. Uma imagem, sem mais instrução: ela é a especificação | Layout próprio de exportação (`src/export/`), filtro unificado, corte de 5 dias removido · [handoff da parte 7](../handoff/HANDOFF_2026-08-04-g.md) · [DB-008](../../DIARIO_DE_BORDO.md) |

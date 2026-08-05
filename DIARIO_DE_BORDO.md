@@ -616,3 +616,55 @@ o produto errado.
 `input[type="password"]` contava também o campo do token e o da chave do motor — o portão acusou
 "2 campos de senha" numa tela sem nenhum. Passou a medir pelo **rótulo**. Um portão que reprova o
 produto por defeito da própria régua é o mais convincente dos mentirosos: o vermelho parece achado.
+
+---
+
+## 05/08/2026 (b) — o projeto virou produto, e a auditoria virou tela
+
+**Solicitações:** S-015 a S-020.
+
+### A decisão que reordena tudo o que vem depois
+
+*"É uma escala genérica, configurável, com intenção de comercialização. Coloque como regra máxima do
+escopo."* Entrou como **§0 do `AGENTS.md`**, antes da descrição do projeto — porque toda decisão
+posterior passa por ela. A congregação virou o primeiro cliente, não o escopo.
+
+Consequência imediata e concreta: `capacidadePadrao` existia no dado e só mudava editando
+`config.json` à mão. Com administrador técnico ao lado, passava. **Num produto vendido, recurso sem
+tela não existe** — existe como dívida. Virou campo, e `config.json` passou a ser publicado.
+
+*Reverter:* apagar o §0 devolve o projeto ao escopo de uma congregação só.
+
+### O furo, e por que a resposta tem duas metades
+
+Ele tirou o Thiago da escala e o sistema seguiu acusando "0 de 2", cinco meses. Nove regras
+percorriam **todo mundo cadastrado** em vez de quem está nesta escala.
+
+Mas a pergunta que ele fez junto — *"pode o sistema GERAR escala contando quem está de fora?"* —
+tem resposta diferente: **não**, e é medida (`gerador.ts:133`). Responder só "achei o bug, corrigi"
+teria deixado ele achando que a escala publicada podia estar contaminada. **O relatório mentia sobre
+uma escala correta**, e essa distinção é a informação que ele precisava.
+
+*Reverter:* trocar `pessoasDoBloco(ctx)` de volta por `ctx.pessoas` nas nove regras.
+
+### A segunda régua, e o que ela NÃO promete
+
+A dor dele era maker–checker: *"auditoria de outro agente que não o mesmo que criou"*. Num site
+estático não existe "outro agente" — mas existe **outra implementação**. `conferencia-independente.ts`
+não importa uma linha de `regras.ts` e confere pelo ângulo oposto: linha do tempo por pessoa, em vez
+de catálogo sobre turnos.
+
+**A decisão difícil foi não vender isso como resolvido.** Seria fácil chamar a aba de "auditoria
+independente" e riscar o item do backlog. Mas as duas réguas têm o mesmo autor, e o método do Flavio
+é explícito de que isso não basta. A tela **declara o limite** e o item continua aberto. Escrever
+garantia junto com a intenção é o ERRO 3 do catálogo, e é o erro mais fácil de cometer justamente
+quando o trabalho ficou bom.
+
+*Reverter:* apagar o módulo e a aba; nada mais depende deles.
+
+### O que eu não tinha testado, e ele perguntou
+
+*"Você testou o publicar num ambiente de teste?"* — **não**. O caminho mais consequente do produto
+era o único sem teste, porque testá-lo de verdade escreveria no repositório real. Virou um GitHub de
+mentira, com o código de produção intacto. E provei com infrator injetado, porque 10 verdes não
+distinguem teste bom de teste frouxo.

@@ -138,6 +138,22 @@ try {
   conferir('🔴 e o apagado em GERAR some do ELENCO — uma lista só, não duas',
     !/ausência\(s\)/.test(etiqueta2), etiqueta2.trim().slice(0, 60) || '(sem etiqueta, como esperado)')
 
+  // ── 6. A SEGUNDA RÉGUA na tela, e o cruzamento ──────────────────────────
+  await pagina.getByRole('button', { name: /^Conferir por fora/i }).first().click()
+  await pagina.waitForTimeout(1200)
+  const naConferencia = await pagina.locator('body').innerText()
+  conferir('a aba "Conferir por fora" existe e roda', /Conferência independente/i.test(naConferencia),
+    naConferencia.match(/As duas conferências[^\n]*|AS DUAS CONFERÊNCIAS[^\n]*/i)?.[0]?.slice(0, 60) ?? '(sem veredito)')
+  conferir('🔴 ela mostra o CRUZAMENTO das duas, não só a própria opinião',
+    /Conferência normal:/i.test(naConferencia) && /Conferência independente:/i.test(naConferencia),
+    'os dois vereditos lado a lado')
+  conferir('e DECLARA o próprio limite, em vez de vender independência total',
+    /mesmo autor/i.test(naConferencia) && /auditor externo/i.test(naConferencia),
+    'limite declarado na tela')
+  conferir('sobre a escala recém-gerada, as duas CONCORDAM',
+    /nenhum furo nesta escala/i.test(naConferencia) || /concordam no veredito/i.test(naConferencia),
+    naConferencia.match(/(✅|⚠️)[^\n]*/)?.[0]?.slice(0, 70) ?? '(?)')
+
   // ── 5. histórico de publicações amigável ────────────────────────────────
   await pagina.getByRole('button', { name: /^Publicar/i }).first().click()
   await pagina.waitForTimeout(900)

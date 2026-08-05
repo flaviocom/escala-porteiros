@@ -9,6 +9,7 @@
 
 | Data | Handoff | O que aconteceu |
 |---|---|---|
+| 05/08/2026 | [`HANDOFF_2026-08-05-b.md`](HANDOFF_2026-08-05-b.md) | **Sessão 2, parte 2** — o projeto virou **produto genérico** (regra máxima no §0 do roteador). O furo do "fora da escala" no relatório, a **segunda régua** que existe para discordar, e o ambiente de teste do publicar. |
 | 05/08/2026 | [`HANDOFF_2026-08-05.md`](HANDOFF_2026-08-05.md) | **Sessão 2, parte 1** — entrar na administração virou **um clique**: a tela cobrava senha para cifrar um cofre VAZIO. E o campo de senha não tinha `autocomplete`, então o Chrome nunca oferecia lembrá-la. |
 | 04/08/2026 | [`HANDOFF_2026-08-04-j.md`](HANDOFF_2026-08-04-j.md) | **Sessão 1, parte 10** — o caminho do token saiu de um `.cmd` não testado e foi **para dentro da tela**, e cada recusa passou a nomear o campo a corrigir. |
 | 04/08/2026 | [`HANDOFF_2026-08-04-i.md`](HANDOFF_2026-08-04-i.md) | **Sessão 1, parte 9** — a **auditoria independente** que faltava (P2.10): 6 auditores adversariais em frentes disjuntas, **20 achados** que a autoverificação não via. Bloco vazio era aprovado; D9 era cega ao calendário; **três portões não mordiam**; o verde "ao vivo" podia ser de um bundle antigo. Dois portões novos, com autoteste. |
@@ -23,7 +24,7 @@
 
 ---
 
-**Handoff mais recente:** [`HANDOFF_2026-08-05.md`](HANDOFF_2026-08-05.md)
+**Handoff mais recente:** [`HANDOFF_2026-08-05-b.md`](HANDOFF_2026-08-05-b.md)
 
 Ligações: [`../solicitacoes/INDICE_DE_SOLICITACOES.md`](../solicitacoes/INDICE_DE_SOLICITACOES.md) ·
 [`../historico/INDICE.md`](../historico/INDICE.md) ·
