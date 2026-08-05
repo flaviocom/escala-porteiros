@@ -283,7 +283,7 @@ describe('🔴 gerar várias versões sem quebrar a conferência', () => {
     Ou seja: a frase que a tela mostra ao Flavio — *"esta escala é a melhor de 8 versões"* — não
     tinha um teste que a sustentasse. Agora tem, e ele conta quantas DERAM CERTO.
   */
-  it('todas as versões geradas continuam VÁLIDAS pelas 16 regras — e elas EXISTEM', () => {
+  it('todas as versões geradas continuam VÁLIDAS pelo catálogo inteiro — e elas EXISTEM', () => {
     const { versoes } = gerarVariasVersoes(base, 5, 3, 100)
     expect(versoes.length).toBe(5)
     const boas = versoes.filter((v) => v.resultado.ok)

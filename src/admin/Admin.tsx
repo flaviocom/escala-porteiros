@@ -1302,8 +1302,16 @@ const AbaGerar: React.FC<{
     setOcupado(true)
     setFalha('')
     aoGerar(null, '')
+    /*
+      🔴 SEM `try/catch`, UM ESTOURO AQUI DEIXA A TELA EM "Gerando…" PARA SEMPRE — sexta auditoria
+      externa, 05/08/2026. Este corpo roda num `setTimeout`: o `ErrorBoundary` não o alcança (ele só
+      pega estouro de render), `setOcupado(false)` nunca roda, e o botão fica travado sem uma linha de
+      explicação. Mesma classe da trava presa em `publicar()`, e os três caminhos do motor já tinham
+      `try/finally` — só este não tinha.
+    */
     // Um respiro para o navegador pintar o estado "gerando" antes do trabalho pesado.
     setTimeout(() => {
+      try {
       const elenco = pessoas.filter((p) => p.ativo).map((p) => p.id)
       /**
        * 🔴 OITO VERSÕES, e a melhor vai para a tela — decisão de 05/08/2026, registrada em
@@ -1341,6 +1349,14 @@ const AbaGerar: React.FC<{
       */
       setRepetiu(blocoNovo != null && JSON.stringify(r.bloco.turnos) === JSON.stringify(blocoNovo.turnos))
       aoGerar(r.bloco, r.relato, validas)
+      } catch (e) {
+        setOcupado(false)
+        setFalha(
+          `A geração parou com um erro inesperado:${String.fromCharCode(10, 10)}` +
+            `${e instanceof Error ? e.message : String(e)}${String.fromCharCode(10, 10)}` +
+            'Nada foi publicado. Confira as datas e o elenco, e tente de novo.',
+        )
+      }
     }, 50)
   }
 

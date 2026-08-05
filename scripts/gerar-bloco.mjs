@@ -137,7 +137,16 @@ console.log(`Santa Ceia cadastrada: ${SANTA_CEIA.length ? SANTA_CEIA.map(formata
 console.log(`Capacidade padrão: ${CAPACIDADE} · malha com ${MALHA.regras.length} regra(s)`)
 console.log(`Elenco: ${pessoas.filter((p) => p.ativo).length} pessoas\n`)
 
-const grade = construirGrade({ inicio: DE, fim: ATE, malha: MALHA, capacidadePadrao: CAPACIDADE, santaCeia: SANTA_CEIA })
+// `construirGrade` recusa data que não existe no calendário. Aqui as datas vêm de `--de`/`--ate`, ou
+// seja, de quem digitou: sem isto, `--de 2027-02-31` devolvia um rastro de pilha do Node com a
+// mensagem em português enterrada no meio.
+let grade
+try {
+  grade = construirGrade({ inicio: DE, fim: ATE, malha: MALHA, capacidadePadrao: CAPACIDADE, santaCeia: SANTA_CEIA })
+} catch (e) {
+  console.error(`🔴 ${e instanceof Error ? e.message : String(e)}`)
+  process.exit(1)
+}
 /*
   🔴 O MESMO CAMINHO DA TELA — corrigido em 05/08/2026.
 

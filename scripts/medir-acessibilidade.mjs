@@ -338,7 +338,16 @@ if (medida.medidos < 20) {
   aberto ele mais que triplica.
 */
 for (const c of porCena) {
-  if (c.medidos < 20 || c.focaveis < 3) {
+  /*
+    ⚠️ O PISO É POR CENA, e a porta do administrativo é pequena de propósito: ela tem 21 textos contra
+    um piso de 20 — margem de UM. Sexta auditoria externa, 05/08/2026: qualquer texto a menos no login
+    derrubaria o portão pelo motivo errado, e "portão cronicamente vermelho é portão que se ignora".
+
+    O piso dela desce para 10, que ainda denuncia uma tela que não renderizou (a porta tem título,
+    subtítulo, dois rótulos, dois botões e três linhas de ajuda), sem reprovar por um ajuste de texto.
+  */
+  const piso = c.cena.includes('administrativa') ? 10 : 20
+  if (c.medidos < piso || c.focaveis < 3) {
     console.error(`🔴 a cena "${c.cena}" mediu ${c.medidos} textos e ${c.focaveis} focáveis — ela não abriu.`)
     process.exit(1)
   }

@@ -107,7 +107,12 @@ describe('publicar — as duas pastas, e o conteúdo exato', () => {
     await publicarDados(TOKEN_FALSO, 'config.json', { versao: 1 }, 'configuração')
 
     expect(gravadas.find((g) => g.caminho.startsWith('public'))?.sha).toBe('sha-existente')
-    expect(gravadas.find((g) => g.caminho.startsWith('docs'))?.sha).toBeUndefined()
+    // 🔴 `?.sha` sozinho passaria também se `docs` NUNCA tivesse sido gravado — sexta auditoria
+    //    externa, 05/08/2026. A promessa é "o segundo arquivo é CRIADO, sem sha"; então afirma-se
+    //    primeiro que ele existe.
+    const emDocs = gravadas.find((g) => g.caminho.startsWith('docs'))
+    expect(emDocs).toBeDefined()
+    expect(emDocs!.sha).toBeUndefined()
   })
 
   it('a mensagem do commit carrega a descrição — é o que se lê no histórico depois', async () => {
