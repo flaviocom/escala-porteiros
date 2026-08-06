@@ -64,6 +64,7 @@
     "generico:docs": "node scripts/portao-generico-docs.mjs",
     "markdown-cru": "node scripts/portao-markdown-cru.mjs",
     "vivo:quebrada": "node scripts/portao-tela-quebrada.mjs",
+    "vivo:outra": "node scripts/portao-gerar-outra.mjs",
     "vivo:publicar": "node scripts/validar-publicar-de-verdade.mjs"
   },
   "dependencies": {

@@ -322,6 +322,51 @@ describe('🔴 gerar várias versões sem quebrar a conferência', () => {
     expect(melhor.pisoAlcancado).toBeGreaterThanOrEqual(versoes[0].resultado.pisoAlcancado)
   })
 
+  /*
+    🔴 O BOTÃO "NÃO GOSTEI" — os dois lados da mesma trava, 06/08/2026.
+
+    Ele clicou várias vezes e recebeu sempre a mesma escala; chamou o botão de farsa, e estava certo.
+    A causa não era a semente: as oito versões saem DISTINTAS. É a cascata que escolhe sempre a
+    gulosa, que semente nenhuma alcança — medido neste mesmo `base`: quatro sementes, UMA escala.
+
+    Um teste só do lado bom não valeria nada aqui. O segundo prova que, sem `recusada`, a resposta
+    continua sendo a MELHOR de todas — porque uma "correção" que piorasse a primeira geração para
+    fazer a segunda variar teria trocado um defeito por outro pior, e em silêncio.
+  */
+  it('🔴 recusar uma escala devolve OUTRA — é o que o botão "Não gostei" promete', () => {
+    const primeira = gerarVariasVersoes(base, 8, 3, 1)
+    if (!primeira.melhor.ok) throw new Error('não gerou')
+    // A premissa do teste, medida e não suposta: sem exclusão, a semente nova devolve a MESMA
+    // escala. Sem esta linha, o teste de baixo passaria num fixture que já variava sozinho — foi
+    // exatamente o que aconteceu na primeira tentativa, e o mutante injetado não derrubou nada.
+    const soComSemente = gerarVariasVersoes(base, 8, 3, 101)
+    if (!soComSemente.melhor.ok) throw new Error('não gerou')
+    expect(JSON.stringify(soComSemente.melhor.bloco.turnos)).toBe(JSON.stringify(primeira.melhor.bloco.turnos))
+
+    const outra = gerarVariasVersoes(base, 8, 3, 101, primeira.melhor.bloco.turnos)
+    if (!outra.melhor.ok) throw new Error('não gerou')
+    expect(JSON.stringify(outra.melhor.bloco.turnos)).not.toBe(JSON.stringify(primeira.melhor.bloco.turnos))
+    // E a outra não pode ser QUALQUER outra: continua passando pelo catálogo duro inteiro.
+    const rel = validar({ bloco: outra.melhor.bloco, pessoas: pessoas(16), ultimaEscalaAnterior: {}, config: CONFIG })
+    expect(rel.falhasDuras.map((f) => f.id)).toEqual([])
+  })
+
+  it('sem recusa, a escolha continua sendo a MELHOR — a correção não pode piorar a 1ª geração', () => {
+    const semRecusa = gerarVariasVersoes(base, 8, 3, 7)
+    if (!semRecusa.melhor.ok) throw new Error('não gerou')
+    const melhorPiso = Math.max(
+      ...semRecusa.versoes.filter((v) => v.resultado.ok).map((v) => (v.resultado.ok ? v.resultado.pisoAlcancado : 0)),
+    )
+    expect(semRecusa.melhor.pisoAlcancado).toBe(melhorPiso)
+  })
+
+  it('recusar uma escala que ninguém gerou não muda nada — a recusa não inventa exclusão', () => {
+    const normal = gerarVariasVersoes(base, 8, 3, 3)
+    const comFantasma = gerarVariasVersoes(base, 8, 3, 3, [])
+    if (!normal.melhor.ok || !comFantasma.melhor.ok) throw new Error('não gerou')
+    expect(JSON.stringify(comFantasma.melhor.bloco.turnos)).toBe(JSON.stringify(normal.melhor.bloco.turnos))
+  })
+
   it('o índice de Jain é 1 com carga idêntica e cai quando alguém carrega mais', () => {
     expect(indiceDeJain([5, 5, 5, 5])).toBeCloseTo(1)
     expect(indiceDeJain([20, 1, 1, 1])).toBeLessThan(0.5)

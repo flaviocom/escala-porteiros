@@ -553,3 +553,48 @@ for do meu instrumento?**
 
 **Handoff:** [`HANDOFF_2026-08-06.md`](docs/handoff/HANDOFF_2026-08-06.md) ·
 **Diário:** DB-035 a DB-038.
+
+---
+
+## 06/08/2026 · noite — "o botão é uma farsa", e cada peça estava certa sozinha
+
+**Solicitação (S-038):** *"Distanciamento por pessoa, mesmo clicando várias vezes, não muda nada. O
+'Não gostei — gerar outra combinação' é uma farsa."*
+
+**Medido antes de tocar em qualquer linha:** quatro cliques na tela → a mesma escala; oito
+sementes-base no domínio → **uma** escala entre as oito, com `semente escolhida: guloso` em todas.
+
+1. **A causa era o oposto do que parecia.** A semente mudava a cada clique e as oito versões saíam
+   **distintas** — a **cascata** é que escolhia sempre a versão gulosa, a única que não usa semente.
+   Oito alternativas montadas, oito descartadas.
+2. **Nenhum teste podia pegar.** Um provava que sementes diferentes dão escalas diferentes: passava,
+   e está certo. Outro, que a escolhida nunca é pior que a gulosa: passava, e está certo. **O defeito
+   morava na junção** — e a junção só existe inteira na tela, com este elenco. Daí a trava nova ser
+   de navegador (`vivo:outra`, 4 cliques) e não de unidade.
+3. **A correção**: o clique manda junto a escala recusada, e ela sai da disputa. Sem `recusada`, nada
+   muda — a primeira geração continua sendo a melhor possível, e há teste para isso. Nos dados reais,
+   **piso 4 antes e piso 4 depois**: alternativa sem custo de qualidade.
+4. **A tela deixou de mentir no caso limite**: o aviso dizia *"nenhuma superou esta"*; passou a dizer
+   que nenhuma ficou **diferente** desta — que é o que de fato acontece quando repete.
+5. **`Cartao` ganhou `aria-labelledby`**, porque a sonda agarrava só o cabeçalho. Nome alcançável
+   serve a leitor de tela **e** a instrumento de medida — agora em bloco, não só nos campos.
+
+**O fio que liga a noite:** dois defeitos foram do INSTRUMENTO, não do produto. O portão nasceu
+vermelho com a correção certa no lugar (quarta sonda da sessão a medir o próprio rastro), e os três
+testes novos, inseridos por script, **não chegaram ao arquivo** — o script imprimiu sucesso e o
+mutante passou verde, o que por um instante pareceu prova de que a correção era desnecessária.
+**Depois de escrever por script, confira o ARQUIVO, nunca a mensagem do script.**
+
+**Provado nas duas pontas:** com o mutante `if (false)`, o teste do botão reprova (1 de 27) e o
+`vivo:outra` acusa "MESMA escala" nos quatro cliques; na árvore limpa, 27 testes e 4 escalas
+diferentes.
+
+**Skills acionadas:** `engineering-loop` (orientar→executar→verificar→registrar), `loop-autonomo`,
+`documentacao-auditavel`, `ponytail` (a correção é um parâmetro opcional e um filtro, não um motor
+novo).
+
+**Estado:** `EXIT_GATE=0` em **32 passos** · **354 testes** · selo conferido · 183 turnos no ar ·
+0 estouros de teto · 14 ativos.
+
+**Handoff:** [`HANDOFF_2026-08-06.md` §6d](docs/handoff/HANDOFF_2026-08-06.md) ·
+**Diário:** DB-039.

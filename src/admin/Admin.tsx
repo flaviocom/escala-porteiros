@@ -17,7 +17,7 @@ import { clsx } from 'clsx'
 import { abrirCofre, apagarCofre, cofreExiste, exportarCofre, gravarCofre, importarCofre, type Segredos } from './cofre'
 import { baixarPacoteManual, COMO_CRIAR_O_TOKEN, conferirToken, DESTINOS, historicoPublicacoes, lerDadosNoCommit, publicarDados, reverterPara, type Publicacao } from './github'
 import { completarConfig, retratoPublicado, type ConfigLida, type DadosPublicados } from '../dados/carregar'
-import type { ArquivoBlocos, ArquivoPessoas, Bloco, Configuracao, Pessoa, TipoTurno } from '../dominio/tipos'
+import type { ArquivoBlocos, ArquivoPessoas, Bloco, Configuracao, Pessoa, TipoTurno, Turno } from '../dominio/tipos'
 import { ROTULO_TURNO } from '../dominio/tipos'
 import { idDoNome } from '../utils/nomes'
 import { construirGrade, diaTemCulto } from '../dominio/malha'
@@ -1347,7 +1347,19 @@ const AbaGerar: React.FC<{
 
     Valor que a tela acabou de mudar não está no closure desta função. Passa por argumento, sempre.
   */
-  const executar = (semente: number = sementeBase, deAgora: string = de) => {
+  /*
+    🔴 E A ESCALA RECUSADA VAI PELO MESMO CAMINHO — 06/08/2026, e desta vez o defeito era mais fundo
+    que o closure.
+
+    Palavras dele: *"distanciamento por pessoa, mesmo clicando várias vezes não muda nada, o 'Não
+    gostei — gerar outra combinação' é uma farsa."* Medido: a semente estava certa e as oito versões
+    saíam **distintas** — mas a cascata escolhe sempre a versão GULOSA, que não usa semente nenhuma.
+    O botão montava oito alternativas e descartava todas em favor da mesma de sempre.
+
+    Semente nova sem exclusão da recusada não é oferta de alternativa: é sorteio cujo resultado já
+    está decidido. Por isso o clique manda junto a escala que ele está vendo.
+  */
+  const executar = (semente: number = sementeBase, deAgora: string = de, recusada?: Turno[]) => {
     /*
       🔴 A PROPOSTA VELHA MORRE AQUI, ANTES DE QUALQUER RECUSA — sétima auditoria, medido ao vivo.
 
@@ -1488,7 +1500,7 @@ const AbaGerar: React.FC<{
           // A cota do mês também atravessa a fronteira — ver `cotaMensalJaPublicada`.
           escalasPorMesAnterior: cotaMensalJaPublicada(dados.blocos, deAgora),
         },
-        8, 3, semente,
+        8, 3, semente, recusada,
       )
       const r = escolha.melhor
       const validas = escolha.versoes.filter((v) => v.resultado.ok).length
@@ -1840,8 +1852,9 @@ const AbaGerar: React.FC<{
         {/*
           🔴 "GERAR OUTRA COMBINAÇÃO" — o pedido do Flavio de poder recusar e pedir outra.
           Só aparece depois que existe escala: antes dela o botão não teria o que substituir.
-          Ele muda a SEMENTE, e é isso que faz a próxima rodada explorar caminhos diferentes —
-          sem semente nova, oito versões seriam oito cópias.
+          Ele muda a SEMENTE — e manda junto a escala recusada, para que ela saia da disputa. A
+          semente sozinha não bastava: as oito versões saíam distintas e a cascata escolhia sempre a
+          gulosa, que semente nenhuma alcança. Ver o comentário de `executar`.
         */}
         {blocoNovo && !ocupado && (
           <div className="mt-4 rounded-xl border border-gray-200 bg-gray-50 p-3">
@@ -1850,7 +1863,8 @@ const AbaGerar: React.FC<{
                 // A semente vai por ARGUMENTO: ler `sementeBase` aqui traria o valor do render velho.
                 const nova = sementeBase + 100
                 setSementeBase(nova)
-                executar(nova)
+                // A escala recusada é a que ele está vendo — vai junto para sair da disputa.
+                executar(nova, de, blocoNovo?.turnos)
               }}
               title="Descarta esta escala e monta outra, explorando combinações diferentes"
               className="flex min-h-[2.75rem] items-center gap-2 rounded-xl border border-gray-300 bg-white px-4 text-sm font-semibold text-gray-700 hover:bg-gray-100"
@@ -1859,9 +1873,9 @@ const AbaGerar: React.FC<{
             </button>
             {repetiu && (
               <p className="mt-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs leading-relaxed text-amber-900">
-                <strong>Saiu a mesma escala.</strong> As combinações novas foram montadas e comparadas,
-                e nenhuma superou esta — ela continua sendo a melhor que o sistema encontra para este
-                período e este elenco. Para obter uma escala realmente diferente, mude alguma coisa da
+                <strong>Saiu a mesma escala.</strong> As oito combinações novas foram montadas e
+                nenhuma delas ficou diferente desta — com este período e este elenco, o sistema não
+                encontra outra escala válida. Para obter uma realmente diferente, mude alguma coisa da
                 entrada: o período, quem está ativo, as restrições ou as pessoas por turno.
               </p>
             )}
@@ -2955,15 +2969,29 @@ const Aviso: React.FC<{ tom: 'erro' | 'atencao'; children: React.ReactNode }> = 
   </div>
 )
 
-const Cartao: React.FC<{ titulo: string; subtitulo?: string; tom?: 'ok' | 'erro'; children: React.ReactNode }> = ({ titulo, subtitulo, tom, children }) => (
-  <section className={clsx('bg-white rounded-2xl border shadow-sm overflow-hidden', tom === 'erro' ? 'border-red-200' : tom === 'ok' ? 'border-green-200' : 'border-gray-200')}>
+/*
+  🔴 O CARTÃO SE CHAMA PELO PRÓPRIO TÍTULO — `aria-labelledby`, 06/08/2026.
+
+  Sem isto, um `<section>` é uma caixa anônima: leitor de tela anuncia "região", sem dizer qual, e
+  quem MEDE não tem por onde pegar. Escrevi o portão do botão "Não gostei" localizando o cartão por
+  texto solto e ele agarrou só o cabeçalho — 83 caracteres que não mudam nunca. O portão nasceu
+  vermelho com a correção certa no lugar, e por um triz eu não fui atrás do defeito errado.
+
+  É a mesma lição dos campos sem rótulo, agora em bloco: **nome alcançável serve a quem não enxerga
+  e a quem mede — são o mesmo mecanismo.**
+*/
+const Cartao: React.FC<{ titulo: string; subtitulo?: string; tom?: 'ok' | 'erro'; children: React.ReactNode }> = ({ titulo, subtitulo, tom, children }) => {
+  const idDoTitulo = React.useId()
+  return (
+  <section aria-labelledby={idDoTitulo} className={clsx('bg-white rounded-2xl border shadow-sm overflow-hidden', tom === 'erro' ? 'border-red-200' : tom === 'ok' ? 'border-green-200' : 'border-gray-200')}>
     <div className={clsx('px-5 py-4 border-b', tom === 'erro' ? 'bg-red-50 border-red-100' : tom === 'ok' ? 'bg-green-50 border-green-100' : 'bg-gray-50 border-gray-100')}>
-      <h2 className="font-bold text-gray-900">{titulo}</h2>
+      <h2 id={idDoTitulo} className="font-bold text-gray-900">{titulo}</h2>
       {subtitulo && <p className="text-xs text-gray-500 mt-0.5">{subtitulo}</p>}
     </div>
     <div className="p-5">{children}</div>
   </section>
-)
+  )
+}
 
 const Numero: React.FC<{ rotulo: string; valor: React.ReactNode }> = ({ rotulo, valor }) => (
   <div className="bg-gray-50 rounded-xl p-3 text-center">

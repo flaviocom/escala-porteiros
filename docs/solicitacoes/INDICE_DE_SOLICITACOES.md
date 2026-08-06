@@ -6,13 +6,14 @@
 > **Cadeia de navegação:** [`ESTADO.md`](../../ESTADO.md) → [`handoff mais recente`](../handoff/INDICE.md) → [`BACKLOG.md`](../../BACKLOG.md)
 > **Roteador do projeto:** [`AGENTS.md`](../../AGENTS.md) · **Por quê de cada decisão:** [`DIARIO_DE_BORDO.md`](../../DIARIO_DE_BORDO.md)
 
-**Próximo identificador livre: S-038** — calculado sobre **todas** as fatias, nunca lido da última
+**Próximo identificador livre: S-039** — calculado sobre **todas** as fatias, nunca lido da última
 linha visível (é o ERRO 28 do catálogo de anteparos: após uma rotação, o maior ID some de vista).
 
 ---
 
 | ID | Data | Solicitação | Onde foi parar |
 |---|---|---|---|
+| **S-038** | 06/08/2026 | *"Distanciamento por pessoa, mesmo clicando várias vezes, não muda nada. O 'Não gostei — gerar outra combinação' é uma farsa"* | 🔴 **Ele estava certo, e a causa era o oposto do que parecia.** A semente mudava e as **oito versões saíam distintas** — a **cascata** é que escolhia sempre a versão GULOSA, a única que não usa semente nenhuma. Oito alternativas montadas, oito descartadas, em toda rodada. Dois testes verdes cobriam as peças; **o defeito morava na junção.** Correção: o clique manda junto a escala recusada, e ela **sai da disputa** — piso 4 antes e depois, sem custo de qualidade. Quando não houver outra escala válida, a tela **diz isso**. Portão novo `vivo:outra` (4 cliques na tela de verdade) + 3 testes, provados com mutante nas duas pontas. `Cartao` ganhou `aria-labelledby` porque a sonda agarrava só o cabeçalho · [handoff 06/08 §6d](../handoff/HANDOFF_2026-08-06.md) · [DB-039](../../DIARIO_DE_BORDO.md) |
 | **S-012** | 04/08/2026 | *"você não me disse se resolveu a questão do token… não houve uma maneira concreta de preparar o login via GitHub. Publicar na tela tem que estar habilitado — é a funcionalidade principal"* | Guia do token **dentro da tela**, fonte única com o verificador, recusas que nomeiam o campo · [handoff da parte 10](../handoff/HANDOFF_2026-08-04-j.md) · [DB-012](../../DIARIO_DE_BORDO.md) |
 | **S-013** | 05/08/2026 | *"não quero ter que digitar token do GitHub para entrar. Quais são as opções para eu entrar sem digitar token?"* | Entrar virou **um clique**: sem segredo a guardar, não há senha a pedir · `vivo:entrar` 11/11 · [handoff 05/08](../handoff/HANDOFF_2026-08-05.md) |
 | **S-014** | 05/08/2026 | *"entrou uma vez, você grava o token e me deixa liberado. É possível?"* | O token já ficava; faltava `autocomplete` para o navegador oferecer lembrar a senha · [handoff 05/08](../handoff/HANDOFF_2026-08-05.md) |

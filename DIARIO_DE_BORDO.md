@@ -1659,3 +1659,46 @@ Com `reload()` de verdade, os três casos passaram. Terceira vez hoje que uma so
 
 **Como reverter.** `git revert` do commit desta entrada devolve o comportamento antigo — a tela volta
 a esquecer tudo a cada F5.
+
+---
+
+## DB-039 · 06/08/2026 — cada peça certa sozinha, o defeito na junção
+
+**O pedido:** *"Distanciamento por pessoa, mesmo clicando várias vezes, não muda nada. O 'Não gostei
+— gerar outra combinação' é uma farsa."*
+
+**Medido antes de tocar em qualquer linha** — quatro cliques na tela, com os dados dele, e oito
+sementes-base no domínio:
+
+```
+na tela:     clique 1, 2, 3, 4 -> a MESMA escala, e o aviso "Saiu a mesma escala"
+no domínio:  bases 1, 2, 3, 4, 5, 10, 42, 777 -> 1 escala distinta entre as oito
+             cada base gera 8 versões válidas e DISTINTAS · semente escolhida: guloso
+```
+
+**A causa era o oposto do que parecia.** A semente mudava a cada clique. As oito versões saíam de
+fato diferentes. O que ninguém media era a última etapa: a cascata escolhe a melhor por piso e por
+Jain, e a vencedora era sempre a versão **gulosa** — a única que não usa semente nenhuma. O botão
+montava oito alternativas e descartava as oito.
+
+**O porquê que interessa.** Havia teste provando que sementes diferentes dão escalas diferentes, e
+ele passava; havia teste provando que a escolhida nunca é pior que a gulosa, e ele passava. Os dois
+estão corretos. **Cada peça estava certa sozinha, e o defeito morava na junção** — que só existe
+inteira na tela, com este elenco. É a razão de a trava nova ser de navegador e não de unidade, e é o
+tipo de buraco que nenhuma cobertura de unidade fecha por mais que cresça.
+
+**A decisão.** "Não gostei" é um pedido explícito por *outra*. Quando o clique chega, ele manda junto
+a escala recusada, e a escolha passa a ser feita entre as que **diferem** dela — mesmo que a melhor
+delas seja um pouco pior. Preferir a mesma resposta a uma resposta um pouco pior é ignorar o pedido.
+Sem `recusada`, nada muda: a primeira geração continua sendo a melhor possível, e há teste para isso.
+Medido depois, nos dados reais: **piso 4 antes, piso 4 depois** — sem custo de qualidade.
+
+⚠️ **Duas lições do instrumento, não do produto.** O portão nasceu vermelho com a correção certa no
+lugar: ele pegava o cartão por texto solto e agarrava só o cabeçalho, 83 caracteres imutáveis —
+**quarta sonda desta sessão a medir o próprio rastro**. E os três testes novos, inseridos por script,
+**não chegaram ao arquivo**: o script imprimiu sucesso, o mutante passou verde, e por um instante
+isso pareceu prova de que a correção não era necessária. `git status` limpo foi o que denunciou.
+**Depois de escrever por script, confira o ARQUIVO — nunca a mensagem do script.**
+
+**Como reverter.** `git revert` do commit desta entrada devolve o comportamento antigo — o botão
+volta a entregar sempre a mesma escala.

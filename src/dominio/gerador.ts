@@ -412,6 +412,25 @@ export function gerarVariasVersoes(
   quantas = 8,
   candidatos = 3,
   sementeBase = 1,
+  /**
+   * 🔴 A ESCALA QUE ELE ACABOU DE RECUSAR — e o motivo de este parâmetro existir.
+   *
+   * 06/08/2026, o dono, depois de clicar em "Não gostei — gerar outra combinação" várias vezes:
+   * *"mesmo clicando várias vezes não muda nada, o 'Não gostei' é uma farsa."*
+   *
+   * Ele estava certo, e a causa não era a semente. Medido: **cada rodada produz 8 versões
+   * distintas** — as sementes funcionam. Só que a cascata escolhe sempre a versão **gulosa**, que
+   * não usa semente nenhuma; então o botão gerava oito alternativas e descartava todas em favor da
+   * mesma de sempre. Com este elenco, isso acontece em toda rodada.
+   *
+   * "Não gostei" é um pedido explícito: **dê-me outra**. Quando ele chega com a escala recusada, a
+   * escolha passa a ser feita entre as que DIFEREM dela — mesmo que a melhor delas seja um pouco
+   * pior. Preferir a mesma resposta a uma resposta um pouco pior é ignorar o pedido.
+   *
+   * ⚠️ Sem `recusada`, o comportamento é o de antes: a melhor de todas, ponto. É assim que a
+   * primeira geração continua sendo a melhor poss√≠vel.
+   */
+  recusada?: Turno[],
 ): EscolhaDeVersoes {
   const versoes: VersaoGerada[] = []
   const semTeto = new Set(
@@ -439,11 +458,29 @@ export function gerarVariasVersoes(
   const validas = versoes.filter((v) => v.resultado.ok)
   if (validas.length === 0) return { melhor: versoes[0].resultado, versoes, descartadas: versoes.length }
 
-  const melhor = validas.reduce((a, b) => {
-    const pa = (a.resultado as Sucesso).pisoAlcancado
-    const pb = (b.resultado as Sucesso).pisoAlcancado
-    if (pa !== pb) return pa > pb ? a : b
-    return a.jain >= b.jain ? a : b
-  })
+  const escolher = (entre: VersaoGerada[]) =>
+    entre.reduce((a, b) => {
+      const pa = (a.resultado as Sucesso).pisoAlcancado
+      const pb = (b.resultado as Sucesso).pisoAlcancado
+      if (pa !== pb) return pa > pb ? a : b
+      return a.jain >= b.jain ? a : b
+    })
+
+  /*
+    Se ele recusou uma escala, as iguais a ela saem da disputa. Comparação por CONTEÚDO — o mesmo
+    conjunto de turnos gerado duas vezes é a mesma escala, e é exatamente isso que ele não quer ver
+    de novo.
+  */
+  if (recusada) {
+    const digital = JSON.stringify(recusada)
+    const diferentes = validas.filter((v) => JSON.stringify((v.resultado as Sucesso).bloco.turnos) !== digital)
+    // Todas iguais à recusada? Então a resposta honesta é a de sempre — e a tela dirá que repetiu.
+    if (diferentes.length > 0) {
+      const outra = escolher(diferentes)
+      return { melhor: outra.resultado, versoes, descartadas: versoes.length - validas.length }
+    }
+  }
+
+  const melhor = escolher(validas)
   return { melhor: melhor.resultado, versoes, descartadas: versoes.length - validas.length }
 }

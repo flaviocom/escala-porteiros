@@ -105,6 +105,25 @@ desconfia de um portão que funciona, ou escreve outro em cima.
   novo fora do inventário **e citação a menos**. Ele já nasceu achando quatro que um `grep` à mão
   tinha deixado passar.
 
+### P1.6 ✅ "Não gostei — gerar outra combinação" devolvia sempre a mesma — FECHADO em 06/08/2026 🤖
+Palavra dele: *"mesmo clicando várias vezes, não muda nada; é uma farsa."* Medido: quatro cliques na
+tela → a mesma escala; oito sementes-base no domínio → **uma** escala entre as oito.
+
+A semente **funcionava** e as oito versões saíam **distintas**. A **cascata** é que escolhia sempre a
+versão gulosa — a única que não usa semente nenhuma. Havia dois testes verdes cobrindo as peças, e
+ambos estão certos: **o defeito morava na junção**, que só existe inteira na tela.
+
+Agora o clique manda junto a escala recusada, e ela sai da disputa — **piso 4 antes e depois**, sem
+custo de qualidade. Quando não houver mesmo outra escala válida, a tela diz isso em vez de fingir que
+sorteou. Portão novo `vivo:outra` (4 cliques na tela) + 3 testes, **provados nas duas pontas** com
+mutante injetado.
+
+⚠️ Dois defeitos do instrumento, não do produto, registrados porque custaram mais que a correção: o
+portão nasceu vermelho lendo só o cabeçalho do cartão (**quarta sonda da sessão a medir o próprio
+rastro** — daí o `aria-labelledby` no `Cartao`), e os três testes inseridos por script **não chegaram
+ao arquivo**, com o script imprimindo sucesso. Regra: **depois de escrever por script, confira o
+arquivo, nunca a mensagem do script.**
+
 ---
 
 ## P2 — Método e infraestrutura 🔵

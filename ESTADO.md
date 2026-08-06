@@ -2,7 +2,7 @@
 
 > **Onde o projeto está agora.** Documento **vivo**: sobrescrito, não acumulado.
 >
-> **Última atualização:** 05/08/2026 · **Fuso:** America/São_Paulo
+> **Última atualização:** 06/08/2026 · **Fuso:** America/São_Paulo
 >
 > **Cadeia de navegação, nesta ordem:**
 > **`ESTADO.md` (você está aqui)** → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-06.md) → [`BACKLOG.md`](BACKLOG.md)
@@ -23,7 +23,25 @@ conferida.** O nome do cliente saiu do código e virou dado. As duas decisões q
 **foram tomadas pelo Flavio em 05/08** — a data de início (06/08) e o escopo de finalidade (fase 1,
 uso interno). O que falta é só o que depende das credenciais dele.
 
-## O mais recente: a SEXTA auditoria (05/08, noite)
+## O mais recente: "o botão é uma farsa" (06/08, noite)
+
+> *"Distanciamento por pessoa, mesmo clicando várias vezes, não muda nada. O 'Não gostei — gerar
+> outra combinação' é uma farsa."*
+
+**Ele estava certo, e a causa era o oposto do que parecia.** A semente mudava a cada clique e as oito
+versões saíam de fato distintas — a **cascata** é que escolhia sempre a versão **gulosa**, a única que
+não usa semente nenhuma. Oito alternativas montadas, oito descartadas, em toda rodada.
+
+Havia teste provando que sementes diferentes dão escalas diferentes, e ele passava. Havia teste
+provando que a escolhida nunca é pior que a gulosa, e ele passava. Os dois estão certos: **cada peça
+estava certa sozinha, e o defeito morava na junção** — que só existe inteira na tela.
+
+Agora o clique manda junto a escala recusada, e ela sai da disputa. Medido nos dados reais: **piso 4
+antes e depois**, sem custo de qualidade. Portão novo `vivo:outra` — quatro cliques na tela de
+verdade — provado nas duas pontas com mutante. Detalhe em
+[`HANDOFF_2026-08-06.md` §6d](docs/handoff/HANDOFF_2026-08-06.md) e [DB-039](DIARIO_DE_BORDO.md).
+
+## A SEXTA auditoria (05/08, noite)
 
 **25 achados, todos fechados** — e ela mirou o que nenhuma outra podia mirar: **o código que tinha
 nascido horas antes**. Três correções da manhã estavam na **variável errada**:
@@ -215,7 +233,7 @@ relatou: *"Piso alcançado: 6 dias. Tentei 9, 8, 7 — não foi possível cobrir
 | Quarta → sábado | 6 casos | **0** |
 | Santa Ceia | 07/06 errada; 16/08 com 6 escalados | **16/08 correta, 0 escalados** |
 | Validação | 6 regras, nenhuma de espaçamento ou capacidade | **16 de 16** (eram 15 em 04/08; D11 nasceu em 05/08) |
-| Testes | nenhum | **351** hoje (eram 71 em 04/08), verdes em 2 fusos |
+| Testes | nenhum | **354** hoje (eram 71 em 04/08), verdes em 2 fusos |
 | Equilíbrio | — | 16–17 turnos, diferença de **1** |
 
 **A área administrativa está no ar**: elenco com X para tirar e + para acrescentar, as quatro

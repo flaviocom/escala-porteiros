@@ -443,6 +443,35 @@ Duas fronteiras do próprio portão, fechadas porque isenção calada é buraco 
   nomeada na saída e o portão **reprova**. Um portão que pula o que não conseguiu abrir mede menos
   do que a frase dele promete.
 
+#### `vivo:outra` — "Não gostei — gerar outra combinação" entrega mesmo OUTRA
+*(roda dentro do `vivo:tudo`, não como passo solto — ver o passo 28)*
+Abre a tela, gera uma escala e clica em **"Não gostei"** quatro vezes, lendo a cada clique o cartão
+**Distanciamento por pessoa** — que é onde ele olhava. Dois cliques seguidos com o mesmo texto
+reprovam.
+
+> 🔴 **Nasceu da palavra dele** (06/08/2026): *"mesmo clicando várias vezes, não muda nada; o 'Não
+> gostei — gerar outra combinação' é uma farsa."* Ele estava certo, e o caro do defeito é que **tudo
+> por baixo parecia funcionar**: a semente mudava a cada clique, as oito versões saíam de fato
+> distintas, e havia teste verde provando exatamente isso. Ninguém media a ÚLTIMA etapa — a cascata
+> escolhia sempre a versão **gulosa**, a única que não usa semente nenhuma. Oito alternativas
+> montadas, oito descartadas.
+>
+> **Cada peça estava certa sozinha; o defeito morava na junção — e a junção só existe inteira na
+> tela.** É a razão de este portão ser de navegador e não de unidade.
+
+Duas fronteiras do próprio portão, declaradas:
+
+- **compara com o clique anterior**, não com o conjunto de todos. Voltar a uma combinação de três
+  cliques atrás é legítimo: ele pediu *outra*, não *inédita*. Repetir a que está na tela é que quebra
+  a promessa do botão;
+- **não julga se a escala nova é melhor** — disso cuidam o catálogo duro e os testes do gerador.
+
+> ⚠️ **O portão nasceu vermelho com a correção certa no lugar.** A primeira versão localizava o
+> cartão por texto solto e agarrou só o cabeçalho: 83 caracteres que não mudam nunca. Sonda medindo o
+> próprio rastro. Por isso `Cartao` ganhou `aria-labelledby` — e por isso a sonda agora **confere que
+> leu as linhas por pessoa** antes de comparar. Sem esse sinal de vida, ele reprovaria para sempre
+> pelo motivo errado.
+
 ### 26. `ensaio` — o cenário que ORIGINOU o projeto, ponta a ponta
 Alguém sai do elenco, outro entra com as cinco restrições, e a escala se refaz a partir de um corte.
 **11 promessas medidas**, entre elas *"o passado antes do corte fica byte a byte idêntico"*.
