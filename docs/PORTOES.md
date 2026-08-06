@@ -251,17 +251,38 @@ INSTALAÇÃO (legítimo) ou descreve o PRODUTO (e aí o nome não devia estar l�
 **Provado nas três pontas, cada uma pelo motivo certo**, mais a árvore limpa → EXIT=0. E ele nasceu
 achando: quatro citações legítimas que um `grep` à mão tinha deixado passar.
 
-### 15. `doc:regras:conferir` — o catálogo documentado bate com o código
+### 15. `citacoes` — `arquivo:linha` que envelheceu sozinho
+**População:** todo `.md` vivo · **isentos:** os append-only (registram o que era verdade **então**;
+citação velha ali é o registro funcionando). Hoje 6 citações conferidas.
+**Confere:** o arquivo citado existe · o arquivo tem pelo menos aquela linha.
+
+> 🔴 **O próprio BACKLOG pediu este portão, e ninguém ouviu.** O item P4.8 trazia esta frase,
+> escrita à mão por quem viu o problema e não tinha como impedir que voltasse:
+> *"as linhas 218-221 citadas antes envelheceram, **segunda ocorrência** do mesmo apodrecimento no
+> mesmo documento"*.
+
+**Citação de linha é a única referência que apodrece sozinha:** ninguém precisa mexer no documento
+para ela ficar errada — basta alguém acrescentar dez linhas no arquivo citado. E apodrece em
+silêncio, porque continua *parecendo* precisa.
+
+**Fora de escopo, declarado:** se o *conteúdo* daquela linha ainda é o que a citação descreve — isso
+exigiria entender a frase. Ele pega o apodrecimento grosseiro, que foi o que aconteceu duas vezes, e
+não finge pegar o resto.
+
+**Provado nas duas pontas:** linha além do fim do arquivo e arquivo inexistente → EXIT=1, cada um com
+o motivo certo; árvore limpa → EXIT=0.
+
+### 16. `doc:regras:conferir` — o catálogo documentado bate com o código
 `docs/CATALOGO_DE_REGRAS.md` é **gerado**. Este passo regenera em memória e compara **byte a byte**
 (ignorando fim de linha, porque o Windows reescreve CRLF). Muda o `titulo` ou a `explicacao` de uma
 regra sem regenerar → vermelho.
 
-### 16. `doc:comandos` — todo comando citado existe
+### 17. `doc:comandos` — todo comando citado existe
 **População:** os 17 documentos vivos · isentos os append-only.
 **Critério:** todo `npm run <nome>` está no `package.json`; todo `node scripts/<arquivo>` existe em
 disco. **Achou defeito na primeira execução:** `npm run tempo`, citado na documentação, não existia.
 
-### 17. `arquitetura` — as três invariantes que a documentação afirma
+### 18. `arquitetura` — as três invariantes que a documentação afirma
 1. `src/dominio/` **não importa nada de fora** (nem `../`, nem pacote externo).
 2. `conferencia-independente.ts` **não importa** `regras`, `validacao` nem `gerador`.
 3. **`docs/.nojekyll` existe.**
@@ -277,14 +298,14 @@ publicada · o site mostra a escala nova em cerca de um minuto"*. Ninguém no pa
 por tempo indeterminado. Um arquivo de 0 byte elimina a classe, e ele já sumiu uma vez sem ninguém
 ver: é o argumento inteiro para portão em vez de disciplina.
 
-### 18. `fatos:conferir` — nenhum documento desmente um número medido
+### 19. `fatos:conferir` — nenhum documento desmente um número medido
 **16 fatos**, todos de fonte executável: passos do gate (do `package.json`), casos do autoteste (da
 saída dele), checagens da auditoria, arquivos e termos do portão genérico, documentos vivos, piso do
 bloco publicado, turnos congelados, fontes declaradas, regras do catálogo, regras duras.
 **Nenhum é digitado.** Achou 4 contradições na primeira execução, e depois **pegou a própria
 mudança**: ao entrar no gate, virou o 16º passo e reprovou os documentos que diziam 15.
 
-### 19. `datas` — `toISOString()` não decide dia nem mês
+### 20. `datas` — `toISOString()` não decide dia nem mês
 **População:** 89 arquivos de `src/` e `scripts/` · isento `datas.test.ts`, que **cita** o
 antipadrão para provar que ele erra.
 **Critério, em dois níveis:**
@@ -296,22 +317,6 @@ antipadrão para provar que ele erra.
 **Por que existe:** *"`toISOString()` é proibido"* é a regra mais repetida deste projeto — está em
 `datas.ts`, no `RECONSTRUIR.md`, no `AGENTS.md` e em três comentários de teste. **E não havia nada
 que a cobrasse.** Quando alguém foi olhar, havia 4 usos e o `BACKLOG.md` declarava 1.
-
-### 20. `citacoes` — citação `arquivo:linha` que aponta para o vazio
-**População:** os documentos vivos · isentos os append-only, porque corrigir a citação de um handoff
-seria mentir sobre o que se sabia naquele dia (e o número de pulados é impresso).
-**Critério:** o arquivo existe, e a linha existe.
-**Mais um nível, quando disponível:** se o documento cita um **símbolo** entre crases junto da linha
-— ``src/admin/Admin.tsx:49 (`gravacaoEmVoo`)`` —
-
-⚠️ **Este exemplo já apodreceu TRÊS vezes em 24 horas.** Dizia `:1611`; uma edição empurrou para
-`:1612`; e em 05/08 a trava mudou de nome **e** de lugar — `publicacaoEmVoo` virou `gravacaoEmVoo` na
-linha 49, ao passar a cobrir também a reversão. Nas três o portão pegou no `gate` seguinte. É a
-demonstração mais barata possível de por que ele existe: nem o texto que ENSINA a citar consegue
-guardar uma coordenada — e é o SÍMBOLO, não o número, que faz a citação sobreviver., o portão exige que o símbolo esteja **perto** dela. É o
-que transforma a citação de coordenada em afirmação verificável.
-**Limite declarado:** ele não confere se a linha *diz* o que o documento afirma — isso exigiria
-entender a frase. Pega arquivo renomeado, apagado e linha além do fim, que é a maior parte.
 
 ### 21. `crescimento` — o dado ainda cabe onde é servido
 **Critério:** nenhum arquivo de `dados/` passa de **60%** do teto de 1 MB da Contents API do GitHub,

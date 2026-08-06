@@ -141,12 +141,12 @@ npm run gate
 | 12 | `generico` | nenhum nome de cliente cravado (§0) |
 | 13 | `generico:autoteste` | prova que o de cima **morde** — e que a autodefesa dele morde |
 | 14 | `generico:docs` | 📄 **o nome do cliente na documentação é inventário fechado** — 12 citações em 7 arquivos, cada uma com motivo. Não proibido (o README diz "esta instalação atende…"): reprova citação a mais, arquivo novo fora do inventário, e citação a MENOS |
-| 15 | `doc:regras:conferir` | o catálogo de regras documentado bate com o código |
-| 16 | `doc:comandos` | todo comando citado na documentação existe de verdade |
-| 17 | `arquitetura` | o domínio continua sendo ilha; a 2ª régua não virou espelho |
-| 18 | `fatos:conferir` | nenhum documento vivo desmente um número **medido** |
-| 19 | `datas` | `toISOString()` não decide dia nem mês em lugar nenhum |
-| 20 | `citacoes` | nenhuma citação `arquivo:linha` aponta para o vazio |
+| 15 | `citacoes` | 🔗 **`arquivo:linha` que envelheceu sozinho** — o arquivo existe e tem aquela linha. O próprio BACKLOG registrou o problema duas vezes e não tinha como impedir a terceira. NÃO confere se o conteúdo da linha ainda é o descrito |
+| 16 | `doc:regras:conferir` | o catálogo de regras documentado bate com o código |
+| 17 | `doc:comandos` | todo comando citado na documentação existe de verdade |
+| 18 | `arquitetura` | o domínio continua sendo ilha; a 2ª régua não virou espelho |
+| 19 | `fatos:conferir` | nenhum documento vivo desmente um número **medido** |
+| 20 | `datas` | `toISOString()` não decide dia nem mês em lugar nenhum |
 | 21 | `crescimento` | o dado publicado ainda cabe onde vai ser servido |
 | 22 | `tamanho-docs` | nenhum documento passou do teto do regime dele (raiz 400 · subpasta 800 · append-only 2.000) |
 | 23 | `auditoria` | 21 ataques ao próprio código, com infrator injetado |
