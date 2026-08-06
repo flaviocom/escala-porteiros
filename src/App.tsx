@@ -11,7 +11,7 @@ import { ValidationView } from './components/ValidationView';
 import { MultiSelect } from './components/MultiSelect';
 import { DateSearch } from './components/DateSearch';
 import { Calendar, Filter, X, LayoutGrid, BarChart3, ShieldCheck, SlidersHorizontal, MessageCircle, User, ChevronRight, Search, Loader2, Settings } from 'lucide-react';
-import { format, parseISO, addDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfDay, endOfDay } from 'date-fns';
+import { format, parseISO, addDays, startOfWeek, startOfMonth, endOfMonth, startOfDay, endOfDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { clsx } from 'clsx';
 import { primeiraLetra } from './utils/nomes';
@@ -243,7 +243,23 @@ function App({ shifts, dados }: AppProps) {
     const today = new Date();
     let start: Date, end: Date;
     if (type === '15days') { start = startOfDay(today); end = endOfDay(addDays(today, 14)); }
-    else if (type === 'week') { start = startOfWeek(today, { locale: ptBR }); end = endOfWeek(today, { locale: ptBR }); }
+    /*
+      🔴 "ESTA SEMANA" VAI DE DOMINGO A DOMINGO — pedido do Flavio em 06/08/2026, e a razão é boa:
+      *"não são todas as pessoas que sabem que a semana inicia no domingo. Tem gente que acha que
+      começa na segunda, então ela não veria a escala do domingo próximo."*
+
+      Antes era domingo → sábado (`endOfWeek`). Para quem conta a semana de segunda a domingo, o
+      domingo que ele chama de "fim desta semana" ficava **de fora do filtro** — justo o dia de
+      culto mais cheio.
+
+      A correção é incluir o domingo seguinte: 8 dias, e ninguém perde o próprio domingo por
+      discordar do calendário. Custa um dia a mais de lista e resolve o mal-entendido inteiro.
+    */
+    else if (type === 'week') {
+      const domingo = startOfWeek(today, { locale: ptBR })
+      start = domingo
+      end = endOfDay(addDays(domingo, 7))
+    }
     else { start = startOfMonth(today); end = endOfMonth(today); }
     setDateRange({ start, end });
     setDateSearchQuery('');
@@ -356,12 +372,17 @@ function App({ shifts, dados }: AppProps) {
             Acesso Rápido
           </h2>
           <div className="flex flex-col gap-2">
+            {/*
+              A ordem é do MENOR para o MAIOR período — pedido do Flavio em 06/08/2026. Quem abre o
+              site quer saber "e agora?" antes de "e este mês?", e a lista de cima é a que se lê
+              primeiro.
+            */}
             {[
-              { label: '📅 Próximos 15 dias', type: '15days' as const },
-              { label: '📆 Esta Semana', type: 'week' as const },
-              { label: '🗓️ Este Mês', type: 'month' as const },
-            ].map(({ label, type }) => (
-              <button title="Filtra a escala por este período"
+              { label: '📆 Esta Semana', type: 'week' as const, dica: 'De domingo a domingo — inclui o próximo domingo' },
+              { label: '📅 Próximos 15 dias', type: '15days' as const, dica: 'De hoje até daqui a 14 dias' },
+              { label: '🗓️ Este Mês', type: 'month' as const, dica: 'Do dia 1º ao último dia deste mês' },
+            ].map(({ label, type, dica }) => (
+              <button title={dica}
                 key={type}
                 onClick={() => handleQuickFilter(type)}
                 className="w-full text-left px-4 py-3 rounded-xl text-base font-semibold text-gray-700 bg-gray-50 hover:bg-blue-50 hover:text-blue-700 border border-gray-200 hover:border-blue-200 transition-all duration-200"
@@ -650,12 +671,14 @@ function App({ shifts, dados }: AppProps) {
 
           {/* 🆕 C: Barra de filtros rápidos REATIVADA no mobile */}
           <div className="px-3 pb-2 flex gap-2 overflow-x-auto scrollbar-hide">
+            {/* A MESMA ordem da barra lateral — menor para maior. Duas ordens para os mesmos três
+                botões é o tipo de diferença que ninguém nota e todo mundo estranha. */}
             {[
-              { label: '15 dias', type: '15days' as const },
-              { label: 'Esta Semana', type: 'week' as const },
-              { label: 'Este Mês', type: 'month' as const },
-            ].map(({ label, type }) => (
-              <button title="Filtra a escala por este período"
+              { label: 'Esta Semana', type: 'week' as const, dica: 'De domingo a domingo — inclui o próximo domingo' },
+              { label: '15 dias', type: '15days' as const, dica: 'De hoje até daqui a 14 dias' },
+              { label: 'Este Mês', type: 'month' as const, dica: 'Do dia 1º ao último dia deste mês' },
+            ].map(({ label, type, dica }) => (
+              <button title={dica}
                 key={type}
                 onClick={() => handleQuickFilter(type)}
                 className="shrink-0 min-h-[44px] px-4 rounded-full text-xs font-semibold bg-gray-100 text-gray-600 hover:bg-blue-100 hover:text-blue-700 transition-all whitespace-nowrap"

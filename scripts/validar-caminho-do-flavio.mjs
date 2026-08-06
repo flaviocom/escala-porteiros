@@ -94,6 +94,48 @@ try {
     return `rolou ${r.scrollY}px · no topo da tela: ${r.topo}`
   })
 
+  await passo('🔴 "Esta Semana" vai de domingo a DOMINGO, e a ordem dos atalhos é menor→maior', async () => {
+    /*
+      Pedido do Flavio em 06/08/2026, com a razão dele: *"não são todas as pessoas que sabem que a
+      semana inicia no domingo. Tem gente que acha que começa na segunda, então ela não veria a
+      escala do domingo próximo."* Antes ia domingo → sábado, e o domingo seguinte ficava de fora.
+
+      A ordem é conferida nos DOIS conjuntos de botões — a barra lateral e a barra compacta do
+      celular. Duas ordens para os mesmos três botões é o tipo de diferença que ninguém nota e todo
+      mundo estranha.
+    */
+    const ordens = await p.evaluate(() =>
+      [...document.querySelectorAll('button')].map((b) => b.innerText.trim()).filter((t) => /Semana|dias|Este Mês/.test(t)),
+    )
+    exigir(ordens.length >= 3, `só ${ordens.length} atalho(s) encontrados`)
+    for (let i = 0; i + 2 < ordens.length; i += 3) {
+      const trio = ordens.slice(i, i + 3)
+      exigir(/Semana/.test(trio[0]), `1º atalho deveria ser "Esta Semana", é "${trio[0]}"`)
+      exigir(/dias/.test(trio[1]), `2º atalho deveria ser os 15 dias, é "${trio[1]}"`)
+      exigir(/Mês/.test(trio[2]), `3º atalho deveria ser "Este Mês", é "${trio[2]}"`)
+    }
+    /*
+      ⚠️ A primeira versão desta metade calculava a janela AQUI, com `Date`, e imprimia "7 dias".
+      Media a minha própria aritmética, não o filtro do produto — passaria com o filtro quebrado.
+      Agora ela CLICA e lê os dias que a tela mostra.
+    */
+    await p.getByRole('button', { name: /Esta Semana/i }).first().click()
+    await p.waitForTimeout(1200)
+    const janela = await p.evaluate(() => {
+      const dias = [...document.querySelectorAll('.export-item')]
+        .map((x) => (x.innerText.replace(/\s+/g, ' ').match(/([A-Z]{3}) (\d{2}) ([A-ZÇÃ-]+)/) ?? []).slice(1))
+        .filter((m) => m.length === 3)
+      const primeiro = dias[0]
+      const ultimo = dias[dias.length - 1]
+      return { qtd: dias.length, primeiro, ultimo }
+    })
+    exigir(janela.qtd > 0, 'nenhum turno na semana — sem lista o resto não prova nada')
+    exigir(/DOMINGO/i.test(janela.primeiro[2]), `a semana devia começar num domingo, começa em ${janela.primeiro.join(' ')}`)
+    exigir(/DOMINGO/i.test(janela.ultimo[2]), `a semana devia TERMINAR num domingo (o pedido do dono), termina em ${janela.ultimo.join(' ')}`)
+    exigir(janela.ultimo[1] !== janela.primeiro[1], 'o primeiro e o último domingo são o mesmo dia — a janela não chegou ao domingo seguinte')
+    return `${ordens.length / 3} conjunto(s) na ordem certa · ${janela.primeiro.join(' ')} → ${janela.ultimo.join(' ')}`
+  })
+
   await passo('🔴 o filtro por DATA funciona (o `DateSearch` perdeu estado interno hoje)', async () => {
     const busca = p.locator('input[placeholder*="Buscar" i]').first()
     await busca.fill('16/08/2026')
