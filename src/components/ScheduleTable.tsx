@@ -51,13 +51,32 @@ export const ScheduleTable: React.FC<ScheduleTableProps> = ({
     return Object.entries(groups).sort((a, b) => a[0].localeCompare(b[0]));
   }, [finalShifts]);
 
-  // 🔴 O `setTimeout` não era cancelado ao desmontar (quinta auditoria externa, 05/08/2026): trocar
-  //    de aba antes dos 300 ms deixava um temporizador vivo mexendo em algo que já saiu da tela.
+  /*
+    🔴 A ROLAGEM PARA O PRÓXIMO CULTO NUNCA ACONTECIA — medido em 06/08/2026, no site NO AR.
+
+    Quem abria o link caía em **MAR 01**, cinco meses no passado, com o próximo turno **32.496 px**
+    abaixo. O dono achava que o site levava para a próxima data; eu também. Nenhum dos dois tinha
+    medido.
+
+    A causa é a soma de duas correções certas:
+
+      · a quinta auditoria mandou CANCELAR o temporizador na limpeza (senão ele mexia em algo que já
+        tinha saído da tela) — certo;
+      · a trava `hasScrolled` existe para rolar só uma vez, e não a cada filtro — certo.
+
+    Só que `months` muda **duas vezes** (a segunda quando o dado termina de carregar). Sequência:
+    1ª execução marca `hasScrolled = true` e agenda os 300 ms → `months` muda → **a limpeza cancela
+    o temporizador** → 2ª execução vê `hasScrolled` já ligado e **se recusa a reagendar**. Resultado:
+    a rolagem some, e nada acusa, porque as duas peças estão fazendo exatamente o que prometem.
+
+    O conserto é mover a trava para DEPOIS da rolagem: quem foi cancelado nunca rolou, logo pode
+    tentar de novo. A limpeza continua igual, e a promessa "rola uma vez só" também.
+  */
   useEffect(() => {
     if (hasScrolled.current || !scrollRef.current || months.length === 0) return;
-    hasScrolled.current = true;
     const t = setTimeout(() => {
       scrollRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      hasScrolled.current = true; // só depois de rolar DE VERDADE
     }, 300);
     return () => clearTimeout(t);
   }, [months]);

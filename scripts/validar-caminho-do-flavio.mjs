@@ -73,6 +73,27 @@ try {
     return `${t.length} caracteres`
   })
 
+  await passo('🔴 ABRE no próximo culto, não no começo da escala', async () => {
+    /*
+      Medido em 06/08/2026 no site NO AR: quem abria o link caía em **MAR 01**, cinco meses no
+      passado, com o próximo turno **32.496 px** abaixo. Ninguém tinha notado porque o navegador de
+      quem já usa o site **restaura a rolagem anterior** no reload — o defeito só aparece para quem
+      abre pela PRIMEIRA vez, que é exatamente o irmão recebendo o link.
+
+      Por isso esta checagem espera os 300 ms da rolagem e mede a POSIÇÃO, não a existência do
+      cartão: `isVisible()` devolvia `true` com o alvo a 32 mil pixels de distância.
+    */
+    await p.waitForTimeout(2500)
+    const r = await p.evaluate(() => {
+      const c = [...document.querySelectorAll('.export-item')]
+      const noTopo = c.find((x) => x.getBoundingClientRect().bottom > 80)
+      return { total: c.length, scrollY: Math.round(window.scrollY), topo: noTopo?.innerText.replace(/\s+/g, ' ').slice(0, 24) ?? '' }
+    })
+    exigir(r.total > 20, `só ${r.total} turnos na tela — sem lista longa isto não prova nada`)
+    exigir(r.scrollY > 500, `a página não rolou (scrollY=${r.scrollY}) — abriu em "${r.topo}"`)
+    return `rolou ${r.scrollY}px · no topo da tela: ${r.topo}`
+  })
+
   await passo('🔴 o filtro por DATA funciona (o `DateSearch` perdeu estado interno hoje)', async () => {
     const busca = p.locator('input[placeholder*="Buscar" i]').first()
     await busca.fill('16/08/2026')
