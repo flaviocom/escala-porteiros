@@ -1437,3 +1437,44 @@ depois do push. É a mesma família do selo (o verde vale só para a árvore med
 só para a máquina que mediu.
 
 **Como reverter.** Não há o que reverter: o defeito é externo. O que fica é o registro e o hábito.
+
+---
+
+## DB-033 · 06/08/2026 — a fila do Pages destravou trocando quem publica, e o remédio criou dois defeitos
+
+**O quê.** O modo automático do Pages ("branch `main`, pasta `/docs`") falhou **cinco vezes
+seguidas**. A publicação passou a ser feita por um workflow próprio
+(`.github/workflows/publicar.yml`), com autorização do dono, e **funcionou na primeira tentativa**.
+
+**O que eu tinha descartado antes de mexer**, para não trocar configuração no escuro: tamanho (42
+arquivos, 881 KB), Jekyll (`docs/.nojekyll` existe), o nosso código (o artefato subia e a publicação
+era criada), o push (`origin/main` = local), a política de branch do ambiente (permite `main`) e o
+status oficial do GitHub ("operational").
+
+**Duas armadilhas na hora de destravar, e as duas me custaram tentativas:**
+
+1. **O identificador da publicação é o SHA do commit.** Cancelei pela API uma publicação travada; a
+   tentativa seguinte, do **mesmo** commit, nasceu morta — *"Deployment cancelled"*. Destravar exige
+   **SHA novo**, isto é, um commit a mais. `POST /pages/builds` reenfileira, mas reutiliza o SHA.
+2. **`concurrency: cancel-in-progress` faz exatamente o que promete.** Disparei o workflow à mão
+   enquanto o do push já rodava, e o meu cancelou o dele. Não é defeito — é a regra que eu escrevi,
+   pegando a mim.
+
+**🔴 E criar `.github/` derrubou o selo, que é o último passo do gate.** `git status --porcelain`
+resume pasta não rastreada numa linha só (`?? .github/`), e o selo tentava ler uma **pasta**:
+`EISDIR`. O estouro era o menor problema — enquanto a pasta ficasse resumida, **o conteúdo dela não
+entrava na impressão digital**. Um arquivo novo dentro de pasta nova ficaria fora do selo, em
+silêncio, e o selo existe justamente para dizer *"é esta árvore, exatamente esta"*. Corrigido com
+`-uall`, mais uma guarda de diretório.
+
+**O porquê que interessa.** Um mecanismo de segurança que nunca viu um caso — aqui, "pasta nova" —
+não está protegendo esse caso: está **esperando** por ele. O selo rodou dezenas de vezes hoje e
+nunca tinha encontrado uma pasta não rastreada; no primeiro encontro, quebrou. Vale para qualquer
+portão: o dia em que ele vê algo novo é o dia em que se descobre o que ele não sabia fazer.
+
+**Como reverter a publicação para o modo antigo:**
+
+```bash
+gh api --method PUT repos/flaviocom/escala-porteiros/pages \
+  -f build_type=legacy -f 'source[branch]=main' -f 'source[path]=/docs'
+```
