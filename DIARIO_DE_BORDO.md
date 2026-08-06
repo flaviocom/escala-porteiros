@@ -1366,3 +1366,41 @@ olho pega ficou sem ninguém**. O portão `markdown-cru` (passo 6) é a parte au
 categoria. O resto continua exigindo abrir a captura e ler.
 
 **Como reverter.** `git revert` do commit desta entrada devolve os asteriscos e o ramo inerte.
+
+---
+
+## DB-032 · 06/08/2026 — a fatia automatizável do "está feio", e o portão que nasceu sempre-verde
+
+**O quê.** Depois de admitir que a verificação visual não tinha sido feita, fechei a parte da
+categoria que **dá** para automatizar: `vivo:quebrada`, 4.404 elementos em 8 cenas — as 7 do produto
+mais a tela pública a **390px**.
+
+Três coisas: **restos de dado** na tela (`undefined`, `NaN`, `[object Object]`, `Invalid Date`,
+`null`, `TODO`, `lorem ipsum`), **conteúdo empurrado para fora da tela** e **texto cortado dentro da
+própria caixa**. Restos não são feios — são **errados**, e passam por qualquer checagem que só
+pergunta *"o texto existe?"*.
+
+**O que o autoteste pegou, e vale mais que o portão.** A checagem de estouro media
+`documentElement.scrollWidth > clientWidth`. Injetei um `<div style={{width: 3000}}>` e o portão
+**aprovou**. A casca do aplicativo tem `overflow-x: hidden`: o documento não rola — o conteúdo
+simplesmente some pela direita, calado. **A sonda media a rolagem, e a rolagem tinha sido
+desligada.** Passou a medir a *borda direita* de cada elemento, que pega os dois casos.
+
+> Sem o autoteste eu teria commitado um portão que aprova qualquer estouro de largura — e ele
+> apareceria na lista do gate como cobertura.
+
+**E um detalhe do autoteste que também custou uma rodada.** A primeira versão injetava o infrator
+num ponto do JSX que **só renderiza quando um irmão está selecionado**. Os três casos "passaram"
+sem nada ter sido injetado. **Autoteste que não prova que o infrator CHEGOU à tela mede o vazio** —
+o mesmo erro que eu tinha acabado de registrar sobre o setter nativo do React, em outra roupa.
+
+**O que fica declarado como NÃO coberto:** *"está bonito?"*, *"a hierarquia está clara?"*, *"a frase
+confunde?"*. Isso exige abrir a captura e ler. E há prova, com data, de que os dois são necessários:
+o `markdown-cru` achou quatro ocorrências que estavam numa captura que eu tinha acabado de ler, e eu
+passei por cima delas.
+
+**Detalhe de desenho que se pagou.** O `vivo:quebrada` **não** exigiu mexer no gate: o `vivo:tudo` lê
+a lista do `package.json`, e a validação nova entrou sozinha. Foi exatamente para isso que a lista é
+lida em vez de escrita.
+
+**Como reverter.** `git revert` do commit desta entrada tira o portão; nada mais depende dele.

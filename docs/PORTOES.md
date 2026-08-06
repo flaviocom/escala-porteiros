@@ -381,6 +381,39 @@ auditou escreveu o código.
 
 ---
 
+#### `vivo:quebrada` — texto quebrado e layout estourado
+*(roda dentro do `vivo:tudo`; entrou sozinho, porque o disparador lê a lista do `package.json`)*
+
+**População:** 4.404 elementos de texto em **8 cenas** — as 7 do produto mais a tela pública a
+**390px**, onde estouro de largura realmente machuca.
+
+Procura três coisas:
+
+1. **restos de dado** na tela — `undefined`, `NaN`, `[object Object]`, `Invalid Date`, `null`,
+   `TODO`/`FIXME`, `lorem ipsum`. Não são feios: são **errados**, e passam por qualquer checagem que
+   só pergunta *"o texto existe?"*;
+2. **conteúdo empurrado para fora da tela** pela direita;
+3. **texto cortado dentro da própria caixa** (`overflow: hidden` sem reticências).
+
+> 🔴 **Por que ele existe.** Em 06/08/2026 o dono perguntou se a verificação visual tinha sido
+> feita, e a resposta honesta era **não**. O `markdown-cru` (passo 6) fechou uma forma daquela
+> categoria; dizer *"o resto exige olho"* e parar ali deixaria a parte automatizável sem ninguém.
+
+⚠️ **E ele nasceu SEMPRE-VERDE em uma das três checagens.** A de estouro media
+`documentElement.scrollWidth > clientWidth`. Injetei um `<div style={{width: 3000}}>` e o portão
+**aprovou**: a casca do aplicativo tem `overflow-x: hidden`, então o documento não rola — o
+conteúdo some pela direita, calado. **A sonda media a rolagem, e a rolagem tinha sido desligada.**
+Passou a medir a **borda direita** de cada elemento, que pega os dois casos.
+
+Sem o autoteste eu teria commitado um portão que aprova qualquer estouro.
+
+**Fora de escopo, declarado:** *"está bonito?"*, *"a hierarquia está clara?"*, *"a frase confunde?"*.
+Isso continua exigindo abrir a captura e ler — e o registro deste projeto tem data provando que olho
+e medição pegam coisas **diferentes**: o `markdown-cru` achou quatro ocorrências que estavam numa
+captura que eu tinha acabado de ler, e eu passei por cima.
+
+**Provado nas três pontas, cada uma pelo motivo certo**, mais a árvore limpa → EXIT=0.
+
 #### `vivo:rotulos` — todo campo tem NOME que dá para alcançar
 *(roda dentro do `vivo:tudo`, não como passo solto — ver o passo 28)*
 Abre as **7 cenas** do produto (a trava, as cinco abas do admin e a tela dos irmãos), enumera cada
