@@ -84,15 +84,48 @@ await conferir('os campos da porta cabem na largura', async () => {
      Medido antes de subir o número: **todos os botões já passavam de 44px**. A folga não
      protegia nada; só deixava a régua discordar do próprio comentário.
 */
-await conferir('os botões têm alvo de toque de pelo menos 44px de altura', async () => {
-  const pequenos = await pagina.evaluate(() =>
-    [...document.querySelectorAll('button')]
-      .filter((b) => b.offsetParent !== null)
-      .map((b) => ({ t: (b.textContent ?? '').trim().slice(0, 28), h: Math.round(b.getBoundingClientRect().height) }))
-      .filter((x) => x.h > 0 && x.h < 44))
+/*
+  🔴 E ELA MEDIA A TELA ERRADA — sétima auditoria externa, 05/08/2026.
+
+  Esta checagem roda DEPOIS de o script ter navegado para `#/admin`, e nunca voltava. Ou seja: media
+  os 5 botões da **porta do administrador** e declarava 100% de aprovação. A tela pública — que é o
+  produto inteiro para os 16 irmãos — **nunca foi medida**.
+
+  E o comentário logo acima, *"todos os botões já passavam de 44px"*, descrevia o admin. Medido na
+  tela pública, no mesmo aparelho:
+
+      "Minha Escala" 34px · "Filtros" 34px · "15 dias" 28px · "Esta Semana" 28px · "Este Mês" 28px
+      5 de 5 abaixo da régua da casa
+
+  É "portão que mede menos do que diz" com a agravante de medir **outra página** — e, das nove vezes
+  que essa classe apareceu hoje, a única em que a fronteira era a NAVEGAÇÃO, não o padrão de busca.
+
+  Agora ela mede as DUAS telas, volta para o admin no fim (os passos seguintes contam com isso), e
+  diz de qual tela veio cada botão pequeno.
+*/
+await conferir('os botões têm alvo de toque de pelo menos 44px — NAS DUAS TELAS', async () => {
+  const medirBotoes = async () =>
+    pagina.evaluate(() =>
+      [...document.querySelectorAll('button')]
+        .filter((b) => b.offsetParent !== null)
+        .map((b) => ({ t: (b.textContent ?? '').trim().slice(0, 28), h: Math.round(b.getBoundingClientRect().height) }))
+        .filter((x) => x.h > 0 && x.h < 44))
+
+  const doAdmin = (await medirBotoes()).map((x) => ({ ...x, onde: 'admin' }))
+
+  await pagina.goto(BASE, { waitUntil: 'networkidle' })
+  await pagina.waitForTimeout(900)
+  const daPublica = (await medirBotoes()).map((x) => ({ ...x, onde: 'pública' }))
+
+  // 🔒 Voltar para o admin: os passos seguintes assumem essa tela, e mudar isso em silêncio
+  //    reproduziria exatamente o defeito que este bloco existe para consertar.
+  await pagina.goto(BASE + '#/admin', { waitUntil: 'networkidle' })
+  await pagina.waitForTimeout(700)
+
+  const pequenos = [...daPublica, ...doAdmin]
   return {
     ok: pequenos.length === 0,
-    detalhe: pequenos.length === 0 ? 'todos com 44px ou mais' : pequenos.map((p) => `"${p.t}" ${p.h}px`).join(' · '),
+    detalhe: pequenos.length === 0 ? 'todos com 44px ou mais, na pública e no admin' : pequenos.map((p) => `[${p.onde}] "${p.t}" ${p.h}px`).join(' · '),
   }
 })
 

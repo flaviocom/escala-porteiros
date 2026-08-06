@@ -795,7 +795,7 @@ const CartaoPessoa: React.FC<{ pessoa: Pessoa; aoAlterar: (m: (p: Pessoa) => Pes
   return (
     <div className={clsx('border rounded-2xl overflow-hidden', pessoa.ativo ? 'border-gray-200 bg-white' : 'border-gray-200 bg-gray-50 opacity-60')}>
       <div className="flex items-center gap-3 p-4">
-        <button title="Clique para ver quem pode substituir esta pessoa neste turno" onClick={() => setAberto(!aberto)} className="flex-1 text-left min-w-0">
+        <button title="Abre e fecha as restrições desta pessoa" onClick={() => setAberto(!aberto)} className="flex-1 text-left min-w-0">
           <div className="font-semibold text-gray-900 flex items-center gap-2">
             {pessoa.nome}
             {!pessoa.ativo && <span className="text-[10px] uppercase tracking-wider bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full">fora</span>}
@@ -821,7 +821,7 @@ const CartaoPessoa: React.FC<{ pessoa: Pessoa; aoAlterar: (m: (p: Pessoa) => Pes
             <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Só pode nestes turnos</p>
             <div className="flex gap-2">
               {(['MANHA', 'TARDE', 'NOITE'] as TipoTurno[]).map((t) => (
-                <button title="Clique para ver quem pode substituir esta pessoa neste turno"
+                <button title="Liga e desliga este turno para a pessoa"
                   key={t}
                   onClick={() => alternarTurno(t)}
                   className={clsx(
@@ -865,7 +865,7 @@ const LinhaDias: React.FC<{ titulo: string; selecionados: number[]; aoAlternar: 
     <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">{titulo}</p>
     <div className="flex gap-1.5 flex-wrap">
       {NOMES_DIA_CURTO.map((n, d) => (
-        <button title="Clique para ver quem pode substituir esta pessoa neste turno"
+        <button title="Liga e desliga este dia da semana para a pessoa"
           key={d}
           onClick={() => aoAlternar(d)}
           className={clsx(

@@ -353,7 +353,7 @@ function App({ shifts, dados }: AppProps) {
               { label: '📆 Esta Semana', type: 'week' as const },
               { label: '🗓️ Este Mês', type: 'month' as const },
             ].map(({ label, type }) => (
-              <button title="Clique para ver quem pode substituir esta pessoa neste turno"
+              <button title="Filtra a escala por este período"
                 key={type}
                 onClick={() => handleQuickFilter(type)}
                 className="w-full text-left px-4 py-3 rounded-xl text-base font-semibold text-gray-700 bg-gray-50 hover:bg-blue-50 hover:text-blue-700 border border-gray-200 hover:border-blue-200 transition-all duration-200"
@@ -507,7 +507,7 @@ function App({ shifts, dados }: AppProps) {
             </div>
             <div className="overflow-y-auto flex-1 px-4 py-2">
               {filteredBrothers.map(b => (
-                <button title="Clique para ver quem pode substituir esta pessoa neste turno"
+                <button title="Escolhe este nome para o filtro Minha Escala"
                   key={b.id}
                   onClick={() => handleSelectMyBrother(b.id)}
                   className={clsx(
@@ -616,7 +616,9 @@ function App({ shifts, dados }: AppProps) {
               <button
                 onClick={() => myBrotherId ? setShowMyShiftsOnly(!showMyShiftsOnly) : setShowBrotherPicker(true)}
                 className={clsx(
-                  "flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all",
+                  // 44px é o piso de alvo de toque da casa (Apple recomenda 44, Material 48). Este
+                  // botão media 34px e o portão do celular nunca o viu — ele media a tela do admin.
+                  "flex items-center gap-1.5 min-h-[44px] px-3 rounded-xl text-xs font-bold transition-all",
                   showMyShiftsOnly && myBrotherId
                     ? "bg-indigo-600 text-white"
                     : "bg-indigo-50 text-indigo-700 border border-indigo-200"
@@ -630,7 +632,7 @@ function App({ shifts, dados }: AppProps) {
               {/* Filtros */}
               <button title={`Abre os filtros por ${voc.singular.toLowerCase()}, mês e data`}
                 onClick={() => setIsMobileMenuOpen(true)}
-                className="flex items-center gap-1 text-action-primary text-xs font-bold whitespace-nowrap hover:bg-blue-50 px-2.5 py-2 rounded-xl transition-colors border border-blue-200"
+                className="flex items-center gap-1 min-h-[44px] text-action-primary text-xs font-bold whitespace-nowrap hover:bg-blue-50 px-3 rounded-xl transition-colors border border-blue-200"
               >
                 <SlidersHorizontal className="w-4 h-4" />
                 <span>Filtros {activeFiltersCount > 0 && `(${activeFiltersCount})`}</span>
@@ -645,10 +647,10 @@ function App({ shifts, dados }: AppProps) {
               { label: 'Esta Semana', type: 'week' as const },
               { label: 'Este Mês', type: 'month' as const },
             ].map(({ label, type }) => (
-              <button title="Clique para ver quem pode substituir esta pessoa neste turno"
+              <button title="Filtra a escala por este período"
                 key={type}
                 onClick={() => handleQuickFilter(type)}
-                className="shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-600 hover:bg-blue-100 hover:text-blue-700 transition-all whitespace-nowrap"
+                className="shrink-0 min-h-[44px] px-4 rounded-full text-xs font-semibold bg-gray-100 text-gray-600 hover:bg-blue-100 hover:text-blue-700 transition-all whitespace-nowrap"
               >
                 {label}
               </button>
@@ -656,7 +658,7 @@ function App({ shifts, dados }: AppProps) {
             {(activeFiltersCount > 0 || showMyShiftsOnly) && (
               <button title="Remove todos os filtros e volta a mostrar a escala inteira"
                 onClick={clearFilters}
-                className="shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold bg-red-100 text-red-600 hover:bg-red-200 transition-all whitespace-nowrap"
+                className="shrink-0 min-h-[44px] px-4 rounded-full text-xs font-semibold bg-red-100 text-red-600 hover:bg-red-200 transition-all whitespace-nowrap"
               >
                 ✕ Limpar
               </button>
