@@ -23,7 +23,19 @@ export interface MesDisponivel {
   /** `2026-11` */
   chave: string
   rotulo: string
+  /**
+   * 🔴 Turnos COM GENTE — a mesma régua da imagem, e por isso ela existe aqui separada.
+   *
+   * Sétima auditoria: este seletor dizia **19** e a imagem gerada por ele dizia **18**. Dois números
+   * para a mesma coisa, na mesma tela, e nenhum dos dois errado por si: o seletor contava todo turno
+   * visível, a imagem contava só os que têm porteiro e mostrava a Santa Ceia à parte.
+   *
+   * Santa Ceia **não é turno**: é um dia sem porteiros. Somá-la infla um número que alguém repete
+   * depois como se fosse trabalho escalado.
+   */
   turnos: number
+  /** Quantas Santas Ceias caem no mês — mostradas ao lado, nunca somadas. */
+  ceias: number
 }
 
 interface Props {
@@ -62,6 +74,7 @@ export function SeletorDeMeses({ meses, aoConfirmar, aoFechar }: Props) {
 
   const escolhidos = meses.filter((m) => marcados.has(m.chave))
   const turnosTotal = escolhidos.reduce((s, m) => s + m.turnos, 0)
+  const ceiasTotal = escolhidos.reduce((s, m) => s + m.ceias, 0)
 
   return (
     <dialog
@@ -95,7 +108,7 @@ export function SeletorDeMeses({ meses, aoConfirmar, aoFechar }: Props) {
           return (
             <label
               key={m.chave}
-              title={`${m.turnos} turno(s) em ${m.rotulo}`}
+              title={`${m.turnos} turno(s) com gente escalada em ${m.rotulo}${m.ceias ? ` · ${m.ceias} Santa Ceia, que não é turno` : ''}`}
               className={clsx(
                 'mb-2 flex min-h-[3rem] cursor-pointer items-center gap-3 rounded-xl border px-4 py-3 transition-colors',
                 marcado ? 'border-indigo-300 bg-indigo-50' : 'border-gray-200 hover:bg-slate-50',
@@ -108,7 +121,9 @@ export function SeletorDeMeses({ meses, aoConfirmar, aoFechar }: Props) {
                 className="h-5 w-5 accent-indigo-600"
               />
               <span className="flex-1 font-semibold capitalize text-slate-900">{m.rotulo}</span>
-              <span className="text-sm font-medium text-slate-600">{m.turnos} turnos</span>
+              <span className="text-sm font-medium text-slate-600">
+                {m.turnos} turnos{m.ceias ? ` · ${m.ceias} Santa Ceia` : ''}
+              </span>
             </label>
           )
         })}
@@ -142,7 +157,7 @@ export function SeletorDeMeses({ meses, aoConfirmar, aoFechar }: Props) {
         >
           {escolhidos.length === 0
             ? 'Escolha um mês'
-            : `Gerar ${escolhidos.length} ${escolhidos.length === 1 ? 'imagem' : 'imagens'} · ${turnosTotal} turnos`}
+            : `Gerar ${escolhidos.length} ${escolhidos.length === 1 ? 'imagem' : 'imagens'} · ${turnosTotal} turnos${ceiasTotal ? ` · ${ceiasTotal} Santa Ceia` : ''}`}
         </button>
       </div>
     </dialog>

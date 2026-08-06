@@ -176,14 +176,21 @@ function App({ shifts, dados }: AppProps) {
 
   /** Meses presentes no que está em vista, com quantos turnos cada um tem. */
   const mesesEmVista = useMemo<MesDisponivel[]>(() => {
-    const mapa = new Map<string, number>();
+    // 🔴 A MESMA RÉGUA DA IMAGEM. Antes isto contava TODO turno visível e o seletor dizia 19
+    // enquanto a imagem gerada por ele dizia 18. Santa Ceia não é turno: é um dia sem porteiros,
+    // e vai ao lado, nunca somada. Ver `EscalaImagem.tsx` → `resumo`.
+    const mapa = new Map<string, { turnos: number; ceias: number }>();
     for (const s of turnosVisiveis) {
       const k = mesDeData(s.date);
-      mapa.set(k, (mapa.get(k) ?? 0) + 1);
+      const atual = mapa.get(k) ?? { turnos: 0, ceias: 0 };
+      if (s.type === 'SANTA_CEIA') atual.ceias += 1;
+      else if (s.assignedBrothers.length > 0) atual.turnos += 1;
+      mapa.set(k, atual);
     }
-    return [...mapa.entries()].sort().map(([chave, turnos]) => ({
+    return [...mapa.entries()].sort().map(([chave, { turnos, ceias }]) => ({
       chave,
       turnos,
+      ceias,
       rotulo: format(parseISO(chave + '-01'), 'MMMM yyyy', { locale: ptBR }),
     }));
   }, [turnosVisiveis]);

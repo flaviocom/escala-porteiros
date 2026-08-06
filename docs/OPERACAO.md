@@ -150,11 +150,11 @@ npm run gate
 | 21 | `tamanho-docs` | nenhum documento passou do teto do regime dele (raiz 400 · subpasta 800 · append-only 2.000) |
 | 22 | `auditoria` | 20 ataques ao próprio código, com infrator injetado |
 | 23 | `regras-mestras` | tooltip em todo botão |
-| 24 | `vivo:rotulos` | 🏷️ **todo campo tem nome que dá para alcançar** nas 7 cenas do produto — `title` não conta, era o que os dois campos defeituosos tinham. Aba travada é destravada e medida; se alguma não abrir, ela é nomeada e o portão reprova |
-| 25 | `ensaio` | 🔴 o cenário que ORIGINOU o projeto, ponta a ponta: alguém sai do elenco, outro entra com as 5 restrições, a escala se refaz a partir de um corte |
-| 26 | `tempo` | a geração não regrediu de desempenho |
-| 27 | `build` | compila e gera em `docs/` |
-| 28 | `imagem` | 🔴 o único passo que **renderiza o pixel**: gera a imagem pelo botão de verdade e mede o DOM que virou o PNG — texto cortado, rótulo duplicado, rodapé coerente. Três defeitos da imagem escaparam de todos os outros portões e só apareceram ao ABRIR o arquivo |
+| 24 | `ensaio` | 🔴 o cenário que ORIGINOU o projeto, ponta a ponta: alguém sai do elenco, outro entra com as 5 restrições, a escala se refaz a partir de um corte |
+| 25 | `tempo` | a geração não regrediu de desempenho |
+| 26 | `build` | compila e gera em `docs/` |
+| 27 | `imagem` | 🔴 o único passo que **renderiza o pixel**: gera a imagem pelo botão de verdade e mede o DOM que virou o PNG — texto cortado, rótulo duplicado, rodapé coerente. Três defeitos da imagem escaparam de todos os outros portões e só apareceram ao ABRIR o arquivo |
+| 28 | `vivo:tudo` | 🌐 **as 12 validações de navegador do grupo LOCAL**, lidas do `package.json` — 175 s. De dezesseis `vivo:*`, o gate rodava **uma**; o `vivo:gerar` estava vermelho havia dias. As 3 do grupo NO AR rodam DEPOIS do push (`npm run vivo:no-ar`) — no gate ficariam estruturalmente vermelhas |
 | 29 | `refazer` | 🔁 **a escala NO AR pode ser refeita** a partir do que ela mesma registra — período, elenco, malha, piso e semente. É a promessa do `ALGORITMO.md` medida contra o dado publicado, não contra entrada de teste |
 | 30 | `selo:gravar` | 🔒 guarda a impressão digital da árvore. `npm run selo:conferir`, antes de commitar, prova que o verde acima é **desta** árvore |
 

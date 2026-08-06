@@ -1303,6 +1303,22 @@ const AbaGerar: React.FC<{
     Valor que a tela acabou de mudar não está no closure desta função. Passa por argumento, sempre.
   */
   const executar = (semente: number = sementeBase, deAgora: string = de) => {
+    /*
+      🔴 A PROPOSTA VELHA MORRE AQUI, ANTES DE QUALQUER RECUSA — sétima auditoria, medido ao vivo.
+
+      Isto estava lá embaixo, depois dos quatro `return` de recusa. Quem clicava em "Gerar" com um
+      período sem dia de culto (ou com data para trás) recebia a mensagem vermelha e **continuava
+      vendo a escala anterior** — na tela, na aba `Ajustar` e no `Publicar`, que seguia habilitado.
+
+      O estrago não é visual: os campos "De" e "Até" já mostram o período NOVO, e a proposta na tela
+      é do período VELHO. Publicar dali põe no ar uma escala que a tela não está descrevendo.
+
+      Uma proposta só é verdadeira enquanto os campos que a geraram continuam valendo. Recusou,
+      apaga — mesmo quando a recusa é só um aviso de "espere o motor terminar", porque nesse caso o
+      motor em voo vai reescrever o resultado de qualquer jeito.
+    */
+    aoGerar(null, '')
+
     if (motorEmVoo) {
       setFalha(
         `O motor está trabalhando (${motorEmVoo.fase}). Espere ele terminar antes de gerar outra escala — ` +
@@ -1365,7 +1381,7 @@ const AbaGerar: React.FC<{
 
     setOcupado(true)
     setFalha('')
-    aoGerar(null, '')
+    // (a proposta anterior já foi apagada no topo de `executar`, antes das recusas)
     /*
       🔴 SEM `try/catch`, UM ESTOURO AQUI DEIXA A TELA EM "Gerando…" PARA SEMPRE — sexta auditoria
       externa, 05/08/2026. Este corpo roda num `setTimeout`: o `ErrorBoundary` não o alcança (ele só

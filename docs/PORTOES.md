@@ -319,7 +319,8 @@ auditou escreveu o código.
 
 ---
 
-### 24. `vivo:rotulos` — todo campo tem NOME que dá para alcançar
+#### `vivo:rotulos` — todo campo tem NOME que dá para alcançar
+*(roda dentro do `vivo:tudo`, não como passo solto — ver o passo 28)*
 Abre as **7 cenas** do produto (a trava, as cinco abas do admin e a tela dos irmãos), enumera cada
 `input`/`select`/`textarea` visível e exige um nome de verdade: `aria-label`, `aria-labelledby` que
 aponte para texto real, um `<label>` que envolva o campo, um `label[for]`, ou um `placeholder`.
@@ -342,15 +343,15 @@ Duas fronteiras do próprio portão, fechadas porque isenção calada é buraco 
   nomeada na saída e o portão **reprova**. Um portão que pula o que não conseguiu abrir mede menos
   do que a frase dele promete.
 
-### 25. `ensaio` — o cenário que ORIGINOU o projeto, ponta a ponta
+### 24. `ensaio` — o cenário que ORIGINOU o projeto, ponta a ponta
 Alguém sai do elenco, outro entra com as cinco restrições, e a escala se refaz a partir de um corte.
 **11 promessas medidas**, entre elas *"o passado antes do corte fica byte a byte idêntico"*.
 
-### 26. `tempo` — a geração não regrediu de desempenho
+### 25. `tempo` — a geração não regrediu de desempenho
 
-### 27. `build` — compila e gera em `docs/`
+### 26. `build` — compila e gera em `docs/`
 
-### 28. `imagem` — o único passo que RENDERIZA O PIXEL
+### 27. `imagem` — o único passo que RENDERIZA O PIXEL
 Gera a imagem pelo botão de verdade e **mede o DOM que virou o PNG**, no instante anterior à
 rasterização: texto cortado pela própria caixa, rótulo duplicado na mesma pílula, rodapé coerente.
 **Por quê:** três defeitos da imagem escaparam de todos os outros portões em 05/08/2026 e só
@@ -358,6 +359,37 @@ apareceram quando alguém ABRIU o arquivo — *"sem porteiros escalados"*, o `EN
 tarde, e a pílula da Santa Ceia imprimindo o rótulo duas vezes. Ler o PNG a olho não escala.
 ⚠️ A medição usa um `MutationObserver` instalado **antes** do clique: `gerarImagem.ts` monta um palco,
 rasteriza e chama `palco.remove()`, então medir depois acha uma página vazia.
+
+### 28. `vivo:tudo` — TODAS as validações de navegador rodam
+**População:** as 12 validações do grupo **LOCAL**, lidas do `package.json` — nunca de uma lista à
+mão. Validação nova entra sozinha. **175 segundos** no total, medidos.
+
+> 🔴 **Por que ele existe.** Em 06/08/2026 medi quais dos `vivo:*` o gate realmente executava.
+> **De dezesseis, um.** Os outros quinze abriam navegador, mediam a tela de verdade, provavam coisas
+> que nenhum teste unitário alcança — e só rodavam quando alguém lembrava.
+>
+> **Portão sem gatilho é regra sem portão, um nível acima.** E não era teórico: o `vivo:gerar` estava
+> **vermelho** havia dias, quebrado por um campo novo no meio da tela, e ninguém sabia.
+
+**🔴 São duas famílias, e misturá-las num passo só foi o primeiro erro deste script:**
+
+| Grupo | O que mede | Quando roda |
+|---|---|---|
+| **LOCAL** (12) | sobe servidor com o build da árvore atual | **no gate** — é a árvore que se quer aprovar |
+| **NO AR** (3) | abre o `github.io` e compara com o commitado | **depois do push** (`npm run vivo:no-ar`) |
+
+O grupo NO AR **não pode** entrar no gate: o gate roda ANTES de commitar, então o pacote local está,
+por construção, à frente do publicado. Ali dentro ele ficaria *estruturalmente vermelho* — e portão
+que sempre reprova é portão que se aprende a ignorar. Os dois grupos são **impressos** com quem entrou
+em cada um, para ninguém ler o verde de um como cobertura do outro.
+
+⚠️ **Nunca roda:** `vivo:divulgado` — exige `--antigo <url>`, o endereço do site que a congregação já
+tem. É gesto de migração, feito uma vez, com a URL na mão. Fica **nomeado na saída**.
+
+⚠️ **E ele se excluía por NOME, o que durou uma versão.** Quando nasceu o `vivo:no-ar` — que chama
+este mesmo script com outra bandeira — ele entrou na lista como se fosse uma validação e rodou 148 s
+dentro do grupo errado. Excluir por nome é lista à mão com outra roupa: **o que identifica um
+disparador não é como ele se chama, é o fato de chamar este arquivo.**
 
 ### 29. `refazer` — a escala NO AR pode ser refeita
 Pega o que o bloco publicado registra (período, elenco, malha, piso, semente), refaz a escala e

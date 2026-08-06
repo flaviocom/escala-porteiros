@@ -190,6 +190,43 @@ try {
     /não é apagada/i.test(naPublicar) && /que está no ar agora/i.test(naPublicar),
     'descrição presente')
 
+  // ── 6. 🔴 GERAÇÃO RECUSADA NÃO DEIXA A PROPOSTA VELHA NA TELA ────────────
+  //
+  // Sétima auditoria, medido ao vivo: com uma escala já proposta, pedir um período SEM nenhum dia de
+  // culto fazia a tela recusar — e continuar mostrando a escala do período anterior, com a aba
+  // `Ajustar` destravada e o `Publicar` oferecendo publicá-la.
+  //
+  // O estrago não é visual: os campos "De" e "Até" já mostram o período NOVO, e a proposta na tela é
+  // do período VELHO. Publicar dali põe no ar uma escala que a tela não está descrevendo.
+  await pagina.getByRole('button', { name: /^Gerar escala/i }).first().click()
+  await pagina.waitForTimeout(700)
+  await campoDe.fill('2027-01-01')
+  await campoAte.fill('2027-03-31')
+  await pagina.waitForTimeout(300)
+  await pagina.getByRole('button', { name: /^Gerar escala$/ }).last().click()
+  await pagina.getByText(/Piso alcançado|não foi possível cobrir/i).first().waitFor({ timeout: 90_000 }).catch(() => {})
+  const propostaNaTela = /Piso alcançado|não foi possível cobrir/i.test(await pagina.locator('body').innerText())
+  // Sem esta primeira metade o teste passaria com a tela sempre vazia — provaria nada.
+  conferir('há uma proposta na tela, para haver o que apagar', propostaNaTela, propostaNaTela ? 'proposta presente' : 'NADA foi gerado')
+
+  // 01/04/2027 é uma quinta-feira: a malha não tem culto nesse dia.
+  await campoDe.fill('2027-04-01')
+  await campoAte.fill('2027-04-01')
+  await pagina.waitForTimeout(300)
+  await pagina.getByRole('button', { name: /^Gerar escala$/ }).last().click()
+  await pagina.waitForTimeout(1500)
+  const depoisDaRecusa = await pagina.locator('body').innerText()
+  conferir('a recusa explica o motivo', /não há nenhum dia de culto/i.test(depoisDaRecusa), 'mensagem presente')
+  conferir('🔴 geração recusada APAGA a proposta anterior',
+    !/Piso alcançado/i.test(depoisDaRecusa), 'a escala do período velho sumiu da tela')
+  const ajustar = pagina.getByRole('button', { name: /^Ajustar/ }).first()
+  conferir('🔴 e a aba Ajustar volta a travar', await ajustar.isDisabled(), 'travada, como antes de gerar')
+  await pagina.getByRole('button', { name: /^Publicar/i }).first().click()
+  await pagina.waitForTimeout(800)
+  conferir('🔴 e o Publicar avisa que não há escala nova',
+    /Nenhuma escala nova foi gerada/i.test(await pagina.locator('body').innerText()),
+    'aviso presente — publicar só mexe no elenco')
+
   conferir('nenhum erro no console', erros.length === 0, erros.slice(0, 2).join(' · ') || 'limpo')
   await pagina.screenshot({ path: join(RAIZ, 'capturas', 'gerar-amigavel.png'), fullPage: false })
 } finally {
