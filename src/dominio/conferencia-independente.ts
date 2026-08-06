@@ -198,8 +198,16 @@ export function conferirPorFora(
           )
       }
     }
+    /*
+      🔴 QUEM, E QUAL TETO — 06/08/2026. Dizia só *"2 pessoa(s) com teto"*, e o dono perguntou o
+      óbvio: *"quem são as pessoas?"*. O dado existe na linha de cima; faltava sair.
+    */
+    const comTeto = [...linhas.values()]
+      .filter((l) => l.pessoa.restricoes.tetoMensal != null)
+      .map((l) => `${l.pessoa.nome} (máx. ${l.pessoa.restricoes.tetoMensal}/mês)`)
+      .sort((a, b) => a.localeCompare(b, 'pt-BR'))
     registrar('Ninguém passa do próprio teto mensal', furos,
-      `${[...linhas.values()].filter((l) => l.pessoa.restricoes.tetoMensal != null).length} pessoa(s) com teto` +
+      (comTeto.length ? `${comTeto.length} pessoa(s) com teto: ${comTeto.join(' · ')}` : 'ninguém tem teto mensal') +
         (Object.keys(escalasPorMesAnterior).length ? ' · somando o que já está publicado no mês' : ' · SEM os blocos anteriores'))
   }
 
@@ -229,27 +237,54 @@ export function conferirPorFora(
       for (const d of canonicas)
         if (!marcadas.some((t) => t.data === d) && bloco.turnos.some((t) => t.data === d))
           furos.push(`${formatarBR(d)} é dia sem escala no calendário e o bloco tem turno comum nele`)
+    /*
+      🔴 QUAIS DIAS — 06/08/2026. Dizia *"1 data(s) no calendário · 1 marcada(s)"*, e a pergunta dele
+      foi imediata: *"qual é ou quais são os dias?"*. Contar não informa; nomear informa.
+    */
+    const listar = (ds: readonly string[]) => ds.map((d) => formatarBR(d)).join(', ')
     registrar('Os dias sem escala ficam vazios e marcados', furos,
-      `${canonicas.length} data(s) no calendário dentro do período · ${marcadas.length} marcada(s)`)
+      canonicas.length === 0
+        ? 'nenhum dia sem escala no calendário deste período'
+        : `${canonicas.length} no calendário: ${listar(canonicas)} · ${marcadas.length} marcada(s) no bloco` +
+          (marcadas.length ? `: ${listar(marcadas.map((t) => t.data))}` : ''))
   }
 
   // ── 9. Distanciamento real, medido por fora ──────────────────────────────
   {
+    /*
+      🔴 TODOS OS NOMES, NÃO O PRIMEIRO — 06/08/2026, apontado pelo dono.
+
+      Esta promessa dizia *"menor intervalo real: 4 dia(s) (Donizete)"*. Ele conferiu contra o rodapé
+      da aba Gerar e respondeu: *"não é só o Donizete que está com 4 dias — mostra Flavio, mostra
+      Luiz Cezar, mostra Isac, mostra Williams"*.
+
+      Medido: **5 pessoas no mínimo**, não uma. O código guardava `deQuem` do primeiro que batesse o
+      recorde e sobrescrevia a cada novo menor — quem EMPATAVA no mínimo desaparecia.
+
+      **Um nome ao lado de um número é lido como "é este".** Nomear um de cinco é pior que não nomear
+      ninguém: quem lê conclui que os outros quatro estão bem, e vai conferir só um.
+    */
     const furos: string[] = []
     let menor = Infinity
-    let deQuem = ''
+    /** Todos os que EMPATAM no mínimo — o empate é a regra aqui, não a exceção. */
+    let noMinimo: string[] = []
     for (const l of linhas.values()) {
       const datas = [...new Set([...(ultimaEscalaAnterior[l.pessoa.id] ? [ultimaEscalaAnterior[l.pessoa.id]] : []), ...l.datas])].sort()
       for (let i = 1; i < datas.length; i++) {
         const d = diferencaEmDias(datas[i - 1], datas[i])
-        if (d > 0 && d < menor) { menor = d; deQuem = l.pessoa.nome }
+        if (d <= 0) continue
+        if (d < menor) { menor = d; noMinimo = [l.pessoa.nome] }
+        else if (d === menor && !noMinimo.includes(l.pessoa.nome)) noMinimo.push(l.pessoa.nome)
       }
     }
+    const quem = noMinimo.slice().sort((a, b) => a.localeCompare(b, 'pt-BR')).join(', ')
     const piso = bloco.pisoAlcancado
     if (piso != null && menor < piso)
-      furos.push(`o bloco declara piso de ${piso} dia(s), e o menor intervalo real é ${menor} (${deQuem})`)
+      furos.push(`o bloco declara piso de ${piso} dia(s), e o menor intervalo real é ${menor} — ${noMinimo.length} pessoa(s): ${quem}`)
     registrar('O espaçamento declarado é o espaçamento real', furos,
-      menor === Infinity ? 'ninguém com duas escalas' : `menor intervalo real: ${menor} dia(s) (${deQuem})`)
+      menor === Infinity
+        ? 'ninguém com duas escalas'
+        : `menor intervalo real: ${menor} dia(s) · ${noMinimo.length} pessoa(s) nesse mínimo: ${quem}`)
   }
 
   const vagas = comuns.reduce((s, t) => s + t.capacidade, 0)

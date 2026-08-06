@@ -1552,3 +1552,110 @@ medido de dois irmãos a menos.
 
 **Como reverter.** O histórico de publicações guarda cada versão; "Voltar a esta versão" traz o bloco
 de 2027 de volta, se um dia ele fizer falta.
+
+---
+
+## DB-036 · 06/08/2026 — o aviso que inventou um defeito, e me fez caçar fantasma
+
+**O que o dono disse:** *"'Atenção — esta escala mexe em dias que já estão no ar': jamais solicitei
+isso! A regra fixa é que não altere as posições dos dias PASSADOS, os dias futuros podem ser
+alterados livremente, por 1, 2 anos… ilimitado. Não tem mínimo nem máximo."*
+
+**Ele estava certo em dois níveis, e o segundo é o que interessa.**
+
+O primeiro: o aviso **só conseguia falar de dias futuros**. Gerar para trás já é impossível — o campo
+tem `min={hoje}` e a trava de data retroativa vive no domínio, com teste. Ou seja, ele existia para
+reclamar exatamente do que o dono faz de propósito toda vez que mexe no elenco.
+
+O segundo, que custou tempo real: na mesma conversa ele abriu outro chamado — *"tirei Eduardo e
+Thiago, eles sempre voltam"*. Eu fui medir, e eles **não voltavam**. O que ele estava lendo era a
+lista do próprio aviso:
+
+```
+08/08 Noite: Isac, Eduardo, Leandro → Isac, Leandro, Elson
+```
+
+O Eduardo está do lado **esquerdo** justamente por ter saído. O aviso, tentando informar, **inventou
+um defeito que não existia** — e nós dois fomos atrás dele.
+
+**O porquê que fica.** Um aviso é uma afirmação sobre o mundo, e afirmação errada custa mais que
+silêncio. Este dizia a verdade em cada palavra e mentia no conjunto: mostrava a escala velha ao lado
+da nova sem que a hierarquia visual dissesse qual era qual. **Quando um aviso precisa ser
+interpretado, ele ainda não está pronto.**
+
+Removido das duas telas — Gerar e Publicar. Tirar de uma só não resolveria: a de Publicar é a última
+coisa lida antes do botão. Saíram junto os cálculos que só ele consumia; o `strict` acusou cada um.
+
+**O que protege o passado continua de pé, e é outro mecanismo:** `travaDeDataRetroativa`.
+
+---
+
+## DB-037 · 06/08/2026 — eu inventei uma trava que ele não pediu
+
+**O quê.** Depois de descobrir que ele tinha publicado doze meses de escala sem perceber, limitei a
+sugestão do campo "Até" a seis meses. Ele desfez na hora:
+
+> *"eu não pedi para você travar aí em 6 meses. De onde você tirou isso?"* — e, sobre o que planeja:
+> *"você vai calcular o ano inteiro"*, *"não tem mínimo nem máximo"*.
+
+**O erro de raciocínio, que vale mais que o conserto.** Ele reclamou de um **número** (a data que a
+tela sugeria) e eu respondi com uma **trava** (um teto que tirava a escolha dele). Diagnostiquei
+"tamanho demais" quando o defeito era "tamanho **invisível**": nada na tela dizia que aquilo era um
+ano, e por isso passou.
+
+**Reclamação sobre um valor pede que o valor fique visível e controlável — não que a decisão saia das
+mãos de quem reclamou.**
+
+O que ficou da correção é só a metade certa: a janela aparece ao lado dos campos — `366 dia(s) · ~12
+meses` — e **sem julgamento**. Cheguei a pôr um alerta âmbar acima de seis meses, e estava errado
+duas vezes: o sistema sugeria um ano e em seguida reclamava do próprio palpite, e a regra do dono é
+explícita. O número fica; o julgamento sai.
+
+⚠️ **E o meu teste media o próprio rastro.** A checagem lia o campo "Até" depois de o próprio teste
+já ter preenchido os campos várias vezes, e então acusava o produto de sugerir seis meses quando a
+tela recém-aberta sugeria o ano inteiro. Agora o padrão é capturado ANTES de qualquer preenchimento.
+
+---
+
+## DB-038 · 06/08/2026 — trabalho que some sem avisar ensina a não confiar na ferramenta
+
+**O pedido:** *"é necessário também salvar as informações. Hoje não salva: você altera e elas voltam.
+(…) quando eu salvar, tem que ficar fixo. Inclusive as datas."*
+
+**Medido antes de escrever uma linha** — mudar De, Até, pessoas por turno, acrescentar uma Santa
+Ceia, recarregar:
+
+```
+mudei:        De=01/03/2027 · Até=30/09/2027 · 4 por turno · Ceia 11/04/2027
+recarreguei:  De=31/12/2026 · Até=31/12/2027 · 3 por turno · Ceia sumiu
+```
+
+**Nada daquela aba sobrevivia a um F5** — só o que fosse PUBLICADO, e publicar é um gesto grande
+demais para guardar um ajuste em andamento.
+
+**O porquê que interessa.** O prejuízo não é a digitação perdida: é o que ela ensina. Quem perde
+trabalho duas vezes passa a publicar cedo demais "para não perder", ou a evitar mexer. A ferramenta
+começa a moldar o comportamento na direção errada.
+
+`src/admin/rascunho.ts`, e **sem botão "salvar"** — botão de salvar cria a pergunta *"eu salvei?"*, e
+a resposta errada custa o trabalho todo.
+
+⚠️ **E ele se declara na tela**, com a hora e a saída ao lado. Rascunho invisível é pior que nenhum:
+guardar calado trocaria "perder trabalho" por "confiar no que não foi publicado" — que é o defeito
+mais caro que este produto pode ter.
+
+**Dois defeitos meus, os dois pegos medindo:**
+
+1. O aviso aparecia na **tela limpa** e continuava depois de "Descartar". Eu relia o `localStorage`
+   dentro da aba, e ali ele já enxergava o rascunho que o próprio efeito de gravação tinha acabado de
+   criar na montagem. **Duas leituras da mesma coisa em momentos diferentes são duas verdades.**
+2. Escrevi um `formatarQuando` que já existia — e o meu era pior: usava o relógio do aparelho, o que
+   existia usa `America/Sao_Paulo` explicitamente. O compilador acusou a duplicata.
+
+**E uma sonda minha quase virou chamado falso.** Ao validar no site publicado, o aviso não apareceu —
+porque eu "recarregava" trocando só o `#` da URL, o que **não remonta** uma aplicação de página única.
+Com `reload()` de verdade, os três casos passaram. Terceira vez hoje que uma sonda mediu a si mesma;
+é a razão de toda medição precisar da pergunta *"e se o defeito for do meu instrumento?"*.
+
+**Como reverter.** `git revert` do commit desta entrada devolve o comportamento antigo — a tela volta
+a esquecer tudo a cada F5.

@@ -511,3 +511,45 @@ diferentes, e eu vinha usando só um.**
 
 **Handoff:** [`HANDOFF_2026-08-06.md`](docs/handoff/HANDOFF_2026-08-06.md) ·
 **Diário:** DB-031 a DB-034.
+
+---
+
+## [06/08/2026] Sessão 2, parte 9 — a tarde em que o produto passou a lembrar
+
+**O quê.** O dono foi usar o sistema de verdade — tirar irmãos do elenco e gerar a escala — e cada
+passo revelou algo. Nenhum achado veio de auditoria: vieram do uso.
+
+**Feito:**
+
+1. **🔴 O campo "Até" saltava um ANO sozinho** (`30e8154`) — ele publicou 12 meses sem perceber. A
+   sugestão *"se sobrar menos de 30 dias, 31/12 do ano seguinte"* virava escada a cada publicação.
+   E a data que ele acusou (*"30/12/2027, isso é um absurdo"*) estava **certa**: era consequência do
+   ano publicado sem querer.
+2. **Eu inventei uma trava de 6 meses que ele não pediu** (`b16306e`) — e desfiz.
+   *"Você vai calcular o ano inteiro"*, *"não tem mínimo nem máximo"*. Ficou só a metade certa: a
+   **janela visível**, sem julgamento.
+3. **O bloco de 2027 apagado** e a **escala regerada com os 14 ativos** — a remoção revelou 26 turnos
+   com Eduardo e Thiago, desativados e ainda escalados. Piso caiu de 7 para 4, o preço medido de dois
+   irmãos a menos.
+4. **D8 corrigida** — a `explicacao` prometia que o passado congelado não seria acusado por quem saiu,
+   e o código acusava.
+5. **O aviso "mexe em dias que já estão no ar" REMOVIDO** (`d06c69d`) — ele só falava de dias futuros,
+   que o dono altera de propósito, e a lista "antes → depois" o fez concluir que quem saiu do elenco
+   **voltava sozinho**. Um aviso que inventa defeito é pior que silêncio.
+6. **A tela passou a lembrar** (`5f868d9`) — datas, pessoas por turno, Santas Ceias e elenco
+   sobrevivem ao F5, com o rascunho **se declarando** e com botão de descartar.
+7. **🔴 A raiz dos conflitos de porta da sessão inteira**: três scripts meus chamavam
+   `servidor.parar?.()` — o método é `derrubar`. O `?.` engoliu o nome errado em silêncio e cada
+   execução deixou um servidor vivo. No `vivo:publicar` isso fazia o processo terminar com 9 de 9 e
+   **nunca encerrar**: 10+ minutos de espera viraram **15 segundos**.
+
+**O fio que liga a tarde inteira:** três vezes uma sonda minha mediu a si mesma e quase virou chamado
+falso — o teste que lia o campo depois de tê-lo preenchido, a leitura dupla do rascunho, e o "reload"
+que só trocava o `#` e não remontava a aplicação. **Toda medição precisa da pergunta: e se o defeito
+for do meu instrumento?**
+
+**Estado:** `EXIT_GATE=0` em **32 passos** · selo conferido · 183 turnos no ar · 0 estouros de teto ·
+14 ativos, e nenhum desativado escalado para a frente.
+
+**Handoff:** [`HANDOFF_2026-08-06.md`](docs/handoff/HANDOFF_2026-08-06.md) ·
+**Diário:** DB-035 a DB-038.

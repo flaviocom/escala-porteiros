@@ -282,3 +282,43 @@ describe('promessa 0 — o furo LONGE do começo também é achado', () => {
     expect(furosDe(r)).toContain('NINGUÉM escalado')
   })
 })
+
+describe('🔴 a conferência nomeia TODOS, não o primeiro que encontra', () => {
+  /*
+    06/08/2026. A tela dizia "menor intervalo real: 4 dia(s) (Donizete)". O dono conferiu contra o
+    rodapé da aba Gerar: *"não é só o Donizete — mostra Flavio, Luiz Cezar, Isac, Williams"*.
+
+    Medido no dado real: 5 pessoas no mínimo, não uma. O código guardava o primeiro que batia o
+    recorde e sobrescrevia; quem EMPATAVA sumia.
+
+    Um nome ao lado de um número é lido como "é este". Nomear um de cinco é pior que não nomear
+    ninguém: quem lê conclui que os outros quatro estão bem.
+  */
+  const tres: Pessoa[] = [
+    { id: 'a', nome: 'Ana', ativo: true, restricoes: {} },
+    { id: 'b', nome: 'Bia', ativo: true, restricoes: {} },
+    { id: 'c', nome: 'Caio', ativo: true, restricoes: {} },
+  ]
+  // Ana e Bia com 4 dias de intervalo; Caio com 8.
+  const turnos = [
+    { data: '2026-09-06', tipo: 'MANHA', pessoas: ['a', 'b', 'c'], capacidade: 3 },
+    { data: '2026-09-10', tipo: 'MANHA', pessoas: ['a', 'b'], capacidade: 2 },
+    { data: '2026-09-14', tipo: 'MANHA', pessoas: ['c'], capacidade: 1 },
+  ] as unknown as Turno[]
+
+  it('lista os DOIS que empatam no mínimo, e diz quantos são', () => {
+    const r = conferirPorFora(bloco(turnos, ['a', 'b', 'c'], { pisoAlcancado: 4 }), tres, CONFIG, {}, {})
+    const espaco = r.achados.find((a) => /espaçamento/i.test(a.promessa))!
+    expect(espaco.veredito).toMatch(/4 dia/)
+    expect(espaco.veredito).toMatch(/2 pessoa/)
+    expect(espaco.veredito).toMatch(/Ana/)
+    expect(espaco.veredito).toMatch(/Bia/)
+  })
+
+  it('🔴 A OUTRA PONTA — quem NÃO está no mínimo fica de fora da lista', () => {
+    // Sem isto, a checagem passaria com a régua listando o elenco inteiro.
+    const r = conferirPorFora(bloco(turnos, ['a', 'b', 'c'], { pisoAlcancado: 4 }), tres, CONFIG, {}, {})
+    const espaco = r.achados.find((a) => /espaçamento/i.test(a.promessa))!
+    expect(espaco.veredito).not.toMatch(/Caio/)
+  })
+})
