@@ -15,7 +15,7 @@
     "typecheck": "tsc --noEmit -p tsconfig.app.json && tsc --noEmit -p tsconfig.node.json",
     "test": "vitest run",
     "test:watch": "vitest",
-    "gate": "npm run segredos && npm run typecheck && npm run test && npm run test:fuso:berlim && npm run denominacao && npm run fontes && npm run contagem && npm run ordem-do-gate && npm run cadeia && npm run generico && npm run generico:autoteste && npm run doc:regras:conferir && npm run doc:comandos && npm run arquitetura && npm run fatos:conferir && npm run datas && npm run citacoes && npm run crescimento && npm run tamanho-docs && npm run auditoria && npm run regras-mestras && npm run vivo:rotulos && npm run ensaio && npm run tempo && npm run build && npm run imagem && npm run refazer && npm run selo:gravar",
+    "gate": "npm run segredos && npm run typecheck && npm run test && npm run test:fuso:berlim && npm run denominacao && npm run fontes && npm run contagem && npm run ordem-do-gate && npm run cadeia && npm run handoff-orfao && npm run proximo-id && npm run generico && npm run generico:autoteste && npm run doc:regras:conferir && npm run doc:comandos && npm run arquitetura && npm run fatos:conferir && npm run datas && npm run citacoes && npm run crescimento && npm run tamanho-docs && npm run auditoria && npm run regras-mestras && npm run vivo:rotulos && npm run ensaio && npm run tempo && npm run build && npm run imagem && npm run refazer && npm run selo:gravar",
     "prebuild": "node -e \"require('node:fs').rmSync('docs/assets',{recursive:true,force:true})\"",
     "test:fuso:berlim": "node scripts/testar-em-outro-fuso.mjs",
     "denominacao": "node scripts/medir-denominacao-sem-ia.mjs",
@@ -56,7 +56,9 @@
     "crescimento": "node scripts/medir-crescimento.mjs",
     "tamanho-docs": "node scripts/conferir-tamanho-docs.mjs",
     "vivo:rotulos": "node scripts/portao-rotulos.mjs",
-    "ordem-do-gate": "node scripts/portao-ordem-do-gate.mjs"
+    "ordem-do-gate": "node scripts/portao-ordem-do-gate.mjs",
+    "handoff-orfao": "node scripts/portao-handoff-orfao.mjs",
+    "proximo-id": "node scripts/portao-proximo-id.mjs"
   },
   "dependencies": {
     "clsx": "^2.1.1",

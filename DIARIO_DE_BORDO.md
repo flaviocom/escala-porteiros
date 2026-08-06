@@ -4,7 +4,7 @@
 > como reverter.** Documento **append-only**, fatiado por período ao estourar o teto. **Nada é
 > excluído, nunca.**
 >
-> **Cadeia de navegação:** [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-05-f.md) → [`BACKLOG.md`](BACKLOG.md)
+> **Cadeia de navegação:** [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-06.md) → [`BACKLOG.md`](BACKLOG.md)
 > **Roteador:** [`AGENTS.md`](AGENTS.md) ·
 > **Solicitações:** [`docs/solicitacoes/INDICE_DE_SOLICITACOES.md`](docs/solicitacoes/INDICE_DE_SOLICITACOES.md) ·
 > **Histórico:** [`docs/historico/INDICE.md`](docs/historico/INDICE.md)
@@ -1158,3 +1158,87 @@ Duas réguas fecham a classe, e valem para qualquer portão de número futuro:
 
 Cada portão tem o próprio `git revert`. ⚠️ Reverter o de contagem ou o de fatos deixa 16 documentos
 livres para mentir de novo — e a tela volta a poder contradizer a si mesma na mesma seção.
+
+---
+
+## DB-026 · 06/08/2026 — a escala no ar estava errada, e corrigir o gerador não conserta o dado
+
+**A solicitação.** *"⚠️ A escala que está no ar continua com Williams em 5. Gere outra escala e
+avalie novamente."* E depois, autorizando a republicação: *"essa escala é fictícia. Não foi gerada
+ainda, não foi publicada. De 06/08/2026 em diante pode alterar qualquer coisa."*
+
+**O que estava errado.** O teto mensal não atravessava a fronteira entre blocos. O gerador recebia
+"quantos turnos cada um já tem no mês" só do bloco que estava gerando. O Williams, teto 3, tinha
+**5 turnos em agosto** — 2 no bloco histórico, 3 no novo.
+
+**O porquê que interessa.** O código tinha sido corrigido no dia anterior e **o dado no ar continuou
+errado**. Corrigir o gerador não reescreve a escala já gerada. São duas coisas: a regra e o dado que
+nasceu antes dela.
+
+**A decisão.** Levantei como pare-e-pergunte com as duas opções **medidas**: regeração completa (85
+de 87 turnos mudam, 16 irmãos afetados) ou correção mínima — que **não existia**, porque em 26/08 as
+8 pessoas que passavam nas regras duras violavam todas o piso de 7 dias. O Flavio decidiu republicar.
+
+**Como reverter.** `git revert 66f90e2` devolve a escala anterior — com o Williams em 5.
+
+---
+
+## DB-027 · 06/08/2026 — três defeitos, uma frase: o portão responde só à pergunta que se fez a ele
+
+**O quê.** Num único dia, a mesma classe de defeito apareceu três vezes, em lugares sem nenhuma
+relação entre si:
+
+| Onde | O portão perguntava | O que ninguém perguntou |
+|---|---|---|
+| `PORTOES.md` | "quantos passos o gate tem?" | "**em que ordem** eles rodam?" |
+| `README.md` | "quantas regras duras existem?" | "a **lista** enumera todas?" |
+| `docs/handoff/` | "o ponteiro para o mais recente está certo?" | "e os **outros** continuam alcançáveis?" |
+
+Nos três casos o portão existente estava **verde com razão**. Ele media o que prometia medir. O
+defeito morava no espaço entre a pergunta feita e a promessa que o documento fazia ao leitor.
+
+**O porquê que interessa.** Um portão não é uma opinião sobre qualidade; é uma **pergunta**. Escrever
+o portão é escolher a pergunta, e a escolha exclui tudo o que não foi perguntado — em silêncio. É por
+isso que a anatomia de um portão neste projeto exige **população impressa** e **o que foi pulado,
+também impresso**: são as duas únicas partes que deixam a pergunta não feita aparecer.
+
+**O caso mais caro dos três** foi o do índice de handoffs, porque o dano era invisível: dois
+registros de sessão existiam no disco e **nenhum caminho levava até eles**. A causa foi uma
+substituição cega de nome — o script que religa a cadeia trocou o handoff antigo pelo novo em *todos*
+os arquivos, e no índice, que é justamente onde os nomes antigos **devem** ficar, isso apagou
+histórico.
+
+**Regra que fica:** nome antigo no índice **não se substitui**; acrescenta-se a linha nova por cima.
+
+**Como reverter.** Cada portão tem o próprio `git revert`. ⚠️ Reverter o `handoff-orfao` deixa o
+registro do projeto livre para perder sessões inteiras em silêncio de novo.
+
+---
+
+## DB-028 · 06/08/2026 — campo sem rótulo é campo invisível, e nome não é sequência de bytes latinos
+
+**O quê.** O campo de data da Santa Ceia, acrescentado por mim no dia anterior, nasceu só com
+`title`. Cobrou duas vezes: quem usa leitor de tela ficou sem saber o que ele era, **e** o validador
+de "Gerar", que procurava campos de data por posição (`nth(2)`, `nth(3)`), passou a digitar a data da
+ausência dentro dele. A tela recusava a ausência com razão, e o teste acusava a tela.
+
+**O porquê que interessa.** Acessibilidade neste projeto deixou de ser um item de lista de boas
+intenções e virou **mecanismo de medição**: um localizador por rótulo quebra alto no dia em que o
+rótulo sumir; um por posição erra em silêncio. **Posição não é identidade.**
+
+**E o segundo defeito, da mesma família.** O produto tratava nome como se toda letra coubesse numa
+unidade de código UTF-16 e como se todo nome tivesse alguma letra de a–z:
+
+- emoji no começo → `charAt(0)` devolvia **meio par substituto** e a imagem morria com *"URI
+  malformed"*, mensagem que não diz nada a quem só quis publicar a escala do mês;
+- nome inteiro fora do alfabeto latino → o identificador virava `_`, e **o segundo cadastrado
+  colidia com o primeiro**.
+
+O produto é vendido como genérico, para qualquer congregação. A que escrever em outro alfabeto não
+pode depender de sorte.
+
+**Detalhe que vale registrar:** minha primeira versão de `idDoNome` era frouxa — `...` virava o
+identificador `p_2e2e2e`. **O teste escrito antes reprovou a implementação**, e a guarda virou
+`\p{L}|\p{N}` ("tem letra ou número em qualquer alfabeto").
+
+**Como reverter.** `git revert a3ccb46` devolve `charAt(0)` e o identificador colidente.

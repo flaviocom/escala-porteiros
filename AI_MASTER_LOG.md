@@ -4,7 +4,7 @@
 > O **porquê** de cada decisão vive no [`DIARIO_DE_BORDO.md`](DIARIO_DE_BORDO.md); aqui fica o
 > registro do que foi feito, passo a passo.
 >
-> **Cadeia de navegação:** [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-05-f.md) → [`BACKLOG.md`](BACKLOG.md)
+> **Cadeia de navegação:** [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-06.md) → [`BACKLOG.md`](BACKLOG.md)
 > **Roteador:** [`AGENTS.md`](AGENTS.md) ·
 > **Solicitações:** [`docs/solicitacoes/INDICE_DE_SOLICITACOES.md`](docs/solicitacoes/INDICE_DE_SOLICITACOES.md) ·
 > **Fatias arquivadas:** [`docs/historico/INDICE.md`](docs/historico/INDICE.md)
@@ -424,3 +424,43 @@ projeto não é contar errado, é **a fronteira ser menor que a frase**.
 
 **Handoff:** [`HANDOFF_2026-08-05-f.md`](docs/handoff/HANDOFF_2026-08-05-f.md) ·
 **Diário:** DB-022 a DB-025.
+
+---
+
+## [06/08/2026] Sessão 2, parte 7 — Sétima auditoria, republicação da escala e quatro portões
+
+**O quê.** Fechamento dos achados da sétima auditoria externa, **republicação da escala inteira** com
+autorização explícita do dono, e quatro portões novos — cada um nascido de um defeito que os portões
+existentes não enxergavam **por não terem sido perguntados**.
+
+**Feito:**
+
+1. **Sétima auditoria fechada** (`962847c`) — o buraco de 93 dias que o Publicar aceitava
+   (`conferirBuracoNaEscala`, bloqueante), a aba `Ajustar` que acusava tudo de amarelo (comparava
+   contra o piso pedido, não o alcançado), o `validar-celular` que media uma tela prometendo duas,
+   6 tooltips mentirosos, alvos de toque abaixo de 44px, 4 populações viradas em fatos medidos
+   (13 → 16), 5 testes de domínio faltando — e **o item P7.7 do BACKLOG, marcado como FECHADO sem
+   ter sido feito**.
+2. **Escala regerada e republicada** (`66f90e2`) — o Williams estava com **5 turnos em agosto** com
+   teto 3, **em produção**. A correção mínima **não existia**: em 26/08, 8 pessoas passavam nas
+   regras duras e **nenhuma** respeitava o piso de 7 dias. Autorizado pelo Flavio ("essa escala é
+   fictícia, não foi divulgada"), 85 de 87 turnos mudaram. **Seis portões rodaram antes de escrever
+   qualquer arquivo**; medido no ar: impressão digital idêntica à local, **0 estouros de teto**.
+3. **`refazer` ficou vermelho acusando o inocente** — ele reconstruía **uma** fronteira (o descanso)
+   e não a **segunda** (a cota mensal), que virou entrada do gerador na mesma auditoria. Regra que
+   fica: **entrada nova no gerador é entrada nova no refazedor, no mesmo passo.**
+4. **`vivo:rotulos`** (passo 22) — o campo da Santa Ceia nascera só com `title`, e o validador de
+   "Gerar" procurava campos **por posição**: o campo novo entrou no meio e o teste passou a digitar
+   a data da ausência dentro dele. 7 cenas, 18 campos.
+5. **`ordem-do-gate`** (passo 8) — a lista do `PORTOES.md` **já estava fora de ordem antes**: `build`
+   documentado como 21º, rodando em 24º. O total era medido; a ordem, não.
+6. **`contagem` passou a conferir a LISTA** — o `README.md` dizia "12 regras duras" e enumerava 11.
+7. **`handoff-orfao`** (passo 10) — o índice tinha **três linhas apontando para o mesmo arquivo**, e
+   os handoffs `-d` e `-e` estavam invisíveis. Causa: substituição cega de nome.
+8. **Nome não é sequência de bytes latinos** (`a3ccb46`) — emoji no começo do nome matava a imagem
+   com "URI malformed" (4 lugares); dois nomes sem ASCII viravam a **mesma pessoa**.
+
+**Estado:** `EXIT_GATE=0` em **29 passos** · 335 testes · 183 turnos no ar · 0 estouros de teto.
+
+**Handoff:** [`HANDOFF_2026-08-06.md`](docs/handoff/HANDOFF_2026-08-06.md) ·
+**Diário:** DB-026 a DB-028.

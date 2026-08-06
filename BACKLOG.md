@@ -6,7 +6,7 @@
 > **Última atualização:** 05/08/2026
 >
 > **Cadeia de navegação, nesta ordem:**
-> [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-05-f.md) → **`BACKLOG.md` (você está aqui)**
+> [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-06.md) → **`BACKLOG.md` (você está aqui)**
 >
 > **Roteador do projeto:** [`AGENTS.md`](AGENTS.md) ·
 > **Solicitações:** [`docs/solicitacoes/INDICE_DE_SOLICITACOES.md`](docs/solicitacoes/INDICE_DE_SOLICITACOES.md) ·
@@ -56,6 +56,30 @@ ali é dado congelado, não recálculo.
 Medido: Williams com **7 intervalos de 1 dia**, **18 pares com ≤3 dias**, 6 ocorrências de
 "quarta → sábado". Resolvido por desenho no projeto novo (regra Q1), não no antigo.
 
+### P1.4 🟠 Sete achados da sétima auditoria, ainda ABERTOS 🤖
+Medidos e reproduzíveis. Nenhum bloqueia publicar — por isso ficaram para depois da republicação —
+mas todos são defeito de verdade. Em ordem de impacto, com onde mexer:
+
+| # | Achado | Onde |
+|---|---|---|
+| 1 | **"Até" antes de "De" dá diagnóstico falso.** Quem preenche o "Até" primeiro recebe uma mensagem que descreve outro problema | `Admin.tsx` → `aoMudarAte` |
+| 2 | **Geração recusada deixa a escala anterior na tela E no Publicar.** O motor recusa, a tela segue mostrando a de antes, e o Publicar publica a velha achando que é a nova | `Admin.tsx` → `executar()` / estado `resultado` |
+| 3 | **O seletor de meses conta a Santa Ceia (19) e a imagem diz 18.** Dois números para a mesma coisa, na mesma tela | seletor de meses vs `EscalaImagem.tsx` |
+| 4 | **"veio do motor e passou no portão" continua escrito depois de um ajuste manual.** A frase deixa de ser verdade no instante em que alguém arrasta um nome | `Admin.tsx` → aba `Ajustar` |
+| 5 | **`candidatosBarrados` é escrito e nunca lido.** Ou vira tela (explicar por que fulano não pôde), ou sai | `src/dominio/gerador.ts` |
+| 6 | **O piso declarado pode ser menor que o entregue** | `gerador.ts` → `pisoAlcancado` |
+| 7 | **Mensagem de ano com 5 dígitos está errada.** Digite `12026` e o texto não descreve o que aconteceu | `Admin.tsx` → validação de data |
+
+Detalhe em [`HANDOFF_2026-08-06.md`](docs/handoff/HANDOFF_2026-08-06.md) § 6.
+
+### P1.5 🟠 Três fronteiras de portão DECLARADAS em aberto 🤖
+Não são defeitos: são limites que os próprios portões **admitem** ter, escritos para ninguém
+confundir com cobertura total. Ficam aqui para não sumirem de vista.
+
+- o portão `auditoria` exercita a checagem de denominação em **1 de 5** superfícies;
+- o `ensaio` é baseado em propriedade e **passa com metade dos turnos**;
+- o `generico` **não varre `docs/*.md`**.
+
 ---
 
 ## P2 — Método e infraestrutura 🔵
@@ -89,7 +113,7 @@ Medido: Williams com **7 intervalos de 1 dia**, **18 pares com ≤3 dias**, 6 oc
 ### Sexta auditoria externa — 05/08/2026, **25 achados, 0 abertos**
 
 Três frentes disjuntas: o código que nasceu hoje · o dado publicado até o pixel · os portões medem o
-que dizem. Detalhe em [`HANDOFF_2026-08-05-f.md`](docs/handoff/HANDOFF_2026-08-05-f.md) e no
+que dizem. Detalhe em [`HANDOFF_2026-08-06.md`](docs/handoff/HANDOFF_2026-08-06.md) e no
 `DIARIO_DE_BORDO.md` (DB-022 a DB-025). Ficam aqui os que alguém precisa saber que existiram:
 
 | # | Item | Estado |
@@ -101,7 +125,7 @@ que dizem. Detalhe em [`HANDOFF_2026-08-05-f.md`](docs/handoff/HANDOFF_2026-08-0
 
 ### Quinta auditoria externa — 05/08/2026, **21 achados, 0 abertos**
 
-Detalhe e medição em [`HANDOFF_2026-08-05-f.md`](docs/handoff/HANDOFF_2026-08-05-f.md) e no
+Detalhe e medição em [`HANDOFF_2026-08-06.md`](docs/handoff/HANDOFF_2026-08-06.md) e no
 `DIARIO_DE_BORDO.md` (DB-018 a DB-021). Ficam aqui os três vermelhos, porque são os que alguém
 precisa saber que existiram para não recriá-los:
 

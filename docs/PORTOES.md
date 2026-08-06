@@ -40,7 +40,7 @@ alguma tiver caractere de controle.
 
 ---
 
-## Os 28 passos do `npm run gate`
+## Os 30 passos do `npm run gate`
 
 ### 1. `segredos` — nenhum segredo em arquivo versionado
 **População:** todo arquivo que `git ls-files` lista (148 hoje) · **5 formas** procuradas · 4 isentos
@@ -139,7 +139,56 @@ vem antes de `HANDOFF_2026-08-05-b.md` no alfabeto e é o mais **antigo** dos do
 **Autoteste:** acusa ponteiro antigo · aprova o atual · **ignora** link para handoff antigo que
 esteja fora de uma linha que se diz "mais recente".
 
-### 10. `generico` — nenhum nome de cliente cravado (§0)
+### 10. `handoff-orfao` — nenhum handoff fica invisível
+**População:** todo `HANDOFF_*.md` da pasta `docs/handoff/` (17 hoje) contra as linhas de tabela do
+`INDICE.md`.
+**Confere as três direções:** todo handoff do disco é citado · todo handoff citado existe no disco ·
+nenhum handoff aparece em **duas linhas de tabela diferentes**.
+
+> 🔴 **Por que ele existe.** Em 06/08/2026, ao religar a cadeia, encontrei o índice com **três linhas
+> diferentes apontando para o mesmo arquivo**. Os handoffs `-d` e `-e` existiam no disco e **não eram
+> citados em lugar nenhum** — as sessões que os escreveram tinham ficado invisíveis.
+>
+> A causa foi uma substituição cega: um script trocou o nome do handoff antigo pelo novo em *todos*
+> os arquivos. No índice — que é justamente onde os nomes antigos **devem** ficar — isso apagou
+> histórico em vez de atualizá-lo.
+>
+> O `cadeia` (passo 9) já perguntava *"o ponteiro para o mais recente está atualizado?"* e respondia
+> certo. Ninguém perguntava *"e os outros continuam alcançáveis?"*. **Terceira vez em dois dias que a
+> mesma classe aparece** — e aqui o preço é o registro do projeto, num método que se apoia em
+> conseguir reconstruir por que cada decisão foi tomada.
+
+**Regra que fica:** nome antigo no índice **não se substitui**; acrescenta-se a linha nova por cima.
+**Provado nas quatro pontas:** linha apagada · duas linhas para o mesmo arquivo (testada **isolada**,
+para a checagem de duplicata disparar sozinha e não de carona na de órfão) · link para arquivo
+inexistente · índice consertado → EXIT=0.
+
+### 11. `proximo-id` — o "próximo identificador livre" é mesmo o próximo
+**População:** todo `.md` de `docs/solicitacoes/` — **as fatias arquivadas inclusive**, que é
+exatamente o ponto: o maior ID pode estar numa fatia que ninguém abre há semanas.
+**Confere duas coisas:** o cabeçalho anuncia `maior ID + 1` · nenhum ID abre **duas linhas de
+tabela** (colisão é o dano que a linha existe para evitar, e anúncio certo com duplicata no corpo
+não adianta nada).
+
+> 🔴 **Por que ele existe.** O índice de solicitações abre com *"próximo identificador livre:
+> S-NNN"* e explica ao lado: *"calculado sobre todas as fatias, nunca lido da última linha"* —
+> porque depois de uma rotação o maior ID **sai de vista**. O método registra o prejuízo: **cinco
+> colisões de ID de uma vez**, num projeto anterior.
+>
+> Em 06/08/2026 a linha estava errada aqui também: dizia **S-032** com o **S-033** já escrito logo
+> abaixo. A regra estava documentada, explicada, com o motivo ao lado — e **inerte**, porque nada a
+> media.
+
+⚠️ **E ele nasceu sempre-vermelho**, na primeira execução: contava o próprio anúncio do
+cabeçalho como "ID em uso" e exigia sempre um a mais. Um portão eternamente vermelho é lido como
+portão funcionando — este projeto já registrou isso duas vezes. A linha do anúncio passou a ser
+pulada na contagem, com o motivo escrito no código.
+
+**Provado nas três pontas, cada checagem pelo MOTIVO certo:** cabeçalho defasado · ID duplicado
+**com o maior ID intacto** (senão quem dispara é a checagem do cabeçalho, de carona) · a linha do
+anúncio apagada — e aprova a árvore limpa.
+
+### 12. `generico` — nenhum nome de cliente cravado (§0)
 **População:** 32 arquivos (`src/` + `index.html` + `package.json` + `README.md`) · **21 testes pulados**, contados
 e impressos.
 **Os 8 termos:** `JD. São Luiz` · `Congregação Cristã` · `CCB` (com borda por classe de caracteres,
@@ -170,23 +219,23 @@ trombasse com a própria documentação seria contornado no primeiro dia.
 **Por que `.test.ts` é pulado:** as fixtures usam o nome do cliente de propósito, e teste não vai
 para o ar. Troca consciente, com o par no autoteste (mesmo conteúdo fora de teste **é** achado).
 
-### 11. `generico:autoteste` — prova que o de cima morde
+### 13. `generico:autoteste` — prova que o de cima morde
 **21 casos:** 20 de varredura (infratores que devem reprovar + limpos que devem passar) + 1 de
 autodefesa. Entre os limpos, dois valem nota: **"irmandade" não pode acusar** (a borda tem de estar
 viva) e **`escala-porteiros` como slug não pode acusar**.
 **O caso de autodefesa** injeta o byte de backspace num **clone** do portão e exige saída 2.
 
-### 12. `doc:regras:conferir` — o catálogo documentado bate com o código
+### 14. `doc:regras:conferir` — o catálogo documentado bate com o código
 `docs/CATALOGO_DE_REGRAS.md` é **gerado**. Este passo regenera em memória e compara **byte a byte**
 (ignorando fim de linha, porque o Windows reescreve CRLF). Muda o `titulo` ou a `explicacao` de uma
 regra sem regenerar → vermelho.
 
-### 13. `doc:comandos` — todo comando citado existe
+### 15. `doc:comandos` — todo comando citado existe
 **População:** os 17 documentos vivos · isentos os append-only.
 **Critério:** todo `npm run <nome>` está no `package.json`; todo `node scripts/<arquivo>` existe em
 disco. **Achou defeito na primeira execução:** `npm run tempo`, citado na documentação, não existia.
 
-### 14. `arquitetura` — as três invariantes que a documentação afirma
+### 16. `arquitetura` — as três invariantes que a documentação afirma
 1. `src/dominio/` **não importa nada de fora** (nem `../`, nem pacote externo).
 2. `conferencia-independente.ts` **não importa** `regras`, `validacao` nem `gerador`.
 3. **`docs/.nojekyll` existe.**
@@ -202,14 +251,14 @@ publicada · o site mostra a escala nova em cerca de um minuto"*. Ninguém no pa
 por tempo indeterminado. Um arquivo de 0 byte elimina a classe, e ele já sumiu uma vez sem ninguém
 ver: é o argumento inteiro para portão em vez de disciplina.
 
-### 15. `fatos:conferir` — nenhum documento desmente um número medido
+### 17. `fatos:conferir` — nenhum documento desmente um número medido
 **16 fatos**, todos de fonte executável: passos do gate (do `package.json`), casos do autoteste (da
 saída dele), checagens da auditoria, arquivos e termos do portão genérico, documentos vivos, piso do
 bloco publicado, turnos congelados, fontes declaradas, regras do catálogo, regras duras.
 **Nenhum é digitado.** Achou 4 contradições na primeira execução, e depois **pegou a própria
 mudança**: ao entrar no gate, virou o 16º passo e reprovou os documentos que diziam 15.
 
-### 16. `datas` — `toISOString()` não decide dia nem mês
+### 18. `datas` — `toISOString()` não decide dia nem mês
 **População:** 89 arquivos de `src/` e `scripts/` · isento `datas.test.ts`, que **cita** o
 antipadrão para provar que ele erra.
 **Critério, em dois níveis:**
@@ -222,7 +271,7 @@ antipadrão para provar que ele erra.
 `datas.ts`, no `RECONSTRUIR.md`, no `AGENTS.md` e em três comentários de teste. **E não havia nada
 que a cobrasse.** Quando alguém foi olhar, havia 4 usos e o `BACKLOG.md` declarava 1.
 
-### 17. `citacoes` — citação `arquivo:linha` que aponta para o vazio
+### 19. `citacoes` — citação `arquivo:linha` que aponta para o vazio
 **População:** os documentos vivos · isentos os append-only, porque corrigir a citação de um handoff
 seria mentir sobre o que se sabia naquele dia (e o número de pulados é impresso).
 **Critério:** o arquivo existe, e a linha existe.
@@ -238,14 +287,14 @@ que transforma a citação de coordenada em afirmação verificável.
 **Limite declarado:** ele não confere se a linha *diz* o que o documento afirma — isso exigiria
 entender a frase. Pega arquivo renomeado, apagado e linha além do fim, que é a maior parte.
 
-### 18. `crescimento` — o dado ainda cabe onde é servido
+### 20. `crescimento` — o dado ainda cabe onde é servido
 **Critério:** nenhum arquivo de `dados/` passa de **60%** do teto de 1 MB da Contents API do GitHub,
 que é a que a área administrativa usa para publicar.
 **Também mede o ritmo**, do próprio dado: bytes por turno × turnos por ano → anos de folga.
 **Por que 60% e não 90%:** sobra ano suficiente para arquivar sem pressa. Alarme que grita cedo
 demais é alarme que alguém desliga.
 
-### 19. `tamanho-docs` — nenhum documento passou do teto do próprio regime
+### 21. `tamanho-docs` — nenhum documento passou do teto do próprio regime
 **De onde vêm os tetos:** de `docs/regimes-documentos.json`, a declaração do PROJETO — não de um
 número escrito no script. O regime vem do **caminho**: raiz = **vivo** (400 linhas / 40 KB,
 carregado toda sessão) · subpasta = **referência** (800 / 100, lido sob demanda) · a lista
@@ -256,21 +305,21 @@ isenta**, porque medir o passado imutável não faz sentido.
 *"no pré-voo **e no GATE**"* — e o GATE não tinha o passo. Quando a auditoria externa mostrou
 isso, a dívida foi **declarada** em vez de fechada; algumas horas depois, fechada.
 
-### 20. `auditoria` — 20 ataques ao próprio código
+### 22. `auditoria` — 20 ataques ao próprio código
 Cada ataque **injeta um infrator** e exige que a validação o pegue. Frentes: validação, datas e fuso,
 gerador, dado publicado (inclusive *"os dois arquivos de dados são iguais?"* — que pegou um defeito
 real), e camada de tela.
 ⚠️ **Relatório sem achado é declarado SUSPEITO pelo próprio script**, com o motivo estrutural: quem
 auditou escreveu o código.
 
-### 21. `regras-mestras` — tooltip em todo botão
+### 23. `regras-mestras` — tooltip em todo botão
 **População:** 66 botões medidos.
 **Também mede:** clicáveis fora de `<button>` (div/span com `onClick` e sem papel declarado) — hoje 0
 — e aspas duplas dentro do atributo, que quebram o HTML em silêncio.
 
 ---
 
-### 22. `vivo:rotulos` — todo campo tem NOME que dá para alcançar
+### 24. `vivo:rotulos` — todo campo tem NOME que dá para alcançar
 Abre as **7 cenas** do produto (a trava, as cinco abas do admin e a tela dos irmãos), enumera cada
 `input`/`select`/`textarea` visível e exige um nome de verdade: `aria-label`, `aria-labelledby` que
 aponte para texto real, um `<label>` que envolva o campo, um `label[for]`, ou um `placeholder`.
@@ -293,15 +342,15 @@ Duas fronteiras do próprio portão, fechadas porque isenção calada é buraco 
   nomeada na saída e o portão **reprova**. Um portão que pula o que não conseguiu abrir mede menos
   do que a frase dele promete.
 
-### 23. `ensaio` — o cenário que ORIGINOU o projeto, ponta a ponta
+### 25. `ensaio` — o cenário que ORIGINOU o projeto, ponta a ponta
 Alguém sai do elenco, outro entra com as cinco restrições, e a escala se refaz a partir de um corte.
 **11 promessas medidas**, entre elas *"o passado antes do corte fica byte a byte idêntico"*.
 
-### 24. `tempo` — a geração não regrediu de desempenho
+### 26. `tempo` — a geração não regrediu de desempenho
 
-### 25. `build` — compila e gera em `docs/`
+### 27. `build` — compila e gera em `docs/`
 
-### 26. `imagem` — o único passo que RENDERIZA O PIXEL
+### 28. `imagem` — o único passo que RENDERIZA O PIXEL
 Gera a imagem pelo botão de verdade e **mede o DOM que virou o PNG**, no instante anterior à
 rasterização: texto cortado pela própria caixa, rótulo duplicado na mesma pílula, rodapé coerente.
 **Por quê:** três defeitos da imagem escaparam de todos os outros portões em 05/08/2026 e só
@@ -310,14 +359,14 @@ tarde, e a pílula da Santa Ceia imprimindo o rótulo duas vezes. Ler o PNG a ol
 ⚠️ A medição usa um `MutationObserver` instalado **antes** do clique: `gerarImagem.ts` monta um palco,
 rasteriza e chama `palco.remove()`, então medir depois acha uma página vazia.
 
-### 27. `refazer` — a escala NO AR pode ser refeita
+### 29. `refazer` — a escala NO AR pode ser refeita
 Pega o que o bloco publicado registra (período, elenco, malha, piso, semente), refaz a escala e
 compara turno a turno. É a promessa do `ALGORITMO.md` — *"conferir daqui a um ano"* — medida contra o
 **dado publicado**, não contra entrada de teste. Bloco `importado` é isento, declarado e contado.
 ⚠️ Fica vermelho no dia em que o algoritmo mudar de propósito. É o ponto: nesse dia a promessa se
 quebra para o que já está no ar, e alguém tem de decidir — aceitar e declarar, ou republicar.
 
-### 28. `selo:gravar` — o verde acima é DESTA árvore
+### 30. `selo:gravar` — o verde acima é DESTA árvore
 Guarda a impressão digital de todo arquivo versionado. `npm run selo:conferir`, antes de commitar,
 compara. **Por quê:** em 05/08/2026 um `git add -A` capturou o mutante de um auditor e o commit
 entrou na história afirmando `EXIT_GATE=0` — o gate tinha sido verde minutos antes, sobre outra
