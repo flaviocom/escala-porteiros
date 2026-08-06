@@ -460,7 +460,7 @@ existentes não enxergavam **por não terem sido perguntados**.
 8. **Nome não é sequência de bytes latinos** (`a3ccb46`) — emoji no começo do nome matava a imagem
    com "URI malformed" (4 lugares); dois nomes sem ASCII viravam a **mesma pessoa**.
 
-**Estado:** `EXIT_GATE=0` em **31 passos** · 341 testes · 183 turnos no ar · 0 estouros de teto ·
+**Estado:** `EXIT_GATE=0` em **32 passos** · 341 testes · 183 turnos no ar · 0 estouros de teto ·
 BACKLOG com **0 itens de tabela abertos**.
 
 > ⚠️ **Esta entrada foi escrita no MEIO da sessão e ficou para trás** — dizia "29 passos · 335
@@ -472,3 +472,42 @@ BACKLOG com **0 itens de tabela abertos**.
 
 **Handoff:** [`HANDOFF_2026-08-06.md`](docs/handoff/HANDOFF_2026-08-06.md) ·
 **Diário:** DB-026 a DB-030.
+
+---
+
+## [06/08/2026] Sessão 2, parte 8 — a tela pública, e o dia em que publicar virou o problema
+
+**O quê.** O foco saiu do motor e foi para **o que o irmão vê ao abrir o link** — porque era isso que
+o Flavio estava prestes a mandar no grupo. Três defeitos de tela, um de publicação, e dois que eu
+mesmo criei tentando consertar.
+
+**Feito:**
+
+1. **🔴 O site não abria no próximo culto** (`d964647`) — medido no ar: abria em **MAR 01** com o
+   próximo turno **32.496 px** abaixo. Ninguém tinha notado porque o navegador de quem já usa
+   **restaura a rolagem anterior** no reload: o defeito só aparece para quem abre **pela primeira
+   vez** — o irmão recebendo o link. A causa foi a soma de duas correções certas: a limpeza do
+   temporizador (5ª auditoria) cancelava a rolagem que a trava `hasScrolled` se recusava a reagendar.
+2. **"Esta Semana" de domingo a DOMINGO** (`446466e`) — pedido do dono: *"tem gente que acha que a
+   semana começa na segunda, então ela não veria a escala do domingo próximo"*. E os atalhos
+   passaram para a ordem menor→maior, iguais nos **dois** conjuntos de botões.
+3. **As Estatísticas não diziam que período contavam** (`8ba5d98`) — com o filtro da semana ligado e
+   visível em vermelho, a tabela mostrava março a dezembro, idêntica. Contar tudo é o certo; faltava
+   **dizer**. O período agora é derivado dos próprios turnos, para não poder discordar da tabela.
+4. **🔴 O GitHub parou de publicar** (`DB-032`, `DB-033`) — seis tentativas mortas: build passa,
+   publicação é criada, e o relógio da ação (10 min) aborta. A publicação passou para um workflow
+   próprio, com autorização do dono, e o teto subiu para 30 min.
+5. **E dois defeitos que o remédio criou:** cancelar uma publicação pela API **envenena o SHA**
+   daquele commit; e criar `.github/` **derrubou o selo**, que tentava ler uma pasta — pior, o
+   conteúdo de pasta nova ficava **fora da impressão digital**, calado.
+
+**Verificação que faltava, e a lição do dia.** Nada disso apareceu medindo o DOM. O primeiro
+(`markdown cru na tela`) apareceu ao **olhar uma captura**; o segundo, ao medir **posição** em vez de
+presença — `isVisible()` devolvia `true` com o alvo a 32 mil pixels. **Olho e medição pegam coisas
+diferentes, e eu vinha usando só um.**
+
+**Estado:** `EXIT_GATE=0` em **32 passos** · 341 testes · 183 turnos no ar · 0 estouros · BACKLOG com
+**0 itens de tabela abertos**.
+
+**Handoff:** [`HANDOFF_2026-08-06.md`](docs/handoff/HANDOFF_2026-08-06.md) ·
+**Diário:** DB-031 a DB-034.

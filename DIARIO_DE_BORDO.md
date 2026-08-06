@@ -1478,3 +1478,29 @@ portão: o dia em que ele vê algo novo é o dia em que se descobre o que ele n�
 gh api --method PUT repos/flaviocom/escala-porteiros/pages \
   -f build_type=legacy -f 'source[branch]=main' -f 'source[path]=/docs'
 ```
+
+---
+
+## DB-034 · 06/08/2026 — seis deploys mortos pelo relógio, e o preço de abortar
+
+**O quê.** Depois de trocar a publicação para um workflow próprio, ela ainda falhou. A causa não era
+mais a fila: era o **relógio da própria ação**. `actions/deploy-pages` espera a publicação terminar e
+aborta em **600.000 ms**. A última tentativa chegou a `deployment_in_progress` — estava funcionando —
+e foi morta a 5 segundos de distância do estado seguinte.
+
+**O porquê que interessa: abortar não é neutro.** Ao estourar o teto, a ação **cancela** a publicação,
+e o identificador dela é o **SHA do commit**. A tentativa seguinte do mesmo commit nasce
+*"Deployment cancelled"* — o commit fica permanentemente impublicável. Aconteceu três vezes hoje, e
+cada vez custou um commit novo só para gerar um SHA limpo.
+
+Ou seja: **o mecanismo de desistência transformava lentidão em falha permanente.** Um teto pensado
+para "não travar o CI" estava criando o travamento que ele queria evitar.
+
+Teto novo: **30 minutos**. Esperar é barato; recomeçar do zero, não.
+
+**O padrão, para além deste caso.** Todo tempo-limite é uma aposta sobre o que é "demorado demais", e
+essa aposta envelhece — a fila do GitHub de hoje não é a de quando o padrão de 10 minutos foi
+escolhido. Quando um limite começa a disparar em série, a pergunta certa não é *"o que está lento?"*,
+é **"o limite ainda descreve a realidade?"**.
+
+**Como reverter.** Tirar o `timeout:` do `.github/workflows/publicar.yml` devolve os 10 minutos.
