@@ -43,6 +43,7 @@ const PERMITIDOS = new Map([
   ['src/App.tsx', 'valor de <option> do seletor de meses: sai por toISOString e volta por parseISO, sem fatiar'],
   ['src/components/ScheduleTable.tsx', 'chave do agrupamento por mês: opaca, e o rótulo vem de parseISO + format local'],
   ['src/export/EscalaImagem.tsx', 'apenas `key` de lista no React — nunca lido como data'],
+  ['src/admin/rascunho.ts', 'carimbo de INSTANTE do rascunho local ("guardado às 18h04"), não data de calendário: nunca fatiado, nunca comparado com dia de escala — só formatado para a tela'],
 ])
 
 /** A forma perigosa: extrair campo do resultado. */

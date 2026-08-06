@@ -288,6 +288,45 @@ try {
   conferir('🔴 e NÃO julga o tamanho — sem mínimo nem máximo',
     !/⚠/.test(janelaPadrao), janelaPadrao || '(sem etiqueta)')
 
+  // ── 9. 🔴 O QUE ELE DIGITOU NÃO SOME AO RECARREGAR ──────────────────────────
+  //
+  // 06/08/2026, palavras dele: *"você altera e elas voltam (…) quando eu salvar, tem que ficar fixo.
+  // Inclusive as datas."* Medido antes de consertar: mudar De, Até, pessoas por turno e Santa Ceia e
+  // recarregar devolvia TUDO ao padrão.
+  //
+  // As três checagens são inseparáveis: guardar sem avisar seria trocar "perder trabalho" por
+  // "confiar no que não foi publicado", e sem o descarte ele ficaria preso ao rascunho.
+  const recarregar = async () => {
+    await pagina.goto(servidor.url + '#/admin', { waitUntil: 'networkidle' })
+    await pagina.waitForTimeout(1300)
+    const e = pagina.getByRole('button', { name: /Entrar agora — sem senha, sem token/i }).first()
+    if (await e.count()) { await e.click(); await pagina.waitForTimeout(1600) }
+    await pagina.getByRole('button', { name: /^Gerar escala/i }).first().click()
+    await pagina.waitForTimeout(1100)
+  }
+  const temAviso = async () => /em andamento/.test(await pagina.locator('body').innerText())
+
+  await pagina.locator('input[type="number"]').first().fill('4')
+  await campoDe.fill('2027-03-01')
+  await pagina.waitForTimeout(900)
+  await recarregar()
+  const deVolta = await campoDe.inputValue()
+  const porTurno = await pagina.locator('input[type="number"]').first().inputValue()
+  conferir('🔴 o que ele digitou SOBREVIVE ao recarregar',
+    deVolta === '2027-03-01' && porTurno === '4', `De=${deVolta} · por turno=${porTurno}`)
+  conferir('🔴 e a tela AVISA que está mostrando rascunho, não o publicado', await temAviso(),
+    'rascunho invisível seria pior que nenhum')
+
+  await pagina.getByRole('button', { name: /Descartar e usar o publicado/i }).first().click()
+  await pagina.waitForTimeout(2500)
+  const e3 = pagina.getByRole('button', { name: /Entrar agora — sem senha, sem token/i }).first()
+  if (await e3.count()) { await e3.click(); await pagina.waitForTimeout(1600) }
+  await pagina.getByRole('button', { name: /^Gerar escala/i }).first().click()
+  await pagina.waitForTimeout(1100)
+  const semRascunho = !(await temAviso()) && (await pagina.locator('input[type="number"]').first().inputValue()) === '3'
+  conferir('🔴 "Descartar" devolve o publicado, e o aviso some', semRascunho,
+    'sem o descarte ele ficaria preso ao rascunho')
+
   conferir('nenhum erro no console', erros.length === 0, erros.slice(0, 2).join(' · ') || 'limpo')
   await pagina.screenshot({ path: join(RAIZ, 'capturas', 'gerar-amigavel.png'), fullPage: false })
 } finally {

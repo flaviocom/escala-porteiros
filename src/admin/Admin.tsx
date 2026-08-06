@@ -8,7 +8,7 @@
  * O fluxo é: **elenco → gerar → conferir → publicar**, e a publicação não tira o site do ar em
  * momento nenhum — ela grava um arquivo de dados, e o site passa a ler o arquivo novo.
  */
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import {
   AlertTriangle, CheckCircle, Download, Eye, EyeOff, KeyRound, Loader2, LogOut, Plus, RefreshCw,
   History, RotateCcw, ShieldCheck, Trash2, Upload, X, XCircle,
@@ -28,6 +28,7 @@ import { conferirPorFora } from '../dominio/conferencia-independente'
 import { conferirBuracoNaEscala, conferirPassadoPreservado, conferirReversao, cotaMensalJaPublicada, montarBlocosParaPublicar, publicacaoImpedida, travaDeDataRetroativa } from '../dominio/blocos'
 import { diferencaEmDias, ehDataValida, formatarBR, sugerirFim, hojeSaoPaulo, NOMES_DIA, NOMES_DIA_CURTO, somarDias } from '../dominio/datas'
 import { AbaAjustar } from './AbaAjustar'
+import { lerRascunho, gravarRascunho, limparRascunho, type Rascunho } from './rascunho'
 import { arbitrar, auditar, medir, pedirProposta, type Placar, type ProgressoMotor } from './motor'
 import { Sparkles } from 'lucide-react'
 
@@ -434,10 +435,25 @@ export const Admin: React.FC<{ dados: DadosPublicados }> = ({ dados: dadosInicia
    * Agora, quem grava atualiza o retrato com o que gravou (`retratoPublicado`). Ver ali por que
    * reler da rede seria pior.
    */
+  /*
+    🔴 O RASCUNHO — 06/08/2026, pedido do dono: *"você altera e elas voltam (…) quando eu salvar,
+    tem que ficar fixo. Inclusive as datas."*
+
+    Medido antes de escrever: mudar De, Até, pessoas por turno e acrescentar uma Santa Ceia, e
+    recarregar — **voltava tudo ao padrão**. Nada desta área sobrevivia a um F5, só o que fosse
+    PUBLICADO. E publicar é um gesto grande demais para guardar um ajuste em andamento.
+
+    Lido UMA vez, aqui, antes de qualquer estado — ler dentro de vários inicializadores daria
+    leituras diferentes se alguém gravasse no meio.
+  */
+  const rascunhoInicial = useMemo(() => lerRascunho(), [])
+
   const [dados, setDados] = useState<DadosPublicados>(dadosIniciais)
   const [segredos, setSegredos] = useState<Segredos | null>(null)
   const [aba, setAba] = useState<Aba>('elenco')
-  const [pessoas, setPessoas] = useState<Pessoa[]>(() => dados.pessoas.map((p) => ({ ...p, restricoes: { ...p.restricoes } })))
+  const [pessoas, setPessoas] = useState<Pessoa[]>(
+    () => (rascunhoInicial?.pessoas ?? dados.pessoas).map((p) => ({ ...p, restricoes: { ...p.restricoes } })),
+  )
   /**
    * 🔴 A CONFIGURAÇÃO VIROU EDITÁVEL em 05/08/2026, e a razão é de escopo, não de conforto.
    *
@@ -448,7 +464,7 @@ export const Admin: React.FC<{ dados: DadosPublicados }> = ({ dados: dadosInicia
    * mão, no repositório. Para uma congregação com um administrador técnico ao lado, passava; para
    * um produto vendido, é um recurso que não existe.
    */
-  const [config, setConfig] = useState<Configuracao>(() => ({ ...dados.config }))
+  const [config, setConfig] = useState<Configuracao>(() => ({ ...(rascunhoInicial?.config ?? dados.config) }))
   const [blocoNovo, setBlocoNovo] = useState<Bloco | null>(null)
   /** O bloco como o gerador o entregou — a referência para o "desfazer tudo" do ajuste manual. */
   const [blocoOriginal, setBlocoOriginal] = useState<Bloco | null>(null)
@@ -486,7 +502,7 @@ export const Admin: React.FC<{ dados: DadosPublicados }> = ({ dados: dadosInicia
     // Se o publicado já acabou no passado, começar amanhã: continuar de trás seria criar escala velha.
     return ultimo && diferencaEmDias(ultimo, amanha) < 0 ? somarDias(ultimo, 1) : amanha
   }, [dados.blocos])
-  const [de, setDe] = useState(inicioSugerido)
+  const [de, setDe] = useState(() => rascunhoInicial?.de || inicioSugerido)
   /*
     🔴 O FIM SUGERIDO NÃO PODE NASCER CURTO DEMAIS — achado da verificação visual de 05/08/2026.
 
@@ -497,7 +513,21 @@ export const Admin: React.FC<{ dados: DadosPublicados }> = ({ dados: dadosInicia
     Menos de 30 dias de janela quase nunca é o que a pessoa quer, e no fim do ano é sempre errado.
     Aí o fim salta para 31/12 do ano SEGUINTE.
   */
-  const [ate, setAte] = useState(() => sugerirFim(inicioSugerido))
+  const [ate, setAte] = useState(() => rascunhoInicial?.ate || sugerirFim(inicioSugerido))
+
+  /*
+    🔴 GUARDA A CADA MUDANÇA, e não num botão "salvar".
+
+    Botão de salvar cria a pergunta *"eu salvei?"* — e a resposta errada custa o trabalho todo. O
+    dono descreveu justamente o sintoma disso: *"você altera e elas voltam"*. Guardar sozinho tira a
+    pergunta da frente dele.
+
+    ⚠️ Isto **não publica nada**. Vive no navegador deste aparelho até ele apertar Publicar — e é
+    por isso que pode guardar qualquer coisa sem risco para quem lê a escala.
+  */
+  useEffect(() => {
+    gravarRascunho({ de, ate, config, pessoas })
+  }, [de, ate, config, pessoas])
 
   /**
    * 🔴 UMA GRAVAÇÃO POR VEZ — e ela cobre PUBLICAR **e** REVERTER, desde 05/08/2026.
@@ -552,14 +582,24 @@ export const Admin: React.FC<{ dados: DadosPublicados }> = ({ dados: dadosInicia
    */
   const aoGravar = (d: DadosPublicados) => {
     setDados(d)
+    /*
+      🔴 PUBLICOU: O RASCUNHO CUMPRIU O PAPEL E SAI DE CENA.
+
+      Ele existe para segurar trabalho em andamento. Depois de publicar, o que está no ar É a
+      verdade — manter o rascunho aqui faria a tela abrir mostrando um "em andamento" que já virou
+      publicado, e a pessoa nunca saberia qual dos dois está vendo.
+
+      Os campos abaixo são repostos na sequência, e o efeito de gravação guarda os novos valores.
+    */
+    limparRascunho()
     const ultimo = d.blocos.flatMap((b) => b.turnos).map((t) => t.data).sort().at(-1)
     if (!ultimo) return
     const seguinte = somarDias(ultimo, 1)
     const amanha = somarDias(hojeSaoPaulo(), 1)
     const novoDe = diferencaEmDias(ultimo, amanha) < 0 ? seguinte : amanha
     setDe(novoDe)
-    const ano = Number(novoDe.slice(0, 4))
-    setAte(diferencaEmDias(novoDe, `${ano}-12-31`) >= 30 ? `${ano}-12-31` : `${ano + 1}-12-31`)
+    // A mesma regra do domínio, num lugar só: duas cópias divergem em silêncio (já divergiram).
+    setAte(sugerirFim(novoDe))
   }
 
   const [gravando, setGravando] = useState<string | null>(gravacaoEmVoo)
@@ -676,6 +716,7 @@ export const Admin: React.FC<{ dados: DadosPublicados }> = ({ dados: dadosInicia
             segredos={segredos}
             de={de}
             ate={ate}
+            rascunhoInicial={rascunhoInicial}
             aoMudarDe={setDe}
             aoMudarAte={setAte}
             aoMudarPessoas={setPessoas}
@@ -1225,6 +1266,16 @@ const AbaGerar: React.FC<{
   /** O intervalo vive no Admin: trocar de aba desmontava esta e apagava o que estava digitado. */
   de: string
   ate: string
+  /*
+    🔴 VEM POR PROP, e não de uma segunda leitura aqui dentro. A primeira versão relia o
+    `localStorage` dentro desta aba — e aí enxergava o rascunho que o próprio efeito de gravação
+    tinha acabado de criar, na montagem. Resultado medido: o aviso *"você deixou em andamento"*
+    aparecia numa tela limpa, e continuava aparecendo logo após DESCARTAR.
+
+    Quem lê o rascunho é o `Admin`, uma vez, ANTES de qualquer gravação. Duas leituras da mesma
+    coisa em momentos diferentes são duas verdades.
+  */
+  rascunhoInicial: Rascunho | null
   aoMudarDe: (v: string) => void
   aoMudarAte: (v: string) => void
   aoMudarPessoas: (p: Pessoa[]) => void
@@ -1232,7 +1283,7 @@ const AbaGerar: React.FC<{
   aoMudarConfig: (c: Configuracao) => void
   aoGerar: (b: Bloco | null, relato: string, versoesComparadas?: number) => void
   versoesComparadas: number
-}> = ({ dados, pessoas, blocoNovo, relato, segredos, de, ate, aoMudarDe, aoMudarAte, aoMudarPessoas, config, aoMudarConfig, aoGerar, versoesComparadas }) => {
+}> = ({ dados, pessoas, blocoNovo, relato, segredos, de, ate, rascunhoInicial, aoMudarDe, aoMudarAte, aoMudarPessoas, config, aoMudarConfig, aoGerar, versoesComparadas }) => {
   const [ocupado, setOcupado] = useState(false)
   const [falha, setFalha] = useState<string>('')
   /** Muda a cada "gerar outra combinação" — é o que faz a próxima rodada explorar outro caminho. */
@@ -1533,6 +1584,31 @@ const AbaGerar: React.FC<{
   return (
     <>
       <Cartao titulo="Gerar" subtitulo="Escolha o intervalo. Antes dele, nada é tocado — o que já foi divulgado continua valendo.">
+        {/*
+          🔴 RASCUNHO INVISÍVEL É PIOR QUE NENHUM.
+
+          A tela passa a lembrar o que ele digitou — datas, pessoas por turno, Santas Ceias, elenco.
+          Se ela lembrasse **calada**, ele veria números que não estão no ar achando que estão, e a
+          diferença só apareceria no dia em que alguém reclamasse da escala.
+
+          Então o rascunho se declara, com a hora, e com a saída ao lado. Guardar sem avisar seria
+          trocar um problema (perder trabalho) por outro pior (confiar no que não foi publicado).
+        */}
+        {rascunhoInicial && (
+          <div className="mb-4 flex flex-wrap items-center gap-2 rounded-xl border border-indigo-200 bg-indigo-50/70 px-3 py-2 text-xs text-indigo-900">
+            <span>
+              Esta tela está mostrando <strong>o que você deixou em andamento</strong>, guardado neste
+              aparelho em <strong>{formatarQuando(rascunhoInicial.em)}</strong>. Nada disto está no ar até você publicar.
+            </span>
+            <button
+              title="Descarta o que está em andamento e volta aos valores que estão publicados"
+              onClick={() => { limparRascunho(); location.reload() }}
+              className="ml-auto rounded-lg border border-indigo-300 bg-white px-2.5 py-1 font-semibold text-indigo-800 hover:bg-indigo-100"
+            >
+              Descartar e usar o publicado
+            </button>
+          </div>
+        )}
         <div className="flex flex-wrap gap-4 items-end">
           <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
             De
