@@ -25,7 +25,7 @@ import { gerarVariasVersoes } from '../dominio/gerador'
 import { validar, resumir } from '../dominio/validacao'
 import { CATALOGO, menorIntervalo } from '../dominio/regras'
 import { conferirPorFora } from '../dominio/conferencia-independente'
-import { conferirBuracoNaEscala, conferirEscalaJaDivulgada, conferirPassadoPreservado, conferirReversao, cotaMensalJaPublicada, montarBlocosParaPublicar, publicacaoImpedida, travaDeDataRetroativa } from '../dominio/blocos'
+import { conferirBuracoNaEscala, conferirPassadoPreservado, conferirReversao, cotaMensalJaPublicada, montarBlocosParaPublicar, publicacaoImpedida, travaDeDataRetroativa } from '../dominio/blocos'
 import { diferencaEmDias, ehDataValida, formatarBR, sugerirFim, hojeSaoPaulo, NOMES_DIA, NOMES_DIA_CURTO, somarDias } from '../dominio/datas'
 import { AbaAjustar } from './AbaAjustar'
 import { arbitrar, auditar, medir, pedirProposta, type Placar, type ProgressoMotor } from './motor'
@@ -47,8 +47,6 @@ type Aba = 'elenco' | 'gerar' | 'ajustar' | 'conferir' | 'publicar'
  * 🔴 Em 05/08/2026 ela passou a cobrir também a REVERSÃO, que grava os mesmos dois arquivos e
  * escapava por não ser "publicação". Guarda o QUE está gravando, para a mensagem poder dizer.
  */
-/** id → nome, para o aviso mostrar gente e não código. Ver `conferirEscalaJaDivulgada`. */
-const nomeDe = (pessoas: Pessoa[]) => (id: string) => pessoas.find((p) => p.id === id)?.nome ?? id
 
 let gravacaoEmVoo: string | null = null
 
@@ -1509,17 +1507,10 @@ const AbaGerar: React.FC<{
     [blocoNovo, pessoas, fronteira, config, dados.blocos],
   )
 
-  /** A mesma conferência do Publicar, aqui — ver o comentário longo lá. */
-  const jaDivulgadaNaGeracao = useMemo(
-    () => conferirEscalaJaDivulgada(dados.blocos, blocoNovo),
-    [dados.blocos, blocoNovo],
-  )
-
-  /** O dia seguinte ao último turno já publicado — a data que faz o aviso acima desaparecer. */
-  const proximoInicioLivre = useMemo(() => {
-    const ultimo = dados.blocos.flatMap((b) => b.turnos).map((t) => t.data).sort().at(-1)
-    return ultimo ? somarDias(ultimo, 1) : hojeSaoPaulo()
-  }, [dados.blocos])
+  /*
+    Aqui viviam `jaDivulgadaNaGeracao` e `proximoInicioLivre`, que alimentavam o aviso removido.
+    Saíram junto: cálculo sem consumidor é código inerte, e o TypeScript, com `strict`, avisa.
+  */
 
   /**
    * 🔴 A SANTA CEIA NÃO TINHA PORTA — achado em 05/08/2026, respondendo uma pergunta do Flavio sobre
@@ -1884,58 +1875,24 @@ const AbaGerar: React.FC<{
       )}
 
       {/*
-        🔴 O AVISO APARECE AQUI TAMBÉM, e não só no Publicar: é aqui que ele OLHA o resultado e decide
-        se aceita. Descobrir na última tela que a escala reescreve dias já no ar é tarde — ele já
-        gastou o tempo de conferir uma escala que talvez não queira.
+        🔴 AQUI FICAVA "Atenção — esta escala mexe em dias que já estão no ar". REMOVIDO em
+        06/08/2026, a pedido do dono, e a frase dele é a regra:
+
+            *"jamais solicitei isso! A regra fixa é que não altere as posições dos dias PASSADOS,
+             os dias futuros podem ser alterados livremente, por 1, 2 anos… ilimitado."*
+
+        O aviso só conseguia falar de dias FUTUROS — gerar para trás já é impossível, o campo tem
+        `min={hoje}` e a trava de data retroativa vive no domínio, com teste. Ou seja: ele existia
+        para reclamar exatamente do que o dono faz de propósito toda vez que muda o elenco.
+
+        ⚠️ E ele causava um dano concreto, não só ruído. A lista "antes → depois" mostrava
+        *"08/08 Noite: Isac, **Eduardo**, Leandro → Isac, Leandro, Elson"*. O dono leu o Eduardo do
+        lado ESQUERDO — a escala velha — e concluiu que quem ele tinha tirado do elenco **voltava**
+        sozinho. Não voltava: está do lado esquerdo justamente por ter saído. O aviso inventou um
+        defeito que não existia e me fez caçar fantasma.
+
+        O que PROTEGE o passado continua de pé, e é outro mecanismo: `travaDeDataRetroativa`.
       */}
-      {blocoNovo && jaDivulgadaNaGeracao.reescritos > 0 && (
-        <Cartao titulo="Atenção — esta escala mexe em dias que já estão no ar" tom="erro">
-          <p className="text-sm text-gray-700 leading-relaxed">
-            <strong>{jaDivulgadaNaGeracao.reescritos} turno(s)</strong> que os {config.identidade.pessoa.plural}{' '}
-            já podem ver mudariam de gente, em {jaDivulgadaNaGeracao.dias.length} dia(s) — a partir de{' '}
-            <strong>{formatarBR(jaDivulgadaNaGeracao.dias[0])}</strong>.
-          </p>
-          <div className="mt-3 space-y-1">
-            {jaDivulgadaNaGeracao.exemplos.map((e) => (
-              <p key={`${e.data}|${e.tipo}`} className="font-mono text-xs text-gray-600">
-                {formatarBR(e.data)} {ROTULO_TURNO[e.tipo as TipoTurno]}: {e.antes.map(nomeDe(pessoas)).join(', ')} →{' '}
-                {e.depois.map(nomeDe(pessoas)).join(', ')}
-              </p>
-            ))}
-          </div>
-          {/*
-            🔴 ISTO É AVISO, NÃO ORDEM — 06/08/2026, corrigido pelo dono.
-
-            A versão anterior abria com *"Para só continuar a escala, ponha no campo De a data:"*, a
-            data em corpo 2xl no centro, e um botão azul de largura inteira. A alternativa — "pode
-            seguir" — vinha por último, em cinza. Ele leu aquilo como uma **proibição**:
-            *"ele não permite que eu coloque a data de hoje"*.
-
-            E não é proibição: publicar nunca esteve bloqueado. Era só a hierarquia visual mentindo
-            sobre o que o produto faz.
-
-            A regra que fica: **quando as duas saídas são legítimas, a que o usuário escolheu vem
-            primeiro.** O aviso informa o que muda; a alternativa fica ao lado, do tamanho de uma
-            alternativa. A data continua escrita — dado que o sistema tem, o sistema mostra — mas sem
-            o corpo 2xl que a transformava em ordem.
-          */}
-          <p className="mt-3 text-sm leading-relaxed text-gray-800">
-            Se a intenção é mesmo <strong>refazer</strong> esses dias, siga em frente: a data que você
-            escolheu é a que vale, e <strong>publicar não está bloqueado</strong>.
-          </p>
-          <p className="mt-2 text-xs leading-relaxed text-gray-600">
-            Se preferia apenas <em>continuar</em> a escala, sem tocar no que já está no ar, a data seria{' '}
-            <strong>{formatarBR(proximoInicioLivre)}</strong> — o dia seguinte ao último turno publicado.{' '}
-            <button
-              title="Põe essa data no campo De e gera de novo"
-              onClick={() => { aoMudarDe(proximoInicioLivre); executar(sementeBase, proximoInicioLivre) }}
-              className="font-semibold text-indigo-700 underline underline-offset-2 hover:text-indigo-900"
-            >
-              Usar essa data
-            </button>
-          </p>
-        </Cartao>
-      )}
 
       {blocoNovo && relatorio && (
         <>
@@ -2387,26 +2344,9 @@ const AbaPublicar: React.FC<{
   // Uma resposta só, vinda do domínio — recompor o julgamento aqui foi o que deixou o guarda
   // do passado ser desligado sem o gate piscar.
   /*
-    🔴 A ESCALA NOVA COBRE DIAS QUE JÁ ESTÃO NO AR? — achado em 05/08/2026 ao responder uma pergunta
-    do Flavio sobre a fronteira.
-
-    As duas travas existentes perguntavam as coisas erradas: uma se a data já PASSOU, a outra se algum
-    turno SUMIU. Nenhuma perguntava se um turno **mudou de gente** — que é exatamente o defeito dos 87
-    turnos de hoje de manhã, por outra porta.
-
-    AVISA, não impede: regerar um período futuro já publicado é uso legítimo (alguém saiu do elenco,
-    entraram férias). O que não pode é acontecer sem ele saber **quantos**.
+    Aqui viviam `jaDivulgada` e `proximoInicioLivrePublicar`, que alimentavam o aviso removido em
+    06/08/2026. Saíram junto — cálculo sem consumidor é código inerte, e `strict` avisa.
   */
-  const jaDivulgada = useMemo(
-    () => conferirEscalaJaDivulgada(dados.blocos, blocoNovo),
-    [dados.blocos, blocoNovo],
-  )
-
-  /** A data que faz o aviso acima desaparecer — dita, não deixada para o operador calcular. */
-  const proximoInicioLivrePublicar = useMemo(() => {
-    const ultimo = dados.blocos.flatMap((b) => b.turnos).map((t) => t.data).sort().at(-1)
-    return ultimo ? somarDias(ultimo, 1) : hojeSaoPaulo()
-  }, [dados.blocos])
 
   /*
     🔴 O BURACO — sétima auditoria externa, 05/08/2026. Ver `conferirBuracoNaEscala` para a medição:
@@ -2466,24 +2406,14 @@ const AbaPublicar: React.FC<{
             <strong>{formatarBR(buraco.dias[0])}</strong> — e publique.
           </Aviso>
         )}
-        {jaDivulgada.reescritos > 0 && (
-          <Aviso tom="atencao">
-            <strong>Esta escala muda {jaDivulgada.reescritos} turno(s) que JÁ ESTÃO NO AR</strong>, em{' '}
-            {jaDivulgada.dias.length} dia(s) — a partir de <strong>{formatarBR(jaDivulgada.dias[0])}</strong>.
-            Quem já abriu o link vê os nomes antigos; depois de publicar, verá os novos.
-            <br /><br />
-            {jaDivulgada.exemplos.map((e) => (
-              <span key={`${e.data}|${e.tipo}`} className="block font-mono text-xs">
-                {formatarBR(e.data)} {ROTULO_TURNO[e.tipo as TipoTurno]}: {e.antes.map(nomeDe(pessoas)).join(', ')} →{' '}
-                {e.depois.map(nomeDe(pessoas)).join(', ')}
-              </span>
-            ))}
-            <br />
-            Se a intenção era só <em>continuar</em> a escala, volte em <strong>Gerar escala</strong> e
-            ponha no campo <strong>De</strong> a data <strong>{formatarBR(proximoInicioLivrePublicar)}</strong> —
-            o dia seguinte ao último turno já publicado. Se a intenção era mesmo refazer esses dias, siga.
-          </Aviso>
-        )}
+        {/*
+          🔴 AQUI FICAVA o mesmo aviso da aba Gerar — "esta escala muda N turnos que JÁ ESTÃO NO
+          AR". REMOVIDO em 06/08/2026 pelo mesmo motivo, e com a mesma regra do dono: **só o passado
+          é intocável; o futuro se altera livremente, sem mínimo nem máximo.**
+
+          Tirar de um lugar só não resolveria: ele aparecia nas DUAS telas, e a de Publicar era a
+          última coisa lida antes do botão.
+        */}
         {blocoNovo && !impedido && (
           <div className="text-sm text-gray-700 space-y-1 mb-4">
             <p>Vai ao ar a escala de <strong>{formatarBR(blocoNovo.inicio)}</strong> a <strong>{formatarBR(blocoNovo.fim)}</strong>.</p>

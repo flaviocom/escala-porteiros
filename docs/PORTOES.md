@@ -380,7 +380,7 @@ real), e camada de tela.
 auditou escreveu o código.
 
 ### 25. `regras-mestras` — tooltip em todo botão
-**População:** 66 botões medidos.
+**População:** 65 botões medidos.
 **Também mede:** clicáveis fora de `<button>` (div/span com `onClick` e sem papel declarado) — hoje 0
 — e aspas duplas dentro do atributo, que quebram o HTML em silêncio.
 
