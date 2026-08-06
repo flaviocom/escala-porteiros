@@ -1403,6 +1403,24 @@ const AbaGerar: React.FC<{
     return ultimo ? somarDias(ultimo, 1) : hojeSaoPaulo()
   }, [dados.blocos])
 
+  /**
+   * 🔴 A SANTA CEIA NÃO TINHA PORTA — achado em 05/08/2026, respondendo uma pergunta do Flavio sobre
+   * quem define o fim do período.
+   *
+   * As datas viviam **só** no `config.json`, editáveis à mão no repositório. E este projeto nasceu
+   * exatamente disso: o site antigo trazia a Ceia em **07/06** porque a data estava cravada no
+   * código, quando a correta era 16/08. Trocamos o código pelo dado e deixamos o dado sem tela — o
+   * mesmo defeito, um passo adiante.
+   *
+   * Hoje há **uma** data cadastrada, 16/08/2026, e ela já passou. Gerar 2027 inteiro produziria um
+   * ano **sem nenhuma Santa Ceia**: cada uma delas entraria como culto normal, com três pessoas
+   * escaladas num dia em que vêm irmãos de outra congregação. Ninguém no sistema saberia.
+   */
+  const [novaCeia, setNovaCeia] = useState('')
+  const ceiasNoPeriodo = (config.santaCeia ?? []).filter(
+    (d) => diferencaEmDias(de, d) >= 0 && diferencaEmDias(d, ate) >= 0,
+  )
+
   return (
     <>
       <Cartao titulo="Gerar" subtitulo="Escolha o intervalo. Antes dele, nada é tocado — o que já foi divulgado continua valendo.">
@@ -1457,6 +1475,82 @@ const AbaGerar: React.FC<{
             vale na próxima geração · hoje a escala no ar usa {dados.config.capacidadePadrao}
           </span>
         </label>
+
+        {/*
+          🔴 A PORTA DA SANTA CEIA — 05/08/2026. Ver o comentário de `novaCeia`, acima, para o porquê:
+          a data vivia só no `config.json`, e este projeto nasceu de uma Ceia com a data errada.
+
+          Fica AQUI, colada ao período, porque é aqui que ela importa: o dia de Ceia não recebe
+          ninguém, e cadastrá-la depois de gerar não muda a escala que já saiu.
+        */}
+        <div className="mt-4 rounded-xl border border-gray-200 bg-gray-50 p-3">
+          <p className="text-sm font-semibold text-gray-700">Dias de Santa Ceia</p>
+          <p className="mt-1 text-xs leading-relaxed text-gray-600">
+            Nesses dias <strong>ninguém é escalado</strong> — vêm {config.identidade.pessoa.plural} de
+            outra congregação. Cadastre <strong>antes</strong> de gerar: depois, só gerando de novo.
+          </p>
+
+          {ceiasNoPeriodo.length === 0 && (
+            <div className="mt-3 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-xs leading-relaxed text-amber-900">
+              ⚠️ <strong>Nenhuma Santa Ceia cadastrada entre {formatarBR(de)} e {formatarBR(ate)}.</strong>{' '}
+              Se houver alguma nesse período e ela não estiver aqui, o dia entra como culto comum e o
+              sistema escala três pessoas nele.
+            </div>
+          )}
+
+          {(config.santaCeia ?? []).length > 0 && (
+            <div className="mt-3 flex flex-wrap gap-1.5">
+              {[...(config.santaCeia ?? [])].sort().map((d) => {
+                const passou = diferencaEmDias(d, hojeSaoPaulo()) > 0
+                return (
+                  <span
+                    key={d}
+                    title={passou ? 'Já passou — fica registrada, e o histórico não se reescreve' : 'Cadastrada'}
+                    className={clsx(
+                      'inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-semibold',
+                      passou ? 'border-gray-200 bg-white text-gray-400' : 'border-red-200 bg-red-50 text-red-800',
+                    )}
+                  >
+                    {formatarBR(d)}
+                    {passou && <em className="font-normal">(passou)</em>}
+                    <button
+                      title="Tira esta data da lista"
+                      onClick={() => aoMudarConfig({ ...config, santaCeia: (config.santaCeia ?? []).filter((x) => x !== d) })}
+                      className="ml-0.5 text-current opacity-50 hover:opacity-100"
+                    >
+                      ✕
+                    </button>
+                  </span>
+                )
+              })}
+            </div>
+          )}
+
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <input
+              type="date"
+              value={novaCeia}
+              title="A data de uma Santa Ceia"
+              onChange={(e) => setNovaCeia(e.target.value)}
+              className="rounded-xl border border-gray-300 px-3 py-2 text-sm"
+            />
+            <button
+              title="Acrescenta a data. Vale na próxima geração"
+              onClick={() => {
+                if (!novaCeia || (config.santaCeia ?? []).includes(novaCeia)) return
+                aoMudarConfig({ ...config, santaCeia: [...(config.santaCeia ?? []), novaCeia].sort() })
+                setNovaCeia('')
+              }}
+              className="rounded-xl bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700"
+            >
+              Acrescentar Santa Ceia
+            </button>
+            <span className="text-xs text-gray-500">
+              vale na próxima geração · vai para o ar quando você publicar
+            </span>
+          </div>
+        </div>
+
         {/*
           🔴 O NOME E O VOCABULÁRIO DA ESCALA — 05/08/2026, mesmo motivo que a linha acima.
 
