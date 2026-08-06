@@ -53,3 +53,16 @@ jobs:
 
       - id: publicacao
         uses: actions/deploy-pages@v4
+        with:
+          # 🔴 O TETO PADRÃO DE 10 MINUTOS NÃO SERVE PARA ESTA CONTA — 06/08/2026.
+          #
+          # A ação espera a publicação terminar e aborta em 600 000 ms. Naquele dia a fila do GitHub
+          # estava lenta: a publicação saía de `deployment_queued` para `deployment_in_progress` e
+          # ainda assim não terminava a tempo — seis tentativas mortas pelo relógio, não por defeito.
+          #
+          # E abortar tem preço: ao cancelar, a ação envenena o SHA daquele commit. A tentativa
+          # seguinte do MESMO commit nasce "Deployment cancelled", e destravar exige commit novo.
+          #
+          # 30 minutos. Esperar é barato; recomeçar do zero, não.
+          timeout: 1800000
+
