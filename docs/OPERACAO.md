@@ -123,7 +123,7 @@ está errada** — e é melhor descobrir antes da congregação descobrir.
 npm run gate
 ```
 
-24 passos, **nesta ordem** — lida do `package.json`, não de memória:
+25 passos, **nesta ordem** — lida do `package.json`, não de memória:
 
 | # | Passo | O que prova |
 |---|---|---|
@@ -150,7 +150,8 @@ npm run gate
 | 21 | `tempo` | a geração não regrediu de desempenho |
 | 22 | `build` | compila e gera em `docs/` |
 | 23 | `imagem` | 🔴 o único passo que **renderiza o pixel**: gera a imagem do WhatsApp pelo botão de verdade e falha se o console reclamar |
-| 24 | `selo:gravar` | 🔒 guarda a impressão digital da árvore. `npm run selo:conferir`, antes de commitar, prova que o verde acima é **desta** árvore |
+| 24 | `refazer` | 🔁 **a escala NO AR pode ser refeita** a partir do que ela mesma registra — período, elenco, malha, piso e semente. É a promessa do `ALGORITMO.md` medida contra o dado publicado, não contra entrada de teste |
+| 25 | `selo:gravar` | 🔒 guarda a impressão digital da árvore. `npm run selo:conferir`, antes de commitar, prova que o verde acima é **desta** árvore |
 
 > ⚠️ Esta tabela já esteve **fora de ordem e incompleta**: listava 12 linhas para 15 comandos e
 > trocava `auditoria` de posição — achado por auditoria externa em 05/08/2026. Mexeu no `gate`,
