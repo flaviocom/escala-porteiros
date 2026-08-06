@@ -33,7 +33,7 @@
     {
       "id": "eduardo",
       "nome": "Eduardo",
-      "ativo": true,
+      "ativo": false,
       "restricoes": {
         "diasProibidos": [
           3
@@ -101,7 +101,7 @@
     {
       "id": "thiago",
       "nome": "Thiago",
-      "ativo": true,
+      "ativo": false,
       "restricoes": {
         "diasPermitidos": [
           3
