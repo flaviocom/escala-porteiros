@@ -19,12 +19,12 @@ import { baixarPacoteManual, COMO_CRIAR_O_TOKEN, conferirToken, DESTINOS, histor
 import { completarConfig, retratoPublicado, type ConfigLida, type DadosPublicados } from '../dados/carregar'
 import type { ArquivoBlocos, ArquivoPessoas, Bloco, Configuracao, Pessoa, TipoTurno } from '../dominio/tipos'
 import { ROTULO_TURNO } from '../dominio/tipos'
-import { construirGrade } from '../dominio/malha'
+import { construirGrade, diaTemCulto } from '../dominio/malha'
 import { gerarVariasVersoes } from '../dominio/gerador'
 import { validar, resumir } from '../dominio/validacao'
 import { CATALOGO, menorIntervalo } from '../dominio/regras'
 import { conferirPorFora } from '../dominio/conferencia-independente'
-import { conferirEscalaJaDivulgada, conferirPassadoPreservado, conferirReversao, cotaMensalJaPublicada, montarBlocosParaPublicar, publicacaoImpedida, travaDeDataRetroativa } from '../dominio/blocos'
+import { conferirBuracoNaEscala, conferirEscalaJaDivulgada, conferirPassadoPreservado, conferirReversao, cotaMensalJaPublicada, montarBlocosParaPublicar, publicacaoImpedida, travaDeDataRetroativa } from '../dominio/blocos'
 import { diferencaEmDias, formatarBR, hojeSaoPaulo, NOMES_DIA, NOMES_DIA_CURTO, somarDias } from '../dominio/datas'
 import { AbaAjustar } from './AbaAjustar'
 import { arbitrar, auditar, medir, pedirProposta, type Placar, type ProgressoMotor } from './motor'
@@ -579,6 +579,37 @@ export const Admin: React.FC<{ dados: DadosPublicados }> = ({ dados: dadosInicia
     setGravando(null)
   }
 
+  /**
+   * A fronteira com os blocos anteriores — quem trabalhou na véspera não pode entrar no dia 1.
+   *
+   * 🔴 ESTA CORREÇÃO ESTAVA MARCADA COMO FECHADA E NUNCA TINHA SIDO FEITA — sétima auditoria externa
+   * (regressão), 05/08/2026. O `BACKLOG.md` afirmava *"P7.7 · ✅ FECHADO 05/08 — dentro de
+   * `useMemo`"*, e `git blame` mostrava as nove linhas intactas desde 04/08. O que foi memoizado
+   * naquele dia foi um `fronteira` **homônimo e diferente**, dentro de `AbaGerar`.
+   *
+   * ⚠️ E havia uma razão estrutural para o engano: o cálculo vivia **depois** do `return` condicional
+   * do login, onde um hook é ilegal — a correção prometida era impossível ali sem mover o código. Por
+   * isso ele subiu para cá, antes do `if (!segredos)`.
+   *
+   * O custo do defeito: objeto novo a cada render, passado como prop para `AbaAjustar` e
+   * `AbaConferirPorFora`, cujos `useMemo` dependem dele. Identidade nova zera os memos, e `validar()`
+   * (17 regras) e `conferirPorFora()` (a segunda régua) recalculavam **a cada clique**.
+   *
+   * É a mesma classe do P4.5 — *"item marcado FECHADO com o defeito intacto"* — que este projeto já
+   * registrou uma vez. O `BACKLOG.md` promete: **item que sai sem prova volta.**
+   */
+  const fronteira = useMemo(() => {
+    const f: Record<string, string> = {}
+    if (!blocoNovo) return f
+    for (const b of dados.blocos) {
+      for (const t of b.turnos) {
+        if (diferencaEmDias(t.data, blocoNovo.inicio) <= 0) continue
+        for (const id of t.pessoas) if (!f[id] || t.data > f[id]) f[id] = t.data
+      }
+    }
+    return f
+  }, [dados.blocos, blocoNovo])
+
   if (!segredos) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
@@ -594,17 +625,6 @@ export const Admin: React.FC<{ dados: DadosPublicados }> = ({ dados: dadosInicia
     { id: 'conferir', texto: 'Conferir por fora', travada: !blocoNovo },
     { id: 'publicar', texto: 'Publicar' },
   ]
-
-  // A fronteira com os blocos anteriores — quem trabalhou na véspera não pode entrar no dia 1.
-  const fronteira: Record<string, string> = {}
-  if (blocoNovo) {
-    for (const b of dados.blocos) {
-      for (const t of b.turnos) {
-        if (diferencaEmDias(t.data, blocoNovo.inicio) <= 0) continue
-        for (const id of t.pessoas) if (!fronteira[id] || t.data > fronteira[id]) fronteira[id] = t.data
-      }
-    }
-  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -2233,7 +2253,21 @@ const AbaPublicar: React.FC<{
     return ultimo ? somarDias(ultimo, 1) : hojeSaoPaulo()
   }, [dados.blocos])
 
-  const impedido = publicacaoImpedida(relatorio, perda)
+  /*
+    🔴 O BURACO — sétima auditoria externa, 05/08/2026. Ver `conferirBuracoNaEscala` para a medição:
+    gerar um período, não publicar, e gerar o seguinte deixava **93 dias sem escala** no ar, com o
+    Publicar habilitado e nenhuma palavra. `conferirPassadoPreservado` mede desaparecimento; esta é
+    outra pergunta — *o que vai ao ar cobre todos os dias de culto?*
+
+    IMPEDE, não avisa: um dia de culto sem ninguém na porta não é uma escolha que alguém faça de
+    propósito, e o irmão que abre o site vê "Nenhum turno encontrado" achando que errou o filtro.
+  */
+  const buraco = useMemo(
+    () => conferirBuracoNaEscala(blocosParaPublicar, diaTemCulto),
+    [blocosParaPublicar],
+  )
+
+  const impedido = publicacaoImpedida(relatorio, perda) || !buraco.ok
   /** Sem token, publicar pela tela não existe — e o motivo aparece, em vez de um botão morto. */
   const semToken = !segredos.tokenGitHub
 
@@ -2261,6 +2295,20 @@ const AbaPublicar: React.FC<{
             <br /><br />
             Gere de novo com o campo <strong>Até</strong> cobrindo pelo menos o que já foi publicado,
             ou aceite conscientemente que aqueles dias saiam do ar.
+          </Aviso>
+        )}
+        {!buraco.ok && (
+          <Aviso tom="erro">
+            <strong>Publicar deixaria {buraco.dias.length} dia(s) de culto SEM NINGUÉM.</strong> O maior
+            vão seria de <strong>{buraco.maiorVao} dias</strong> seguidos, a partir de{' '}
+            <strong>{formatarBR(buraco.dias[0])}</strong>.
+            <br /><br />
+            Quem abrir o site nesse período vê <em>"Nenhum turno encontrado"</em> e acha que errou o
+            filtro.
+            <br /><br />
+            Costuma acontecer quando se gera um período, <strong>não se publica</strong>, e se gera o
+            seguinte: o primeiro é descartado sem aviso. Gere de novo cobrindo o vão — a partir de{' '}
+            <strong>{formatarBR(buraco.dias[0])}</strong> — e publique.
           </Aviso>
         )}
         {jaDivulgada.reescritos > 0 && (

@@ -34,6 +34,16 @@ function regraValeEm(regra: Malha['regras'][number], data: DataISO): boolean {
 }
 
 /**
+ * Este dia teria culto nesta malha?
+ *
+ * Exportado para o guarda de continuidade (`conferirBuracoNaEscala`): sem ele, o guarda teria de
+ * reimplementar a malha, e fonte dupla é o que produziu metade dos defeitos deste projeto.
+ */
+export function diaTemCulto(data: DataISO, malha: Malha): boolean {
+  return malha.regras.some((r) => regraValeEm(r, data))
+}
+
+/**
  * Constrói a grade vazia de turnos do período.
  *
  * Dia de Santa Ceia entra como **um** turno marcado, sem vagas, substituindo os turnos que aquele

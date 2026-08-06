@@ -15,7 +15,7 @@
  * A regra, uma só: **o bloco novo manda no período dele, e só nele.**
  */
 import { describe, expect, it } from 'vitest'
-import { conferirEscalaJaDivulgada, conferirPassadoPreservado, conferirReversao, cotaMensalJaPublicada, montarBlocosParaPublicar, publicacaoImpedida, travaDeDataRetroativa } from './blocos'
+import { conferirBuracoNaEscala, conferirEscalaJaDivulgada, conferirPassadoPreservado, conferirReversao, cotaMensalJaPublicada, montarBlocosParaPublicar, publicacaoImpedida, travaDeDataRetroativa } from './blocos'
 import { validar } from './validacao'
 import type { Configuracao, Pessoa } from './tipos'
 
@@ -41,6 +41,7 @@ const validarComCota = (
     ...(cota === undefined ? {} : { escalasPorMesAnterior: cota }),
   })
 import type { Bloco, Turno } from './tipos'
+import type { DataISO } from './datas'
 
 const turno = (data: string): Turno => ({
   data: data as Turno['data'], tipo: 'NOITE', capacidade: 1, pessoas: ['ana'],
@@ -453,5 +454,92 @@ describe('D7 — o teto atravessa a fronteira', () => {
     const sem = validarComCota([{ data: '2026-08-15', tipo: 'NOITE', pessoas: ['w'], capacidade: 1 }], [pessoaTeto('w', 3)], undefined)
     expect(com.resultados.find((r) => r.id === 'D7')!.medida).toContain('somando o que já está publicado')
     expect(sem.resultados.find((r) => r.id === 'D7')!.medida).toContain('SEM a contagem dos blocos anteriores')
+  })
+})
+
+/**
+ * 🔴 O BURACO — sétima auditoria externa, 05/08/2026.
+ *
+ * Gerar um período, NÃO publicar, e gerar o seguinte deixava 93 dias sem escala no ar — 39 deles com
+ * culto — e o Publicar aceitava. `conferirPassadoPreservado` não pega porque nada DESAPARECE: o
+ * trecho nunca chegou a existir. São duas perguntas, e só uma tinha guarda.
+ */
+describe('conferirBuracoNaEscala', () => {
+  // Malha de teste: domingo (0) e quarta (3).
+  const temCulto = (d: DataISO) => [0, 3].includes(new Date(`${d}T12:00:00`).getDay())
+  const b = (inicio: string, fim: string, datas: string[]): Bloco => ({
+    id: `b-${inicio}`, inicio, fim, geradoEm: '2026-08-05', origem: 'algoritmo', pisoAlcancado: 7,
+    elenco: [], malha: { regras: [{ diaSemana: 0, turnos: ['NOITE'] }, { diaSemana: 3, turnos: ['NOITE'] }] },
+    turnos: datas.map((data) => ({ data, tipo: 'NOITE' as const, pessoas: ['ana'], capacidade: 1 })),
+  })
+
+  it('🔴 vão entre dois blocos com dias de culto dentro é ACUSADO, com o maior vão', () => {
+    const r = conferirBuracoNaEscala(
+      [b('2026-09-01', '2026-09-30', ['2026-09-02', '2026-09-06']), b('2026-11-01', '2026-11-30', ['2026-11-01'])],
+      temCulto,
+    )
+    expect(r.ok).toBe(false)
+    expect(r.dias.length).toBeGreaterThan(0)
+    expect(r.dias[0] > '2026-09-06').toBe(true)
+    expect(r.maiorVao).toBeGreaterThan(30)
+  })
+
+  it('a outra ponta: blocos contíguos NÃO acusam', () => {
+    const r = conferirBuracoNaEscala(
+      [b('2026-09-01', '2026-09-30', ['2026-09-02', '2026-09-06', '2026-09-09', '2026-09-13', '2026-09-16', '2026-09-20', '2026-09-23', '2026-09-27', '2026-09-30'])],
+      temCulto,
+    )
+    expect(r.ok).toBe(true)
+    expect(r.dias).toEqual([])
+  })
+
+  it('dia SEM culto no vão não conta — não há o que escalar nele', () => {
+    // 07 e 08/09 são segunda e terça: sem culto nesta malha.
+    const r = conferirBuracoNaEscala([b('2026-09-01', '2026-09-30', ['2026-09-06', '2026-09-09'])], temCulto)
+    expect(r.ok).toBe(true)
+  })
+
+  it('não olha ANTES do primeiro nem DEPOIS do último — a escala tem começo e fim', () => {
+    const r = conferirBuracoNaEscala([b('2026-09-01', '2026-12-31', ['2026-09-06'])], temCulto)
+    expect(r.ok).toBe(true)
+  })
+
+  it('sem turno nenhum, não há buraco a apontar — é outro defeito, e D11 o pega', () => {
+    expect(conferirBuracoNaEscala([], temCulto).ok).toBe(true)
+  })
+})
+
+/**
+ * 🔴 A OUTRA METADE DE `conferirPassadoPreservado.ok` — sétima auditoria externa (regressão).
+ *
+ * O teste da metade `depois >= antes` nasceu na sexta auditoria. A metade `perdidos.length === 0` —
+ * a original, a que existe desde que o guarda foi escrito — **nunca teve mutante**. Injetada,
+ * os 25 passos do gate saíram verdes: um dia já publicado some e o conferidor **aprova a perda que
+ * ele mesmo acabou de listar**.
+ *
+ * Provar uma metade e deixar a outra é o mesmo que provar uma ponta e deixar a outra.
+ */
+describe('conferirPassadoPreservado — a metade `perdidos`', () => {
+  const b2 = (id: string, inicio: string, fim: string, turnos: Turno[]): Bloco => ({
+    id, inicio, fim, geradoEm: '2026-08-05', origem: 'algoritmo',
+    pisoAlcancado: null, elenco: [], malha: { regras: [] }, turnos,
+  })
+  const t2 = (data: string, tipo: Turno['tipo'], pessoas: string[]): Turno => ({ data, tipo, pessoas, capacidade: 3 })
+
+  it('🔴 dia publicado que SOME reprova, mesmo com a contagem batendo', () => {
+    // `antes` e `depois` têm o MESMO tamanho: um turno some e outro entra no lugar. Só `perdidos` vê.
+    const anteriores = [b2('a', '2026-01-01', '2026-01-31', [
+      t2('2026-01-20', 'NOITE', ['ana']),
+      t2('2026-01-27', 'NOITE', ['bia']),
+    ])]
+    const montados = [b2('a', '2026-01-01', '2026-01-31', [
+      t2('2026-01-27', 'NOITE', ['bia']),
+      t2('2026-01-28', 'NOITE', ['caio']),
+    ])]
+    const r = conferirPassadoPreservado(anteriores, montados, { inicio: '2026-06-01', fim: '2026-06-30' })
+    expect(r.antes).toBe(2)
+    expect(r.depois).toBe(2)          // a contagem bate — a outra metade não vê
+    expect(r.perdidos).toEqual(['2026-01-20'])
+    expect(r.ok).toBe(false)
   })
 })

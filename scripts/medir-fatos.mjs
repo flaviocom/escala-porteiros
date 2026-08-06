@@ -232,6 +232,34 @@ const FATOS = [
 
     É o número que alguém usa para julgar se o projeto está coberto. Ele agora vem do vitest.
   */
+  /*
+    🔴 QUATRO POPULAÇÕES DO `PORTOES.md` APODRECERAM EM UM DIA — sétima auditoria (regressão),
+    05/08/2026. O item P7.8, *"populações erradas no PORTOES.md"*, foi fechado em 05/08 **corrigindo
+    os números à mão, sem portão** — e no dia seguinte os quatro estavam errados de novo: 83 contra
+    90, 83 contra 89, 62 contra 66, 11 contra 13.
+
+    É a frase que este arquivo imprime no rodapé, aplicada a ele mesmo: **meça, ou não escreva.**
+  */
+  {
+    chave: 'arquivos varridos pelo portão de fontes',
+    valor: numeroEm(saidaDe(['scripts/inventariar-fontes.mjs', '--conferir']), /varredura: (\d+) arquivo/),
+    // ⚠️ Construído por `RegExp` + `String.raw`: um `\n` dentro da classe de caracteres, escrito por
+    //    script, vira quebra de linha DE VERDADE e o arquivo nem carrega. Sexta vez neste projeto.
+    padroes: [new RegExp(String.raw`\*{0,2}(\d+)\*{0,2} arquivos?[^.\n]{0,30}fontes`, 'gi')],
+    fonte: 'node scripts/inventariar-fontes.mjs --conferir',
+  },
+  {
+    chave: 'arquivos varridos pelo portão de datas',
+    valor: numeroEm(saidaDe(['scripts/portao-datas.mjs']), /arquivos varridos \.+ (\d+)/),
+    padroes: [new RegExp(String.raw`\*{0,2}(\d+)\*{0,2} arquivos?[^.\n]{0,30}(?:datas|toISOString)`, 'gi')],
+    fonte: 'node scripts/portao-datas.mjs',
+  },
+  {
+    chave: 'botões medidos pelas regras mestras',
+    valor: numeroEm(saidaDe(['scripts/medir-regras-mestras.mjs']), /botões medidos \.+ (\d+)/),
+    padroes: [/\*{0,2}(\d+)\*{0,2} botões medidos/gi],
+    fonte: 'node scripts/medir-regras-mestras.mjs',
+  },
   {
     chave: 'testes na suíte',
     valor: numeroEm(saidaDe(['node_modules/vitest/vitest.mjs', 'run', '--reporter=basic']), /Tests\s+(\d+) passed/),

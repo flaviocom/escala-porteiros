@@ -251,3 +251,34 @@ describe('cobertura das promessas da segunda régua', () => {
     expect(COM_TESTE.filter((p) => !todas.includes(p))).toEqual([])
   })
 })
+
+/**
+ * 🔴 O GÊMEO DO DEFEITO DE D12, aqui — sétima auditoria externa (regressão), 05/08/2026.
+ *
+ * D12 nasceu com `for (const t of comGente.slice(0, 5))`: fatiava os TURNOS achando que limitava as
+ * MENSAGENS, e um turno sem vaga na posição 10 saía aprovado. Foi corrigido lá com um teste.
+ *
+ * A promessa 0 desta régua tem a mesma forma — e **não tinha o teste gêmeo**. O auditor injetou
+ * `comuns.slice(0, 5).filter(…)` e os 25 passos do gate saíram verdes: turno sem vaga na **posição
+ * 30** devolvia `furos = 0`.
+ *
+ * O código está certo; o que faltava era o que o segura.
+ */
+describe('promessa 0 — o furo LONGE do começo também é achado', () => {
+  it('🔴 turno sem vaga na posição 30 é acusado — o `slice` limita o relato, não a busca', () => {
+    const turnos = Array.from({ length: 40 }, (_, i) =>
+      turno(`2026-09-${String((i % 28) + 1).padStart(2, '0')}`, i % 2 ? 'NOITE' : 'MANHA', ['ana', 'bia', 'caio']),
+    )
+    turnos[30] = turno('2026-09-15', 'TARDE', [], { capacidade: 0 })
+    const r = conferirPorFora(bloco(turnos, IDS, { inicio: '2026-09-01', fim: '2026-09-30' }), TRES, CONFIG)
+    expect(furosDe(r)).toContain('sai na escala como um dia sem ninguém')
+  })
+
+  it('🔴 e "ninguém escalado" também é visto num bloco grande', () => {
+    const turnos = Array.from({ length: 40 }, (_, i) =>
+      turno(`2026-09-${String((i % 28) + 1).padStart(2, '0')}`, i % 2 ? 'NOITE' : 'MANHA', []),
+    )
+    const r = conferirPorFora(bloco(turnos, IDS, { inicio: '2026-09-01', fim: '2026-09-30' }), TRES, CONFIG)
+    expect(furosDe(r)).toContain('NINGUÉM escalado')
+  })
+})

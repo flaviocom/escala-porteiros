@@ -340,3 +340,67 @@ export function cotaMensalJaPublicada(publicados: Bloco[], inicioDoNovo: DataISO
   }
   return fora
 }
+
+/**
+ * 🔴 O BURACO — publicar deixando dias de culto sem ninguém, e nada avisava.
+ *
+ * Sétima auditoria externa, 05/08/2026, no gesto que o próprio dono descreveu: *"quando eu tiver a
+ * data, eu gero a partir de onde nós paramos"*. Ele gera 31/12→31/03, **não publica**, muda o "De"
+ * para 01/04 e gera de novo. A escala do primeiro período some da sessão sem uma palavra — e o
+ * Publicar aceita.
+ *
+ * Medido no arquivo que iria ao ar:
+ *
+ *     blocos: 01/03→05/08 · 06/08→31/12 · 01/04→30/06
+ *     maior vão: 30/12/2026 → 03/04/2027 = 93 dias, com 39 dias de culto sem NINGUÉM
+ *
+ * E o site responde, para quem filtra janeiro: *"Nenhum turno encontrado — tente ajustar os filtros"*.
+ * A culpa parece do filtro do irmão.
+ *
+ * ⚠️ **Por que `conferirPassadoPreservado` não pega:** ele mede DESAPARECIMENTO, e nada desapareceu —
+ * janeiro a março nunca chegou a existir no arquivo. São duas perguntas diferentes, e só uma tinha
+ * guarda. Esta pergunta é: **o que vai ao ar cobre todos os dias de culto entre o primeiro e o
+ * último?**
+ *
+ * Compara com a MALHA de cada bloco vizinho, que é quem sabe quais dias teriam culto no vão.
+ */
+export interface BuracoNaEscala {
+  /** Dias de culto sem nenhum turno, entre o primeiro e o último dia publicado. */
+  dias: DataISO[]
+  /** O maior vão contínuo, em dias de calendário — o número que dói. */
+  maiorVao: number
+  ok: boolean
+}
+
+export function conferirBuracoNaEscala(
+  blocos: Bloco[],
+  diaTemCulto: (data: DataISO, malha: Bloco['malha']) => boolean,
+): BuracoNaEscala {
+  const comTurno = new Set<DataISO>()
+  for (const b of blocos) for (const t of b.turnos) if (dentro(t.data, b.inicio, b.fim)) comTurno.add(t.data)
+  if (comTurno.size === 0) return { dias: [], maiorVao: 0, ok: true }
+
+  const todas = [...comTurno].sort()
+  const primeiro = todas[0]
+  const ultimo = todas[todas.length - 1]
+
+  /** A malha vigente num dia: a do bloco que o cobre; no vão, a do bloco anterior mais próximo. */
+  const malhaEm = (d: DataISO): Bloco['malha'] | null => {
+    const cobre = blocos.find((b) => dentro(d, b.inicio, b.fim))
+    if (cobre) return cobre.malha
+    const anteriores = blocos.filter((b) => b.fim < d).sort((a, b) => (a.fim < b.fim ? 1 : -1))
+    return anteriores[0]?.malha ?? blocos[0]?.malha ?? null
+  }
+
+  const dias: DataISO[] = []
+  let vao = 0
+  let maiorVao = 0
+  for (let d = primeiro; d <= ultimo; d = somarDias(d, 1)) {
+    if (comTurno.has(d)) { vao = 0; continue }
+    vao++
+    if (vao > maiorVao) maiorVao = vao
+    const m = malhaEm(d)
+    if (m && diaTemCulto(d, m)) dias.push(d)
+  }
+  return { dias, maiorVao, ok: dias.length === 0 }
+}

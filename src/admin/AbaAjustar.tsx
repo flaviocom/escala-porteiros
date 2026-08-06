@@ -86,9 +86,33 @@ export const AbaAjustar: React.FC<Props> = ({ bloco, pessoas, fronteira, aoAlter
         const perto = datas
           .map((d) => Math.abs(diferencaEmDias(d, turno.data)))
           .sort((a, b) => a - b)[0]
-        return { p, pode: true, motivo: perto != null && perto <= 3 ? `fica a ${perto} dia(s) de outra escala` : '' }
+        /*
+          🔴 O LIMIAR ERA 3, E QUEM REPROVA COMPARA COM O PISO DO BLOCO — sétima auditoria externa,
+          05/08/2026.
+
+          A legenda desta tela promete: *"quem está em âmbar pode, mas ficaria perto de outra escala"*
+          — logo, verde significa "pode, sem ressalva". Só que o âmbar era pintado com `perto <= 3`
+          cravado, enquanto D10 reprova quem fica **abaixo do `pisoAlcancado` que o bloco declara**
+          (7, na escala de hoje). Tudo entre 4 e 6 dias saía **VERDE** e quebrava a escala.
+
+          Medido pelo auditor: 4 turnos × 8 candidatas = **32 trocas, 32 inválidas, 0 utilizáveis** —
+          duas delas oferecidas em verde. O passo "trocar uma pessoa" não concluía de jeito nenhum.
+
+          Duas réguas para a mesma pergunta, e a que o usuário vê era a frouxa. O piso vem do bloco,
+          que é quem sabe qual promessa ele fez.
+        */
+        const pisoDoBloco = bloco.pisoAlcancado ?? 3
+        return {
+          p,
+          pode: true,
+          abaixoDoPiso: perto != null && perto < pisoDoBloco,
+          motivo:
+            perto != null && perto < pisoDoBloco
+              ? `ficaria a ${perto} dia(s) de outra escala — o bloco declara piso de ${pisoDoBloco}, e publicar ficaria bloqueado`
+              : '',
+        }
       })
-      .filter((x): x is { p: Pessoa; pode: boolean; motivo: string } => x !== null)
+      .filter((x): x is { p: Pessoa; pode: boolean; motivo: string; abaixoDoPiso?: boolean } => x !== null)
       .sort((a, b) => (a.pode === b.pode ? a.p.nome.localeCompare(b.p.nome) : a.pode ? -1 : 1))
   }
 
@@ -280,7 +304,8 @@ const LinhaTurno: React.FC<{
           </div>
           <p className="text-[11px] text-gray-400 mt-2">
             Quem está em cinza não pode entrar, e o motivo está escrito ao lado. Quem está em âmbar
-            pode, mas ficaria perto de outra escala.
+            pode pelas restrições dela, mas ficaria **abaixo do piso que este bloco declara** — e aí
+            a escala fica inválida e o Publicar trava. A cor não é gosto: é o que vai acontecer.
           </p>
         </div>
       )}

@@ -83,7 +83,7 @@ Em UTC−3 um defeito de fuso é invisível: o dia só vira no fim da tarde.
 artificial"*). Os 13 de absolvição são o que impede o portão de virar ruído.
 
 ### 6. `fontes` — nenhuma fonte externa chamada sem estar declarada
-**População:** 83 arquivos em `src/` **e** `scripts/` · 1 isento (o próprio inventário).
+**População:** 90 arquivos em `src/` **e** `scripts/` · 1 isento (o próprio inventário).
 **Critério:** todo host em URL literal tem de estar em `docs/INVENTARIO_DE_FONTES.md`.
 **Fora de escopo, declarado:** laço local (`127.0.0.1`) e domínios reservados pela RFC 2606
 (`example.com`, `.test`, `.invalid`) — é o que permite escrever exemplo em mensagem de ajuda.
@@ -172,14 +172,14 @@ por tempo indeterminado. Um arquivo de 0 byte elimina a classe, e ele já sumiu 
 ver: é o argumento inteiro para portão em vez de disciplina.
 
 ### 14. `fatos:conferir` — nenhum documento desmente um número medido
-**11 fatos**, todos de fonte executável: passos do gate (do `package.json`), casos do autoteste (da
+**16 fatos**, todos de fonte executável: passos do gate (do `package.json`), casos do autoteste (da
 saída dele), checagens da auditoria, arquivos e termos do portão genérico, documentos vivos, piso do
 bloco publicado, turnos congelados, fontes declaradas, regras do catálogo, regras duras.
 **Nenhum é digitado.** Achou 4 contradições na primeira execução, e depois **pegou a própria
 mudança**: ao entrar no gate, virou o 16º passo e reprovou os documentos que diziam 15.
 
 ### 15. `datas` — `toISOString()` não decide dia nem mês
-**População:** 83 arquivos de `src/` e `scripts/` · isento `datas.test.ts`, que **cita** o
+**População:** 89 arquivos de `src/` e `scripts/` · isento `datas.test.ts`, que **cita** o
 antipadrão para provar que ele erra.
 **Critério, em dois níveis:**
 - 🔴 **proibido:** `toISOString().slice(...)` — extrai dia ou mês **em UTC**, e às 21h em São Paulo
@@ -233,7 +233,7 @@ real), e camada de tela.
 auditou escreveu o código.
 
 ### 20. `regras-mestras` — tooltip em todo botão
-**População:** 62 botões medidos.
+**População:** 66 botões medidos.
 **Também mede:** clicáveis fora de `<button>` (div/span com `onClick` e sem papel declarado) — hoje 0
 — e aspas duplas dentro do atributo, que quebram o HTML em silêncio.
 
@@ -277,10 +277,10 @@ desliga.** Ver [`OPERACAO.md`](OPERACAO.md), parte 3.
 
 Duas merecem nota:
 
-**`npm run ensaio`** — o cenário que originou o projeto, de ponta a ponta, sem rede e sem
-credencial: uma pessoa sai do elenco, outra entra com as cinco restrições, e a escala é regerada a
-partir de um corte. **11 promessas medidas**, entre elas *"o passado antes do corte fica byte a byte
-idêntico"* (128 turnos) e *"quem tem teto é aproveitado em ≥ 80% da cota"*.
+> 🔴 **`npm run ensaio` SAIU desta lista em 05/08/2026** — ele é o **passo 20 do gate** desde que a
+> sexta auditoria mostrou que ele não precisa de rede nem de credencial. Este documento continuou
+> dizendo que ele estava fora, contradizendo o `package.json` e o `OPERACAO.md` — achado da sétima
+> auditoria (regressão). Ver a seção 22 acima.
 
 **`npm run vivo:caminho`** — a SEQUÊNCIA, não as peças. Os outros portões cobrem cada parte
 isolada; este percorre o que a pessoa faz de verdade, do começo ao fim, uma vez. Nasceu em
