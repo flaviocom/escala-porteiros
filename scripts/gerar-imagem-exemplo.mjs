@@ -59,6 +59,52 @@ try {
   // teto de canvas do navegador (16384px). Coletamos todos os downloads, nao so o primeiro.
   const baixados = []
   pagina.on('download', (d) => baixados.push(d))
+
+  /*
+    🔴 O PALCO DA IMAGEM É REMOVIDO DEPOIS DE VIRAR PIXEL (`gerarImagem.ts` → `palco.remove()`), então
+    medir o conteúdo depois do clique acha uma página vazia. O observador entra ANTES e guarda as
+    medidas no instante em que o nó existe.
+
+    Isto é o que faltava neste portão: ele conferia erro de console e o tamanho do PNG, e **nada sobre
+    o que está desenhado**. Três vezes hoje um defeito da imagem escapou de todos os portões e só
+    apareceu quando alguém ABRIU o arquivo — "sem porteiros escalados", o "ENSAIO" cravado em toda
+    tarde, e a pílula da Santa Ceia imprimindo o rótulo duas vezes.
+  */
+  await pagina.evaluate(() => {
+    const w = window
+    w.__medidasDaImagem = []
+    const medir = (raiz) => {
+      const cortados = []
+      const duplicados = []
+      for (const el of raiz.querySelectorAll('*')) {
+        const proprio = [...el.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim().length > 1)
+        if (!proprio) continue
+        const cs = getComputedStyle(el)
+        const escondido = cs.overflow === 'hidden' || cs.textOverflow === 'ellipsis'
+        if (escondido && (el.scrollWidth > el.clientWidth + 1 || el.scrollHeight > el.clientHeight + 1))
+          cortados.push(el.textContent.trim().slice(0, 40))
+        const linhas = el.textContent.trim().split(String.fromCharCode(10)).map((x) => x.trim()).filter(Boolean)
+        if (linhas.length === 2 && linhas[0] === linhas[1]) duplicados.push(linhas[0].slice(0, 40))
+      }
+      const texto = raiz.textContent ?? ''
+      const rodape = texto.match(/(\d+)\s+\S+\s+por turno/)
+      w.__medidasDaImagem.push({
+        caracteres: texto.length,
+        cortados: [...new Set(cortados)],
+        duplicados: [...new Set(duplicados)],
+        rodape: rodape ? Number(rodape[1]) : null,
+      })
+    }
+    new MutationObserver((muts) => {
+      for (const m of muts)
+        for (const n of m.addedNodes)
+          if (n.nodeType === 1 && n.textContent && n.textContent.length > 200) {
+            // Espera o React pintar os filhos antes de medir.
+            setTimeout(() => { try { medir(n) } catch { /* nó já saiu */ } }, 120)
+          }
+    }).observe(document.body, { childList: true, subtree: false })
+  })
+
   await botao.click()
   for (let i = 0; i < 60 && baixados.length === 0; i++) await pagina.waitForTimeout(500)
   if (!baixados.length) throw new Error('o clique nao gerou download nenhum')
@@ -83,6 +129,28 @@ try {
     if (l !== 1440) throw new Error(`${d.suggestedFilename()}: largura ${l}, esperada 1440 — o navegador encolheu`)
     if (a2 > 16384) throw new Error(`${d.suggestedFilename()}: altura ${a2} acima do teto do canvas`)
     rmSync(tmp, { force: true })
+  }
+
+  /*
+    🔴 O QUE ESTÁ DESENHADO, E NÃO SÓ QUE DESENHOU. As medidas vêm do observador instalado antes do
+    clique — ver o comentário longo lá em cima.
+
+    Três perguntas, e cada uma corresponde a um defeito real que já passou por aqui:
+      · algum texto está CORTADO pela própria caixa?    (nome comprido encavalando)
+      · algum rótulo aparece DUPLICADO na mesma pílula? ("SANTA CEIA / SANTA CEIA")
+      · o rodapé diz quantos por turno?                 (dizia 4 com três nomes desenhados)
+  */
+  const medidas = await pagina.evaluate(() => window.__medidasDaImagem ?? [])
+  console.log(`  conteúdo medido no DOM: ${medidas.length} imagem(ns)`)
+  if (!medidas.length) {
+    console.log('    🔴 o observador não capturou nada — a medição de conteúdo NÃO rodou')
+    erros.push('a medição de conteúdo da imagem não rodou')
+  }
+  for (const [i, m] of medidas.entries()) {
+    console.log(`    imagem ${i + 1}: ${m.caracteres} caracteres · cortados ${m.cortados.length} · duplicados ${m.duplicados.length} · rodapé "${m.rodape ?? '(não achei)'} por turno"`)
+    if (m.cortados.length) { console.log(`       🔴 cortado: ${m.cortados.slice(0, 3).join(' | ')}`); erros.push(`texto cortado na imagem: ${m.cortados[0]}`) }
+    if (m.duplicados.length) { console.log(`       🔴 duplicado: ${m.duplicados.join(' | ')}`); erros.push(`rótulo duplicado na imagem: ${m.duplicados[0]}`) }
+    if (m.rodape == null) erros.push('o rodapé da imagem não diz quantos por turno')
   }
 
   console.log(`  nome sugerido pelo site: ${download.suggestedFilename()}`)
