@@ -1504,3 +1504,51 @@ escolhido. Quando um limite começa a disparar em série, a pergunta certa não 
 é **"o limite ainda descreve a realidade?"**.
 
 **Como reverter.** Tirar o `timeout:` do `.github/workflows/publicar.yml` devolve os 10 minutos.
+
+---
+
+## DB-035 · 06/08/2026 — o campo que saltava um ano, e os doze meses publicados sem ninguém ver
+
+**O que o dono relatou**, com as telas na mão: *"se eu coloquei escala de 6/8/2026 até 31/12/2026,
+tem que ser esta escala. Você está colocando aqui para continuar: você tem que colocar 30/12/2027.
+(…) Isso é um absurdo."*
+
+**A causa, medida.** Ele nunca escolheu 2027. O fim sugerido era *"31/12 do ano do início; se sobrar
+menos de 30 dias, 31/12 do ano SEGUINTE"* — uma regra que nasceu certa, contra uma janela de um dia.
+Encadeada com a publicação, virou escada:
+
+```
+publicou até 30/12/2026  →  início sugerido 31/12/2026
+                            janela 31/12→31/12 = 0 dias, menor que 30
+                            →  fim sugerido 31/12/2027   ← doze meses
+```
+
+Ele clicou em Gerar e **publicou um ano inteiro sem perceber**. E o passo seguinte repetia: de
+30/12/2027 o fim saltaria para 31/12/2028. Cada publicação empurrava o horizonte mais um ano.
+
+**A sugestão "30/12/2027" que ele viu estava CERTA** — era o dia seguinte ao último turno do bloco
+que ele tinha acabado de publicar. Ele acusou o sintoma; a doença era o campo ao lado.
+
+**O porquê que interessa.** Um valor sugerido é uma decisão que o produto toma **no lugar da pessoa**,
+e por isso ele precisa ser (a) conservador e (b) **visível**. Este era nenhum dos dois: escolhia o
+maior horizonte possível e não dizia o tamanho do que tinha escolhido. Regra de bolso que fica:
+**se o produto preenche um campo sozinho, a consequência do que ele preencheu tem de estar na tela.**
+
+Duas correções, e a segunda é a que impede a repetição:
+
+1. `sugerirFim()` no domínio, com teto de **seis meses** — nunca o ano seguinte inteiro;
+2. **a janela aparece ao lado dos campos** — `184 dia(s) · ~6 meses` —, em âmbar acima de seis meses.
+   O teto pode ser burlado digitando; o número na tela, não.
+
+**A consequência que quase escapou.** O bloco de 2027 publicado por engano tinha **0 Santas Ceias
+marcadas** (não há nenhuma de 2027 cadastrada): **104 domingos de 2027 com porteiros escalados**,
+incluindo os que serão Santa Ceia. É exatamente o defeito que originou este projeto — o site antigo
+mostrando três porteiros num dia em que ninguém deve servir. Removido com autorização do dono.
+
+**E o que a remoção revelou:** com o bloco de 2027 fora, a 1ª régua reprovou a escala que estava no
+ar — **D8, 26 turnos com Eduardo e Thiago**, que tinham sido desativados no elenco e continuavam
+escalados de 06/08 em diante. Regerada com os 14 ativos: piso caiu de 7 para 4 dias, que é o preço
+medido de dois irmãos a menos.
+
+**Como reverter.** O histórico de publicações guarda cada versão; "Voltar a esta versão" traz o bloco
+de 2027 de volta, se um dia ele fizer falta.

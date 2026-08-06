@@ -188,6 +188,11 @@ try {
   console.log(`✅ ${elementos} elementos em ${cenas.length} cenas: nenhum resto, nenhum estouro, nenhum corte.`)
 } finally {
   await navegador?.close()
-  await servidor.parar?.()
+  // 🔴 `derrubar`, NÃO `parar`. Escrevi `servidor.parar?.()` em três scripts hoje: o método não
+  // existe, o `?.` engoliu em silêncio, e cada execução deixou um servidor vivo. Foi a raiz dos
+  // conflitos de porta que atrapalharam a sessão inteira — e, no `vivo:publicar`, do processo que
+  // terminava o trabalho com 9 de 9 e **nunca encerrava**, porque o servidor segurava o laço.
+  // Encadeamento opcional em cima de nome errado transforma defeito em silêncio.
+  await servidor.derrubar()
 }
 process.exit(0)

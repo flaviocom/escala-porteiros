@@ -12,8 +12,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   deData, diaDaSemana, diferencaEmDias, ehDataValida, formatarBR, intervaloDeDatas,
-  mesDe, mesDeData, ocorrenciaNoMes, somarDias,
-} from './datas'
+  mesDe, mesDeData, ocorrenciaNoMes, somarDias, sugerirFim } from './datas'
 
 describe('validação de data', () => {
   it('aceita data real', () => {
@@ -113,5 +112,28 @@ describe('🔒 mês lido no fuso LOCAL, nunca em UTC', () => {
       const d = new Date(2026, m, 1)
       expect(mesDeData(d)).toBe(`2026-${String(m + 1).padStart(2, '0')}`)
     }
+  })
+})
+
+describe('sugerirFim — o ano inteiro, porque é o que o dono quer', () => {
+  /*
+    🔴 EU TINHA LIMITADO A SEIS MESES, E ESTAVA ERRADO. Ele publicou doze meses sem perceber e eu
+    concluí que o problema era o tamanho. Era o tamanho ser INVISÍVEL. Nas palavras dele: *"eu não
+    pedi para você travar aí em 6 meses"* e *"você vai calcular o ano inteiro"*.
+
+    Estes testes existem para que a trava não volte por engano.
+  */
+  it('acompanha o ano civil', () => {
+    expect(sugerirFim('2026-08-06')).toBe('2026-12-31')
+    expect(sugerirFim('2027-01-01')).toBe('2027-12-31')
+  })
+
+  it('🔴 no fim do ano vai até o fim do ANO SEGUINTE — o ano inteiro, de propósito', () => {
+    expect(sugerirFim('2026-12-31')).toBe('2027-12-31')
+    expect(sugerirFim('2027-12-30')).toBe('2028-12-31')
+  })
+
+  it('a janela mínima de 30 dias continua de pé', () => {
+    expect(diferencaEmDias('2026-12-15', sugerirFim('2026-12-15'))).toBeGreaterThanOrEqual(30)
   })
 })

@@ -63,7 +63,8 @@
     "vivo:no-ar": "node scripts/rodar-validacoes-ao-vivo.mjs --no-ar",
     "generico:docs": "node scripts/portao-generico-docs.mjs",
     "markdown-cru": "node scripts/portao-markdown-cru.mjs",
-    "vivo:quebrada": "node scripts/portao-tela-quebrada.mjs"
+    "vivo:quebrada": "node scripts/portao-tela-quebrada.mjs",
+    "vivo:publicar": "node scripts/validar-publicar-de-verdade.mjs"
   },
   "dependencies": {
     "clsx": "^2.1.1",

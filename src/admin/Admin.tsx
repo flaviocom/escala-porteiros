@@ -26,7 +26,7 @@ import { validar, resumir } from '../dominio/validacao'
 import { CATALOGO, menorIntervalo } from '../dominio/regras'
 import { conferirPorFora } from '../dominio/conferencia-independente'
 import { conferirBuracoNaEscala, conferirEscalaJaDivulgada, conferirPassadoPreservado, conferirReversao, cotaMensalJaPublicada, montarBlocosParaPublicar, publicacaoImpedida, travaDeDataRetroativa } from '../dominio/blocos'
-import { diferencaEmDias, ehDataValida, formatarBR, hojeSaoPaulo, NOMES_DIA, NOMES_DIA_CURTO, somarDias } from '../dominio/datas'
+import { diferencaEmDias, ehDataValida, formatarBR, sugerirFim, hojeSaoPaulo, NOMES_DIA, NOMES_DIA_CURTO, somarDias } from '../dominio/datas'
 import { AbaAjustar } from './AbaAjustar'
 import { arbitrar, auditar, medir, pedirProposta, type Placar, type ProgressoMotor } from './motor'
 import { Sparkles } from 'lucide-react'
@@ -499,11 +499,7 @@ export const Admin: React.FC<{ dados: DadosPublicados }> = ({ dados: dadosInicia
     Menos de 30 dias de janela quase nunca é o que a pessoa quer, e no fim do ano é sempre errado.
     Aí o fim salta para 31/12 do ano SEGUINTE.
   */
-  const [ate, setAte] = useState(() => {
-    const anoDoInicio = Number(inicioSugerido.slice(0, 4))
-    const fimDoAno = `${anoDoInicio}-12-31`
-    return diferencaEmDias(inicioSugerido, fimDoAno) >= 30 ? fimDoAno : `${anoDoInicio + 1}-12-31`
-  })
+  const [ate, setAte] = useState(() => sugerirFim(inicioSugerido))
 
   /**
    * 🔴 UMA GRAVAÇÃO POR VEZ — e ela cobre PUBLICAR **e** REVERTER, desde 05/08/2026.
@@ -1564,6 +1560,36 @@ const AbaGerar: React.FC<{
             Até
             <input type="date" min={de || hojeSaoPaulo()} value={ate} onChange={(e) => aoMudarAte(e.target.value)} className="block mt-1 px-3 py-2 border border-gray-300 rounded-xl text-sm" />
           </label>
+          {/*
+            🔴 O TAMANHO DA JANELA, ANTES DE GERAR — 06/08/2026.
+
+            O dono publicou **doze meses de escala sem perceber**: o campo "Até" saltava sozinho para
+            31/12 do ano seguinte, e nada na tela dizia que aquilo era um ano. Ele só descobriu depois,
+            no histórico, quando a escala publicada não aparecia no período que ele esperava.
+
+            A sugestão foi limitada a seis meses, mas isso sozinho não basta: o campo é dele e ele pode
+            digitar o que quiser. **O que impede a surpresa é o número estar à vista** — e ele fica
+            âmbar acima de seis meses, porque aí já é mais escala do que alguém confere turno a turno.
+          */}
+          {(() => {
+            const dias = de && ate && ehDataValida(de) && ehDataValida(ate) ? diferencaEmDias(de, ate) + 1 : 0
+            if (dias <= 0) return null
+            const meses = dias / 30.4
+            const longo = dias > 190
+            return (
+              <span
+                title={longo
+                  ? 'Escala longa. Confira se é mesmo isto que você quer publicar — são muitos turnos para conferir de uma vez.'
+                  : 'Quanto tempo a escala vai cobrir'}
+                className={longo
+                  ? 'self-end mb-2 rounded-lg bg-amber-100 px-2.5 py-1 text-xs font-bold text-amber-900'
+                  : 'self-end mb-2 rounded-lg bg-gray-100 px-2.5 py-1 text-xs font-semibold text-gray-600'}
+              >
+                {longo && '⚠️ '}
+                {dias} dia(s) · {meses < 1 ? 'menos de 1 mês' : `~${Math.round(meses)} ${Math.round(meses) === 1 ? 'mês' : 'meses'}`}
+              </span>
+            )
+          })()}
           <button title="Monta a escala buscando o maior espaçamento possível entre as escalas de cada um"
             /* `onClick={executar}` passaria o MouseEvent como semente — o TypeScript pegou. */
             onClick={() => executar()}
@@ -1878,33 +1904,35 @@ const AbaGerar: React.FC<{
             ))}
           </div>
           {/*
-            🔴 A TELA SABE A DATA CERTA — ela tem de DIZER, não mandar procurar. O Flavio leu a versão
-            anterior desta frase e respondeu "não entendi": ela mandava "mude para o dia seguinte ao
-            último já publicado" sem dizer **qual dia é esse**, obrigando-o a abrir o site, achar o
-            último turno e somar um. Dado que o sistema tem, o sistema mostra.
+            🔴 ISTO É AVISO, NÃO ORDEM — 06/08/2026, corrigido pelo dono.
+
+            A versão anterior abria com *"Para só continuar a escala, ponha no campo De a data:"*, a
+            data em corpo 2xl no centro, e um botão azul de largura inteira. A alternativa — "pode
+            seguir" — vinha por último, em cinza. Ele leu aquilo como uma **proibição**:
+            *"ele não permite que eu coloque a data de hoje"*.
+
+            E não é proibição: publicar nunca esteve bloqueado. Era só a hierarquia visual mentindo
+            sobre o que o produto faz.
+
+            A regra que fica: **quando as duas saídas são legítimas, a que o usuário escolheu vem
+            primeiro.** O aviso informa o que muda; a alternativa fica ao lado, do tamanho de uma
+            alternativa. A data continua escrita — dado que o sistema tem, o sistema mostra — mas sem
+            o corpo 2xl que a transformava em ordem.
           */}
-          <div className="mt-3 rounded-xl border border-gray-200 bg-white p-3">
-            <p className="text-sm text-gray-700 leading-relaxed">
-              <strong>Para só continuar a escala</strong> (sem mexer no que já está no ar), ponha no
-              campo <strong>De</strong> a data:
-            </p>
-            <p className="my-2 text-center text-2xl font-bold tracking-wide text-gray-900">
-              {formatarBR(proximoInicioLivre)}
-            </p>
-            <p className="text-xs leading-relaxed text-gray-600">
-              É o dia seguinte ao último turno já publicado. Com essa data, este aviso desaparece.
-            </p>
+          <p className="mt-3 text-sm leading-relaxed text-gray-800">
+            Se a intenção é mesmo <strong>refazer</strong> esses dias, siga em frente: a data que você
+            escolheu é a que vale, e <strong>publicar não está bloqueado</strong>.
+          </p>
+          <p className="mt-2 text-xs leading-relaxed text-gray-600">
+            Se preferia apenas <em>continuar</em> a escala, sem tocar no que já está no ar, a data seria{' '}
+            <strong>{formatarBR(proximoInicioLivre)}</strong> — o dia seguinte ao último turno publicado.{' '}
             <button
-              title="Põe a data certa no campo De e gera de novo"
+              title="Põe essa data no campo De e gera de novo"
               onClick={() => { aoMudarDe(proximoInicioLivre); executar(sementeBase, proximoInicioLivre) }}
-              className="mt-2 w-full rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-indigo-700"
+              className="font-semibold text-indigo-700 underline underline-offset-2 hover:text-indigo-900"
             >
-              Corrigir a data e gerar de novo
+              Usar essa data
             </button>
-          </div>
-          <p className="mt-3 text-sm text-gray-700 leading-relaxed">
-            Se a intenção é mesmo <strong>refazer</strong> esses dias, pode seguir — publicar não está
-            bloqueado.
           </p>
         </Cartao>
       )}

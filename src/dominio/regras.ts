@@ -438,7 +438,23 @@ const D8: Regra = {
         if (!elenco.has(id)) {
           jaAcusados.add(id)
           v.push({ pessoaId: id, mensagem: `${nomeDe(ctx, id)} aparece na escala mas não está no elenco deste bloco` })
-        } else if (inativos.has(id)) {
+        } else if (inativos.has(id) && !congelado(ctx)) {
+          /*
+            🔴 NO BLOCO CONGELADO, QUEM SAIU CONTINUA LÁ — e tem de continuar.
+
+            A `explicacao` desta regra sempre prometeu isto, com todas as letras: *"Quem saiu continua
+            aparecendo no passado já publicado, mas não é escalado para a frente."* O código não fazia.
+
+            Apareceu em 06/08/2026, no gesto mais banal do produto: o dono desativou dois irmãos no
+            elenco, e a auditoria passou a acusar o **bloco histórico** — março a agosto, turnos que
+            **já aconteceram**. Aqueles irmãos serviram naqueles dias; a escala está certa. Para a
+            acusação sumir seria preciso reescrever o passado, que é a primeira coisa que este projeto
+            proíbe.
+
+            É a mesma isenção que D9 e D11 já declaravam para o bloco importado, pelo mesmo motivo. A
+            outra metade da regra — "aparece na escala mas não está no elenco deste bloco" — continua
+            valendo em todo bloco: aquilo é dado corrompido, não história.
+          */
           jaAcusados.add(id)
           v.push({ pessoaId: id, mensagem: `${nomeDe(ctx, id)} foi tirado da escala, mas continua escalado` })
         }
@@ -447,7 +463,7 @@ const D8: Regra = {
     return ok(
       {
         id: D8.id, titulo: D8.titulo, familia: 'DURA',
-        medida: `${elenco.size} no elenco, ${inativos.size} fora da escala`,
+        medida: `${elenco.size} no elenco, ${inativos.size} fora da escala` + (congelado(ctx) ? ' · bloco importado: quem saiu continua no passado, e deve continuar' : ''),
       },
       v,
     )

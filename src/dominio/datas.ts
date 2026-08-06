@@ -123,3 +123,29 @@ export function hojeSaoPaulo(): DataISO {
   }).format(new Date())
   return partesFmt // en-CA já produz AAAA-MM-DD
 }
+
+/**
+ * O FIM SUGERIDO para uma escala que começa em `inicio`.
+ *
+ * **31/12 do ano do início.** Se sobrar menos de 30 dias, 31/12 do ano SEGUINTE — senão a tela abre
+ * com uma janela de um dia, numa quinta-feira que a malha não tem, e quem clica em Gerar recebe
+ * *"a escala ficou inválida"* sem entender por quê.
+ *
+ * 🔴 EU JÁ LIMITEI ISTO A SEIS MESES, E ESTAVA ERRADO — 06/08/2026.
+ *
+ * O dono publicou doze meses sem perceber, e eu concluí que o problema era o tamanho. Não era. Ele
+ * corrigiu na hora: *"eu não pedi para você travar aí em 6 meses. De onde você tirou isso?"* — e,
+ * sobre o gesto que ele planeja: *"você vai calcular o ano inteiro"*.
+ *
+ * **Escala de um ano é o que ele quer.** O defeito nunca foi o tamanho: era o tamanho ser **invisível**.
+ * A correção que fica é a outra — a janela aparece ao lado dos campos, em dias e meses, antes de
+ * gerar. O produto sugere; quem decide é ele.
+ *
+ * A lição, para mim: **ele reclamou de um número e eu inventei uma trava.** Reclamação sobre um valor
+ * pede que o valor fique visível e controlável, não que a escolha seja tirada dele.
+ */
+export function sugerirFim(inicio: DataISO): DataISO {
+  const anoDoInicio = Number(inicio.slice(0, 4))
+  const fimDoAno = `${anoDoInicio}-12-31` as DataISO
+  return diferencaEmDias(inicio, fimDoAno) >= 30 ? fimDoAno : (`${anoDoInicio + 1}-12-31` as DataISO)
+}

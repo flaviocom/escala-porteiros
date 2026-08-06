@@ -368,6 +368,11 @@ isenta**, porque medir o passado imutável não faz sentido.
 isso, a dívida foi **declarada** em vez de fechada; algumas horas depois, fechada.
 
 ### 24. `auditoria` — 21 ataques ao próprio código
+
+> ⚠️ **O número é medido, e o medidor já leu errado uma vez** (06/08/2026): quando a auditoria
+> tem achado, ela imprime *"20 checagem(ns) sem achado · 1 ACHADO(S)"*, e o fato lia o **20** — o
+> total de checagens é 21. Um número medido também pode medir a coisa errada; o que salva é ele
+> divergir alto quando diverge.
 Cada ataque **injeta um infrator** e exige que a validação o pegue. Frentes: validação, datas e fuso,
 gerador, dado publicado (inclusive *"os dois arquivos de dados são iguais?"* — que pegou um defeito
 real), e camada de tela.

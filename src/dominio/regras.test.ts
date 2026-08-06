@@ -916,3 +916,36 @@ describe('podeAssumir — o motivo nunca fica mudo', () => {
     }
   })
 })
+
+describe('D8 — quem saiu continua no passado congelado, e deve continuar', () => {
+  /*
+    🔴 A `explicacao` da regra sempre prometeu isto — *"quem saiu continua aparecendo no passado
+    já publicado, mas não é escalado para a frente"* — e o código não fazia. Apareceu em 06/08/2026
+    no gesto mais banal do produto: o dono desativou dois irmãos, e a auditoria passou a acusar o
+    bloco HISTÓRICO, de turnos que já aconteceram. Para a acusação sumir seria preciso reescrever o
+    passado — a primeira coisa que este projeto proíbe.
+  */
+  const doisIrmaos: Pessoa[] = [
+    { id: 'a', nome: 'Ativo', ativo: true, restricoes: {} },
+    { id: 'saiu', nome: 'Quem Saiu', ativo: false, restricoes: {} },
+  ]
+  const umTurno = [{ data: '2026-03-01', tipo: 'MANHA', pessoas: ['a', 'saiu'], capacidade: 2 } as unknown as Turno]
+
+  it('🔴 bloco IMPORTADO não acusa quem foi desativado — isso é o passado', () => {
+    const r = rodar('D8', ctxDe(umTurno, doisIrmaos, { origem: 'importado', elenco: ['a', 'saiu'] }))
+    expect(r.violacoes).toHaveLength(0)
+    expect(r.medida).toMatch(/passado/i)
+  })
+
+  it('🔴 A OUTRA PONTA — no bloco do ALGORITMO, acusa', () => {
+    // Sem este caso, o de cima passaria com a regra desligada de vez.
+    const r = rodar('D8', ctxDe(umTurno, doisIrmaos, { origem: 'algoritmo', elenco: ['a', 'saiu'] }))
+    expect(r.violacoes).toHaveLength(1)
+    expect(r.violacoes[0].mensagem).toMatch(/continua escalado/i)
+  })
+
+  it('quem está fora do elenco é acusado MESMO no importado — dado corrompido não é história', () => {
+    const r = rodar('D8', ctxDe(umTurno, doisIrmaos, { origem: 'importado', elenco: ['a'] }))
+    expect(r.violacoes.length).toBeGreaterThan(0)
+  })
+})

@@ -96,7 +96,7 @@ regras da do algoritmo antes de chegar à tela de publicação.
 - Site: <https://flaviocom.github.io/escala-porteiros/>
 - Área administrativa: <https://flaviocom.github.io/escala-porteiros/#/admin>
 - Escala publicada: **01/03 → 05/08** (histórico congelado, 96 turnos) + **06/08 → 30/12**
-  (87 turnos, piso de **7** dias)
+  (87 turnos, piso de **4** dias — caiu de 7 em 06/08, quando Eduardo e Thiago saíram do elenco)
 - ⚠️ O recorte para 05/08 foi o trabalho de `47fb59f`: a escala nova desmentia, em **todos** os
   turnos de hoje em diante, o site que a congregação já tem o link. Medível de novo com
   `npm run vivo:divulgado -- --antigo <url do site anterior>`.
