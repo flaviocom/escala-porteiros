@@ -1326,3 +1326,43 @@ da própria régua pegou (2 casos que deviam acusar pararam de acusar). Editar r
 Windows continua sendo a armadilha; a ferramenta de edição é o caminho.
 
 **Como reverter.** `git revert` do commit desta entrada devolve as três fronteiras.
+
+---
+
+## DB-031 · 06/08/2026 — o que só o OLHO pega, e o que só a MEDIÇÃO pega
+
+**A pergunta que originou isto.** *"Fez verificação visual autônoma e completa e detalhada? Ficou
+alguma pendência nas entrelinhas? Seja sincero."* A resposta honesta era **não**: eu tinha medido o
+DOM de todas as telas, e não tinha **olhado** nenhuma captura das mudanças do dia.
+
+**O que apareceu ao olhar.** Na aba `Ajustar`, na tela, com os asteriscos:
+
+> *"…mas ficaria \*\*abaixo do piso que este bloco declara\*\* — e aí a escala fica inválida…"*
+
+JSX não é markdown. O trecho tinha nascido num comentário — onde markdown é a convenção deste
+projeto — e escorregou para dentro de um `<p>`. **Nenhuma medição de DOM pegaria**, e várias
+rodaram por cima: toda checagem de texto casava, porque o texto *está lá*. Só está feio.
+
+**E o inverso, que é a outra metade da lição.** O portão que escrevi em seguida achou mais **cinco**
+ocorrências em `regras.ts`, no texto da conferência regra a regra — e **quatro delas estavam na
+captura que eu tinha acabado de ler**. Eu passei por cima. Olho e medição pegam coisas diferentes;
+nenhum dos dois substitui o outro, e eu tinha usado só um.
+
+**Duas outras pendências que a mesma pergunta destravou:**
+
+1. **Ramo inerte na tela.** Eu tinha posto `piso 5 (entregue: 6)` no quadro de números. Medi depois:
+   pelo caminho que a tela usa — a cascata de `gerarVariasVersoes` — são **36 combinações com zero
+   divergências**. A cascata escolhe pelo maior piso e não deixa folga. O ramo **nunca renderizaria**.
+   Código inerte não é segurança extra: é uma promessa que ninguém pode ver falhar. Removido, e a
+   medição virou checagem no portão `refazer`, sobre o bloco **publicado**.
+2. **Registro append-only escrito no meio da sessão.** A entrada do `AI_MASTER_LOG` dizia "29 passos ·
+   335 testes" e o trabalho continuou por mais três frentes. O portão de fatos não pega, porque
+   append-only é **isento** dele — e a isenção supõe que a entrada está fechada quando escrita.
+   **Entrada append-only escrita antes do fim da sessão é rascunho, não registro.**
+
+**O porquê que interessa.** Este projeto trocou "olhar" por "medir" de propósito, e com razão:
+medição é repetível, o olho não. Mas a troca virou substituição, e **a categoria de defeito que só o
+olho pega ficou sem ninguém**. O portão `markdown-cru` (passo 6) é a parte automatizável dessa
+categoria. O resto continua exigindo abrir a captura e ler.
+
+**Como reverter.** `git revert` do commit desta entrada devolve os asteriscos e o ramo inerte.

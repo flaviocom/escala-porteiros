@@ -45,7 +45,7 @@ writeFileSync(
   'utf8',
 )
 esbuild.buildSync({ entryPoints: [entrada], outfile: saida, format: 'esm', platform: 'node', bundle: true })
-const { construirGrade, gerar, diferencaEmDias, cotaMensalJaPublicada } = await import(pathToFileURL(saida).href)
+const { construirGrade, gerar, diferencaEmDias, cotaMensalJaPublicada, pisoEntregue } = await import(pathToFileURL(saida).href)
 
 const cfg = JSON.parse(readFileSync(join(RAIZ, 'docs/dados/config.json'), 'utf8'))
 const pessoas = JSON.parse(readFileSync(join(RAIZ, 'docs/dados/pessoas.json'), 'utf8')).pessoas
@@ -111,6 +111,29 @@ for (const alvo of blocos) {
       }
     }
     achados.push({ id: alvo.id, detalhe: `${diferentes} de ${alvo.turnos.length} turnos divergem — ${primeiro}` })
+    continue
+  }
+  /*
+    🔴 O PISO DECLARADO É EXATAMENTE O ENTREGUE? — 06/08/2026.
+
+    A sétima auditoria apontou que o declarado pode ser MENOR que o entregue. Com `gerar` cru e
+    semente fixa, acontece (1 em 20 medições). Pelo caminho que a tela usa — a cascata de
+    `gerarVariasVersoes` — varri 36 combinações de período e semente-base: **zero divergências**. A
+    cascata escolhe pelo maior piso, e por isso não sobra folga.
+
+    Cheguei a pôr `piso 5 (entregue: 6)` na tela. **Era ramo inerte** — não renderizaria nunca. A
+    medição vive aqui, sobre o bloco que está NO AR, que é o número que alguém lê e repete.
+
+    ⚠️ A regra D "coerência do piso" já cobre a metade perigosa (anunciar MAIS do que entrega). Esta
+    checagem cobre a outra: anunciar MENOS, que não engana ninguém sobre risco, mas significa que a
+    cascata mudou de comportamento — e isso é notícia.
+  */
+  const entregue = pisoEntregue(alvo.turnos)
+  if (entregue != null && alvo.pisoAlcancado != null && entregue !== alvo.pisoAlcancado) {
+    achados.push({
+      id: alvo.id,
+      detalhe: `o bloco declara piso ${alvo.pisoAlcancado} e ENTREGA ${entregue} — pela cascata os dois batem sempre; se deixaram de bater, o algoritmo de escolha mudou`,
+    })
     continue
   }
   if (r.pisoAlcancado !== alvo.pisoAlcancado) {

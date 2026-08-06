@@ -781,7 +781,7 @@ const Q1: Regra = {
   titulo: 'Distanciamento — cada um o mais longe possível da própria escala anterior',
   familia: 'QUALIDADE',
   explicacao:
-    'Cada pessoa o mais longe possível da própria escala anterior. É o defeito que originou este projeto: alguém servindo quarta e voltando no sábado. Avisa quando alguém fica com **3 dias ou menos** entre duas escalas.',
+    'Cada pessoa o mais longe possível da própria escala anterior. É o defeito que originou este projeto: alguém servindo quarta e voltando no sábado. Avisa quando alguém fica com 3 dias ou menos entre duas escalas.',
   avaliar(ctx) {
     const linhas: Violacao[] = []
     let menorGlobal = Infinity
@@ -813,7 +813,7 @@ const Q2: Regra = {
   titulo: 'Equilíbrio de carga dentro do bloco',
   familia: 'QUALIDADE',
   explicacao:
-    'A carga fica parecida entre quem não tem limite próprio. Quem tem teto mensal fica fora da comparação, porque joga outro jogo. Avisa quando a diferença entre quem mais pegou e quem menos pegou passa de **2 turnos**.',
+    'A carga fica parecida entre quem não tem limite próprio. Quem tem teto mensal fica fora da comparação, porque joga outro jogo. Avisa quando a diferença entre quem mais pegou e quem menos pegou passa de 2 turnos.',
   avaliar(ctx) {
     const contagem = new Map<string, number>()
     /*
@@ -882,7 +882,7 @@ const Q3: Regra = {
   titulo: 'Variedade de dia da semana — ninguém preso sempre no mesmo dia',
   familia: 'QUALIDADE',
   explicacao:
-    'Ninguém preso sempre no mesmo dia da semana — quem sempre pega sábado acaba nunca indo ao culto de domingo com a família. Avisa quando **mais de 70%** das escalas de alguém caem no mesmo dia da semana; só avalia quem tem **4 escalas ou mais**, porque abaixo disso a proporção não significa nada.',
+    'Ninguém preso sempre no mesmo dia da semana — quem sempre pega sábado acaba nunca indo ao culto de domingo com a família. Avisa quando mais de 70% das escalas de alguém caem no mesmo dia da semana; só avalia quem tem 4 escalas ou mais, porque abaixo disso a proporção não significa nada.',
   avaliar(ctx) {
     const violacoes: Violacao[] = []
     let avaliadas = 0
@@ -917,7 +917,7 @@ const Q4: Regra = {
   titulo: 'Variedade de companhia — evitar o mesmo grupo se repetindo',
   familia: 'QUALIDADE',
   explicacao:
-    'Evita que a mesma companhia se repita demais. Avisa quando uma formação (o conjunto de quem divide o turno) aparece **3 vezes ou mais** no período; lista as 10 mais frequentes. Não impede publicar; é para você saber.',
+    'Evita que a mesma companhia se repita demais. Avisa quando uma formação (o conjunto de quem divide o turno) aparece 3 vezes ou mais no período; lista as 10 mais frequentes. Não impede publicar; é para você saber.',
   avaliar(ctx) {
     const freq = new Map<string, number>()
     for (const t of turnosComGente(ctx.bloco)) {

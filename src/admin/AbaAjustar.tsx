@@ -303,8 +303,15 @@ const LinhaTurno: React.FC<{
             ))}
           </div>
           <p className="text-[11px] text-gray-400 mt-2">
+            {/*
+              🔴 Aqui estava `**abaixo do piso que este bloco declara**` — e o JSX não é markdown:
+              os asteriscos apareciam CRUS na tela. Achado em 06/08/2026 ao OLHAR a captura, não ao
+              medir o DOM: toda checagem de texto casava normalmente, porque o texto está lá — só
+              está feio. É o tipo de defeito que só o olho pega, e a razão de a verificação visual
+              não poder ser substituída por medição.
+            */}
             Quem está em cinza não pode entrar, e o motivo está escrito ao lado. Quem está em âmbar
-            pode pelas restrições dela, mas ficaria **abaixo do piso que este bloco declara** — e aí
+            pode pelas restrições dela, mas ficaria <strong>abaixo do piso que este bloco declara</strong> — e aí
             a escala fica inválida e o Publicar trava. A cor não é gosto: é o que vai acontecer.
           </p>
         </div>

@@ -123,7 +123,7 @@ está errada** — e é melhor descobrir antes da congregação descobrir.
 npm run gate
 ```
 
-31 passos, **nesta ordem** — lida do `package.json`, não de memória:
+32 passos, **nesta ordem** — lida do `package.json`, não de memória:
 
 | # | Passo | O que prova |
 |---|---|---|
@@ -132,32 +132,33 @@ npm run gate
 | 3 | `test` | a suíte **completa**, nunca escopada |
 | 4 | `test:fuso:berlim` | a mesma suíte noutro fuso, **depois de provar que o fuso mudou** |
 | 5 | `denominacao` | nenhum jargão comoditizado em texto que alguém lê |
-| 6 | `fontes` | nenhuma fonte externa chamada sem estar declarada no inventário |
-| 7 | `contagem` | nenhum documento **ou código** declara um número de regras que o catálogo desmente |
-| 8 | `ordem-do-gate` | 🔢 **a ordem escrita é a ordem que roda** — as duas listas numeradas conferidas contra o `package.json`: número aponta para o passo certo, números crescem na ordem física do arquivo, nenhum passo fica de fora. O total já era medido; a ordem, não, e `build` estava documentado como 21º rodando em 24º |
-| 9 | `cadeia` | os documentos apontam para o handoff que É o mais recente |
-| 10 | `handoff-orfao` | 🔗 **nenhum handoff fica órfão**: todo `HANDOFF_*.md` do disco é citado no índice, todo citado existe, e nenhum aparece em duas linhas de tabela. O `cadeia` mede o ponteiro para o mais recente; este mede se os OUTROS continuam alcançáveis |
-| 11 | `proximo-id` | 🆔 **o "próximo identificador livre" é mesmo o próximo** — varre TODAS as fatias de `docs/solicitacoes/` (depois de uma rotação o maior ID sai de vista) e recusa ID duplicado no corpo. A regra estava documentada com o motivo ao lado e **inerte**: dizia S-032 com o S-033 escrito abaixo |
-| 12 | `generico` | nenhum nome de cliente cravado (§0) |
-| 13 | `generico:autoteste` | prova que o de cima **morde** — e que a autodefesa dele morde |
-| 14 | `generico:docs` | 📄 **o nome do cliente na documentação é inventário fechado** — 12 citações em 7 arquivos, cada uma com motivo. Não proibido (o README diz "esta instalação atende…"): reprova citação a mais, arquivo novo fora do inventário, e citação a MENOS |
-| 15 | `citacoes` | 🔗 **`arquivo:linha` que envelheceu sozinho** — o arquivo existe e tem aquela linha. O próprio BACKLOG registrou o problema duas vezes e não tinha como impedir a terceira. NÃO confere se o conteúdo da linha ainda é o descrito |
-| 16 | `doc:regras:conferir` | o catálogo de regras documentado bate com o código |
-| 17 | `doc:comandos` | todo comando citado na documentação existe de verdade |
-| 18 | `arquitetura` | o domínio continua sendo ilha; a 2ª régua não virou espelho |
-| 19 | `fatos:conferir` | nenhum documento vivo desmente um número **medido** |
-| 20 | `datas` | `toISOString()` não decide dia nem mês em lugar nenhum |
-| 21 | `crescimento` | o dado publicado ainda cabe onde vai ser servido |
-| 22 | `tamanho-docs` | nenhum documento passou do teto do regime dele (raiz 400 · subpasta 800 · append-only 2.000) |
-| 23 | `auditoria` | 21 ataques ao próprio código, com infrator injetado |
-| 24 | `regras-mestras` | tooltip em todo botão |
-| 25 | `ensaio` | 🔴 o cenário que ORIGINOU o projeto, ponta a ponta: alguém sai do elenco, outro entra com as 5 restrições, a escala se refaz a partir de um corte |
-| 26 | `tempo` | a geração não regrediu de desempenho |
-| 27 | `build` | compila e gera em `docs/` |
-| 28 | `imagem` | 🔴 o único passo que **renderiza o pixel**: gera a imagem pelo botão de verdade e mede o DOM que virou o PNG — texto cortado, rótulo duplicado, rodapé coerente. Três defeitos da imagem escaparam de todos os outros portões e só apareceram ao ABRIR o arquivo |
-| 29 | `vivo:tudo` | 🌐 **as 12 validações de navegador do grupo LOCAL**, lidas do `package.json` — 175 s. De dezesseis `vivo:*`, o gate rodava **uma**; o `vivo:gerar` estava vermelho havia dias. As 3 do grupo NO AR rodam DEPOIS do push (`npm run vivo:no-ar`) — no gate ficariam estruturalmente vermelhas |
-| 30 | `refazer` | 🔁 **a escala NO AR pode ser refeita** a partir do que ela mesma registra — período, elenco, malha, piso e semente. É a promessa do `ALGORITMO.md` medida contra o dado publicado, não contra entrada de teste |
-| 31 | `selo:gravar` | 🔒 guarda a impressão digital da árvore. `npm run selo:conferir`, antes de commitar, prova que o verde acima é **desta** árvore |
+| 6 | `markdown-cru` | ✳️ **asterisco de markdown vazando para a tela** — 517 trechos medidos. Achado ao OLHAR uma captura, não ao medir: o texto está lá, só está feio, e toda checagem de DOM casava. Comentários ficam de fora, de propósito |
+| 7 | `fontes` | nenhuma fonte externa chamada sem estar declarada no inventário |
+| 8 | `contagem` | nenhum documento **ou código** declara um número de regras que o catálogo desmente |
+| 9 | `ordem-do-gate` | 🔢 **a ordem escrita é a ordem que roda** — as duas listas numeradas conferidas contra o `package.json`: número aponta para o passo certo, números crescem na ordem física do arquivo, nenhum passo fica de fora. O total já era medido; a ordem, não, e `build` estava documentado como 21º rodando em 24º |
+| 10 | `cadeia` | os documentos apontam para o handoff que É o mais recente |
+| 11 | `handoff-orfao` | 🔗 **nenhum handoff fica órfão**: todo `HANDOFF_*.md` do disco é citado no índice, todo citado existe, e nenhum aparece em duas linhas de tabela. O `cadeia` mede o ponteiro para o mais recente; este mede se os OUTROS continuam alcançáveis |
+| 12 | `proximo-id` | 🆔 **o "próximo identificador livre" é mesmo o próximo** — varre TODAS as fatias de `docs/solicitacoes/` (depois de uma rotação o maior ID sai de vista) e recusa ID duplicado no corpo. A regra estava documentada com o motivo ao lado e **inerte**: dizia S-032 com o S-033 escrito abaixo |
+| 13 | `generico` | nenhum nome de cliente cravado (§0) |
+| 14 | `generico:autoteste` | prova que o de cima **morde** — e que a autodefesa dele morde |
+| 15 | `generico:docs` | 📄 **o nome do cliente na documentação é inventário fechado** — 12 citações em 7 arquivos, cada uma com motivo. Não proibido (o README diz "esta instalação atende…"): reprova citação a mais, arquivo novo fora do inventário, e citação a MENOS |
+| 16 | `citacoes` | 🔗 **`arquivo:linha` que envelheceu sozinho** — o arquivo existe e tem aquela linha. O próprio BACKLOG registrou o problema duas vezes e não tinha como impedir a terceira. NÃO confere se o conteúdo da linha ainda é o descrito |
+| 17 | `doc:regras:conferir` | o catálogo de regras documentado bate com o código |
+| 18 | `doc:comandos` | todo comando citado na documentação existe de verdade |
+| 19 | `arquitetura` | o domínio continua sendo ilha; a 2ª régua não virou espelho |
+| 20 | `fatos:conferir` | nenhum documento vivo desmente um número **medido** |
+| 21 | `datas` | `toISOString()` não decide dia nem mês em lugar nenhum |
+| 22 | `crescimento` | o dado publicado ainda cabe onde vai ser servido |
+| 23 | `tamanho-docs` | nenhum documento passou do teto do regime dele (raiz 400 · subpasta 800 · append-only 2.000) |
+| 24 | `auditoria` | 21 ataques ao próprio código, com infrator injetado |
+| 25 | `regras-mestras` | tooltip em todo botão |
+| 26 | `ensaio` | 🔴 o cenário que ORIGINOU o projeto, ponta a ponta: alguém sai do elenco, outro entra com as 5 restrições, a escala se refaz a partir de um corte |
+| 27 | `tempo` | a geração não regrediu de desempenho |
+| 28 | `build` | compila e gera em `docs/` |
+| 29 | `imagem` | 🔴 o único passo que **renderiza o pixel**: gera a imagem pelo botão de verdade e mede o DOM que virou o PNG — texto cortado, rótulo duplicado, rodapé coerente. Três defeitos da imagem escaparam de todos os outros portões e só apareceram ao ABRIR o arquivo |
+| 30 | `vivo:tudo` | 🌐 **as 12 validações de navegador do grupo LOCAL**, lidas do `package.json` — 175 s. De dezesseis `vivo:*`, o gate rodava **uma**; o `vivo:gerar` estava vermelho havia dias. As 3 do grupo NO AR rodam DEPOIS do push (`npm run vivo:no-ar`) — no gate ficariam estruturalmente vermelhas |
+| 31 | `refazer` | 🔁 **a escala NO AR pode ser refeita** a partir do que ela mesma registra — período, elenco, malha, piso e semente. É a promessa do `ALGORITMO.md` medida contra o dado publicado, não contra entrada de teste |
+| 32 | `selo:gravar` | 🔒 guarda a impressão digital da árvore. `npm run selo:conferir`, antes de commitar, prova que o verde acima é **desta** árvore |
 
 > ⚠️ Esta tabela já esteve **fora de ordem e incompleta**: listava 12 linhas para 15 comandos e
 > trocava `auditoria` de posição — achado por auditoria externa em 05/08/2026. Mexeu no `gate`,

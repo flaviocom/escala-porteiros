@@ -25,7 +25,7 @@ import { gerarVariasVersoes } from '../dominio/gerador'
 import { validar, resumir } from '../dominio/validacao'
 import { CATALOGO, menorIntervalo } from '../dominio/regras'
 import { conferirPorFora } from '../dominio/conferencia-independente'
-import { conferirBuracoNaEscala, conferirEscalaJaDivulgada, conferirPassadoPreservado, conferirReversao, cotaMensalJaPublicada, montarBlocosParaPublicar, pisoEntregue, publicacaoImpedida, travaDeDataRetroativa } from '../dominio/blocos'
+import { conferirBuracoNaEscala, conferirEscalaJaDivulgada, conferirPassadoPreservado, conferirReversao, cotaMensalJaPublicada, montarBlocosParaPublicar, publicacaoImpedida, travaDeDataRetroativa } from '../dominio/blocos'
 import { diferencaEmDias, ehDataValida, formatarBR, hojeSaoPaulo, NOMES_DIA, NOMES_DIA_CURTO, somarDias } from '../dominio/datas'
 import { AbaAjustar } from './AbaAjustar'
 import { arbitrar, auditar, medir, pedirProposta, type Placar, type ProgressoMotor } from './motor'
@@ -1918,22 +1918,19 @@ const AbaGerar: React.FC<{
               <Numero rotulo="turnos" valor={blocoNovo.turnos.filter((t) => !t.santaCeia).length} />
               <Numero rotulo="vagas" valor={blocoNovo.turnos.reduce((s, t) => s + t.pessoas.length, 0)} />
               {/*
-                🔴 DUAS COISAS DIFERENTES, e a tela mostrava uma só. `pisoAlcancado` é a EXIGÊNCIA
-                com que o gerador conseguiu cobrir tudo; o piso ENTREGUE é o menor intervalo que a
-                escala de fato tem. Medido em 20 combinações: numa delas o bloco dizia 5 e entregava 6.
-                Nunca exagera — subestima —, mas era um número na tela que não descrevia a escala.
-                Só aparece quando difere, para não virar ruído nos 19 casos em que é igual.
+                🔴 AQUI JÁ ESTEVE `piso 5 (entregue: 6)` — e o ramo era INERTE.
+
+                A sétima auditoria apontou que o piso declarado pode ser menor que o entregue, e eu
+                medi: com `gerar` cru e semente fixa, acontece (1 em 20). Escrevi o ramo. Só depois
+                varri o caminho que **a tela** usa — `gerarVariasVersoes`, a cascata — em 36 combinações
+                de período e semente-base: **zero divergências**. A cascata escolhe pelo maior piso, e
+                por isso não sobra folga entre o exigido e o entregue.
+
+                O ramo nunca renderizaria. Código inerte não é segurança extra: é uma promessa que
+                ninguém pode ver falhar. A medição virou checagem no portão `refazer`, sobre o bloco
+                PUBLICADO — onde, se a igualdade quebrar um dia, alguém é avisado.
               */}
-              <Numero
-                rotulo="piso (dias)"
-                valor={
-                  blocoNovo.pisoAlcancado == null
-                    ? '-'
-                    : pisoEntregue(blocoNovo.turnos) != null && pisoEntregue(blocoNovo.turnos)! > blocoNovo.pisoAlcancado
-                      ? `${blocoNovo.pisoAlcancado} (entregue: ${pisoEntregue(blocoNovo.turnos)})`
-                      : blocoNovo.pisoAlcancado
-                }
-              />
+              <Numero rotulo="piso (dias)" valor={blocoNovo.pisoAlcancado ?? '-'} />
               <Numero rotulo="regras conferidas" valor={`${relatorio.avaliadas}/${relatorio.totalNoCatalogo}`} />
             </div>
           </Cartao>

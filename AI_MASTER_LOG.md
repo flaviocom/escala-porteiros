@@ -460,7 +460,15 @@ existentes não enxergavam **por não terem sido perguntados**.
 8. **Nome não é sequência de bytes latinos** (`a3ccb46`) — emoji no começo do nome matava a imagem
    com "URI malformed" (4 lugares); dois nomes sem ASCII viravam a **mesma pessoa**.
 
-**Estado:** `EXIT_GATE=0` em **29 passos** · 335 testes · 183 turnos no ar · 0 estouros de teto.
+**Estado:** `EXIT_GATE=0` em **31 passos** · 341 testes · 183 turnos no ar · 0 estouros de teto ·
+BACKLOG com **0 itens de tabela abertos**.
+
+> ⚠️ **Esta entrada foi escrita no MEIO da sessão e ficou para trás** — dizia "29 passos · 335
+> testes", e o trabalho continuou por mais três frentes. O portão de fatos não pegou porque
+> arquivo append-only é **isento** dele, e a isenção supõe que a entrada está fechada quando
+> escrita. **Entrada append-only escrita antes do fim da sessão é rascunho, não registro:** ou se
+> escreve por último, ou se volta nela. Achado ao responder à pergunta *"ficou alguma pendência
+> nas entrelinhas?"* — e não havia nada que a pegasse sozinha.
 
 **Handoff:** [`HANDOFF_2026-08-06.md`](docs/handoff/HANDOFF_2026-08-06.md) ·
-**Diário:** DB-026 a DB-028.
+**Diário:** DB-026 a DB-030.
