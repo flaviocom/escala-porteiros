@@ -76,13 +76,34 @@ já foi publicado.
 
 Detalhe em [`HANDOFF_2026-08-06.md`](docs/handoff/HANDOFF_2026-08-06.md) § 6.
 
-### P1.5 🟠 Três fronteiras de portão DECLARADAS em aberto 🤖
-Não são defeitos: são limites que os próprios portões **admitem** ter, escritos para ninguém
-confundir com cobertura total. Ficam aqui para não sumirem de vista.
+### P1.5 ✅ Três fronteiras de portão — TODAS FECHADAS em 06/08/2026 🤖
+Eram limites que os próprios portões **admitiam** ter. Ao medir cada um, **dois se revelaram pior
+do que a declaração dizia e um, melhor** — e a declaração errada é defeito por si: quem lê
+desconfia de um portão que funciona, ou escreve outro em cima.
 
-- o portão `auditoria` exercita a checagem de denominação em **1 de 5** superfícies;
-- o `ensaio` é baseado em propriedade e **passa com metade dos turnos**;
-- o `generico` **não varre `docs/*.md`**.
+- ~~o portão `auditoria` exercita a denominação em 1 de 5 superfícies~~ — **FECHADO**, 06/08/2026.
+  Ela injetava **1 termo em 1 extensão**; o portão procura **12 termos em 3 extensões**. Agora varre
+  as **36 combinações**, com a lista de termos **lida do próprio portão** (copiá-la apodreceria).
+  🔴 **E a matriz achou um buraco de verdade:** o extrator usava **lista de permissão de nomes de
+  campo**, e `explicacao:` não estava nela — são **18 campos `explicacao:` em `regras.ts`**, todos
+  na tela da conferência, e o portão aprovava *"Feito por inteligência artificial"* ali sem piscar.
+  O critério virou a FORMA do valor (prosa: tem espaço e minúscula), não o nome do campo.
+  A isenção que sobra — prosa em constante solta — é **medida a cada auditoria** e hoje vale zero;
+- ~~o `ensaio` passa com metade dos turnos~~ — **FECHADO, e a declaração estava ERRADA** (06/08/2026).
+  Medido com um mutante que jogava fora metade dos turnos: o ensaio **reprovou** — 4 promessas caíram,
+  EXIT=1. Mas **5 das 11 passaram intactas**: as quatro famílias de restrição e o distanciamento. São
+  propriedades do tipo *"nada fora do permitido"*, e meia escala também não tem nada fora do permitido —
+  **propriedade negativa não mede ausência.** Quem segurava a barra eram as regras do catálogo, e
+  depender de outro portão é ficar cego no dia em que ele mudar de escopo. O ensaio ganhou **duas
+  promessas próprias de cobertura**, provadas nas duas pontas.
+  ⚠️ **Fronteira declarada errada é defeito por si**: quem lesse desconfiaria de um portão que
+  funciona, ou escreveria outro em cima;
+- ~~o `generico` não varre `docs/*.md`~~ — **FECHADO**, 06/08/2026. A declaração estava certa pelo
+  motivo errado: ninguém tinha medido o que havia lá. São **12 citações em 7 arquivos, todas
+  legítimas** — e proibir seria errado, porque apagaria a documentação de quem o produto atende.
+  Nasceu o passo 14 (`generico:docs`): **inventário fechado**, que reprova citação a mais, arquivo
+  novo fora do inventário **e citação a menos**. Ele já nasceu achando quatro que um `grep` à mão
+  tinha deixado passar.
 
 ---
 

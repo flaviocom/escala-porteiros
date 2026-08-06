@@ -1282,3 +1282,47 @@ setter nativo (`Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'val
 React observa. **Sonda que não dispara o caminho real mede o estado anterior e chama de resultado.**
 
 **Como reverter.** `git revert` do commit desta entrada devolve os sete.
+
+---
+
+## DB-030 · 06/08/2026 — as três fronteiras declaradas: duas eram piores, uma era melhor
+
+**O quê.** Restavam três limites que os próprios portões admitiam ter, escritos no BACKLOG para
+ninguém confundir com cobertura total. Ao medir cada um, nenhuma das três declarações estava certa.
+
+**1. O `ensaio` "passa com metade dos turnos" — ERA MELHOR do que a declaração dizia.** Injetei um
+mutante que jogava fora metade dos turnos: o ensaio **reprovou**, 4 promessas caíram. Mas **5 das 11
+passaram intactas** — as quatro famílias de restrição e o distanciamento. É da natureza delas: são
+propriedades do tipo *"nada fora do permitido"*, e meia escala também não tem nada fora do permitido.
+**Propriedade negativa não mede ausência.** Quem segurava a barra eram as regras do catálogo — e
+depender de outro portão é ficar cego no dia em que ele mudar de escopo. O ensaio ganhou duas
+promessas próprias de cobertura.
+
+**2. O `auditoria` "1 de 5 superfícies" — ERA PIOR: 1 de 36.** Ela injetava **um** termo em **uma**
+extensão; o portão procura **12 termos em 3 extensões**. E a matriz completa achou um buraco de
+verdade: o extrator de texto de tela usava **lista de permissão de nomes de campo**, e `explicacao:`
+não estava nela. São **18 campos `explicacao:` em `regras.ts`**, todos mostrados na tela da
+conferência — e o portão aprovava `explicacao: "Feito por inteligência artificial"` sem piscar.
+
+> **Lista de permissão erra em silêncio; lista de exclusão erra alto.** O projeto já tinha aprendido
+> isso no portão de contagem, e aqui a lição não tinha sido aplicada. O critério deixou de ser o
+> NOME do campo e passou a ser a FORMA do valor: string com espaço e minúscula é prosa.
+
+**3. O `generico` "não varre `docs/*.md`" — a declaração estava certa pelo motivo errado.** Ninguém
+tinha medido o que havia lá. São **12 citações em 7 arquivos, todas legítimas**: o README diz *"esta
+instalação atende…"*, o MODELO_DE_DADOS mostra o valor num exemplo de JSON — que é o **oposto** de
+cravar. Proibir apagaria a documentação de quem o produto atende; não medir deixaria a décima
+terceira entrar em silêncio. Virou **inventário fechado**, que reprova citação a mais, arquivo novo
+fora do inventário **e citação a menos**.
+
+**O porquê que interessa.** Uma fronteira declarada é uma promessa sobre o que o portão **não** faz,
+e ela apodrece igual a qualquer número escrito à mão — só que ninguém a confere, porque parece
+humildade. **Declaração errada é defeito por si:** a do `ensaio` faria alguém desconfiar de um portão
+que funciona; a do `auditoria` escondia um buraco sete vezes maior que o anunciado.
+
+**Um tropeço de método, de novo.** Ao reescrever o extrator por script, `\b` virou o byte 0x08 e
+`\2` virou 0x02 **dentro do arquivo** — a terceira vez que isso acontece neste projeto. O autoteste
+da própria régua pegou (2 casos que deviam acusar pararam de acusar). Editar regex por script no
+Windows continua sendo a armadilha; a ferramenta de edição é o caminho.
+
+**Como reverter.** `git revert` do commit desta entrada devolve as três fronteiras.

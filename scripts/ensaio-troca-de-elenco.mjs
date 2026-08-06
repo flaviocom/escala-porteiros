@@ -199,6 +199,37 @@ const antesDepois = JSON.stringify(
   [...blocos.flatMap((b) => b.turnos.filter((t) => t.data < CORTE)), ...r.bloco.turnos.filter((t) => t.data < CORTE)]
     .sort((a, b) => (a.data + a.tipo).localeCompare(b.data + b.tipo)),
 )
+/*
+  🔴 COBERTURA — a promessa que faltava, e que as outras não cobrem.
+
+  Em 06/08/2026 injetei um mutante que jogava fora METADE dos turnos gerados. O ensaio reprovou
+  (4 promessas caíram), mas **cinco delas passaram intactas**: as quatro famílias de restrição e o
+  distanciamento. É da natureza delas — são propriedades do tipo *"nada fora do permitido"*, e meia
+  escala também não tem nada fora do permitido. **Propriedade negativa não mede ausência.**
+
+  Quem segurou a barra foram as regras do catálogo (D12 `Vaga`) e o equilíbrio. Depender disso é
+  depender de outro portão — e o dia em que aquele mudar de escopo, este fica cego sem avisar.
+
+  Então a cobertura vira promessa PRÓPRIA: todo dia de culto do período tem turno, e o total bate com
+  a grade que foi pedida.
+*/
+const turnosEsperados = grade.length
+const turnosEntregues = r.bloco.turnos.length
+provar(
+  'cobertura: todo turno da grade foi entregue',
+  turnosEntregues === turnosEsperados,
+  `${turnosEntregues} de ${turnosEsperados} turnos da grade`,
+)
+
+const diasDaGrade = new Set(grade.map((g) => g.data))
+const diasEntregues = new Set(r.bloco.turnos.map((t) => t.data))
+const diasSemNada = [...diasDaGrade].filter((d) => !diasEntregues.has(d))
+provar(
+  'cobertura: nenhum dia de culto ficou sem turno',
+  diasSemNada.length === 0,
+  diasSemNada.length ? `${diasSemNada.length} dia(s) vazios, o 1º em ${formatarBR(diasSemNada[0])}` : `${diasDaGrade.size} dias, todos com turno`,
+)
+
 provar('o passado ficou intocado (byte a byte)', antesPublicado === antesDepois,
   antesPublicado === antesDepois
     ? `${JSON.parse(antesPublicado).length} turnos antes do corte, idênticos`

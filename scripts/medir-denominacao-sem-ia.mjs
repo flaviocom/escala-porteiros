@@ -100,9 +100,25 @@ function trechosDeTela(codigo) {
   for (const m of s.matchAll(PROPS_CHAVE)) {
     achados.push({ texto: m[3], inicio: m.index, onde: `prop ${m[1]}` })
   }
-  // 4. Campo de objeto que vira texto (o vazamento do "Consultor IA" veio daqui)
-  const CAMPOS = /\b(titulo|subtitulo|rotulo|texto|mensagem|descricao|detalhe|fase|motivo|label|description)\s*:\s*(["'`])((?:(?!\2).)*)\2/g
+  /*
+    4. Campo de objeto com PROSA — qualquer nome de campo.
+
+    🔴 Isto era uma LISTA DE PERMISSÃO de onze nomes, e o campo `explicacao:` não estava nela.
+    São **18 campos `explicacao:` em `regras.ts`**, todos mostrados na tela da conferência — e o
+    portão aprovava `explicacao: "Feito por inteligência artificial"` sem piscar. Medido em
+    06/08/2026, quando a auditoria adversarial passou a exercitar a matriz inteira de termos ×
+    extensões em vez de uma única célula.
+
+    **Lista de permissão erra em silêncio; lista de exclusão erra alto** — o projeto já tinha
+    aprendido isso no portão de contagem, e aqui a lição não tinha sido aplicada.
+
+    O critério deixou de ser o NOME do campo e passou a ser a FORMA do valor: string com espaço e
+    letra minúscula é **prosa**, e prosa dentro de `src/` ou é texto de tela ou vai virar. Um
+    identificador ('MANHA', 'bg-red-50', './datas') não tem espaço e continua de fora.
+  */
+  const CAMPOS = /\b([a-zA-Z_][a-zA-Z0-9_]*)\s*:\s*(["'`])((?:(?!\2).)*)\2/g
   for (const m of s.matchAll(CAMPOS)) {
+    if (!/[a-zà-ÿ]/.test(m[3]) || !/\s/.test(m[3].trim())) continue
     achados.push({ texto: m[3], inicio: m.index, onde: `campo ${m[1]}` })
   }
   // 5. Parâmetro de URL — aparece na barra de endereços, e isso é tela

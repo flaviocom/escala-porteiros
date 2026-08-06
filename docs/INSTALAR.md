@@ -153,7 +153,7 @@ vazio); o sintoma seria um **404 num arquivo que existe no repositório**.
 ### 7. Conferir antes de publicar
 
 ```bash
-npm run gate                 # 30 passos, tem de sair 0
+npm run gate                 # 31 passos, tem de sair 0
 npm run generico             # nenhum nome de cliente cravado no código
 ```
 

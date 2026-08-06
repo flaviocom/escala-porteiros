@@ -157,7 +157,7 @@ npm run dev
 **O GATE — nenhuma mudança significativa passa sem:**
 
 ```bash
-npm run gate      # 30 passos: typecheck · testes (2 fusos) · denominação · fontes · contagem · cadeia · genérico + autoteste · catálogo gerado · comandos citados · arquitetura · auditoria · regras mestras · build
+npm run gate      # 31 passos: typecheck · testes (2 fusos) · denominação · fontes · contagem · cadeia · genérico + autoteste · catálogo gerado · comandos citados · arquitetura · auditoria · regras mestras · build
 ```
 
 O que ele encadeia, e por que cada um existe:
@@ -177,7 +177,7 @@ O que ele encadeia, e por que cada um existe:
 | `npm run doc:comandos` | todo comando citado na documentação existe |
 | `npm run arquitetura` | o domínio continua sendo uma ilha; a 2ª régua não virou espelho |
 | `npm run fatos` | nenhum documento vivo desmente um número medido |
-| `npm run auditoria` | 20 ataques ao próprio código, com infrator injetado |
+| `npm run auditoria` | 21 ataques ao próprio código, com infrator injetado |
 | `npm run regras-mestras` | tooltip em todo botão, sem aspas duplas quebrando o atributo |
 | `npm run build` | compila e gera em `docs/` |
 

@@ -123,7 +123,7 @@ está errada** — e é melhor descobrir antes da congregação descobrir.
 npm run gate
 ```
 
-30 passos, **nesta ordem** — lida do `package.json`, não de memória:
+31 passos, **nesta ordem** — lida do `package.json`, não de memória:
 
 | # | Passo | O que prova |
 |---|---|---|
@@ -140,23 +140,24 @@ npm run gate
 | 11 | `proximo-id` | 🆔 **o "próximo identificador livre" é mesmo o próximo** — varre TODAS as fatias de `docs/solicitacoes/` (depois de uma rotação o maior ID sai de vista) e recusa ID duplicado no corpo. A regra estava documentada com o motivo ao lado e **inerte**: dizia S-032 com o S-033 escrito abaixo |
 | 12 | `generico` | nenhum nome de cliente cravado (§0) |
 | 13 | `generico:autoteste` | prova que o de cima **morde** — e que a autodefesa dele morde |
-| 14 | `doc:regras:conferir` | o catálogo de regras documentado bate com o código |
-| 15 | `doc:comandos` | todo comando citado na documentação existe de verdade |
-| 16 | `arquitetura` | o domínio continua sendo ilha; a 2ª régua não virou espelho |
-| 17 | `fatos:conferir` | nenhum documento vivo desmente um número **medido** |
-| 18 | `datas` | `toISOString()` não decide dia nem mês em lugar nenhum |
-| 19 | `citacoes` | nenhuma citação `arquivo:linha` aponta para o vazio |
-| 20 | `crescimento` | o dado publicado ainda cabe onde vai ser servido |
-| 21 | `tamanho-docs` | nenhum documento passou do teto do regime dele (raiz 400 · subpasta 800 · append-only 2.000) |
-| 22 | `auditoria` | 20 ataques ao próprio código, com infrator injetado |
-| 23 | `regras-mestras` | tooltip em todo botão |
-| 24 | `ensaio` | 🔴 o cenário que ORIGINOU o projeto, ponta a ponta: alguém sai do elenco, outro entra com as 5 restrições, a escala se refaz a partir de um corte |
-| 25 | `tempo` | a geração não regrediu de desempenho |
-| 26 | `build` | compila e gera em `docs/` |
-| 27 | `imagem` | 🔴 o único passo que **renderiza o pixel**: gera a imagem pelo botão de verdade e mede o DOM que virou o PNG — texto cortado, rótulo duplicado, rodapé coerente. Três defeitos da imagem escaparam de todos os outros portões e só apareceram ao ABRIR o arquivo |
-| 28 | `vivo:tudo` | 🌐 **as 12 validações de navegador do grupo LOCAL**, lidas do `package.json` — 175 s. De dezesseis `vivo:*`, o gate rodava **uma**; o `vivo:gerar` estava vermelho havia dias. As 3 do grupo NO AR rodam DEPOIS do push (`npm run vivo:no-ar`) — no gate ficariam estruturalmente vermelhas |
-| 29 | `refazer` | 🔁 **a escala NO AR pode ser refeita** a partir do que ela mesma registra — período, elenco, malha, piso e semente. É a promessa do `ALGORITMO.md` medida contra o dado publicado, não contra entrada de teste |
-| 30 | `selo:gravar` | 🔒 guarda a impressão digital da árvore. `npm run selo:conferir`, antes de commitar, prova que o verde acima é **desta** árvore |
+| 14 | `generico:docs` | 📄 **o nome do cliente na documentação é inventário fechado** — 12 citações em 7 arquivos, cada uma com motivo. Não proibido (o README diz "esta instalação atende…"): reprova citação a mais, arquivo novo fora do inventário, e citação a MENOS |
+| 15 | `doc:regras:conferir` | o catálogo de regras documentado bate com o código |
+| 16 | `doc:comandos` | todo comando citado na documentação existe de verdade |
+| 17 | `arquitetura` | o domínio continua sendo ilha; a 2ª régua não virou espelho |
+| 18 | `fatos:conferir` | nenhum documento vivo desmente um número **medido** |
+| 19 | `datas` | `toISOString()` não decide dia nem mês em lugar nenhum |
+| 20 | `citacoes` | nenhuma citação `arquivo:linha` aponta para o vazio |
+| 21 | `crescimento` | o dado publicado ainda cabe onde vai ser servido |
+| 22 | `tamanho-docs` | nenhum documento passou do teto do regime dele (raiz 400 · subpasta 800 · append-only 2.000) |
+| 23 | `auditoria` | 21 ataques ao próprio código, com infrator injetado |
+| 24 | `regras-mestras` | tooltip em todo botão |
+| 25 | `ensaio` | 🔴 o cenário que ORIGINOU o projeto, ponta a ponta: alguém sai do elenco, outro entra com as 5 restrições, a escala se refaz a partir de um corte |
+| 26 | `tempo` | a geração não regrediu de desempenho |
+| 27 | `build` | compila e gera em `docs/` |
+| 28 | `imagem` | 🔴 o único passo que **renderiza o pixel**: gera a imagem pelo botão de verdade e mede o DOM que virou o PNG — texto cortado, rótulo duplicado, rodapé coerente. Três defeitos da imagem escaparam de todos os outros portões e só apareceram ao ABRIR o arquivo |
+| 29 | `vivo:tudo` | 🌐 **as 12 validações de navegador do grupo LOCAL**, lidas do `package.json` — 175 s. De dezesseis `vivo:*`, o gate rodava **uma**; o `vivo:gerar` estava vermelho havia dias. As 3 do grupo NO AR rodam DEPOIS do push (`npm run vivo:no-ar`) — no gate ficariam estruturalmente vermelhas |
+| 30 | `refazer` | 🔁 **a escala NO AR pode ser refeita** a partir do que ela mesma registra — período, elenco, malha, piso e semente. É a promessa do `ALGORITMO.md` medida contra o dado publicado, não contra entrada de teste |
+| 31 | `selo:gravar` | 🔒 guarda a impressão digital da árvore. `npm run selo:conferir`, antes de commitar, prova que o verde acima é **desta** árvore |
 
 > ⚠️ Esta tabela já esteve **fora de ordem e incompleta**: listava 12 linhas para 15 comandos e
 > trocava `auditoria` de posição — achado por auditoria externa em 05/08/2026. Mexeu no `gate`,

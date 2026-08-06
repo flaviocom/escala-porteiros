@@ -368,20 +368,80 @@ conferir(F4, 'alguma função exportada não tem consumidor NENHUM (nem teste, n
 // ═══ FRENTE 5 — os portões mordem mesmo? ═══════════════════════════════════
 const F5 = 'portões'
 
-conferir(F5, 'o portão de denominação reprova um infrator injetado no código real?', () => {
-  const alvo = join(RAIZ, 'src', '__infrator_temporario.tsx')
-  require('node:fs').writeFileSync(alvo, 'export const X = () => <p>Feito por inteligência artificial</p>\n', 'utf8')
-  let saiu = 0
-  try {
-    execFileSync('node', [join(RAIZ, 'scripts', 'medir-denominacao-sem-ia.mjs')], { stdio: 'pipe' })
-  } catch (e) {
-    saiu = e.status ?? 1
-  } finally {
-    require('node:fs').unlinkSync(alvo)
+/*
+  🔴 A MATRIZ INTEIRA, NÃO UMA CÉLULA — 06/08/2026.
+
+  Esta checagem injetava **um** termo ("inteligência artificial") em **um** tipo de arquivo (`.tsx`).
+  O portão de denominação procura **11 termos** em **3 extensões**. Ou seja: a auditoria dizia "o
+  portão reprova infrator" tendo provado 1 de 33 combinações — e as outras 32 podiam estar mortas
+  (uma regex quebrada por caractere de controle já aconteceu três vezes neste projeto).
+
+  A lista de termos é **lida do próprio portão**, por texto, sem importá-lo — importá-lo o
+  EXECUTARIA, e uma lista copiada aqui apodreceria em silêncio no dia em que um termo novo entrasse
+  lá. Se a leitura falhar, isso é defeito, não "0 termos verificados".
+*/
+conferir(F5, 'o portão de denominação reprova TODOS os termos, em TODAS as extensões?', () => {
+  const fs = require('node:fs')
+  const fonte = fs.readFileSync(join(RAIZ, 'scripts', 'medir-denominacao-sem-ia.mjs'), 'utf8')
+  const termos = [...fonte.matchAll(/termo: '([^']+)'/g)].map((m) => m[1])
+  if (termos.length < 5) {
+    return { defeito: true, detalhe: `só ${termos.length} termo(s) lidos do portão — o formato da lista mudou e esta checagem ficaria vazia` }
   }
-  return saiu === 0
-    ? { defeito: true, detalhe: 'o portão APROVOU um arquivo com "inteligência artificial" na tela' }
-    : { detalhe: 'reprovou o infrator injetado' }
+  const extensoes = ['.tsx', '.ts', '.html']
+  const escaparam = []
+  let testadas = 0
+  for (const termo of termos) {
+    for (const ext of extensoes) {
+      const alvo = join(RAIZ, 'src', `__infrator_temporario${ext}`)
+      const corpo =
+        ext === '.tsx' ? `export const X = () => <p>Feito por ${termo} aqui</p>${String.fromCharCode(10)}`
+        : ext === '.html' ? `<p>Feito por ${termo} aqui</p>${String.fromCharCode(10)}`
+        // ⚠️ Em `.ts`, texto de tela mora em CAMPO de objeto — foi assim que se mediu: `grep` por
+        // prosa em constante solta em todo o `src/` devolveu **zero**. A primeira sonda usava
+        // `const aviso = '…'` e acusava 12 escapes que eram, na verdade, uma forma que o produto não
+        // usa. Sonda com forma inventada mede o vazio e chama de buraco.
+        : `export const R = {${String.fromCharCode(10)}  explicacao: 'Feito por ${termo} aqui',${String.fromCharCode(10)}}${String.fromCharCode(10)}`
+      fs.writeFileSync(alvo, corpo, 'utf8')
+      let saiu = 0
+      try { execFileSync('node', [join(RAIZ, 'scripts', 'medir-denominacao-sem-ia.mjs')], { stdio: 'pipe' }) }
+      catch (e) { saiu = e.status ?? 1 }
+      finally { fs.unlinkSync(alvo) }
+      testadas++
+      if (saiu === 0) escaparam.push(`${termo} em ${ext}`)
+    }
+  }
+  return escaparam.length
+    ? { defeito: true, detalhe: `${escaparam.length} de ${testadas} combinações PASSARAM: ${escaparam.slice(0, 6).join(' · ')}${escaparam.length > 6 ? '…' : ''}` }
+    : { detalhe: `${testadas} combinações (${termos.length} termos × ${extensoes.length} extensões), todas reprovadas` }
+})
+
+/*
+  A ISENÇÃO DO PORTÃO DE DENOMINAÇÃO, MEDIDA — não declarada e esquecida.
+
+  Ele procura texto de tela em JSX, em props, em campo de objeto e em parâmetro de URL. **Prosa
+  numa constante solta (`const aviso = 'Feito por …'`) fica de fora.** Isso é escolha, e é defensável
+  enquanto o produto não guardar texto assim — hoje são **zero** ocorrências em `src/`.
+  No dia em que a primeira aparecer, a isenção deixa de ser defensável **em silêncio**. Esta checagem
+  é o barulho.
+*/
+conferir(F5, 'a isenção do portão de denominação (prosa em constante solta) continua vazia?', () => {
+  const fs = require('node:fs')
+  const RE = /^\s*(?:export\s+)?(?:const|let|var)\s+[A-Za-z_][A-Za-z0-9_]*\s*=\s*(["'`])([^"'`]*[a-zà-ÿ]+\s+[a-zà-ÿ]+[^"'`]*)\1/gm
+  const encontrados = []
+  const varrer = (dir) => {
+    for (const nome of fs.readdirSync(dir)) {
+      const caminho = join(dir, nome)
+      if (fs.statSync(caminho).isDirectory()) { varrer(caminho); continue }
+      if (!/\.tsx?$/.test(nome) || /\.test\.tsx?$/.test(nome)) continue
+      for (const m of fs.readFileSync(caminho, 'utf8').matchAll(RE)) {
+        encontrados.push(`${nome}: "${m[2].slice(0, 40)}"`)
+      }
+    }
+  }
+  varrer(join(RAIZ, 'src'))
+  return encontrados.length
+    ? { defeito: true, detalhe: `${encontrados.length} prosa(s) em constante solta — fora do alcance do portão: ${encontrados.slice(0, 3).join(' · ')}` }
+    : { detalhe: 'zero — a isenção continua defensável' }
 })
 
 conferir(F5, 'o portão de fontes reprova um host não declarado?', () => {
