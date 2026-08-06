@@ -123,35 +123,36 @@ está errada** — e é melhor descobrir antes da congregação descobrir.
 npm run gate
 ```
 
-25 passos, **nesta ordem** — lida do `package.json`, não de memória:
+26 passos, **nesta ordem** — lida do `package.json`, não de memória:
 
 | # | Passo | O que prova |
 |---|---|---|
-| 1 | `typecheck` | `strict` ligado — sem ele o TypeScript nem estreita união discriminada |
-| 2 | `test` | a suíte **completa**, nunca escopada |
-| 3 | `test:fuso:berlim` | a mesma suíte noutro fuso, **depois de provar que o fuso mudou** |
-| 4 | `denominacao` | nenhum jargão comoditizado em texto que alguém lê |
-| 5 | `fontes` | nenhuma fonte externa chamada sem estar declarada no inventário |
-| 6 | `contagem` | nenhum documento **ou código** declara um número de regras que o catálogo desmente |
-| 7 | `cadeia` | os documentos apontam para o handoff que É o mais recente |
-| 8 | `generico` | nenhum nome de cliente cravado (§0) |
-| 9 | `generico:autoteste` | prova que o de cima **morde** — e que a autodefesa dele morde |
-| 10 | `doc:regras:conferir` | o catálogo de regras documentado bate com o código |
-| 11 | `doc:comandos` | todo comando citado na documentação existe de verdade |
-| 12 | `arquitetura` | o domínio continua sendo ilha; a 2ª régua não virou espelho |
-| 13 | `fatos:conferir` | nenhum documento vivo desmente um número **medido** |
-| 14 | `datas` | `toISOString()` não decide dia nem mês em lugar nenhum |
-| 15 | `citacoes` | nenhuma citação `arquivo:linha` aponta para o vazio |
-| 16 | `crescimento` | o dado publicado ainda cabe onde vai ser servido |
-| 17 | `tamanho-docs` | nenhum documento passou do teto do regime dele (raiz 400 · subpasta 800 · append-only 2.000) |
-| 18 | `auditoria` | 20 ataques ao próprio código, com infrator injetado |
-| 19 | `regras-mestras` | tooltip em todo botão |
-| 20 | `ensaio` | 🔴 o cenário que ORIGINOU o projeto, ponta a ponta: alguém sai do elenco, outro entra com as 5 restrições, a escala se refaz a partir de um corte |
-| 21 | `tempo` | a geração não regrediu de desempenho |
-| 22 | `build` | compila e gera em `docs/` |
-| 23 | `imagem` | 🔴 o único passo que **renderiza o pixel**: gera a imagem do WhatsApp pelo botão de verdade e falha se o console reclamar |
-| 24 | `refazer` | 🔁 **a escala NO AR pode ser refeita** a partir do que ela mesma registra — período, elenco, malha, piso e semente. É a promessa do `ALGORITMO.md` medida contra o dado publicado, não contra entrada de teste |
-| 25 | `selo:gravar` | 🔒 guarda a impressão digital da árvore. `npm run selo:conferir`, antes de commitar, prova que o verde acima é **desta** árvore |
+| 1 | `segredos` | 🔐 **nenhum segredo em arquivo versionado.** O repositório é PÚBLICO e o token tem escrita nele — vem primeiro de propósito: é o único passo cuja falha não se conserta commitando de novo |
+| 2 | `typecheck` | `strict` ligado — sem ele o TypeScript nem estreita união discriminada |
+| 3 | `test` | a suíte **completa**, nunca escopada |
+| 4 | `test:fuso:berlim` | a mesma suíte noutro fuso, **depois de provar que o fuso mudou** |
+| 5 | `denominacao` | nenhum jargão comoditizado em texto que alguém lê |
+| 6 | `fontes` | nenhuma fonte externa chamada sem estar declarada no inventário |
+| 7 | `contagem` | nenhum documento **ou código** declara um número de regras que o catálogo desmente |
+| 8 | `cadeia` | os documentos apontam para o handoff que É o mais recente |
+| 9 | `generico` | nenhum nome de cliente cravado (§0) |
+| 10 | `generico:autoteste` | prova que o de cima **morde** — e que a autodefesa dele morde |
+| 11 | `doc:regras:conferir` | o catálogo de regras documentado bate com o código |
+| 12 | `doc:comandos` | todo comando citado na documentação existe de verdade |
+| 13 | `arquitetura` | o domínio continua sendo ilha; a 2ª régua não virou espelho |
+| 14 | `fatos:conferir` | nenhum documento vivo desmente um número **medido** |
+| 15 | `datas` | `toISOString()` não decide dia nem mês em lugar nenhum |
+| 16 | `citacoes` | nenhuma citação `arquivo:linha` aponta para o vazio |
+| 17 | `crescimento` | o dado publicado ainda cabe onde vai ser servido |
+| 18 | `tamanho-docs` | nenhum documento passou do teto do regime dele (raiz 400 · subpasta 800 · append-only 2.000) |
+| 19 | `auditoria` | 20 ataques ao próprio código, com infrator injetado |
+| 20 | `regras-mestras` | tooltip em todo botão |
+| 21 | `ensaio` | 🔴 o cenário que ORIGINOU o projeto, ponta a ponta: alguém sai do elenco, outro entra com as 5 restrições, a escala se refaz a partir de um corte |
+| 22 | `tempo` | a geração não regrediu de desempenho |
+| 23 | `build` | compila e gera em `docs/` |
+| 24 | `imagem` | 🔴 o único passo que **renderiza o pixel**: gera a imagem pelo botão de verdade e mede o DOM que virou o PNG — texto cortado, rótulo duplicado, rodapé coerente. Três defeitos da imagem escaparam de todos os outros portões e só apareceram ao ABRIR o arquivo |
+| 25 | `refazer` | 🔁 **a escala NO AR pode ser refeita** a partir do que ela mesma registra — período, elenco, malha, piso e semente. É a promessa do `ALGORITMO.md` medida contra o dado publicado, não contra entrada de teste |
+| 26 | `selo:gravar` | 🔒 guarda a impressão digital da árvore. `npm run selo:conferir`, antes de commitar, prova que o verde acima é **desta** árvore |
 
 > ⚠️ Esta tabela já esteve **fora de ordem e incompleta**: listava 12 linhas para 15 comandos e
 > trocava `auditoria` de posição — achado por auditoria externa em 05/08/2026. Mexeu no `gate`,

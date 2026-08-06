@@ -46,8 +46,23 @@ export interface OpcoesGeracao {
   /** IDs no elenco deste bloco. Quem não está aqui não é escalado. */
   elenco: string[]
   malha: Malha
-  /** Última data de cada pessoa no bloco ANTERIOR — a fronteira. */
+  /** Última data de cada pessoa no bloco ANTERIOR — a fronteira do ESPAÇAMENTO. */
   ultimaEscalaAnterior?: Record<string, DataISO>
+  /**
+   * 🔴 A FRONTEIRA DA COTA — e ela não existia. Sétima auditoria externa, 05/08/2026.
+   *
+   * `ultimaEscalaAnterior` fechou a fronteira do **espaçamento** em 04/08. Ninguém perguntou pela
+   * fronteira do **teto mensal**: o contador `porMes` nascia vazio a cada geração, então um bloco que
+   * começa no meio do mês não enxergava as escalas daquele mês que já estavam publicadas.
+   *
+   * Medido no dado que está NO AR: **Williams tem teto de 3 e aparece 5 vezes em agosto de 2026** —
+   * três no bloco congelado (01, 02 e 05/08) e duas no bloco novo (15 e 26/08). Cada bloco, isolado,
+   * está dentro do teto; o mês que o irmão vive, não.
+   *
+   * `{ id → "AAAA-MM" → quantas vezes JÁ está escalado nesse mês }`, contado sobre o que já foi
+   * publicado antes do início deste bloco.
+   */
+  escalasPorMesAnterior?: Record<string, Record<string, number>>
   /** Teto de piso a tentar. Ausente = calculado a partir da folga da escala. */
   pisoMaximo?: number
   /**
@@ -171,6 +186,16 @@ function tentarComPiso(
   // A fronteira com o bloco anterior: quem trabalhou em 30/08 não pode cair em 01/09.
   for (const [id, data] of Object.entries(op.ultimaEscalaAnterior ?? {})) {
     if (est.datas.has(id)) est.datas.set(id, [data])
+  }
+
+  /*
+    🔴 E A COTA DO MÊS TAMBÉM ATRAVESSA. Ver `escalasPorMesAnterior` para a medição que expôs isto:
+    o contador nascia zerado, e quem já tinha 3 escalas em agosto num bloco publicado entrava no
+    bloco novo como se tivesse zero.
+  */
+  for (const [id, meses] of Object.entries(op.escalasPorMesAnterior ?? {})) {
+    if (!est.datas.has(id)) continue
+    for (const [m, n] of Object.entries(meses)) est.porMes.set(`${id}|${m}`, n)
   }
 
   const turnos = op.grade.map((t) => ({ ...t, pessoas: [] as string[] }))

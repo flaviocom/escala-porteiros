@@ -24,7 +24,7 @@ import { gerarVariasVersoes } from '../dominio/gerador'
 import { validar, resumir } from '../dominio/validacao'
 import { CATALOGO, menorIntervalo } from '../dominio/regras'
 import { conferirPorFora } from '../dominio/conferencia-independente'
-import { conferirEscalaJaDivulgada, conferirPassadoPreservado, conferirReversao, montarBlocosParaPublicar, publicacaoImpedida, travaDeDataRetroativa } from '../dominio/blocos'
+import { conferirEscalaJaDivulgada, conferirPassadoPreservado, conferirReversao, cotaMensalJaPublicada, montarBlocosParaPublicar, publicacaoImpedida, travaDeDataRetroativa } from '../dominio/blocos'
 import { diferencaEmDias, formatarBR, hojeSaoPaulo, NOMES_DIA, NOMES_DIA_CURTO, somarDias } from '../dominio/datas'
 import { AbaAjustar } from './AbaAjustar'
 import { arbitrar, auditar, medir, pedirProposta, type Placar, type ProgressoMotor } from './motor'
@@ -680,7 +680,13 @@ export const Admin: React.FC<{ dados: DadosPublicados }> = ({ dados: dadosInicia
           />
         )}
         {aba === 'conferir' && blocoNovo && (
-          <AbaConferirPorFora bloco={blocoNovo} pessoas={pessoas} config={config} fronteira={fronteira} />
+          <AbaConferirPorFora
+            bloco={blocoNovo}
+            pessoas={pessoas}
+            config={config}
+            fronteira={fronteira}
+            cotaAnterior={cotaMensalJaPublicada(dados.blocos, blocoNovo.inicio)}
+          />
         )}
         {aba === 'publicar' && (
           <AbaPublicar
@@ -1070,14 +1076,16 @@ const AbaConferirPorFora: React.FC<{
   pessoas: Pessoa[]
   config: Configuracao
   fronteira: Record<string, string>
-}> = ({ bloco, pessoas, config, fronteira }) => {
+  /** A cota mensal já publicada — as DUAS réguas precisam dela, ou as duas erram junto. */
+  cotaAnterior: Record<string, Record<string, number>>
+}> = ({ bloco, pessoas, config, fronteira, cotaAnterior }) => {
   const porFora = useMemo(
-    () => conferirPorFora(bloco, pessoas, config, fronteira),
-    [bloco, pessoas, config, fronteira],
+    () => conferirPorFora(bloco, pessoas, config, fronteira, cotaAnterior),
+    [bloco, pessoas, config, fronteira, cotaAnterior],
   )
   const oficial = useMemo(
-    () => validar({ bloco, pessoas, ultimaEscalaAnterior: fronteira, config }),
-    [bloco, pessoas, fronteira, config],
+    () => validar({ bloco, pessoas, ultimaEscalaAnterior: fronteira, config, escalasPorMesAnterior: cotaAnterior }),
+    [bloco, pessoas, fronteira, config, cotaAnterior],
   )
 
   const foraAcusa = porFora.comFuro.length > 0
@@ -1350,7 +1358,12 @@ const AbaGerar: React.FC<{
        * A semente muda a cada clique em "gerar outra combinação", e fica gravada no bloco.
        */
       const escolha = gerarVariasVersoes(
-        { inicio: deAgora, fim: ate, grade, pessoas, elenco, malha: config.malhaPadrao, ultimaEscalaAnterior: fronteiraEm(deAgora) },
+        {
+          inicio: deAgora, fim: ate, grade, pessoas, elenco, malha: config.malhaPadrao,
+          ultimaEscalaAnterior: fronteiraEm(deAgora),
+          // A cota do mês também atravessa a fronteira — ver `cotaMensalJaPublicada`.
+          escalasPorMesAnterior: cotaMensalJaPublicada(dados.blocos, deAgora),
+        },
         8, 3, semente,
       )
       const r = escolha.melhor
@@ -1387,8 +1400,14 @@ const AbaGerar: React.FC<{
   }
 
   const relatorio = useMemo(
-    () => (blocoNovo ? validar({ bloco: blocoNovo, pessoas, ultimaEscalaAnterior: fronteira, config }) : null),
-    [blocoNovo, pessoas, fronteira, config],
+    () =>
+      blocoNovo
+        ? validar({
+            bloco: blocoNovo, pessoas, ultimaEscalaAnterior: fronteira, config,
+            escalasPorMesAnterior: cotaMensalJaPublicada(dados.blocos, blocoNovo.inicio),
+          })
+        : null,
+    [blocoNovo, pessoas, fronteira, config, dados.blocos],
   )
 
   /** A mesma conferência do Publicar, aqui — ver o comentário longo lá. */
@@ -2044,7 +2063,10 @@ const AbaPublicar: React.FC<{
       if (diferencaEmDias(t.data, blocoNovo.inicio) <= 0) continue
       for (const id of t.pessoas) if (!f[id] || t.data > f[id]) f[id] = t.data
     }
-    return validar({ bloco: blocoNovo, pessoas, ultimaEscalaAnterior: f, config })
+    return validar({
+      bloco: blocoNovo, pessoas, ultimaEscalaAnterior: f, config,
+      escalasPorMesAnterior: cotaMensalJaPublicada(dados.blocos, blocoNovo.inicio),
+    })
   }, [blocoNovo, dados.blocos, pessoas, config])
 
   const publicar = async () => {

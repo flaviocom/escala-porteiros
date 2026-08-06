@@ -15,7 +15,31 @@
  * A regra, uma só: **o bloco novo manda no período dele, e só nele.**
  */
 import { describe, expect, it } from 'vitest'
-import { conferirEscalaJaDivulgada, conferirPassadoPreservado, conferirReversao, montarBlocosParaPublicar, publicacaoImpedida, travaDeDataRetroativa } from './blocos'
+import { conferirEscalaJaDivulgada, conferirPassadoPreservado, conferirReversao, cotaMensalJaPublicada, montarBlocosParaPublicar, publicacaoImpedida, travaDeDataRetroativa } from './blocos'
+import { validar } from './validacao'
+import type { Configuracao, Pessoa } from './tipos'
+
+/** Um contexto mínimo com cota anterior, para exercer D7 atravessando a fronteira. */
+const CONFIG_TETO: Configuracao = {
+  versao: 1, capacidadePadrao: 1, malhaPadrao: { regras: [] }, santaCeia: [],
+  identidade: { titulo: 'T', subtitulo: '', logo: '', pessoa: { singular: 'Pessoa', plural: 'pessoas' } },
+}
+const validarComCota = (
+  turnos: Turno[],
+  pessoas: Pessoa[],
+  cota: Record<string, Record<string, number>> | undefined,
+) =>
+  validar({
+    bloco: {
+      id: 'x', inicio: turnos[0].data, fim: turnos[turnos.length - 1].data, geradoEm: '2026-08-05',
+      origem: 'algoritmo', pisoAlcancado: null, elenco: pessoas.map((p) => p.id),
+      malha: { regras: [] }, turnos,
+    },
+    pessoas,
+    ultimaEscalaAnterior: {},
+    config: CONFIG_TETO,
+    ...(cota === undefined ? {} : { escalasPorMesAnterior: cota }),
+  })
 import type { Bloco, Turno } from './tipos'
 
 const turno = (data: string): Turno => ({
@@ -338,5 +362,96 @@ describe('conferirEscalaJaDivulgada', () => {
 
   it('sem bloco novo, não há o que conferir', () => {
     expect(conferirEscalaJaDivulgada([], null).reescritos).toBe(0)
+  })
+})
+
+/**
+ * 🔴 A FRONTEIRA DA COTA MENSAL — sétima auditoria externa, 05/08/2026.
+ *
+ * `ultimaEscalaAnterior` fechou a fronteira do ESPAÇAMENTO em 04/08. A do **teto mensal** nunca
+ * existiu: o contador nascia zerado a cada geração. Medido no dado NO AR: **Williams, teto 3, com 5
+ * escalas em agosto de 2026** — três no bloco congelado, duas no novo. As duas réguas aprovavam.
+ */
+describe('cotaMensalJaPublicada', () => {
+  const b = (inicio: string, fim: string, turnos: Turno[]): Bloco => ({
+    id: `b-${inicio}`, inicio, fim, geradoEm: '2026-08-05', origem: 'algoritmo',
+    pisoAlcancado: 7, elenco: [], malha: { regras: [] }, turnos,
+  })
+  const t = (data: string, pessoas: string[]): Turno => ({ data, tipo: 'NOITE', pessoas, capacidade: 3 })
+
+  it('🔴 conta o que já está publicado no MÊS que o bloco novo começa', () => {
+    const pub = [b('2026-08-01', '2026-08-31', [
+      t('2026-08-02', ['ana', 'bia']),
+      t('2026-08-05', ['ana']),
+    ])]
+    const r = cotaMensalJaPublicada(pub, '2026-08-06')
+    expect(r.ana['2026-08']).toBe(2)
+    expect(r.bia['2026-08']).toBe(1)
+  })
+
+  it('🔴 NÃO conta o que o bloco novo vai cobrir — seria contar duas vezes', () => {
+    const pub = [b('2026-08-01', '2026-08-31', [
+      t('2026-08-02', ['ana']),
+      t('2026-08-20', ['ana']),   // depois do início do novo: será reescrito
+    ])]
+    expect(cotaMensalJaPublicada(pub, '2026-08-06').ana['2026-08']).toBe(1)
+  })
+
+  it('turno fora do intervalo que o bloco declara não conta — ele nunca foi ao ar', () => {
+    const pub = [b('2026-08-01', '2026-08-31', [t('2026-07-20', ['ana'])])]
+    expect(cotaMensalJaPublicada(pub, '2026-09-01').ana).toBeUndefined()
+  })
+
+  it('separa por mês, não soma tudo', () => {
+    const pub = [b('2026-07-01', '2026-08-31', [
+      t('2026-07-05', ['ana']), t('2026-07-12', ['ana']), t('2026-08-02', ['ana']),
+    ])]
+    const r = cotaMensalJaPublicada(pub, '2026-08-06')
+    expect(r.ana['2026-07']).toBe(2)
+    expect(r.ana['2026-08']).toBe(1)
+  })
+
+  it('sem bloco anterior, não há cota — e isso é diferente de zero mentiroso', () => {
+    expect(cotaMensalJaPublicada([], '2026-08-06')).toEqual({})
+  })
+})
+
+describe('D7 — o teto atravessa a fronteira', () => {
+  const pessoaTeto = (id: string, teto: number): Pessoa =>
+    ({ id, nome: id.toUpperCase(), ativo: true, restricoes: { tetoMensal: teto } })
+
+  it('🔴 3 já publicadas + 2 novas com teto 3 REPROVA, e a mensagem mostra a soma', () => {
+    const rel = validarComCota(
+      [
+        { data: '2026-08-15', tipo: 'NOITE', pessoas: ['w'], capacidade: 1 },
+        { data: '2026-08-26', tipo: 'NOITE', pessoas: ['w'], capacidade: 1 },
+      ],
+      [pessoaTeto('w', 3)],
+      { w: { '2026-08': 3 } },
+    )
+    expect(rel.aprovada).toBe(false)
+    const d7 = rel.resultados.find((r) => r.id === 'D7')!
+    expect(d7.status).toBe('falha')
+    expect(d7.violacoes[0].mensagem).toContain('5 escalas em 2026-08')
+    expect(d7.violacoes[0].mensagem).toContain('3 já publicada')
+  })
+
+  it('a outra ponta: 1 já publicada + 2 novas com teto 3 PASSA', () => {
+    const rel = validarComCota(
+      [
+        { data: '2026-08-15', tipo: 'NOITE', pessoas: ['w'], capacidade: 1 },
+        { data: '2026-08-26', tipo: 'NOITE', pessoas: ['w'], capacidade: 1 },
+      ],
+      [pessoaTeto('w', 3)],
+      { w: { '2026-08': 1 } },
+    )
+    expect(rel.resultados.find((r) => r.id === 'D7')!.status).toBe('ok')
+  })
+
+  it('🔒 a MEDIDA diz se a fronteira foi considerada — afrouxar em silêncio é indistinguível de furo', () => {
+    const com = validarComCota([{ data: '2026-08-15', tipo: 'NOITE', pessoas: ['w'], capacidade: 1 }], [pessoaTeto('w', 3)], { w: {} })
+    const sem = validarComCota([{ data: '2026-08-15', tipo: 'NOITE', pessoas: ['w'], capacidade: 1 }], [pessoaTeto('w', 3)], undefined)
+    expect(com.resultados.find((r) => r.id === 'D7')!.medida).toContain('somando o que já está publicado')
+    expect(sem.resultados.find((r) => r.id === 'D7')!.medida).toContain('SEM a contagem dos blocos anteriores')
   })
 })

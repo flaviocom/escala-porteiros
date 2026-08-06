@@ -75,6 +75,8 @@ export function conferirPorFora(
   pessoas: Pessoa[],
   config: Configuracao,
   ultimaEscalaAnterior: Record<string, DataISO> = {},
+  /** Quantas escalas cada pessoa já tem em cada mês, nos blocos anteriores. Ver a promessa 6. */
+  escalasPorMesAnterior: Record<string, Record<string, number>> = {},
 ): RelatorioIndependente {
   const achados: AchadoIndependente[] = []
   const registrar = (promessa: string, furos: string[], veredito: string) =>
@@ -172,13 +174,33 @@ export function conferirPorFora(
   // ── 6. Teto mensal ───────────────────────────────────────────────────────
   {
     const furos: string[] = []
+    /*
+      🔴 O TETO ATRAVESSA A FRONTEIRA — sétima auditoria externa, 05/08/2026.
+
+      Esta régua também contava só dentro do bloco, como a outra. Ou seja: as DUAS aprovavam um mês
+      estourado, cada uma pela mesma janela. **Maker–checker só vale quando os dois olham por janelas
+      diferentes** — aqui a implementação era independente e a PERGUNTA era a mesma.
+
+      Medido no dado no ar: Williams, teto 3, com 5 escalas em agosto de 2026.
+    */
     for (const l of linhas.values()) {
       const teto = l.pessoa.restricoes.tetoMensal
       if (teto == null) continue
-      for (const [m, n] of l.porMes) if (n > teto) furos.push(`${l.pessoa.nome} com ${n} em ${m}, acima do teto de ${teto}`)
+      const antesDele = escalasPorMesAnterior[l.pessoa.id] ?? {}
+      for (const [m, n] of l.porMes) {
+        const antes = antesDele[m] ?? 0
+        const total = n + antes
+        if (total > teto)
+          furos.push(
+            antes > 0
+              ? `${l.pessoa.nome} com ${total} em ${m} (${antes} já publicada(s) + ${n} aqui), acima do teto de ${teto}`
+              : `${l.pessoa.nome} com ${n} em ${m}, acima do teto de ${teto}`,
+          )
+      }
     }
     registrar('Ninguém passa do próprio teto mensal', furos,
-      `${[...linhas.values()].filter((l) => l.pessoa.restricoes.tetoMensal != null).length} pessoa(s) com teto`)
+      `${[...linhas.values()].filter((l) => l.pessoa.restricoes.tetoMensal != null).length} pessoa(s) com teto` +
+        (Object.keys(escalasPorMesAnterior).length ? ' · somando o que já está publicado no mês' : ' · SEM os blocos anteriores'))
   }
 
   // ── 7. Só quem está no elenco e ativo ────────────────────────────────────

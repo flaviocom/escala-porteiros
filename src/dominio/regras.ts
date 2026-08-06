@@ -57,6 +57,11 @@ export interface Contexto {
    */
   ultimaEscalaAnterior: Record<string, DataISO>
   /**
+   * Quantas escalas cada pessoa JÁ tem em cada mês, nos blocos publicados antes deste.
+   * Sem isto, o teto mensal é conferido bloco a bloco e o mês que o irmão vive estoura. Ver D7.
+   */
+  escalasPorMesAnterior?: Record<string, Record<string, number>>
+  /**
    * 🔴 A CONFIGURAÇÃO — entrou em 04/08/2026, por auditoria independente, e o motivo importa.
    *
    * Sem ela, uma regra só conseguia comparar o bloco **consigo mesmo**. Foi assim que D9 ficou
@@ -356,6 +361,21 @@ const D7: Regra = {
       const teto = p.restricoes.tetoMensal
       if (teto == null) continue
       contados.push(p)
+      /*
+        🔴 O TETO ATRAVESSA A FRONTEIRA — sétima auditoria externa, 05/08/2026.
+
+        Esta contagem começava do zero a cada bloco. Um bloco que começa no meio do mês não via as
+        escalas daquele mês que já estavam publicadas, e o mês somado estourava com as duas réguas
+        aprovando — cada bloco, isolado, está dentro do teto.
+
+        Medido no dado que está NO AR: **Williams, teto 3, com 5 escalas em agosto de 2026** — três
+        no bloco congelado e duas no novo. O irmão que disse "só consigo três vezes por mês" foi
+        escalado cinco, e todo mecanismo do produto dizia que estava certo.
+
+        `escalasPorMesAnterior` traz o que já está publicado nos meses que este bloco toca. Ausente
+        (bloco isolado, teste, script antigo), a conta é a de antes — e isso é declarado na medida.
+      */
+      const anteriores = ctx.escalasPorMesAnterior?.[p.id] ?? {}
       const porMes = new Map<string, number>()
       for (const t of turnosComGente(ctx.bloco)) {
         if (!t.pessoas.includes(p.id)) continue
@@ -363,12 +383,25 @@ const D7: Regra = {
         porMes.set(m, (porMes.get(m) ?? 0) + 1)
       }
       for (const [m, n] of porMes) {
-        if (n > teto)
-          v.push({ pessoaId: p.id, mensagem: `${p.nome} tem ${n} escalas em ${m}, acima do teto de ${teto}` })
+        const antes = anteriores[m] ?? 0
+        const total = n + antes
+        if (total > teto)
+          v.push({
+            pessoaId: p.id,
+            mensagem:
+              antes > 0
+                ? `${p.nome} tem ${total} escalas em ${m} (${antes} já publicada(s) + ${n} nesta escala), acima do teto de ${teto}`
+                : `${p.nome} tem ${n} escalas em ${m}, acima do teto de ${teto}`,
+          })
       }
     }
     return ok(
-      { id: D7.id, titulo: D7.titulo, familia: 'DURA', medida: `${contados.length} pessoa(s) com teto mensal${comNomes(contados)}` },
+      {
+        id: D7.id, titulo: D7.titulo, familia: 'DURA',
+        medida:
+          `${contados.length} pessoa(s) com teto mensal${comNomes(contados)}` +
+          (ctx.escalasPorMesAnterior ? ' · somando o que já está publicado no mês' : ' · SEM a contagem dos blocos anteriores'),
+      },
       v,
     )
   },

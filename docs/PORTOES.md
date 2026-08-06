@@ -40,17 +40,31 @@ alguma tiver caractere de controle.
 
 ---
 
-## Os 25 passos do `npm run gate`
+## Os 26 passos do `npm run gate`
 
-### 1. `typecheck` — `tsc --noEmit`, `strict` ligado
+### 1. `segredos` — nenhum segredo em arquivo versionado
+**População:** todo arquivo que `git ls-files` lista (148 hoje) · **5 formas** procuradas · 4 isentos
+declarados, cada um com o motivo.
+**Por quê:** o `ARQUITETURA.md` promete que o token *"nunca vai para o repositório"*, e o
+`OPERACAO.md` diz que esse token tem `Contents: Read and write` **neste** repositório — que é
+**público**. A promessa estava escrita em dois documentos e não havia nada que a medisse: nenhuma das
+20 checagens da auditoria adversarial olha para segredo.
+**Vem primeiro no gate**, e é o único passo com essa propriedade: os outros se consertam commitando
+de novo; um segredo commitado fica exposto no mesmo instante, e a correção é **revogar na origem**.
+**Nunca imprime o valor** — só o prefixo e o comprimento. Portão que vaza o segredo no log é pior que
+o segredo no arquivo, porque o log vai para o terminal, para o CI e para o histórico da sessão.
+**Provado nas duas pontas:** token de forma válida (valor inventado) injetado em `datas.ts` → EXIT=1
+sem vazar o valor; `.env` forçado para dentro do índice → EXIT=1; árvore limpa → EXIT=0.
+
+### 2. `typecheck` — `tsc --noEmit`, `strict` ligado
 Sem `strict`, o TypeScript nem estreita união discriminada, e metade das garantias de tipo do
 projeto some.
 
-### 2. `test` — `vitest run`, a suíte COMPLETA
+### 3. `test` — `vitest run`, a suíte COMPLETA
 🔴 **Nunca escopada.** Rodar só as suítes tocadas esconde regressão em área não tocada. É regra de
 método, com prejuízo registrado.
 
-### 3. `test:fuso:berlim` — a mesma suíte em `Europe/Berlin`
+### 4. `test:fuso:berlim` — a mesma suíte em `Europe/Berlin`
 **Critério:** o script primeiro **prova que o fuso mudou** — ele compara `getTimezoneOffset()` e
 exige que fique **negativo** — e só então roda.
 
@@ -61,21 +75,21 @@ UTC−3 um defeito de fuso é invisível"* tem um inverso, e ele custou uma regr
 Por isso funções de data ganham teste de **valor absoluto**, que não depende do fuso de quem roda. Sem essa prova, um `TZ` ignorado pelo sistema faria o passo passar sem testar nada.
 Em UTC−3 um defeito de fuso é invisível: o dia só vira no fim da tarde.
 
-### 4. `denominacao` — nenhum jargão comoditizado em texto que alguém lê
+### 5. `denominacao` — nenhum jargão comoditizado em texto que alguém lê
 **População:** texto visível em `src/`.
 **Critério:** ocorrências de "IA"/"AI" como **palavra**, não como pedaço.
 **Autoteste:** 9 casos que devem acusar + 13 que devem **absolver** — inclusive `SANTA CEIA` (contém
 "IA"), `ENSAIO` (contém "AI"), expressões (`${NOMES_DIA[d]}`) e negações (*"não é inteligência
 artificial"*). Os 13 de absolvição são o que impede o portão de virar ruído.
 
-### 5. `fontes` — nenhuma fonte externa chamada sem estar declarada
+### 6. `fontes` — nenhuma fonte externa chamada sem estar declarada
 **População:** 83 arquivos em `src/` **e** `scripts/` · 1 isento (o próprio inventário).
 **Critério:** todo host em URL literal tem de estar em `docs/INVENTARIO_DE_FONTES.md`.
 **Fora de escopo, declarado:** laço local (`127.0.0.1`) e domínios reservados pela RFC 2606
 (`example.com`, `.test`, `.invalid`) — é o que permite escrever exemplo em mensagem de ajuda.
 **Hoje:** 4 chamados, 4 declarados.
 
-### 6. `contagem` — nenhum documento vivo desmente o catálogo
+### 7. `contagem` — nenhum documento vivo desmente o catálogo
 **População:** **todo `.md` do repositório**, descoberto — não uma lista à mão.
 **Isentos, declarados:** `AI_MASTER_LOG.md`, `DIARIO_DE_BORDO.md`, `docs/handoff/`,
 `docs/historico/` — append-only, registram o que era verdade então.
@@ -86,7 +100,7 @@ artificial"*). Os 13 de absolvição são o que impede o portão de virar ruído
 nem na lista, nem nas isenções. Foi invertido para lista de exclusão:
 **lista de permissão erra em silêncio; lista de exclusão erra alto.**
 
-### 7. `cadeia` — os documentos apontam para o handoff mais recente
+### 8. `cadeia` — os documentos apontam para o handoff mais recente
 **Critério de "mais recente":** por **data no nome** e, no mesmo dia, pelo **sufixo** (`-b`, `-c`…),
 com o **sem sufixo sendo o PRIMEIRO** do dia. Ordenar alfabeticamente mentiria: `HANDOFF_2026-08-05.md`
 vem antes de `HANDOFF_2026-08-05-b.md` no alfabeto e é o mais **antigo** dos dois.
@@ -94,7 +108,7 @@ vem antes de `HANDOFF_2026-08-05-b.md` no alfabeto e é o mais **antigo** dos do
 **Autoteste:** acusa ponteiro antigo · aprova o atual · **ignora** link para handoff antigo que
 esteja fora de uma linha que se diz "mais recente".
 
-### 8. `generico` — nenhum nome de cliente cravado (§0)
+### 9. `generico` — nenhum nome de cliente cravado (§0)
 **População:** 32 arquivos (`src/` + `index.html` + `package.json` + `README.md`) · **20 testes pulados**, contados
 e impressos.
 **Os 8 termos:** `JD. São Luiz` · `Congregação Cristã` · `CCB` (com borda por classe de caracteres,
@@ -125,23 +139,23 @@ trombasse com a própria documentação seria contornado no primeiro dia.
 **Por que `.test.ts` é pulado:** as fixtures usam o nome do cliente de propósito, e teste não vai
 para o ar. Troca consciente, com o par no autoteste (mesmo conteúdo fora de teste **é** achado).
 
-### 9. `generico:autoteste` — prova que o de cima morde
+### 10. `generico:autoteste` — prova que o de cima morde
 **21 casos:** 20 de varredura (infratores que devem reprovar + limpos que devem passar) + 1 de
 autodefesa. Entre os limpos, dois valem nota: **"irmandade" não pode acusar** (a borda tem de estar
 viva) e **`escala-porteiros` como slug não pode acusar**.
 **O caso de autodefesa** injeta o byte de backspace num **clone** do portão e exige saída 2.
 
-### 10. `doc:regras:conferir` — o catálogo documentado bate com o código
+### 11. `doc:regras:conferir` — o catálogo documentado bate com o código
 `docs/CATALOGO_DE_REGRAS.md` é **gerado**. Este passo regenera em memória e compara **byte a byte**
 (ignorando fim de linha, porque o Windows reescreve CRLF). Muda o `titulo` ou a `explicacao` de uma
 regra sem regenerar → vermelho.
 
-### 11. `doc:comandos` — todo comando citado existe
+### 12. `doc:comandos` — todo comando citado existe
 **População:** os 17 documentos vivos · isentos os append-only.
 **Critério:** todo `npm run <nome>` está no `package.json`; todo `node scripts/<arquivo>` existe em
 disco. **Achou defeito na primeira execução:** `npm run tempo`, citado na documentação, não existia.
 
-### 12. `arquitetura` — as três invariantes que a documentação afirma
+### 13. `arquitetura` — as três invariantes que a documentação afirma
 1. `src/dominio/` **não importa nada de fora** (nem `../`, nem pacote externo).
 2. `conferencia-independente.ts` **não importa** `regras`, `validacao` nem `gerador`.
 3. **`docs/.nojekyll` existe.**
@@ -157,14 +171,14 @@ publicada · o site mostra a escala nova em cerca de um minuto"*. Ninguém no pa
 por tempo indeterminado. Um arquivo de 0 byte elimina a classe, e ele já sumiu uma vez sem ninguém
 ver: é o argumento inteiro para portão em vez de disciplina.
 
-### 13. `fatos:conferir` — nenhum documento desmente um número medido
+### 14. `fatos:conferir` — nenhum documento desmente um número medido
 **11 fatos**, todos de fonte executável: passos do gate (do `package.json`), casos do autoteste (da
 saída dele), checagens da auditoria, arquivos e termos do portão genérico, documentos vivos, piso do
 bloco publicado, turnos congelados, fontes declaradas, regras do catálogo, regras duras.
 **Nenhum é digitado.** Achou 4 contradições na primeira execução, e depois **pegou a própria
 mudança**: ao entrar no gate, virou o 16º passo e reprovou os documentos que diziam 15.
 
-### 14. `datas` — `toISOString()` não decide dia nem mês
+### 15. `datas` — `toISOString()` não decide dia nem mês
 **População:** 83 arquivos de `src/` e `scripts/` · isento `datas.test.ts`, que **cita** o
 antipadrão para provar que ele erra.
 **Critério, em dois níveis:**
@@ -177,7 +191,7 @@ antipadrão para provar que ele erra.
 `datas.ts`, no `RECONSTRUIR.md`, no `AGENTS.md` e em três comentários de teste. **E não havia nada
 que a cobrasse.** Quando alguém foi olhar, havia 4 usos e o `BACKLOG.md` declarava 1.
 
-### 15. `citacoes` — citação `arquivo:linha` que aponta para o vazio
+### 16. `citacoes` — citação `arquivo:linha` que aponta para o vazio
 **População:** os documentos vivos · isentos os append-only, porque corrigir a citação de um handoff
 seria mentir sobre o que se sabia naquele dia (e o número de pulados é impresso).
 **Critério:** o arquivo existe, e a linha existe.
@@ -193,14 +207,14 @@ que transforma a citação de coordenada em afirmação verificável.
 **Limite declarado:** ele não confere se a linha *diz* o que o documento afirma — isso exigiria
 entender a frase. Pega arquivo renomeado, apagado e linha além do fim, que é a maior parte.
 
-### 16. `crescimento` — o dado ainda cabe onde é servido
+### 17. `crescimento` — o dado ainda cabe onde é servido
 **Critério:** nenhum arquivo de `dados/` passa de **60%** do teto de 1 MB da Contents API do GitHub,
 que é a que a área administrativa usa para publicar.
 **Também mede o ritmo**, do próprio dado: bytes por turno × turnos por ano → anos de folga.
 **Por que 60% e não 90%:** sobra ano suficiente para arquivar sem pressa. Alarme que grita cedo
 demais é alarme que alguém desliga.
 
-### 17. `tamanho-docs` — nenhum documento passou do teto do próprio regime
+### 18. `tamanho-docs` — nenhum documento passou do teto do próprio regime
 **De onde vêm os tetos:** de `docs/regimes-documentos.json`, a declaração do PROJETO — não de um
 número escrito no script. O regime vem do **caminho**: raiz = **vivo** (400 linhas / 40 KB,
 carregado toda sessão) · subpasta = **referência** (800 / 100, lido sob demanda) · a lista
@@ -211,21 +225,49 @@ isenta**, porque medir o passado imutável não faz sentido.
 *"no pré-voo **e no GATE**"* — e o GATE não tinha o passo. Quando a auditoria externa mostrou
 isso, a dívida foi **declarada** em vez de fechada; algumas horas depois, fechada.
 
-### 18. `auditoria` — 20 ataques ao próprio código
+### 19. `auditoria` — 20 ataques ao próprio código
 Cada ataque **injeta um infrator** e exige que a validação o pegue. Frentes: validação, datas e fuso,
 gerador, dado publicado (inclusive *"os dois arquivos de dados são iguais?"* — que pegou um defeito
 real), e camada de tela.
 ⚠️ **Relatório sem achado é declarado SUSPEITO pelo próprio script**, com o motivo estrutural: quem
 auditou escreveu o código.
 
-### 19. `regras-mestras` — tooltip em todo botão
+### 20. `regras-mestras` — tooltip em todo botão
 **População:** 62 botões medidos.
 **Também mede:** clicáveis fora de `<button>` (div/span com `onClick` e sem papel declarado) — hoje 0
 — e aspas duplas dentro do atributo, que quebram o HTML em silêncio.
 
-### 20. `build` — compila e gera em `docs/`
+### 21. `build` — compila e gera em `docs/`
 
 ---
+
+### 22. `ensaio` — o cenário que ORIGINOU o projeto, ponta a ponta
+Alguém sai do elenco, outro entra com as cinco restrições, e a escala se refaz a partir de um corte.
+**11 promessas medidas**, entre elas *"o passado antes do corte fica byte a byte idêntico"*.
+
+### 23. `tempo` — a geração não regrediu de desempenho
+
+### 24. `imagem` — o único passo que RENDERIZA O PIXEL
+Gera a imagem pelo botão de verdade e **mede o DOM que virou o PNG**, no instante anterior à
+rasterização: texto cortado pela própria caixa, rótulo duplicado na mesma pílula, rodapé coerente.
+**Por quê:** três defeitos da imagem escaparam de todos os outros portões em 05/08/2026 e só
+apareceram quando alguém ABRIU o arquivo — *"sem porteiros escalados"*, o `ENSAIO` cravado em toda
+tarde, e a pílula da Santa Ceia imprimindo o rótulo duas vezes. Ler o PNG a olho não escala.
+⚠️ A medição usa um `MutationObserver` instalado **antes** do clique: `gerarImagem.ts` monta um palco,
+rasteriza e chama `palco.remove()`, então medir depois acha uma página vazia.
+
+### 25. `refazer` — a escala NO AR pode ser refeita
+Pega o que o bloco publicado registra (período, elenco, malha, piso, semente), refaz a escala e
+compara turno a turno. É a promessa do `ALGORITMO.md` — *"conferir daqui a um ano"* — medida contra o
+**dado publicado**, não contra entrada de teste. Bloco `importado` é isento, declarado e contado.
+⚠️ Fica vermelho no dia em que o algoritmo mudar de propósito. É o ponto: nesse dia a promessa se
+quebra para o que já está no ar, e alguém tem de decidir — aceitar e declarar, ou republicar.
+
+### 26. `selo:gravar` — o verde acima é DESTA árvore
+Guarda a impressão digital de todo arquivo versionado. `npm run selo:conferir`, antes de commitar,
+compara. **Por quê:** em 05/08/2026 um `git add -A` capturou o mutante de um auditor e o commit
+entrou na história afirmando `EXIT_GATE=0` — o gate tinha sido verde minutos antes, sobre outra
+árvore. Um veredito só vale para o estado que ele mediu.
 
 ## Fora do GATE, de propósito
 

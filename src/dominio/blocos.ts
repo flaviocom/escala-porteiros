@@ -307,3 +307,36 @@ export function conferirEscalaJaDivulgada(publicados: Bloco[], blocoNovo: Bloco 
 
   return { reescritos, dias: [...dias].sort(), exemplos }
 }
+
+/**
+ * 🔴 A FRONTEIRA DA COTA MENSAL — sétima auditoria externa, 05/08/2026.
+ *
+ * Irmã de `ultimaEscalaAnterior`, que fecha a fronteira do ESPAÇAMENTO desde 04/08. A do **teto
+ * mensal** nunca existiu: o contador nascia zerado a cada geração, e um bloco que começa no meio do
+ * mês não enxergava as escalas daquele mês que já estavam publicadas.
+ *
+ * Medido no dado que está NO AR: **Williams, teto de 3, com 5 escalas em agosto de 2026** — três no
+ * bloco congelado (01, 02 e 05/08) e duas no bloco novo (15 e 26/08). Cada bloco, isolado, dentro do
+ * teto; o mês que o irmão vive, estourado. E as DUAS réguas aprovaram, porque as duas julgam um
+ * bloco por vez — o maker–checker dá conforto falso quando os dois olham pela mesma janela.
+ *
+ * Fica aqui, no domínio, e não em três lugares: a tela, a validação e o gerador precisam do MESMO
+ * número, e foi fonte dupla que produziu metade dos defeitos deste projeto.
+ */
+export function cotaMensalJaPublicada(publicados: Bloco[], inicioDoNovo: DataISO): Record<string, Record<string, number>> {
+  const fora: Record<string, Record<string, number>> = {}
+  for (const b of publicados) {
+    for (const t of b.turnos) {
+      // Só o que o bloco realmente governa, e só o que vem ANTES do bloco novo: o que ele cobre
+      // será reescrito, e contar duas vezes inventaria um estouro que não existe.
+      if (!dentro(t.data, b.inicio, b.fim)) continue
+      if (diferencaEmDias(t.data, inicioDoNovo) <= 0) continue
+      const mes = t.data.slice(0, 7)
+      for (const id of t.pessoas) {
+        fora[id] ??= {}
+        fora[id][mes] = (fora[id][mes] ?? 0) + 1
+      }
+    }
+  }
+  return fora
+}
