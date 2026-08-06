@@ -15,7 +15,7 @@
  * A regra, uma só: **o bloco novo manda no período dele, e só nele.**
  */
 import { describe, expect, it } from 'vitest'
-import { conferirPassadoPreservado, conferirReversao, montarBlocosParaPublicar, publicacaoImpedida, travaDeDataRetroativa } from './blocos'
+import { conferirEscalaJaDivulgada, conferirPassadoPreservado, conferirReversao, montarBlocosParaPublicar, publicacaoImpedida, travaDeDataRetroativa } from './blocos'
 import type { Bloco, Turno } from './tipos'
 
 const turno = (data: string): Turno => ({
@@ -275,5 +275,68 @@ describe('conferirPassadoPreservado — a SEGUNDA metade do veredito', () => {
     ])]
     const r = conferirPassadoPreservado(anteriores, montados, { inicio: '2026-10-01', fim: '2026-10-31' })
     expect(r.ok).toBe(true)
+  })
+})
+
+/**
+ * 🔴 GERAR POR CIMA DE ESCALA JÁ DIVULGADA — achado ao responder uma pergunta do Flavio, 05/08/2026.
+ *
+ * As duas travas que existiam perguntavam as coisas erradas: uma se a data já PASSOU, a outra se
+ * algum turno SUMIU. Nenhuma perguntava se um turno **mudou de gente** — e é isso que faz o site
+ * desmentir o que os irmãos já podem ver.
+ */
+describe('conferirEscalaJaDivulgada', () => {
+  const b = (inicio: string, fim: string, turnos: Turno[]): Bloco => ({
+    id: 'b', inicio, fim, geradoEm: '2026-08-05', origem: 'algoritmo',
+    pisoAlcancado: 7, elenco: [], malha: { regras: [] }, turnos,
+  })
+  const t = (data: string, pessoas: string[]): Turno => ({ data, tipo: 'NOITE', pessoas, capacidade: 3 })
+
+  it('🔴 turno publicado que MUDA de gente é contado, com os dois lados', () => {
+    const pub = [b('2026-12-01', '2026-12-31', [t('2026-12-23', ['ana', 'bia', 'caio'])])]
+    const novo = b('2026-12-15', '2027-06-30', [t('2026-12-23', ['dora', 'ana', 'bia'])])
+    const r = conferirEscalaJaDivulgada(pub, novo)
+    expect(r.reescritos).toBe(1)
+    expect(r.dias).toEqual(['2026-12-23'])
+    expect(r.exemplos[0].antes).toEqual(['ana', 'bia', 'caio'])
+    expect(r.exemplos[0].depois).toEqual(['dora', 'ana', 'bia'])
+  })
+
+  it('🔴 vários dias afetados são todos listados, sem repetir a data', () => {
+    const pub = [b('2026-12-01', '2026-12-31', [
+      t('2026-12-16', ['ana', 'bia', 'caio']),
+      t('2026-12-23', ['ana', 'bia', 'caio']),
+    ])]
+    const novo = b('2026-12-15', '2027-06-30', [
+      t('2026-12-16', ['dora', 'ana', 'bia']),
+      t('2026-12-23', ['dora', 'ana', 'bia']),
+    ])
+    expect(conferirEscalaJaDivulgada(pub, novo).dias).toEqual(['2026-12-16', '2026-12-23'])
+  })
+
+  it('a MESMA gente em outra ordem NÃO conta — para quem lê é a mesma escala', () => {
+    const pub = [b('2026-12-01', '2026-12-31', [t('2026-12-23', ['ana', 'bia', 'caio'])])]
+    const novo = b('2026-12-15', '2027-06-30', [t('2026-12-23', ['caio', 'ana', 'bia'])])
+    expect(conferirEscalaJaDivulgada(pub, novo).reescritos).toBe(0)
+  })
+
+  it('a outra ponta: começar DEPOIS do publicado não reescreve nada', () => {
+    const pub = [b('2026-12-01', '2026-12-31', [t('2026-12-23', ['ana', 'bia', 'caio'])])]
+    const novo = b('2027-01-01', '2027-06-30', [t('2027-01-06', ['dora', 'ana', 'bia'])])
+    const r = conferirEscalaJaDivulgada(pub, novo)
+    expect(r.reescritos).toBe(0)
+    expect(r.dias).toEqual([])
+  })
+
+  it('turno FORA do intervalo que o bloco publicado declara não conta como divulgado', () => {
+    // O bloco diz dezembro e traz um turno de novembro: `emendarBlocos` o descarta, então ele nunca
+    // foi ao ar. Contá-lo aqui acusaria uma reescrita que não existe.
+    const pub = [b('2026-12-01', '2026-12-31', [t('2026-11-20', ['ana', 'bia', 'caio'])])]
+    const novo = b('2026-11-01', '2027-06-30', [t('2026-11-20', ['dora', 'ana', 'bia'])])
+    expect(conferirEscalaJaDivulgada(pub, novo).reescritos).toBe(0)
+  })
+
+  it('sem bloco novo, não há o que conferir', () => {
+    expect(conferirEscalaJaDivulgada([], null).reescritos).toBe(0)
   })
 })

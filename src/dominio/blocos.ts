@@ -246,3 +246,64 @@ export function publicacaoImpedida(
   if (perda && !perda.ok) return true
   return false
 }
+
+/**
+ * 🔴 GERAR POR CIMA DE ESCALA JÁ DIVULGADA — achado ao responder uma pergunta do Flavio, 05/08/2026.
+ *
+ * Ele perguntou se a geração olha para trás na fronteira. Olha, e o piso vale atravessando. Mas ao
+ * medir isso apareceu o vão ao lado: **começar DENTRO do período já publicado não é impedido por
+ * nada, e não avisa.**
+ *
+ *     gerar de 15/12 (o publicado vai até 30/12)
+ *       trava de data retroativa ..... NÃO impede — 15/12 ainda é futuro
+ *       conferirPassadoPreservado .... NÃO impede — nada se PERDE, é substituído
+ *       turnos já publicados que mudam de gente: 6
+ *         23/12 NOITE: [luiz_cezar, luiz_felipe, marcos] → [thiago, luiz_cezar, luiz_felipe]
+ *
+ * É o defeito de 05/08 pela manhã — *"você já alterou o Williams por Isaac hoje, sem eu sequer ter
+ * solicitado"*, 87 turnos divergindo do que os irmãos tinham o link para ver — voltando por outra
+ * porta. As duas travas existentes olhavam para as perguntas erradas: uma pergunta se a data já
+ * PASSOU, a outra se algum turno SUMIU. Nenhuma pergunta se um turno **mudou de gente**.
+ *
+ * ── POR QUE AVISA EM VEZ DE IMPEDIR ──────────────────────────────────────────────────────────────
+ *
+ * Regerar um período futuro já publicado é uso legítimo: alguém saiu do elenco, entraram férias, a
+ * malha mudou. O que não pode é acontecer **sem ele saber quantos** — porque o site passa a
+ * desmentir o que já está no ar, e quem percebe é o irmão que combinou o domingo com a família.
+ *
+ * ⚠️ Turno que já ACONTECEU continua impedido, e por outra trava: `travaDeDataRetroativa`.
+ */
+export interface EscalaJaDivulgada {
+  /** Turnos publicados que o bloco novo cobre e que mudariam de gente. */
+  reescritos: number
+  /** Os dias afetados, em ordem. */
+  dias: DataISO[]
+  /** Poucos exemplos, com os nomes dos dois lados — cem iguais não informam mais que três. */
+  exemplos: { data: DataISO; tipo: string; antes: string[]; depois: string[] }[]
+}
+
+export function conferirEscalaJaDivulgada(publicados: Bloco[], blocoNovo: Bloco | null): EscalaJaDivulgada {
+  const vazio: EscalaJaDivulgada = { reescritos: 0, dias: [], exemplos: [] }
+  if (!blocoNovo) return vazio
+
+  const antes = new Map<string, string[]>()
+  for (const b of publicados)
+    for (const t of b.turnos)
+      if (dentro(t.data, b.inicio, b.fim)) antes.set(`${t.data}|${t.tipo}`, t.pessoas)
+
+  const dias = new Set<DataISO>()
+  const exemplos: EscalaJaDivulgada['exemplos'] = []
+  let reescritos = 0
+
+  for (const t of blocoNovo.turnos) {
+    const anterior = antes.get(`${t.data}|${t.tipo}`)
+    if (!anterior) continue // dia novo, não havia nada publicado ali
+    // A ORDEM não conta: os mesmos três nomes em outra ordem é a mesma escala para quem lê.
+    if (JSON.stringify([...anterior].sort()) === JSON.stringify([...t.pessoas].sort())) continue
+    reescritos++
+    dias.add(t.data)
+    if (exemplos.length < 3) exemplos.push({ data: t.data, tipo: t.tipo, antes: anterior, depois: t.pessoas })
+  }
+
+  return { reescritos, dias: [...dias].sort(), exemplos }
+}

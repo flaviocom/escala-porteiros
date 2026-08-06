@@ -24,7 +24,7 @@ import { gerarVariasVersoes } from '../dominio/gerador'
 import { validar, resumir } from '../dominio/validacao'
 import { CATALOGO, menorIntervalo } from '../dominio/regras'
 import { conferirPorFora } from '../dominio/conferencia-independente'
-import { conferirPassadoPreservado, conferirReversao, montarBlocosParaPublicar, publicacaoImpedida, travaDeDataRetroativa } from '../dominio/blocos'
+import { conferirEscalaJaDivulgada, conferirPassadoPreservado, conferirReversao, montarBlocosParaPublicar, publicacaoImpedida, travaDeDataRetroativa } from '../dominio/blocos'
 import { diferencaEmDias, formatarBR, hojeSaoPaulo, NOMES_DIA, NOMES_DIA_CURTO, somarDias } from '../dominio/datas'
 import { AbaAjustar } from './AbaAjustar'
 import { arbitrar, auditar, medir, pedirProposta, type Placar, type ProgressoMotor } from './motor'
@@ -46,6 +46,9 @@ type Aba = 'elenco' | 'gerar' | 'ajustar' | 'conferir' | 'publicar'
  * 🔴 Em 05/08/2026 ela passou a cobrir também a REVERSÃO, que grava os mesmos dois arquivos e
  * escapava por não ser "publicação". Guarda o QUE está gravando, para a mensagem poder dizer.
  */
+/** id → nome, para o aviso mostrar gente e não código. Ver `conferirEscalaJaDivulgada`. */
+const nomeDe = (pessoas: Pessoa[]) => (id: string) => pessoas.find((p) => p.id === id)?.nome ?? id
+
 let gravacaoEmVoo: string | null = null
 
 /**
@@ -1365,6 +1368,12 @@ const AbaGerar: React.FC<{
     [blocoNovo, pessoas, fronteira, config],
   )
 
+  /** A mesma conferência do Publicar, aqui — ver o comentário longo lá. */
+  const jaDivulgadaNaGeracao = useMemo(
+    () => conferirEscalaJaDivulgada(dados.blocos, blocoNovo),
+    [dados.blocos, blocoNovo],
+  )
+
   return (
     <>
       <Cartao titulo="Gerar" subtitulo="Escolha o intervalo. Antes dele, nada é tocado — o que já foi divulgado continua valendo.">
@@ -1569,6 +1578,34 @@ const AbaGerar: React.FC<{
               <p className="text-sm text-indigo-950 whitespace-pre-wrap leading-relaxed">{arbitragem}</p>
             </div>
           )}
+        </Cartao>
+      )}
+
+      {/*
+        🔴 O AVISO APARECE AQUI TAMBÉM, e não só no Publicar: é aqui que ele OLHA o resultado e decide
+        se aceita. Descobrir na última tela que a escala reescreve dias já no ar é tarde — ele já
+        gastou o tempo de conferir uma escala que talvez não queira.
+      */}
+      {blocoNovo && jaDivulgadaNaGeracao.reescritos > 0 && (
+        <Cartao titulo="Atenção — esta escala mexe em dias que já estão no ar" tom="erro">
+          <p className="text-sm text-gray-700 leading-relaxed">
+            <strong>{jaDivulgadaNaGeracao.reescritos} turno(s)</strong> que os {config.identidade.pessoa.plural}{' '}
+            já podem ver mudariam de gente, em {jaDivulgadaNaGeracao.dias.length} dia(s) — a partir de{' '}
+            <strong>{formatarBR(jaDivulgadaNaGeracao.dias[0])}</strong>.
+          </p>
+          <div className="mt-3 space-y-1">
+            {jaDivulgadaNaGeracao.exemplos.map((e) => (
+              <p key={`${e.data}|${e.tipo}`} className="font-mono text-xs text-gray-600">
+                {formatarBR(e.data)} {ROTULO_TURNO[e.tipo as TipoTurno]}: {e.antes.map(nomeDe(pessoas)).join(', ')} →{' '}
+                {e.depois.map(nomeDe(pessoas)).join(', ')}
+              </p>
+            ))}
+          </div>
+          <p className="mt-3 text-sm text-gray-700 leading-relaxed">
+            Para só <strong>continuar</strong> a escala, mude o campo <strong>De</strong> para o dia
+            seguinte ao último já publicado. Se a intenção é mesmo refazer esses dias, pode seguir —
+            publicar não está bloqueado.
+          </p>
         </Cartao>
       )}
 
@@ -2005,6 +2042,22 @@ const AbaPublicar: React.FC<{
 
   // Uma resposta só, vinda do domínio — recompor o julgamento aqui foi o que deixou o guarda
   // do passado ser desligado sem o gate piscar.
+  /*
+    🔴 A ESCALA NOVA COBRE DIAS QUE JÁ ESTÃO NO AR? — achado em 05/08/2026 ao responder uma pergunta
+    do Flavio sobre a fronteira.
+
+    As duas travas existentes perguntavam as coisas erradas: uma se a data já PASSOU, a outra se algum
+    turno SUMIU. Nenhuma perguntava se um turno **mudou de gente** — que é exatamente o defeito dos 87
+    turnos de hoje de manhã, por outra porta.
+
+    AVISA, não impede: regerar um período futuro já publicado é uso legítimo (alguém saiu do elenco,
+    entraram férias). O que não pode é acontecer sem ele saber **quantos**.
+  */
+  const jaDivulgada = useMemo(
+    () => conferirEscalaJaDivulgada(dados.blocos, blocoNovo),
+    [dados.blocos, blocoNovo],
+  )
+
   const impedido = publicacaoImpedida(relatorio, perda)
   /** Sem token, publicar pela tela não existe — e o motivo aparece, em vez de um botão morto. */
   const semToken = !segredos.tokenGitHub
@@ -2033,6 +2086,23 @@ const AbaPublicar: React.FC<{
             <br /><br />
             Gere de novo com o campo <strong>Até</strong> cobrindo pelo menos o que já foi publicado,
             ou aceite conscientemente que aqueles dias saiam do ar.
+          </Aviso>
+        )}
+        {jaDivulgada.reescritos > 0 && (
+          <Aviso tom="atencao">
+            <strong>Esta escala muda {jaDivulgada.reescritos} turno(s) que JÁ ESTÃO NO AR</strong>, em{' '}
+            {jaDivulgada.dias.length} dia(s) — a partir de <strong>{formatarBR(jaDivulgada.dias[0])}</strong>.
+            Quem já abriu o link vê os nomes antigos; depois de publicar, verá os novos.
+            <br /><br />
+            {jaDivulgada.exemplos.map((e) => (
+              <span key={`${e.data}|${e.tipo}`} className="block font-mono text-xs">
+                {formatarBR(e.data)} {ROTULO_TURNO[e.tipo as TipoTurno]}: {e.antes.map(nomeDe(pessoas)).join(', ')} →{' '}
+                {e.depois.map(nomeDe(pessoas)).join(', ')}
+              </span>
+            ))}
+            <br />
+            Se a intenção era só <em>continuar</em> a escala, volte em "Gerar escala" e comece no dia
+            seguinte ao último já publicado. Se a intenção era mesmo refazer esses dias, siga.
           </Aviso>
         )}
         {blocoNovo && !impedido && (
