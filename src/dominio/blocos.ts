@@ -404,3 +404,36 @@ export function conferirBuracoNaEscala(
   }
   return { dias, maiorVao, ok: dias.length === 0 }
 }
+
+/**
+ * O piso REALMENTE ENTREGUE — o menor intervalo, em dias, entre dois turnos da mesma pessoa.
+ *
+ * 🔴 POR QUE ISTO EXISTE, e por que NÃO substitui `pisoAlcancado`. Sétima auditoria, medido em 20
+ * combinações de período e semente: em 1 delas o bloco registrava **piso 5** e a escala entregava
+ * **6**. O número nunca exagera — ele subestima —, mas continua sendo um número na tela que não
+ * descreve a escala que está embaixo dele.
+ *
+ * A causa é do desenho, e o desenho está certo: o gerador desce o piso EXIGIDO até um em que
+ * consegue cobrir todos os turnos, e grava esse. A escala resultante pode, por sorte da distribuição,
+ * fazer melhor do que a exigência.
+ *
+ * **`pisoAlcancado` continua sendo a EXIGÊNCIA**, e não pode virar a medição: é ele que entra de
+ * volta no gerador quando alguém refaz o bloco (portão `refazer`), e é ele que a D10 usa para
+ * reprovar. Trocar o significado quebraria a reprodutibilidade de tudo o que já foi publicado.
+ *
+ * Então a medição vive aqui, **derivada** — nada é gravado, nada migra — e a tela mostra as duas
+ * quando diferem: *"piso 5 (entregue: 6)"*.
+ */
+export function pisoEntregue(turnos: { data: DataISO; pessoas: string[] }[]): number | null {
+  const ultima: Record<string, DataISO> = {}
+  let menor = Infinity
+  // Os turnos vêm ordenados por data, mas ordenar de novo custa nada e tira a dependência disso.
+  for (const t of [...turnos].sort((a, b) => (a.data < b.data ? -1 : a.data > b.data ? 1 : 0))) {
+    for (const id of t.pessoas) {
+      if (ultima[id]) menor = Math.min(menor, Math.abs(diferencaEmDias(ultima[id], t.data)))
+      ultima[id] = t.data
+    }
+  }
+  // Ninguém escalado duas vezes: não há intervalo para medir, e inventar um seria pior.
+  return Number.isFinite(menor) ? menor : null
+}

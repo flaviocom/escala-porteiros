@@ -56,19 +56,23 @@ ali é dado congelado, não recálculo.
 Medido: Williams com **7 intervalos de 1 dia**, **18 pares com ≤3 dias**, 6 ocorrências de
 "quarta → sábado". Resolvido por desenho no projeto novo (regra Q1), não no antigo.
 
-### P1.4 🟠 Sete achados da sétima auditoria, ainda ABERTOS 🤖
-Medidos e reproduzíveis. Nenhum bloqueia publicar — por isso ficaram para depois da republicação —
-mas todos são defeito de verdade. Em ordem de impacto, com onde mexer:
+### P1.4 ✅ Sete achados da sétima auditoria — FECHADOS em 06/08/2026 🤖
+Todos medidos antes de mexer, corrigidos na causa, e ancorados em teste que morre se alguém voltar
+atrás.
 
-| # | Achado | Onde |
+| # | Achado | Como ficou |
 |---|---|---|
-| 1 | **"Até" antes de "De" dá diagnóstico falso.** Quem preenche o "Até" primeiro recebe uma mensagem que descreve outro problema | `Admin.tsx` → `aoMudarAte` |
-| 2 | **Geração recusada deixa a escala anterior na tela E no Publicar.** O motor recusa, a tela segue mostrando a de antes, e o Publicar publica a velha achando que é a nova | `Admin.tsx` → `executar()` / estado `resultado` |
-| 3 | **O seletor de meses conta a Santa Ceia (19) e a imagem diz 18.** Dois números para a mesma coisa, na mesma tela | seletor de meses vs `EscalaImagem.tsx` |
-| 4 | **"veio do motor e passou no portão" continua escrito depois de um ajuste manual.** A frase deixa de ser verdade no instante em que alguém arrasta um nome | `Admin.tsx` → aba `Ajustar` |
-| 5 | **`candidatosBarrados` é escrito e nunca lido.** Ou vira tela (explicar por que fulano não pôde), ou sai | `src/dominio/gerador.ts` |
-| 6 | **O piso declarado pode ser menor que o entregue** | `gerador.ts` → `pisoAlcancado` |
-| 7 | **Mensagem de ano com 5 dígitos está errada.** Digite `12026` e o texto não descreve o que aconteceu | `Admin.tsx` → validação de data |
+| 1 | "Até" antes de "De" dizia *"não há dia de culto — escolha um período mais longo"* | guarda de ORDEM antes de montar a grade; a mensagem nomeia as duas datas · `vivo:gerar` |
+| 2 | Geração recusada deixava a proposta velha na tela, no `Ajustar` e no `Publicar` | `aoGerar(null, '')` subiu para o TOPO de `executar()`, antes das quatro recusas · 6 checagens novas |
+| 3 | Seletor de meses dizia 19, imagem dizia 18 | o seletor passou a usar **a régua da imagem**; Santa Ceia aparece ao lado, nunca somada |
+| 4 | *"veio do motor e passou no portão"* sobrevivia a um ajuste à mão | terceiro ramo para `origem === 'manual'`; a conferência **de fato** reroda, e agora a frase diz isso |
+| 5 | `candidatosBarrados` escrito e nunca lido | virou TELA: quem foi barrado e por quê, agrupado por pessoa, dentro da mensagem de falha |
+| 6 | Piso declarado podia ser menor que o entregue (1 em 20 casos medidos) | `pisoEntregue()` — **derivado, nada gravado**; a tela mostra *"5 (entregue: 6)"* só quando difere |
+| 7 | Mensagem de ano com 5 dígitos não descrevia o que aconteceu | guarda de FORMATO com `ehDataValida`; a mensagem diz "o ano tem quatro dígitos" |
+
+⚠️ **`pisoAlcancado` continua sendo a EXIGÊNCIA, não a medição** — é ele que volta ao gerador no
+portão `refazer` e que a D10 usa. Trocar o significado quebraria a reprodutibilidade de tudo o que
+já foi publicado.
 
 Detalhe em [`HANDOFF_2026-08-06.md`](docs/handoff/HANDOFF_2026-08-06.md) § 6.
 

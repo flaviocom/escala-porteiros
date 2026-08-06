@@ -227,6 +227,41 @@ try {
     /Nenhuma escala nova foi gerada/i.test(await pagina.locator('body').innerText()),
     'aviso presente — publicar só mexe no elenco')
 
+  // ── 7. 🔴 A MENSAGEM NOMEIA A CAUSA, NÃO O SINTOMA DE OUTRO PROBLEMA ────────
+  //
+  // Sétima auditoria: com "De" em 31/12/2026 e "Até" em 01/01/2026, a tela respondia *"não há nenhum
+  // dia de culto — escolha um período mais longo"*. Cada palavra verdadeira, o diagnóstico inteiro
+  // falso: quem seguisse o conselho só se afastaria da solução.
+  await pagina.getByRole('button', { name: /^Gerar escala/i }).first().click()
+  await pagina.waitForTimeout(700)
+  await campoDe.fill('2026-12-31')
+  await campoAte.fill('2026-01-01')
+  await pagina.waitForTimeout(400)
+  await pagina.getByRole('button', { name: /^Gerar escala$/ }).last().click()
+  await pagina.waitForTimeout(1800)
+  const foraDeOrdem = await pagina.locator('body').innerText()
+  conferir('🔴 "Até" antes do "De" nomeia A ORDEM, não o calendário',
+    /anterior à inicial/i.test(foraDeOrdem) && !/não há nenhum dia de culto/i.test(foraDeOrdem),
+    'a mensagem fala das duas datas')
+
+  // E o ano de cinco dígitos. ⚠️ O setter NATIVO é obrigatório: atribuir `el.value` direto burla o
+  // rastreador de valor do React, o `onChange` não roda, e o teste mede a data ANTIGA achando que
+  // mediu a nova — foi exatamente o que aconteceu na primeira tentativa desta checagem.
+  await campoAte.fill('2027-06-30')
+  await pagina.waitForTimeout(300)
+  await campoDe.evaluate((el) => {
+    const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set
+    setter.call(el, '12026-01-01')
+    el.dispatchEvent(new Event('input', { bubbles: true }))
+  })
+  await pagina.waitForTimeout(500)
+  await pagina.getByRole('button', { name: /^Gerar escala$/ }).last().click()
+  await pagina.waitForTimeout(2000)
+  const anoLongo = await pagina.locator('body').innerText()
+  conferir('🔴 ano de 5 dígitos é recusado, e a mensagem diz por quê',
+    /não é uma data válida/i.test(anoLongo) && /quatro dígitos/i.test(anoLongo),
+    'recusado com a causa nomeada')
+
   conferir('nenhum erro no console', erros.length === 0, erros.slice(0, 2).join(' · ') || 'limpo')
   await pagina.screenshot({ path: join(RAIZ, 'capturas', 'gerar-amigavel.png'), fullPage: false })
 } finally {

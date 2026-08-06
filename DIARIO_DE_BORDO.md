@@ -1242,3 +1242,43 @@ identificador `p_2e2e2e`. **O teste escrito antes reprovou a implementação**, 
 `\p{L}|\p{N}` ("tem letra ou número em qualquer alfabeto").
 
 **Como reverter.** `git revert a3ccb46` devolve `charAt(0)` e o identificador colidente.
+
+---
+
+## DB-029 · 06/08/2026 — os sete achados abertos, e a mensagem que manda a pessoa para o lado errado
+
+**O quê.** Os sete achados que a sétima auditoria tinha deixado em aberto foram fechados. Três deles
+ensinam mais que o conserto:
+
+**1. Mensagem que descreve o sintoma de OUTRO problema é pior que mensagem nenhuma.** Com "De" em
+31/12/2026 e "Até" em 01/01/2026, a tela respondia: *"não há nenhum dia de culto. A escala tem turno
+em: domingo, quarta, sábado. Escolha um período mais longo."* Cada palavra verdadeira, o diagnóstico
+inteiro falso. Quem seguisse o conselho — alargar o período — só se afastaria da solução, com a
+autoridade de quem sabe. **A guarda tinha de vir antes de montar a grade**, porque era a grade vazia
+que produzia o engano.
+
+**2. O estrago de uma tela desatualizada não é visual.** Geração recusada deixava a proposta anterior
+na tela, com o `Ajustar` destravado e o `Publicar` oferecendo publicá-la. Os campos "De" e "Até" já
+mostravam o período NOVO e a proposta era do VELHO: publicar dali punha no ar uma escala que a tela
+não estava descrevendo. **Uma proposta só é verdadeira enquanto os campos que a geraram continuam
+valendo.**
+
+**3. `candidatosBarrados` era a regra da casa esperando ser aplicada.** O gerador já calculava quem
+não pôde entrar e por quê, e ninguém lia. A mensagem mandava *"afrouxar alguma restrição"* sem dizer
+qual nem para quem — o conselho certo com a informação que o resolve escondida no objeto de retorno.
+Dado que existe aparece **mastigado, onde a pessoa já está**.
+
+**A decisão de desenho que vale registrar.** O piso declarado podia ser menor que o entregue (1 em 20
+combinações medidas: declarava 5, entregava 6). A tentação era corrigir `pisoAlcancado` para a
+medição. **Seria errado:** ele é a EXIGÊNCIA com que o gerador conseguiu cobrir tudo, volta ao
+gerador no portão `refazer` e é o que a D10 usa para reprovar. Trocar o significado quebraria a
+reprodutibilidade de tudo o que já foi publicado. A medição passou a viver ao lado, **derivada** —
+nada gravado, nada migra — e a tela mostra as duas quando diferem.
+
+**Um detalhe de método que custou uma rodada.** Ao reproduzir o ano de 5 dígitos, atribuí
+`el.value` direto no campo. Isso **burla o rastreador de valor do React**: o `onChange` não roda, o
+estado continua com a data antiga, e a escala foi gerada — eu quase registrei "não reproduz". O
+setter nativo (`Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set`) é o que o
+React observa. **Sonda que não dispara o caminho real mede o estado anterior e chama de resultado.**
+
+**Como reverter.** `git revert` do commit desta entrada devolve os sete.

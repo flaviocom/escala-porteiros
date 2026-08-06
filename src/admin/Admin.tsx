@@ -25,8 +25,8 @@ import { gerarVariasVersoes } from '../dominio/gerador'
 import { validar, resumir } from '../dominio/validacao'
 import { CATALOGO, menorIntervalo } from '../dominio/regras'
 import { conferirPorFora } from '../dominio/conferencia-independente'
-import { conferirBuracoNaEscala, conferirEscalaJaDivulgada, conferirPassadoPreservado, conferirReversao, cotaMensalJaPublicada, montarBlocosParaPublicar, publicacaoImpedida, travaDeDataRetroativa } from '../dominio/blocos'
-import { diferencaEmDias, formatarBR, hojeSaoPaulo, NOMES_DIA, NOMES_DIA_CURTO, somarDias } from '../dominio/datas'
+import { conferirBuracoNaEscala, conferirEscalaJaDivulgada, conferirPassadoPreservado, conferirReversao, cotaMensalJaPublicada, montarBlocosParaPublicar, pisoEntregue, publicacaoImpedida, travaDeDataRetroativa } from '../dominio/blocos'
+import { diferencaEmDias, ehDataValida, formatarBR, hojeSaoPaulo, NOMES_DIA, NOMES_DIA_CURTO, somarDias } from '../dominio/datas'
 import { AbaAjustar } from './AbaAjustar'
 import { arbitrar, auditar, medir, pedirProposta, type Placar, type ProgressoMotor } from './motor'
 import { Sparkles } from 'lucide-react'
@@ -1345,6 +1345,39 @@ const AbaGerar: React.FC<{
     }
 
     /*
+      🔴 A ORDEM DOS CAMPOS, E O FORMATO — sétima auditoria, reproduzido ao vivo.
+
+      Com "De" em 31/12/2026 e "Até" em 01/01/2026, a tela respondia: *"não há nenhum dia de culto.
+      A escala tem turno em: domingo, quarta, sábado. Escolha um período mais longo."*
+
+      Cada palavra verdadeira, e o **diagnóstico inteiro falso**: não falta dia de culto, faltam os
+      campos na ordem certa. Quem seguisse o conselho — alargar o período — só se afastaria da
+      solução. **Mensagem que descreve o sintoma de outro problema é pior que mensagem nenhuma:**
+      manda a pessoa para o lado errado com a autoridade de quem sabe.
+
+      Estas duas guardas vêm ANTES de montar a grade porque é a grade vazia que produzia o engano.
+    */
+    for (const [rotulo, valor] of [['inicial', deAgora], ['final', ate]] as const) {
+      if (!ehDataValida(valor)) {
+        setFalha(
+          `A data ${rotulo} ("${valor}") não é uma data válida.` +
+            String.fromCharCode(10, 10) +
+            'O ano tem quatro dígitos e o dia precisa existir no calendário — 31 de fevereiro, por ' +
+            'exemplo, não existe. Escolha a data pelo calendário do campo.',
+        )
+        return
+      }
+    }
+    if (diferencaEmDias(ate, deAgora) > 0) {
+      setFalha(
+        `A data final (${formatarBR(ate)}) é anterior à inicial (${formatarBR(deAgora)}).` +
+          String.fromCharCode(10, 10) +
+          'Troque as duas, ou escolha um "Até" depois do "De".',
+      )
+      return
+    }
+
+    /*
       🔴 PERÍODO SEM NENHUM DIA DE CULTO — achado da verificação visual de 05/08/2026.
 
       Depois de publicar até 30/12, o início sugerido virou 31/12 e o fim sugerido era 31/12 do
@@ -1416,9 +1449,33 @@ const AbaGerar: React.FC<{
       const validas = escolha.versoes.filter((v) => v.resultado.ok).length
       setOcupado(false)
       if (!r.ok) {
+        /*
+          🔴 QUEM FOI BARRADO, E POR QUÊ — sétima auditoria.
+
+          O gerador já calculava `candidatosBarrados` e **ninguém lia**. A mensagem mandava
+          *"afrouxar alguma restrição"* sem dizer qual, nem para quem — o conselho certo com a
+          informação que o resolve escondida dentro do objeto de retorno.
+
+          A regra da casa é clara: dado que existe aparece **mastigado, onde a pessoa já está**.
+          Aqui ele vira as linhas que transformam um beco sem saída numa lista do que mexer.
+
+          Agrupado por pessoa porque o mesmo nome barra pelo mesmo motivo em vários turnos, e vinte
+          linhas repetidas escondem as três que interessam.
+        */
+        const nomeDe = (id: string) => pessoas.find((q) => q.id === id)?.nome ?? id
+        const porPessoa = new Map<string, Set<string>>()
+        for (const c of r.candidatosBarrados) {
+          const chave = nomeDe(c.pessoa)
+          if (!porPessoa.has(chave)) porPessoa.set(chave, new Set())
+          porPessoa.get(chave)!.add(c.motivo)
+        }
+        const barrados = [...porPessoa.entries()]
+          .map(([nome, motivos]) => `   · ${nome} — ${[...motivos].join('; ')}`)
+          .join(String.fromCharCode(10))
         setFalha(
           `${r.motivo}\n\n` +
             (r.turnoQueTravou ? `Travou em ${formatarBR(r.turnoQueTravou.data)}, turno da ${r.turnoQueTravou.tipo}: faltaram ${r.turnoQueTravou.faltaram} pessoa(s).\n` : '') +
+            (barrados ? `${String.fromCharCode(10)}Quem estava disponível nesse dia e não pôde entrar:${String.fromCharCode(10)}${barrados}${String.fromCharCode(10)}` : '') +
             `Pisos de distanciamento tentados: ${r.pisosTentados.join(', ')}.`,
         )
         return
@@ -1734,6 +1791,24 @@ const AbaGerar: React.FC<{
                 depois pelo equilíbrio de carga. Pedir outra explora combinações diferentes; a
                 anterior não volta sozinha.
               </p>
+            ) : blocoNovo.origem === 'manual' ? (
+              /*
+                🔴 AJUSTE À MÃO NÃO VEIO DO MOTOR — sétima auditoria.
+
+                Este ramo não existia. Quem arrastasse um nome na aba `Ajustar` continuava lendo
+                *"esta escala veio do motor e passou no portão determinístico"* — frase que deixa de
+                ser verdade no instante do arrasto, e que é exatamente a frase em que alguém se apoia
+                para publicar sem reler.
+
+                O que continua verdadeiro, e por isso está escrito: as 17 regras **são** conferidas de
+                novo a cada alteração (a conferência acima recalcula em `useMemo` sobre o bloco). O
+                que deixou de ser verdade é a autoria.
+              */
+              <p className="mt-2 text-xs leading-relaxed text-gray-600">
+                Esta escala foi <strong>ajustada à mão</strong> depois de gerada. As 17 regras foram
+                conferidas de novo sobre o resultado do ajuste — é a conferência acima. Pedir outra
+                descarta os ajustes e monta uma escala nova pelo algoritmo.
+              </p>
             ) : (
               <p className="mt-2 text-xs leading-relaxed text-gray-600">
                 Esta escala veio <strong>do motor</strong> e passou no portão determinístico — as 17 regras
@@ -1842,7 +1917,23 @@ const AbaGerar: React.FC<{
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">
               <Numero rotulo="turnos" valor={blocoNovo.turnos.filter((t) => !t.santaCeia).length} />
               <Numero rotulo="vagas" valor={blocoNovo.turnos.reduce((s, t) => s + t.pessoas.length, 0)} />
-              <Numero rotulo="piso (dias)" valor={blocoNovo.pisoAlcancado ?? '-'} />
+              {/*
+                🔴 DUAS COISAS DIFERENTES, e a tela mostrava uma só. `pisoAlcancado` é a EXIGÊNCIA
+                com que o gerador conseguiu cobrir tudo; o piso ENTREGUE é o menor intervalo que a
+                escala de fato tem. Medido em 20 combinações: numa delas o bloco dizia 5 e entregava 6.
+                Nunca exagera — subestima —, mas era um número na tela que não descrevia a escala.
+                Só aparece quando difere, para não virar ruído nos 19 casos em que é igual.
+              */}
+              <Numero
+                rotulo="piso (dias)"
+                valor={
+                  blocoNovo.pisoAlcancado == null
+                    ? '-'
+                    : pisoEntregue(blocoNovo.turnos) != null && pisoEntregue(blocoNovo.turnos)! > blocoNovo.pisoAlcancado
+                      ? `${blocoNovo.pisoAlcancado} (entregue: ${pisoEntregue(blocoNovo.turnos)})`
+                      : blocoNovo.pisoAlcancado
+                }
+              />
               <Numero rotulo="regras conferidas" valor={`${relatorio.avaliadas}/${relatorio.totalNoCatalogo}`} />
             </div>
           </Cartao>

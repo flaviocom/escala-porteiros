@@ -15,7 +15,7 @@
  * A regra, uma só: **o bloco novo manda no período dele, e só nele.**
  */
 import { describe, expect, it } from 'vitest'
-import { conferirBuracoNaEscala, conferirEscalaJaDivulgada, conferirPassadoPreservado, conferirReversao, cotaMensalJaPublicada, montarBlocosParaPublicar, publicacaoImpedida, travaDeDataRetroativa } from './blocos'
+import { conferirBuracoNaEscala, conferirEscalaJaDivulgada, conferirPassadoPreservado, conferirReversao, cotaMensalJaPublicada, montarBlocosParaPublicar, publicacaoImpedida, travaDeDataRetroativa, pisoEntregue } from './blocos'
 import { validar } from './validacao'
 import type { Configuracao, Pessoa } from './tipos'
 
@@ -541,5 +541,42 @@ describe('conferirPassadoPreservado — a metade `perdidos`', () => {
     expect(r.depois).toBe(2)          // a contagem bate — a outra metade não vê
     expect(r.perdidos).toEqual(['2026-01-20'])
     expect(r.ok).toBe(false)
+  })
+})
+
+describe('pisoEntregue — o menor intervalo que a escala DE FATO tem', () => {
+  const t = (data: string, pessoas: string[]) => ({ data: data as DataISO, pessoas })
+
+  it('mede o menor intervalo entre dois turnos da mesma pessoa', () => {
+    expect(pisoEntregue([t('2026-01-01', ['a']), t('2026-01-08', ['a'])])).toBe(7)
+  })
+
+  it('🔴 é o MENOR, não o último nem a média', () => {
+    // Se pegasse o último par, daria 10. Se fizesse média, daria 6.
+    expect(pisoEntregue([t('2026-01-01', ['a']), t('2026-01-03', ['a']), t('2026-01-13', ['a'])])).toBe(2)
+  })
+
+  it('cada pessoa conta o próprio intervalo — não mistura gente diferente', () => {
+    // 'b' aparece 1 dia depois de 'a', mas são pessoas diferentes: não é intervalo de ninguém.
+    expect(pisoEntregue([t('2026-01-01', ['a']), t('2026-01-02', ['b']), t('2026-01-09', ['a'])])).toBe(8)
+  })
+
+  it('não depende da ordem em que os turnos chegam', () => {
+    const fora = [t('2026-01-13', ['a']), t('2026-01-01', ['a']), t('2026-01-03', ['a'])]
+    expect(pisoEntregue(fora)).toBe(2)
+  })
+
+  it('ninguém escalado duas vezes: devolve null em vez de inventar um número', () => {
+    expect(pisoEntregue([t('2026-01-01', ['a']), t('2026-01-08', ['b'])])).toBeNull()
+    expect(pisoEntregue([])).toBeNull()
+  })
+
+  it('🔴 A OUTRA PONTA — distingue "entregue melhor" de "entregue igual"', () => {
+    // É esta diferença que a tela mostra. Sem os dois casos, o teste não prova que ela existe.
+    const exigencia = 5
+    const melhor = pisoEntregue([t('2026-01-01', ['a']), t('2026-01-07', ['a'])])!
+    const igual = pisoEntregue([t('2026-01-01', ['a']), t('2026-01-06', ['a'])])!
+    expect(melhor).toBeGreaterThan(exigencia)
+    expect(igual).toBe(exigencia)
   })
 })
