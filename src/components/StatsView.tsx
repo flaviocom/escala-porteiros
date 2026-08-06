@@ -13,6 +13,17 @@ interface StatsViewProps {
 }
 
 export const StatsView: React.FC<StatsViewProps> = ({ shifts, vocabulario }) => {
+  /*
+    O período é DERIVADO dos turnos que chegaram — não passado por fora, não escrito à mão. Assim ele
+    não pode discordar da tabela que está logo abaixo: é a mesma lista.
+  */
+  const periodo = useMemo(() => {
+    if (shifts.length === 0) return null
+    const datas = shifts.map((s) => s.date.getTime())
+    const br = (t: number) => new Date(t).toLocaleDateString('pt-BR')
+    return `${br(Math.min(...datas))} a ${br(Math.max(...datas))}`
+  }, [shifts]);
+
   const stats = useMemo(() => {
     const counts: Record<string, { total: number; byMonth: Record<string, number> }> = {};
 
@@ -53,8 +64,22 @@ export const StatsView: React.FC<StatsViewProps> = ({ shifts, vocabulario }) => 
           <h3 className="text-text-lg font-bold text-text-primary tracking-tight">
             Estatísticas de Distribuição
           </h3>
+          {/*
+            🔴 A TELA PRECISA DIZER QUAL PERÍODO ELA ESTÁ CONTANDO — 06/08/2026.
+
+            Esta tabela recebe `shifts` INTEIRO, de propósito: distribuição só significa alguma coisa
+            sobre o período todo; uma semana não diz nada sobre equilíbrio de carga. Mas ela ignora os
+            filtros da escala **em silêncio**, e o filtro fica visível ao lado, em vermelho.
+
+            Medido: com "02/08 - 09/08" ligado, a tabela mostrava março a dezembro, idêntica. Quem
+            olha conclui que os números são da semana — e conclui errado, sem nada que o corrija.
+
+            A régua da casa: *dado que existe aparece mastigado, onde a pessoa já está.* O período é
+            um dado que existe; faltava aparecer.
+          */}
           <p className="text-text-xs text-text-secondary font-medium">
             Total de turnos por {vocabulario.singular.toLowerCase()} e mês
+            {periodo && <> · <strong>{periodo}</strong> — a escala inteira publicada, sem os filtros da tela</>}
           </p>
         </div>
       </div>

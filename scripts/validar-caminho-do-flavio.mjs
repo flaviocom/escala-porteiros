@@ -136,6 +136,27 @@ try {
     return `${ordens.length / 3} conjunto(s) na ordem certa · ${janela.primeiro.join(' ')} → ${janela.ultimo.join(' ')}`
   })
 
+  await passo('🔴 as Estatísticas DIZEM que período estão contando', async () => {
+    /*
+      Medido em 06/08/2026 no site no ar: com o filtro "02/08 - 09/08" ligado e visível em vermelho,
+      a tabela mostrava março a dezembro — idêntica. Quem olha conclui que os números são da semana,
+      e conclui errado, sem nada que o corrija.
+
+      Contar o período inteiro é o certo (distribuição de uma semana não significa nada). O que
+      faltava era a tela DIZER isso.
+    */
+    await p.getByRole('button', { name: /Esta Semana/i }).first().click()
+    await p.waitForTimeout(1000)
+    await p.getByRole('button', { name: /Estatísticas/i }).first().click()
+    await p.waitForTimeout(1500)
+    const linha = (await p.locator('#root').innerText()).split(String.fromCharCode(10)).find((x) => /Total de turnos por/.test(x)) ?? ''
+    exigir(/\d{2}\/\d{2}\/\d{4} a \d{2}\/\d{2}\/\d{4}/.test(linha), `o subtítulo não diz o período: "${linha.slice(0, 80)}"`)
+    exigir(/sem os filtros/i.test(linha), 'o subtítulo não avisa que os filtros da tela não valem aqui')
+    await p.getByRole('button', { name: /^Escala$/i }).first().click()
+    await p.waitForTimeout(800)
+    return linha.replace(/.*· /, '').slice(0, 70)
+  })
+
   await passo('🔴 o filtro por DATA funciona (o `DateSearch` perdeu estado interno hoje)', async () => {
     const busca = p.locator('input[placeholder*="Buscar" i]').first()
     await busca.fill('16/08/2026')
