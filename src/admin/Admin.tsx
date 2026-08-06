@@ -1219,16 +1219,28 @@ const AbaGerar: React.FC<{
   const [auditoria, setAuditoria] = useState<string>('')
   const [arbitragem, setArbitragem] = useState<string>('')
 
-  const fronteira = useMemo(() => {
+  /*
+    🔴 A FRONTEIRA É FUNÇÃO DA DATA, e por isso virou função de verdade.
+
+    Ela era um `useMemo` sobre o `de` do ESTADO. Quando o botão "Corrigir a data" muda `de` e gera na
+    mesma ação, o `useMemo` ainda tem o valor velho — e a fronteira sairia excluindo os turnos entre a
+    data velha e a nova. Ou seja: quem serviu em 16/12 a 30/12 entraria como "sem escala anterior", e
+    o gerador poderia escalá-lo no dia seguinte.
+
+    Mesma raiz da semente e do `de`: valor que a tela acabou de mudar não está no closure.
+  */
+  const fronteiraEm = (data: string) => {
     const f: Record<string, string> = {}
     for (const b of dados.blocos) {
       for (const t of b.turnos) {
-        if (diferencaEmDias(t.data, de) <= 0) continue
+        if (diferencaEmDias(t.data, data) <= 0) continue
         for (const id of t.pessoas) if (!f[id] || t.data > f[id]) f[id] = t.data
       }
     }
     return f
-  }, [dados, de])
+  }
+  /** A fronteira do que está DIGITADO — é o que a tela mostra e o que a validação usa. */
+  const fronteira = useMemo(() => fronteiraEm(de), [dados, de])
 
   /**
    * 🔴 A SEMENTE VEM POR ARGUMENTO — quinta auditoria externa, 05/08/2026.
@@ -1241,7 +1253,18 @@ const AbaGerar: React.FC<{
    *
    * Passar a semente como argumento tira o valor do closure e acaba com a classe inteira.
    */
-  const executar = (semente: number = sementeBase) => {
+  /*
+    🔴 O `de` TAMBÉM VAI POR ARGUMENTO — e a razão é a mesma da semente, medida duas vezes no mesmo dia.
+
+    Em 05/08/2026 o botão "gerar outra combinação" ficava um clique atrasado porque `setTimeout`
+    guardava a função do render anterior. Horas depois, ao acrescentar o botão "Corrigir a data e
+    gerar de novo", eu **repeti o defeito**: `aoMudarDe(novaData)` seguido de `executar()` gerava com
+    a data VELHA, e o aviso não sumia. Medido ao vivo: o campo mostrava 31/12/2026 e a escala saía de
+    15/12.
+
+    Valor que a tela acabou de mudar não está no closure desta função. Passa por argumento, sempre.
+  */
+  const executar = (semente: number = sementeBase, deAgora: string = de) => {
     if (motorEmVoo) {
       setFalha(
         `O motor está trabalhando (${motorEmVoo.fase}). Espere ele terminar antes de gerar outra escala — ` +
@@ -1257,9 +1280,9 @@ const AbaGerar: React.FC<{
      * projeto. Uma trava que só existe no atributo é uma trava que não existe.
      */
     // A regra vive no domínio, onde há teste: desligá-la aqui passava nos 20 passos do gate.
-    if (travaDeDataRetroativa(de, hojeSaoPaulo())) {
+    if (travaDeDataRetroativa(deAgora, hojeSaoPaulo())) {
       setFalha(
-        `A data inicial (${formatarBR(de)}) é anterior a hoje (${formatarBR(hojeSaoPaulo())}).` +
+        `A data inicial (${formatarBR(deAgora)}) é anterior a hoje (${formatarBR(hojeSaoPaulo())}).` +
           String.fromCharCode(10, 10) +
           `Gerar para trás reescreveria turnos que ${config.identidade.pessoa.plural} já viram — e o passado ` +
           'divulgado não se reescreve. Escolha hoje ou uma data à frente.'
@@ -1283,7 +1306,7 @@ const AbaGerar: React.FC<{
     let grade
     try {
       grade = construirGrade({
-        inicio: de, fim: ate,
+        inicio: deAgora, fim: ate,
         malha: config.malhaPadrao,
         capacidadePadrao: config.capacidadePadrao,
         santaCeia: config.santaCeia,
@@ -1295,7 +1318,7 @@ const AbaGerar: React.FC<{
     if (grade.length === 0) {
       const dias = [...new Set(config.malhaPadrao.regras.map((r) => NOMES_DIA[r.diaSemana]))].join(', ')
       setFalha(
-        `De ${formatarBR(de)} a ${formatarBR(ate)} não há nenhum dia de culto.\n\n` +
+        `De ${formatarBR(deAgora)} a ${formatarBR(ate)} não há nenhum dia de culto.\n\n` +
           `A escala tem turno em: ${dias || '(nenhum dia configurado)'}. ` +
           'Escolha um período mais longo, ou que inclua um desses dias.'
       )
@@ -1327,7 +1350,7 @@ const AbaGerar: React.FC<{
        * A semente muda a cada clique em "gerar outra combinação", e fica gravada no bloco.
        */
       const escolha = gerarVariasVersoes(
-        { inicio: de, fim: ate, grade, pessoas, elenco, malha: config.malhaPadrao, ultimaEscalaAnterior: fronteira },
+        { inicio: deAgora, fim: ate, grade, pessoas, elenco, malha: config.malhaPadrao, ultimaEscalaAnterior: fronteiraEm(deAgora) },
         8, 3, semente,
       )
       const r = escolha.melhor
@@ -1373,6 +1396,12 @@ const AbaGerar: React.FC<{
     () => conferirEscalaJaDivulgada(dados.blocos, blocoNovo),
     [dados.blocos, blocoNovo],
   )
+
+  /** O dia seguinte ao último turno já publicado — a data que faz o aviso acima desaparecer. */
+  const proximoInicioLivre = useMemo(() => {
+    const ultimo = dados.blocos.flatMap((b) => b.turnos).map((t) => t.data).sort().at(-1)
+    return ultimo ? somarDias(ultimo, 1) : hojeSaoPaulo()
+  }, [dados.blocos])
 
   return (
     <>
@@ -1601,10 +1630,34 @@ const AbaGerar: React.FC<{
               </p>
             ))}
           </div>
+          {/*
+            🔴 A TELA SABE A DATA CERTA — ela tem de DIZER, não mandar procurar. O Flavio leu a versão
+            anterior desta frase e respondeu "não entendi": ela mandava "mude para o dia seguinte ao
+            último já publicado" sem dizer **qual dia é esse**, obrigando-o a abrir o site, achar o
+            último turno e somar um. Dado que o sistema tem, o sistema mostra.
+          */}
+          <div className="mt-3 rounded-xl border border-gray-200 bg-white p-3">
+            <p className="text-sm text-gray-700 leading-relaxed">
+              <strong>Para só continuar a escala</strong> (sem mexer no que já está no ar), ponha no
+              campo <strong>De</strong> a data:
+            </p>
+            <p className="my-2 text-center text-2xl font-bold tracking-wide text-gray-900">
+              {formatarBR(proximoInicioLivre)}
+            </p>
+            <p className="text-xs leading-relaxed text-gray-600">
+              É o dia seguinte ao último turno já publicado. Com essa data, este aviso desaparece.
+            </p>
+            <button
+              title="Põe a data certa no campo De e gera de novo"
+              onClick={() => { aoMudarDe(proximoInicioLivre); executar(sementeBase, proximoInicioLivre) }}
+              className="mt-2 w-full rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-indigo-700"
+            >
+              Corrigir a data e gerar de novo
+            </button>
+          </div>
           <p className="mt-3 text-sm text-gray-700 leading-relaxed">
-            Para só <strong>continuar</strong> a escala, mude o campo <strong>De</strong> para o dia
-            seguinte ao último já publicado. Se a intenção é mesmo refazer esses dias, pode seguir —
-            publicar não está bloqueado.
+            Se a intenção é mesmo <strong>refazer</strong> esses dias, pode seguir — publicar não está
+            bloqueado.
           </p>
         </Cartao>
       )}
@@ -2058,6 +2111,12 @@ const AbaPublicar: React.FC<{
     [dados.blocos, blocoNovo],
   )
 
+  /** A data que faz o aviso acima desaparecer — dita, não deixada para o operador calcular. */
+  const proximoInicioLivrePublicar = useMemo(() => {
+    const ultimo = dados.blocos.flatMap((b) => b.turnos).map((t) => t.data).sort().at(-1)
+    return ultimo ? somarDias(ultimo, 1) : hojeSaoPaulo()
+  }, [dados.blocos])
+
   const impedido = publicacaoImpedida(relatorio, perda)
   /** Sem token, publicar pela tela não existe — e o motivo aparece, em vez de um botão morto. */
   const semToken = !segredos.tokenGitHub
@@ -2101,8 +2160,9 @@ const AbaPublicar: React.FC<{
               </span>
             ))}
             <br />
-            Se a intenção era só <em>continuar</em> a escala, volte em "Gerar escala" e comece no dia
-            seguinte ao último já publicado. Se a intenção era mesmo refazer esses dias, siga.
+            Se a intenção era só <em>continuar</em> a escala, volte em <strong>Gerar escala</strong> e
+            ponha no campo <strong>De</strong> a data <strong>{formatarBR(proximoInicioLivrePublicar)}</strong> —
+            o dia seguinte ao último turno já publicado. Se a intenção era mesmo refazer esses dias, siga.
           </Aviso>
         )}
         {blocoNovo && !impedido && (
