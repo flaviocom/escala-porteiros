@@ -26,7 +26,7 @@
  */
 import { createHash } from 'node:crypto'
 import { execFileSync } from 'node:child_process'
-import { existsSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, readFileSync, statSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -38,12 +38,25 @@ function impressao() {
   // `ls-files -s` lista o hash de cada arquivo do ÍNDICE; `status --porcelain` traz o que difere do
   // disco. Os dois juntos descrevem a árvore de trabalho sem ler 40 MB de arquivo à mão.
   const indice = execFileSync('git', ['ls-files', '-s'], { cwd: RAIZ, encoding: 'utf8' })
-  const sujo = execFileSync('git', ['status', '--porcelain'], { cwd: RAIZ, encoding: 'utf8' })
+  /*
+    🔴 `-uall` NÃO É ENFEITE — 06/08/2026.
+
+    Sem ele, o git resume uma pasta inteira não rastreada numa linha só: `?? .github/`. O selo então
+    tentava `readFileSync` numa PASTA e morria com `EISDIR`, derrubando o último passo do gate — foi
+    o que aconteceu ao criar `.github/workflows/`.
+
+    E o defeito era pior do que o estouro: enquanto a pasta existisse resumida, **o conteúdo dela não
+    entrava na impressão digital**. Um arquivo novo dentro de uma pasta nova ficaria fora do selo, em
+    silêncio, e o selo existe justamente para dizer "é esta árvore, exatamente esta".
+
+    `-uall` lista arquivo por arquivo. O `filter` de diretório abaixo fica como cinto de segurança.
+  */
+  const sujo = execFileSync('git', ['status', '--porcelain', '-uall'], { cwd: RAIZ, encoding: 'utf8' })
   const naoVersionados = sujo
     .split(String.fromCharCode(10))
     .filter((l) => l.trim())
     .map((l) => l.slice(3).trim())
-    .filter((f) => existsSync(join(RAIZ, f)))
+    .filter((f) => existsSync(join(RAIZ, f)) && !statSync(join(RAIZ, f)).isDirectory())
     .map((f) => `${f}:${createHash('sha256').update(readFileSync(join(RAIZ, f))).digest('hex')}`)
     .join(String.fromCharCode(10))
   return createHash('sha256').update(indice + naoVersionados).digest('hex')

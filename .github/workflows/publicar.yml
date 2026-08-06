@@ -1,0 +1,55 @@
+# Publicação do site pelo GitHub Actions.
+#
+# 🔴 POR QUE ESTE ARQUIVO EXISTE. Até 06/08/2026 o Pages publicava sozinho, pelo modo "branch
+# `main`, pasta `/docs`" (build_type `legacy`). Nesse dia a fila de publicação do GitHub travou:
+# **cinco tentativas seguidas**, todas iguais — o build passava, a publicação era criada, e ficava em
+# `deployment_queued` até bater o teto de 10 minutos (`Timeout reached, aborting!`).
+#
+# Descartado por medição, não por suposição: tamanho (42 arquivos, 881 KB), Jekyll
+# (`docs/.nojekyll` existe), o nosso código (o artefato subia), o push (`origin/main` = local),
+# política de branch do ambiente (permite `main`) e o status oficial do GitHub ("operational").
+#
+# ⚠️ O QUE ESTE ARQUIVO NÃO PROMETE: ele usa a MESMA ação de publicação (`actions/deploy-pages`) que
+# o fluxo automático usava. Se a fila do GitHub estiver mesmo parada, ele para no mesmo lugar. O que
+# ele muda é o CONTROLE: aqui dá para ver, repetir e ajustar o passo — no modo automático, não.
+#
+# Para voltar ao modo anterior:
+#   gh api --method POST repos/flaviocom/escala-porteiros/pages \
+#     -f build_type=legacy -f 'source[branch]=main' -f 'source[path]=/docs'
+name: publicar
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: # permite disparar à mão, que é metade do motivo de este arquivo existir
+
+# Só uma publicação por vez, e a mais nova cancela a que estiver esperando — sem isso, uma fila
+# travada acumula tentativas que brigam entre si (aconteceu hoje).
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.publicacao.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      # O site JÁ ESTÁ construído e commitado em `docs/` — este projeto versiona o build de
+      # propósito, para que o que está no ar seja exatamente o que passou pelo gate. Não se roda
+      # `npm run build` aqui: isso publicaria uma árvore que nenhum gate mediu.
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs
+
+      - id: publicacao
+        uses: actions/deploy-pages@v4
