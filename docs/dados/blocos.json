@@ -1081,13 +1081,14 @@
           }
         ]
       },
+      "semente": 8,
       "turnos": [
         {
           "data": "2026-08-08",
           "tipo": "NOITE",
           "pessoas": [
-            "eduardo",
             "isac",
+            "eduardo",
             "leandro"
           ],
           "capacidade": 3
@@ -1096,9 +1097,9 @@
           "data": "2026-08-09",
           "tipo": "MANHA",
           "pessoas": [
-            "elson",
-            "lucas",
-            "luis_henrique"
+            "luis_henrique",
+            "luiz_cezar",
+            "lucas"
           ],
           "capacidade": 3
         },
@@ -1106,9 +1107,9 @@
           "data": "2026-08-09",
           "tipo": "NOITE",
           "pessoas": [
-            "luiz_cezar",
             "luiz_felipe",
-            "adilson"
+            "adilson",
+            "carlos_henrique"
           ],
           "capacidade": 3
         },
@@ -1116,9 +1117,9 @@
           "data": "2026-08-12",
           "tipo": "NOITE",
           "pessoas": [
-            "donizete",
             "marcos",
-            "vicente"
+            "thiago",
+            "flavio"
           ],
           "capacidade": 3
         },
@@ -1126,9 +1127,9 @@
           "data": "2026-08-15",
           "tipo": "NOITE",
           "pessoas": [
-            "carlos_henrique",
-            "williams",
-            "flavio"
+            "vicente",
+            "eduardo",
+            "isac"
           ],
           "capacidade": 3
         },
@@ -1144,9 +1145,9 @@
           "data": "2026-08-19",
           "tipo": "NOITE",
           "pessoas": [
-            "thiago",
-            "isac",
-            "leandro"
+            "lucas",
+            "donizete",
+            "luiz_cezar"
           ],
           "capacidade": 3
         },
@@ -1154,9 +1155,9 @@
           "data": "2026-08-22",
           "tipo": "NOITE",
           "pessoas": [
-            "eduardo",
             "elson",
-            "lucas"
+            "leandro",
+            "luis_henrique"
           ],
           "capacidade": 3
         },
@@ -1164,9 +1165,9 @@
           "data": "2026-08-23",
           "tipo": "MANHA",
           "pessoas": [
-            "luis_henrique",
-            "luiz_cezar",
-            "luiz_felipe"
+            "carlos_henrique",
+            "flavio",
+            "vicente"
           ],
           "capacidade": 3
         },
@@ -1174,9 +1175,9 @@
           "data": "2026-08-23",
           "tipo": "NOITE",
           "pessoas": [
-            "adilson",
-            "donizete",
-            "marcos"
+            "marcos",
+            "luiz_felipe",
+            "isac"
           ],
           "capacidade": 3
         },
@@ -1184,9 +1185,9 @@
           "data": "2026-08-26",
           "tipo": "NOITE",
           "pessoas": [
-            "vicente",
-            "williams",
-            "flavio"
+            "donizete",
+            "lucas",
+            "luiz_cezar"
           ],
           "capacidade": 3
         },
@@ -1194,9 +1195,9 @@
           "data": "2026-08-29",
           "tipo": "NOITE",
           "pessoas": [
-            "carlos_henrique",
-            "isac",
-            "leandro"
+            "eduardo",
+            "luis_henrique",
+            "elson"
           ],
           "capacidade": 3
         },
@@ -1204,9 +1205,9 @@
           "data": "2026-08-30",
           "tipo": "MANHA",
           "pessoas": [
-            "eduardo",
-            "elson",
-            "lucas"
+            "carlos_henrique",
+            "luiz_felipe",
+            "marcos"
           ],
           "capacidade": 3
         },
@@ -1214,9 +1215,9 @@
           "data": "2026-08-30",
           "tipo": "NOITE",
           "pessoas": [
-            "adilson",
-            "donizete",
-            "luis_henrique"
+            "leandro",
+            "vicente",
+            "flavio"
           ],
           "capacidade": 3
         },
@@ -1225,8 +1226,8 @@
           "tipo": "NOITE",
           "pessoas": [
             "thiago",
-            "luiz_cezar",
-            "luiz_felipe"
+            "williams",
+            "isac"
           ],
           "capacidade": 3
         },
@@ -1234,9 +1235,9 @@
           "data": "2026-09-05",
           "tipo": "TARDE",
           "pessoas": [
-            "marcos",
-            "williams",
-            "flavio"
+            "donizete",
+            "lucas",
+            "eduardo"
           ],
           "capacidade": 3,
           "rotulo": "ENSAIO"
@@ -1245,9 +1246,9 @@
           "data": "2026-09-05",
           "tipo": "NOITE",
           "pessoas": [
-            "vicente",
-            "carlos_henrique",
-            "isac"
+            "luis_henrique",
+            "elson",
+            "luiz_cezar"
           ],
           "capacidade": 3
         },
@@ -1255,9 +1256,9 @@
           "data": "2026-09-06",
           "tipo": "MANHA",
           "pessoas": [
+            "carlos_henrique",
             "leandro",
-            "donizete",
-            "eduardo"
+            "luiz_felipe"
           ],
           "capacidade": 3
         },
@@ -1265,9 +1266,9 @@
           "data": "2026-09-06",
           "tipo": "NOITE",
           "pessoas": [
+            "flavio",
             "adilson",
-            "elson",
-            "lucas"
+            "marcos"
           ],
           "capacidade": 3
         },
@@ -1275,9 +1276,9 @@
           "data": "2026-09-09",
           "tipo": "NOITE",
           "pessoas": [
-            "thiago",
-            "luis_henrique",
-            "luiz_cezar"
+            "vicente",
+            "isac",
+            "thiago"
           ],
           "capacidade": 3
         },
@@ -1285,9 +1286,9 @@
           "data": "2026-09-12",
           "tipo": "NOITE",
           "pessoas": [
-            "luiz_felipe",
             "williams",
-            "carlos_henrique"
+            "donizete",
+            "eduardo"
           ],
           "capacidade": 3
         },
@@ -1295,9 +1296,9 @@
           "data": "2026-09-13",
           "tipo": "MANHA",
           "pessoas": [
-            "flavio",
-            "marcos",
-            "vicente"
+            "lucas",
+            "elson",
+            "carlos_henrique"
           ],
           "capacidade": 3
         },
@@ -1305,9 +1306,9 @@
           "data": "2026-09-13",
           "tipo": "NOITE",
           "pessoas": [
-            "isac",
             "adilson",
-            "donizete"
+            "flavio",
+            "luis_henrique"
           ],
           "capacidade": 3
         },
@@ -1315,9 +1316,9 @@
           "data": "2026-09-16",
           "tipo": "NOITE",
           "pessoas": [
-            "leandro",
-            "lucas",
-            "luis_henrique"
+            "luiz_cezar",
+            "luiz_felipe",
+            "leandro"
           ],
           "capacidade": 3
         },
@@ -1325,9 +1326,9 @@
           "data": "2026-09-19",
           "tipo": "NOITE",
           "pessoas": [
-            "eduardo",
-            "elson",
-            "luiz_cezar"
+            "marcos",
+            "williams",
+            "isac"
           ],
           "capacidade": 3
         },
@@ -1335,9 +1336,9 @@
           "data": "2026-09-20",
           "tipo": "MANHA",
           "pessoas": [
-            "williams",
-            "carlos_henrique",
-            "luiz_felipe"
+            "elson",
+            "donizete",
+            "carlos_henrique"
           ],
           "capacidade": 3
         },
@@ -1345,9 +1346,9 @@
           "data": "2026-09-20",
           "tipo": "NOITE",
           "pessoas": [
+            "vicente",
             "flavio",
-            "marcos",
-            "vicente"
+            "lucas"
           ],
           "capacidade": 3
         },
@@ -1355,9 +1356,9 @@
           "data": "2026-09-23",
           "tipo": "NOITE",
           "pessoas": [
-            "donizete",
-            "isac",
-            "leandro"
+            "luis_henrique",
+            "luiz_felipe",
+            "luiz_cezar"
           ],
           "capacidade": 3
         },
@@ -1365,8 +1366,8 @@
           "data": "2026-09-26",
           "tipo": "NOITE",
           "pessoas": [
-            "lucas",
-            "luis_henrique",
+            "marcos",
+            "leandro",
             "eduardo"
           ],
           "capacidade": 3
@@ -1376,7 +1377,7 @@
           "tipo": "MANHA",
           "pessoas": [
             "elson",
-            "luiz_cezar",
+            "vicente",
             "carlos_henrique"
           ],
           "capacidade": 3
@@ -1387,7 +1388,7 @@
           "pessoas": [
             "adilson",
             "flavio",
-            "luiz_felipe"
+            "donizete"
           ],
           "capacidade": 3
         },
@@ -1395,9 +1396,9 @@
           "data": "2026-09-30",
           "tipo": "NOITE",
           "pessoas": [
-            "marcos",
-            "vicente",
-            "donizete"
+            "luis_henrique",
+            "luiz_cezar",
+            "luiz_felipe"
           ],
           "capacidade": 3
         },
@@ -1405,9 +1406,9 @@
           "data": "2026-10-03",
           "tipo": "TARDE",
           "pessoas": [
-            "williams",
+            "lucas",
             "isac",
-            "leandro"
+            "williams"
           ],
           "capacidade": 3,
           "rotulo": "ENSAIO"
@@ -1416,9 +1417,9 @@
           "data": "2026-10-03",
           "tipo": "NOITE",
           "pessoas": [
-            "eduardo",
-            "lucas",
-            "luis_henrique"
+            "marcos",
+            "leandro",
+            "eduardo"
           ],
           "capacidade": 3
         },
@@ -1426,8 +1427,8 @@
           "data": "2026-10-04",
           "tipo": "MANHA",
           "pessoas": [
-            "carlos_henrique",
             "elson",
+            "donizete",
             "flavio"
           ],
           "capacidade": 3
@@ -1436,9 +1437,9 @@
           "data": "2026-10-04",
           "tipo": "NOITE",
           "pessoas": [
-            "adilson",
-            "luiz_cezar",
-            "luiz_felipe"
+            "vicente",
+            "carlos_henrique",
+            "adilson"
           ],
           "capacidade": 3
         },
@@ -1446,9 +1447,9 @@
           "data": "2026-10-07",
           "tipo": "NOITE",
           "pessoas": [
-            "thiago",
-            "marcos",
-            "vicente"
+            "luis_henrique",
+            "luiz_cezar",
+            "luiz_felipe"
           ],
           "capacidade": 3
         },
@@ -1456,9 +1457,9 @@
           "data": "2026-10-10",
           "tipo": "NOITE",
           "pessoas": [
-            "williams",
-            "donizete",
-            "eduardo"
+            "eduardo",
+            "isac",
+            "leandro"
           ],
           "capacidade": 3
         },
@@ -1466,9 +1467,9 @@
           "data": "2026-10-11",
           "tipo": "MANHA",
           "pessoas": [
-            "isac",
-            "leandro",
-            "lucas"
+            "lucas",
+            "williams",
+            "marcos"
           ],
           "capacidade": 3
         },
@@ -1476,9 +1477,9 @@
           "data": "2026-10-11",
           "tipo": "NOITE",
           "pessoas": [
-            "luis_henrique",
-            "adilson",
-            "carlos_henrique"
+            "elson",
+            "donizete",
+            "adilson"
           ],
           "capacidade": 3
         },
@@ -1486,9 +1487,9 @@
           "data": "2026-10-14",
           "tipo": "NOITE",
           "pessoas": [
-            "thiago",
+            "vicente",
             "flavio",
-            "luiz_cezar"
+            "luis_henrique"
           ],
           "capacidade": 3
         },
@@ -1496,9 +1497,9 @@
           "data": "2026-10-17",
           "tipo": "NOITE",
           "pessoas": [
-            "elson",
-            "luiz_felipe",
-            "marcos"
+            "luiz_cezar",
+            "eduardo",
+            "isac"
           ],
           "capacidade": 3
         },
@@ -1506,9 +1507,9 @@
           "data": "2026-10-18",
           "tipo": "MANHA",
           "pessoas": [
-            "vicente",
+            "luiz_felipe",
             "williams",
-            "donizete"
+            "carlos_henrique"
           ],
           "capacidade": 3
         },
@@ -1516,9 +1517,9 @@
           "data": "2026-10-18",
           "tipo": "NOITE",
           "pessoas": [
-            "eduardo",
             "adilson",
-            "carlos_henrique"
+            "leandro",
+            "elson"
           ],
           "capacidade": 3
         },
@@ -1526,9 +1527,9 @@
           "data": "2026-10-21",
           "tipo": "NOITE",
           "pessoas": [
-            "isac",
-            "leandro",
-            "lucas"
+            "donizete",
+            "thiago",
+            "vicente"
           ],
           "capacidade": 3
         },
@@ -1536,9 +1537,9 @@
           "data": "2026-10-24",
           "tipo": "NOITE",
           "pessoas": [
-            "luis_henrique",
             "flavio",
-            "luiz_cezar"
+            "luis_henrique",
+            "eduardo"
           ],
           "capacidade": 3
         },
@@ -1546,9 +1547,9 @@
           "data": "2026-10-25",
           "tipo": "MANHA",
           "pessoas": [
-            "elson",
-            "luiz_felipe",
-            "marcos"
+            "isac",
+            "luiz_cezar",
+            "carlos_henrique"
           ],
           "capacidade": 3
         },
@@ -1556,9 +1557,9 @@
           "data": "2026-10-25",
           "tipo": "NOITE",
           "pessoas": [
-            "vicente",
-            "adilson",
-            "carlos_henrique"
+            "marcos",
+            "elson",
+            "adilson"
           ],
           "capacidade": 3
         },
@@ -1566,8 +1567,8 @@
           "data": "2026-10-28",
           "tipo": "NOITE",
           "pessoas": [
-            "donizete",
-            "isac",
+            "lucas",
+            "thiago",
             "leandro"
           ],
           "capacidade": 3
@@ -1576,9 +1577,9 @@
           "data": "2026-10-31",
           "tipo": "NOITE",
           "pessoas": [
-            "eduardo",
-            "lucas",
-            "flavio"
+            "luiz_felipe",
+            "donizete",
+            "eduardo"
           ],
           "capacidade": 3
         },
@@ -1586,9 +1587,9 @@
           "data": "2026-11-01",
           "tipo": "MANHA",
           "pessoas": [
-            "williams",
-            "luis_henrique",
-            "luiz_cezar"
+            "vicente",
+            "marcos",
+            "williams"
           ],
           "capacidade": 3
         },
@@ -1596,9 +1597,9 @@
           "data": "2026-11-01",
           "tipo": "NOITE",
           "pessoas": [
-            "elson",
-            "luiz_felipe",
-            "marcos"
+            "adilson",
+            "flavio",
+            "elson"
           ],
           "capacidade": 3
         },
@@ -1606,9 +1607,9 @@
           "data": "2026-11-04",
           "tipo": "NOITE",
           "pessoas": [
+            "luis_henrique",
             "thiago",
-            "vicente",
-            "donizete"
+            "isac"
           ],
           "capacidade": 3
         },
@@ -1616,9 +1617,9 @@
           "data": "2026-11-07",
           "tipo": "TARDE",
           "pessoas": [
+            "luiz_cezar",
             "carlos_henrique",
-            "isac",
-            "leandro"
+            "donizete"
           ],
           "capacidade": 3,
           "rotulo": "ENSAIO"
@@ -1627,9 +1628,9 @@
           "data": "2026-11-07",
           "tipo": "NOITE",
           "pessoas": [
-            "eduardo",
-            "flavio",
-            "lucas"
+            "lucas",
+            "leandro",
+            "eduardo"
           ],
           "capacidade": 3
         },
@@ -1638,8 +1639,8 @@
           "tipo": "MANHA",
           "pessoas": [
             "williams",
-            "elson",
-            "luis_henrique"
+            "marcos",
+            "vicente"
           ],
           "capacidade": 3
         },
@@ -1647,9 +1648,9 @@
           "data": "2026-11-08",
           "tipo": "NOITE",
           "pessoas": [
-            "adilson",
-            "luiz_cezar",
-            "luiz_felipe"
+            "elson",
+            "luiz_felipe",
+            "flavio"
           ],
           "capacidade": 3
         },
@@ -1657,9 +1658,9 @@
           "data": "2026-11-11",
           "tipo": "NOITE",
           "pessoas": [
+            "luis_henrique",
             "thiago",
-            "marcos",
-            "vicente"
+            "isac"
           ],
           "capacidade": 3
         },
@@ -1668,8 +1669,8 @@
           "tipo": "NOITE",
           "pessoas": [
             "donizete",
-            "carlos_henrique",
-            "eduardo"
+            "leandro",
+            "carlos_henrique"
           ],
           "capacidade": 3
         },
@@ -1678,13 +1679,144 @@
           "tipo": "MANHA",
           "pessoas": [
             "williams",
-            "flavio",
-            "isac"
+            "luiz_cezar",
+            "luiz_felipe"
           ],
           "capacidade": 3
         },
         {
           "data": "2026-11-15",
+          "tipo": "NOITE",
+          "pessoas": [
+            "adilson",
+            "lucas",
+            "eduardo"
+          ],
+          "capacidade": 3
+        },
+        {
+          "data": "2026-11-18",
+          "tipo": "NOITE",
+          "pessoas": [
+            "marcos",
+            "isac",
+            "flavio"
+          ],
+          "capacidade": 3
+        },
+        {
+          "data": "2026-11-21",
+          "tipo": "NOITE",
+          "pessoas": [
+            "elson",
+            "luis_henrique",
+            "donizete"
+          ],
+          "capacidade": 3
+        },
+        {
+          "data": "2026-11-22",
+          "tipo": "MANHA",
+          "pessoas": [
+            "lucas",
+            "leandro",
+            "luiz_cezar"
+          ],
+          "capacidade": 3
+        },
+        {
+          "data": "2026-11-22",
+          "tipo": "NOITE",
+          "pessoas": [
+            "carlos_henrique",
+            "luiz_felipe",
+            "adilson"
+          ],
+          "capacidade": 3
+        },
+        {
+          "data": "2026-11-25",
+          "tipo": "NOITE",
+          "pessoas": [
+            "marcos",
+            "isac",
+            "flavio"
+          ],
+          "capacidade": 3
+        },
+        {
+          "data": "2026-11-28",
+          "tipo": "NOITE",
+          "pessoas": [
+            "donizete",
+            "eduardo",
+            "vicente"
+          ],
+          "capacidade": 3
+        },
+        {
+          "data": "2026-11-29",
+          "tipo": "MANHA",
+          "pessoas": [
+            "lucas",
+            "carlos_henrique",
+            "elson"
+          ],
+          "capacidade": 3
+        },
+        {
+          "data": "2026-11-29",
+          "tipo": "NOITE",
+          "pessoas": [
+            "luis_henrique",
+            "adilson",
+            "leandro"
+          ],
+          "capacidade": 3
+        },
+        {
+          "data": "2026-12-02",
+          "tipo": "NOITE",
+          "pessoas": [
+            "thiago",
+            "luiz_cezar",
+            "marcos"
+          ],
+          "capacidade": 3
+        },
+        {
+          "data": "2026-12-05",
+          "tipo": "TARDE",
+          "pessoas": [
+            "williams",
+            "luiz_felipe",
+            "isac"
+          ],
+          "capacidade": 3,
+          "rotulo": "ENSAIO"
+        },
+        {
+          "data": "2026-12-05",
+          "tipo": "NOITE",
+          "pessoas": [
+            "vicente",
+            "eduardo",
+            "donizete"
+          ],
+          "capacidade": 3
+        },
+        {
+          "data": "2026-12-06",
+          "tipo": "MANHA",
+          "pessoas": [
+            "carlos_henrique",
+            "elson",
+            "flavio"
+          ],
+          "capacidade": 3
+        },
+        {
+          "data": "2026-12-06",
           "tipo": "NOITE",
           "pessoas": [
             "leandro",
@@ -1694,143 +1826,12 @@
           "capacidade": 3
         },
         {
-          "data": "2026-11-18",
-          "tipo": "NOITE",
-          "pessoas": [
-            "luis_henrique",
-            "luiz_cezar",
-            "luiz_felipe"
-          ],
-          "capacidade": 3
-        },
-        {
-          "data": "2026-11-21",
-          "tipo": "NOITE",
-          "pessoas": [
-            "elson",
-            "marcos",
-            "vicente"
-          ],
-          "capacidade": 3
-        },
-        {
-          "data": "2026-11-22",
-          "tipo": "MANHA",
-          "pessoas": [
-            "carlos_henrique",
-            "donizete",
-            "eduardo"
-          ],
-          "capacidade": 3
-        },
-        {
-          "data": "2026-11-22",
-          "tipo": "NOITE",
-          "pessoas": [
-            "adilson",
-            "flavio",
-            "isac"
-          ],
-          "capacidade": 3
-        },
-        {
-          "data": "2026-11-25",
-          "tipo": "NOITE",
-          "pessoas": [
-            "leandro",
-            "lucas",
-            "luis_henrique"
-          ],
-          "capacidade": 3
-        },
-        {
-          "data": "2026-11-28",
-          "tipo": "NOITE",
-          "pessoas": [
-            "luiz_cezar",
-            "luiz_felipe",
-            "elson"
-          ],
-          "capacidade": 3
-        },
-        {
-          "data": "2026-11-29",
-          "tipo": "MANHA",
-          "pessoas": [
-            "marcos",
-            "vicente",
-            "carlos_henrique"
-          ],
-          "capacidade": 3
-        },
-        {
-          "data": "2026-11-29",
-          "tipo": "NOITE",
-          "pessoas": [
-            "adilson",
-            "donizete",
-            "eduardo"
-          ],
-          "capacidade": 3
-        },
-        {
-          "data": "2026-12-02",
-          "tipo": "NOITE",
-          "pessoas": [
-            "thiago",
-            "williams",
-            "flavio"
-          ],
-          "capacidade": 3
-        },
-        {
-          "data": "2026-12-05",
-          "tipo": "TARDE",
-          "pessoas": [
-            "isac",
-            "leandro",
-            "lucas"
-          ],
-          "capacidade": 3,
-          "rotulo": "ENSAIO"
-        },
-        {
-          "data": "2026-12-05",
-          "tipo": "NOITE",
-          "pessoas": [
-            "luis_henrique",
-            "elson",
-            "luiz_cezar"
-          ],
-          "capacidade": 3
-        },
-        {
-          "data": "2026-12-06",
-          "tipo": "MANHA",
-          "pessoas": [
-            "luiz_felipe",
-            "marcos",
-            "vicente"
-          ],
-          "capacidade": 3
-        },
-        {
-          "data": "2026-12-06",
-          "tipo": "NOITE",
-          "pessoas": [
-            "adilson",
-            "carlos_henrique",
-            "donizete"
-          ],
-          "capacidade": 3
-        },
-        {
           "data": "2026-12-09",
           "tipo": "NOITE",
           "pessoas": [
-            "thiago",
-            "williams",
-            "flavio"
+            "luiz_cezar",
+            "luis_henrique",
+            "marcos"
           ],
           "capacidade": 3
         },
@@ -1838,9 +1839,9 @@
           "data": "2026-12-12",
           "tipo": "NOITE",
           "pessoas": [
-            "eduardo",
-            "elson",
-            "isac"
+            "williams",
+            "vicente",
+            "eduardo"
           ],
           "capacidade": 3
         },
@@ -1848,9 +1849,9 @@
           "data": "2026-12-13",
           "tipo": "MANHA",
           "pessoas": [
-            "leandro",
+            "donizete",
             "lucas",
-            "luis_henrique"
+            "carlos_henrique"
           ],
           "capacidade": 3
         },
@@ -1858,9 +1859,9 @@
           "data": "2026-12-13",
           "tipo": "NOITE",
           "pessoas": [
-            "luiz_cezar",
-            "luiz_felipe",
-            "marcos"
+            "adilson",
+            "isac",
+            "flavio"
           ],
           "capacidade": 3
         },
@@ -1868,9 +1869,9 @@
           "data": "2026-12-16",
           "tipo": "NOITE",
           "pessoas": [
-            "williams",
-            "vicente",
-            "donizete"
+            "luiz_felipe",
+            "luis_henrique",
+            "luiz_cezar"
           ],
           "capacidade": 3
         },
@@ -1878,9 +1879,9 @@
           "data": "2026-12-19",
           "tipo": "NOITE",
           "pessoas": [
-            "carlos_henrique",
-            "flavio",
-            "eduardo"
+            "vicente",
+            "leandro",
+            "williams"
           ],
           "capacidade": 3
         },
@@ -1889,8 +1890,8 @@
           "tipo": "MANHA",
           "pessoas": [
             "elson",
-            "isac",
-            "leandro"
+            "marcos",
+            "eduardo"
           ],
           "capacidade": 3
         },
@@ -1898,9 +1899,9 @@
           "data": "2026-12-20",
           "tipo": "NOITE",
           "pessoas": [
-            "adilson",
             "lucas",
-            "luis_henrique"
+            "donizete",
+            "adilson"
           ],
           "capacidade": 3
         },
@@ -1908,9 +1909,9 @@
           "data": "2026-12-23",
           "tipo": "NOITE",
           "pessoas": [
-            "luiz_cezar",
             "luiz_felipe",
-            "marcos"
+            "isac",
+            "thiago"
           ],
           "capacidade": 3
         },
@@ -1919,8 +1920,8 @@
           "tipo": "NOITE",
           "pessoas": [
             "vicente",
-            "donizete",
-            "carlos_henrique"
+            "carlos_henrique",
+            "luis_henrique"
           ],
           "capacidade": 3
         },
@@ -1928,9 +1929,9 @@
           "data": "2026-12-27",
           "tipo": "MANHA",
           "pessoas": [
-            "eduardo",
             "flavio",
-            "elson"
+            "elson",
+            "leandro"
           ],
           "capacidade": 3
         },
@@ -1938,9 +1939,9 @@
           "data": "2026-12-27",
           "tipo": "NOITE",
           "pessoas": [
-            "adilson",
-            "isac",
-            "leandro"
+            "luiz_cezar",
+            "marcos",
+            "adilson"
           ],
           "capacidade": 3
         },
@@ -1949,8 +1950,8 @@
           "tipo": "NOITE",
           "pessoas": [
             "lucas",
-            "luis_henrique",
-            "luiz_cezar"
+            "donizete",
+            "luiz_felipe"
           ],
           "capacidade": 3
         }

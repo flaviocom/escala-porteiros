@@ -36,11 +36,16 @@ const entrada = join(RAIZ, 'node_modules', '.refazer-entrada.ts')
 const saida = join(RAIZ, 'node_modules', '.refazer.mjs')
 writeFileSync(
   entrada,
-  ["export * from '../src/dominio/malha'", "export * from '../src/dominio/gerador'", "export * from '../src/dominio/datas'"].join(String.fromCharCode(10)),
+  [
+    "export * from '../src/dominio/malha'",
+    "export * from '../src/dominio/gerador'",
+    "export * from '../src/dominio/datas'",
+    "export * from '../src/dominio/blocos'",
+  ].join(String.fromCharCode(10)),
   'utf8',
 )
 esbuild.buildSync({ entryPoints: [entrada], outfile: saida, format: 'esm', platform: 'node', bundle: true })
-const { construirGrade, gerar, diferencaEmDias } = await import(pathToFileURL(saida).href)
+const { construirGrade, gerar, diferencaEmDias, cotaMensalJaPublicada } = await import(pathToFileURL(saida).href)
 
 const cfg = JSON.parse(readFileSync(join(RAIZ, 'docs/dados/config.json'), 'utf8'))
 const pessoas = JSON.parse(readFileSync(join(RAIZ, 'docs/dados/pessoas.json'), 'utf8')).pessoas
@@ -59,6 +64,15 @@ for (const alvo of blocos) {
   }
 
   // A fronteira que existia quando ele nasceu: os OUTROS blocos, antes do início dele.
+  //
+  // 🔴 SÃO DUAS FRONTEIRAS, NÃO UMA. Este portão nasceu (05/08/2026) enxergando só o descanso — a
+  // última data de cada irmão — e ficou vermelho no dia em que o gerador passou a receber TAMBÉM a
+  // cota mensal já cumprida do outro lado da emenda. O bloco continuava reproduzível; era o
+  // refazedor que reconstruía menos entradas do que o gerador consome, e acusava o inocente.
+  //
+  // A regra que sobra daqui: **entrada nova no gerador é entrada nova aqui, no mesmo passo.** As
+  // duas são derivadas da mesma coisa — os outros blocos, olhando só para trás do início deste —,
+  // então a promessa de reprodutibilidade continua de pé: nada foi guardado a mais no bloco.
   const fronteira = {}
   for (const b of blocos) {
     if (b.id === alvo.id) continue
@@ -67,6 +81,7 @@ for (const alvo of blocos) {
       for (const id of t.pessoas) if (!fronteira[id] || t.data > fronteira[id]) fronteira[id] = t.data
     }
   }
+  const cota = cotaMensalJaPublicada(blocos.filter((b) => b.id !== alvo.id), alvo.inicio)
 
   const grade = construirGrade({
     inicio: alvo.inicio, fim: alvo.fim, malha: alvo.malha,
@@ -74,7 +89,7 @@ for (const alvo of blocos) {
   })
   const r = gerar({
     inicio: alvo.inicio, fim: alvo.fim, grade, pessoas, elenco: alvo.elenco,
-    malha: alvo.malha, ultimaEscalaAnterior: fronteira,
+    malha: alvo.malha, ultimaEscalaAnterior: fronteira, escalasPorMesAnterior: cota,
     ...(alvo.semente == null ? {} : { semente: alvo.semente, candidatos: 3 }),
   })
 
