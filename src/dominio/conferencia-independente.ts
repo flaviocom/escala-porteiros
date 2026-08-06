@@ -83,6 +83,23 @@ export function conferirPorFora(
     achados.push({ promessa, veredito, furos })
 
   const linhas = montarLinhas(bloco, pessoas)
+  /*
+    🔴 QUEM ESTÁ FORA DA EQUIPE NÃO ENTRA NA CONFERÊNCIA — 06/08/2026, regra dada pelo dono:
+
+      > *"somente quem está ativo. Quem não está ativo não faz parte. Se eu determino um período e tem
+      >  pessoas ativas, pessoas não ativas não fazem parte de toda a validação das regras."*
+
+    O sintoma que ele viu: *"2 pessoa(s) com teto: **Thiago** (máx. 2/mês) · Williams"* — e o Thiago
+    tinha sido tirado da equipe. Ele tem teto cadastrado, mas não participa desta escala; listá-lo
+    entre os conferidos faz o leitor procurar por alguém que não está lá.
+
+    ⚠️ **UMA EXCEÇÃO, e ela é o motivo de o filtro não descer até `montarLinhas`:** a promessa "só
+    entra quem está no elenco e ativo" precisa **enxergar** o inativo que aparecer na escala — é o
+    furo que ela existe para achar. Filtrar na origem cegaria justamente o guarda.
+
+    Ou seja: a linha do tempo se monta para todos; as promessas se medem sobre os ATIVOS.
+  */
+  const ativas = [...linhas.values()].filter((l) => l.pessoa.ativo)
   const porNome = (id: string) => pessoas.find((p) => p.id === id)?.nome ?? `(id ${id})`
   const noElenco = new Set(bloco.elenco)
   const comuns = bloco.turnos.filter((t) => !t.santaCeia)
@@ -141,7 +158,7 @@ export function conferirPorFora(
   // Pelo ângulo da PESSOA: procura data repetida na linha do tempo dela.
   {
     const furos: string[] = []
-    for (const l of linhas.values())
+    for (const l of ativas)
       for (let i = 1; i < l.datas.length; i++)
         if (l.datas[i] === l.datas[i - 1])
           furos.push(`${l.pessoa.nome} duas vezes em ${formatarBR(l.datas[i])}`)
@@ -152,7 +169,7 @@ export function conferirPorFora(
   // ── 3, 4, 5. Restrições da pessoa, conferidas turno a turno da linha dela ─
   {
     const furos: string[] = []
-    for (const l of linhas.values()) {
+    for (const l of ativas) {
       const r = l.pessoa.restricoes
       for (const t of l.turnos) {
         const dia = diaDaSemana(t.data)
@@ -168,7 +185,7 @@ export function conferirPorFora(
       }
     }
     registrar('Dias, turnos e ausências de cada pessoa são respeitados', furos,
-      `${[...linhas.values()].reduce((s, l) => s + l.turnos.length, 0)} escalação(ões) conferida(s) uma a uma`)
+      `${ativas.reduce((s, l) => s + l.turnos.length, 0)} escalação(ões) conferida(s) uma a uma`)
   }
 
   // ── 6. Teto mensal ───────────────────────────────────────────────────────
@@ -183,7 +200,7 @@ export function conferirPorFora(
 
       Medido no dado no ar: Williams, teto 3, com 5 escalas em agosto de 2026.
     */
-    for (const l of linhas.values()) {
+    for (const l of ativas) {
       const teto = l.pessoa.restricoes.tetoMensal
       if (teto == null) continue
       const antesDele = escalasPorMesAnterior[l.pessoa.id] ?? {}
@@ -202,7 +219,7 @@ export function conferirPorFora(
       🔴 QUEM, E QUAL TETO — 06/08/2026. Dizia só *"2 pessoa(s) com teto"*, e o dono perguntou o
       óbvio: *"quem são as pessoas?"*. O dado existe na linha de cima; faltava sair.
     */
-    const comTeto = [...linhas.values()]
+    const comTeto = ativas
       .filter((l) => l.pessoa.restricoes.tetoMensal != null)
       .map((l) => `${l.pessoa.nome} (máx. ${l.pessoa.restricoes.tetoMensal}/mês)`)
       .sort((a, b) => a.localeCompare(b, 'pt-BR'))
@@ -268,7 +285,7 @@ export function conferirPorFora(
     let menor = Infinity
     /** Todos os que EMPATAM no mínimo — o empate é a regra aqui, não a exceção. */
     let noMinimo: string[] = []
-    for (const l of linhas.values()) {
+    for (const l of ativas) {
       const datas = [...new Set([...(ultimaEscalaAnterior[l.pessoa.id] ? [ultimaEscalaAnterior[l.pessoa.id]] : []), ...l.datas])].sort()
       for (let i = 1; i < datas.length; i++) {
         const d = diferencaEmDias(datas[i - 1], datas[i])

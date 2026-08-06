@@ -322,3 +322,37 @@ describe('🔴 a conferência nomeia TODOS, não o primeiro que encontra', () =>
     expect(espaco.veredito).not.toMatch(/Caio/)
   })
 })
+
+describe('🔴 quem está FORA da equipe não entra na conferência', () => {
+  /*
+    Regra dada pelo dono em 06/08/2026: *"somente quem está ativo. Quem não está ativo não faz parte
+    de toda a validação das regras."*
+
+    O sintoma: a tela dizia "2 pessoa(s) com teto: Thiago (máx. 2/mês) · Williams", e o Thiago tinha
+    sido tirado da equipe. Listar quem não participa faz o leitor procurar por alguém que não está lá.
+
+    ⚠️ Com UMA exceção, e estes testes existem para provar as duas metades: a promessa do elenco
+    precisa continuar ENXERGANDO o inativo que apareça na escala — é o furo que ela existe para achar.
+  */
+  const comSaido: Pessoa[] = [
+    { id: 'a', nome: 'Ana', ativo: true, restricoes: { tetoMensal: 3 } },
+    { id: 'z', nome: 'Zeca', ativo: false, restricoes: { tetoMensal: 2 } },
+  ]
+
+  it('o inativo NÃO aparece entre os medidos, mesmo tendo teto cadastrado', () => {
+    const turnos = [{ data: '2026-09-06', tipo: 'MANHA', pessoas: ['a'], capacidade: 1 }] as unknown as Turno[]
+    const r = conferirPorFora(bloco(turnos, ['a'], { pisoAlcancado: 1 }), comSaido, CONFIG, {}, {})
+    const teto = r.achados.find((x) => /teto mensal/i.test(x.promessa))!
+    expect(teto.veredito).toMatch(/Ana/)
+    expect(teto.veredito).not.toMatch(/Zeca/)
+  })
+
+  it('🔴 A EXCEÇÃO — se o inativo ESTIVER na escala, o guarda continua acusando', () => {
+    // Sem este caso, "filtrar inativos" viraria "cegar o guarda", que é o oposto do pedido.
+    const turnos = [{ data: '2026-09-06', tipo: 'MANHA', pessoas: ['a', 'z'], capacidade: 2 }] as unknown as Turno[]
+    const r = conferirPorFora(bloco(turnos, ['a', 'z'], { pisoAlcancado: 1 }), comSaido, CONFIG, {}, {})
+    const elenco = r.achados.find((x) => /elenco/i.test(x.promessa))!
+    expect(elenco.furos.join(' ')).toMatch(/Zeca/)
+    expect(elenco.furos.join(' ')).toMatch(/fora da equipe/i)
+  })
+})
