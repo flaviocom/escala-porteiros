@@ -17,6 +17,7 @@
  */
 import type { Shift, ShiftType } from '../types/scheduler'
 import { BROTHERS } from '../types/scheduler'
+import { primeiraLetra } from '../utils/nomes'
 
 const MESES = ['JANEIRO', 'FEVEREIRO', 'MARÇO', 'ABRIL', 'MAIO', 'JUNHO', 'JULHO', 'AGOSTO', 'SETEMBRO', 'OUTUBRO', 'NOVEMBRO', 'DEZEMBRO']
 const MES_CURTO = ['JAN', 'FEV', 'MAR', 'ABR', 'MAI', 'JUN', 'JUL', 'AGO', 'SET', 'OUT', 'NOV', 'DEZ']
@@ -70,7 +71,7 @@ function Ficha({ nome }: { nome: string }) {
         width: 30, height: 30, borderRadius: 999, background: '#dbeafe', color: '#2563eb',
         display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, fontWeight: 800, flexShrink: 0,
       }}>
-        {nome.charAt(0).toUpperCase()}
+        {primeiraLetra(nome)}
       </div>
       <span style={{
         fontSize: 21, fontWeight: 700, color: '#1e293b', whiteSpace: 'nowrap',

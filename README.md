@@ -30,7 +30,7 @@ inteiro. No site anterior essas duas listas eram diferentes, e a diferença era 
 **12 regras duras** — violou, não publica: capacidade do turno · ninguém duas vezes no mesmo dia ·
 dias permitidos · dias proibidos · turnos permitidos · ausências (férias, viagem) · teto mensal ·
 elenco (e ativo) · Santa Ceia conferida contra o calendário · coerência do piso declarado ·
-cobertura do período.
+cobertura do período · **vaga** (todo turno que existe pede pelo menos uma pessoa).
 
 **5 de qualidade** — o gerador maximiza, a validação mede e mostra: distanciamento · equilíbrio de
 carga · variedade de dia da semana · variedade de companhia · piso mensal.

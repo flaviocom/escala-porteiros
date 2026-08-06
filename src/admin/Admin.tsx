@@ -19,6 +19,7 @@ import { baixarPacoteManual, COMO_CRIAR_O_TOKEN, conferirToken, DESTINOS, histor
 import { completarConfig, retratoPublicado, type ConfigLida, type DadosPublicados } from '../dados/carregar'
 import type { ArquivoBlocos, ArquivoPessoas, Bloco, Configuracao, Pessoa, TipoTurno } from '../dominio/tipos'
 import { ROTULO_TURNO } from '../dominio/tipos'
+import { idDoNome } from '../utils/nomes'
 import { construirGrade, diaTemCulto } from '../dominio/malha'
 import { gerarVariasVersoes } from '../dominio/gerador'
 import { validar, resumir } from '../dominio/validacao'
@@ -740,8 +741,17 @@ const AbaElenco: React.FC<{ pessoas: Pessoa[]; aoMudar: (p: Pessoa[]) => void }>
   const acrescentar = () => {
     const nome = novoNome.trim()
     if (!nome) return
-    const id = nome.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '_')
-    if (pessoas.some((p) => p.id === id)) return alert(`Já existe alguém com o identificador "${id}".`)
+    // 🔴 Era `replace(/[^a-z0-9]+/g, '_')` cru aqui. Um nome escrito inteiro fora do alfabeto latino
+    // — 李明, Дмитрий — virava `_`, e o SEGUNDO irmão nessa situação colidia com o primeiro. O
+    // produto é vendido como genérico; a congregação que escreve em outro alfabeto não pode depender
+    // de sorte. Ver `src/utils/nomes.ts`.
+    const id = idDoNome(nome)
+    if (!id) return alert('Esse nome não tem nenhuma letra ou número. Escreva o nome da pessoa.')
+    // E o aviso fala do NOME, que foi o que a pessoa digitou — "identificador" é palavra nossa.
+    if (pessoas.some((p) => p.id === id)) {
+      const jaTem = pessoas.find((p) => p.id === id)!
+      return alert(`Já existe alguém cadastrado como "${jaTem.nome}". Se forem duas pessoas diferentes, acrescente o sobrenome.`)
+    }
     aoMudar([...pessoas, { id, nome, ativo: true, restricoes: {} }])
     setNovoNome('')
   }

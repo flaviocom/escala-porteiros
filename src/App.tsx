@@ -14,6 +14,7 @@ import { Calendar, Filter, X, LayoutGrid, BarChart3, ShieldCheck, SlidersHorizon
 import { format, parseISO, addDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfDay, endOfDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { clsx } from 'clsx';
+import { primeiraLetra } from './utils/nomes';
 
 interface AppProps {
   /** A escala já publicada, vinda dos arquivos de dados — não mais gerada no navegador. */
@@ -291,7 +292,7 @@ function App({ shifts, dados }: AppProps) {
                 "w-9 h-9 rounded-full flex items-center justify-center text-lg font-bold shrink-0",
                 showMyShiftsOnly ? "bg-white/20 text-white" : "bg-indigo-100 text-indigo-700"
               )}>
-                {myBrother.name.charAt(0)}
+                {primeiraLetra(myBrother.name)}
               </div>
               <div className="flex-1 text-left">
                 <div className="text-xs opacity-70 leading-none mb-0.5">{showMyShiftsOnly ? "Mostrando minha escala" : "Minha Escala"}</div>
@@ -521,7 +522,7 @@ function App({ shifts, dados }: AppProps) {
                     "w-10 h-10 rounded-full flex items-center justify-center text-lg font-bold shrink-0",
                     myBrotherId === b.id ? "bg-white/20 text-white" : "bg-indigo-100 text-indigo-700"
                   )}>
-                    {b.name.charAt(0)}
+                    {primeiraLetra(b.name)}
                   </div>
                   <span className="text-base font-semibold">{b.name}</span>
                   {!b.ativo && (

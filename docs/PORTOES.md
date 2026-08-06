@@ -140,7 +140,7 @@ vem antes de `HANDOFF_2026-08-05-b.md` no alfabeto e é o mais **antigo** dos do
 esteja fora de uma linha que se diz "mais recente".
 
 ### 10. `generico` — nenhum nome de cliente cravado (§0)
-**População:** 32 arquivos (`src/` + `index.html` + `package.json` + `README.md`) · **20 testes pulados**, contados
+**População:** 32 arquivos (`src/` + `index.html` + `package.json` + `README.md`) · **21 testes pulados**, contados
 e impressos.
 **Os 8 termos:** `JD. São Luiz` · `Congregação Cristã` · `CCB` (com borda por classe de caracteres,
 sem barra invertida) · `Escala (de) Porteiros` · o prompt do motor cravado · `porteiro(s)` como

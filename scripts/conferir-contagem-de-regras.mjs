@@ -202,7 +202,41 @@ for (const rel of VIVOS) {
   }
   problemas.push(...conferirTexto(rel, texto))
 }
+// ── A LISTA, não só o número ────────────────────────────────────────────────
+//
+// 🔴 Sétima auditoria externa, 05/08/2026: o `README.md` dizia **"12 regras duras"** e enumerava
+// **11** — a D12 (`Vaga`) tinha entrado no catálogo e não na frase. O portão acima estava verde, e
+// com razão: ele mede o NÚMERO, e o número estava certo. Ninguém media a lista.
+//
+// É a mesma classe que o `ordem-do-gate` fechou no mesmo dia: **o portão responde só à pergunta que
+// se fez a ele.** Quem lê o README lê a lista, não o número.
+//
+// Onde a frase "N regras duras" (ou "N de qualidade") for seguida de itens separados por `·` até o
+// primeiro ponto final, esses itens são CONTADOS.
+const enumeracoes = [
+  { re: /(\d+)\s+regras\s+duras\*{0,2}\s*—([^.]*)\./s, esperado: DURAS, oQue: 'regras duras' },
+  { re: /(\d+)\s+de\s+qualidade\*{0,2}\s*—([^.]*)\./s, esperado: QUALIDADE, oQue: 'regras de qualidade' },
+]
+let listasConferidas = 0
+for (const rel of VIVOS) {
+  let texto
+  try { texto = readFileSync(join(RAIZ, rel), 'utf8') } catch { continue }
+  for (const { re, esperado, oQue } of enumeracoes) {
+    const m = texto.match(re)
+    if (!m) continue
+    const itens = m[2].split('·').map((s) => s.trim()).filter(Boolean)
+    listasConferidas++
+    if (itens.length !== esperado) {
+      problemas.push(
+        `${rel} — diz "${m[1]} ${oQue}" e ENUMERA ${itens.length}: ` +
+          `o número está certo, a lista não. Falta(m) ${Math.abs(esperado - itens.length)} item(ns)`,
+      )
+    }
+  }
+}
+
 console.log(`  medidos: ${VIVOS.length} documento(s) vivo(s) — descobertos, não listados à mão`)
+console.log(`  listas enumeradas conferidas: ${listasConferidas} (o número E os itens, não só o número)`)
 console.log(`  isentos: ${HISTORICOS.join(', ')} (append-only — registram o que era verdade então)\n`)
 
 if (problemas.length) {

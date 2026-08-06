@@ -4,6 +4,7 @@ import { ptBR } from 'date-fns/locale';
 import { Shift, BROTHERS } from '../types/scheduler';
 import { filtrarTurnos } from '../dados/filtrar';
 import { clsx } from 'clsx';
+import { primeiraLetra } from '../utils/nomes';
 import { Calendar, Clock, Sun, MoonStar, CloudSun, AlertCircle } from 'lucide-react';
 
 interface ScheduleTableProps {
@@ -244,7 +245,7 @@ export const ScheduleTable: React.FC<ScheduleTableProps> = ({
                                 "w-10 h-10 rounded-full flex items-center justify-center text-lg font-black shrink-0 transition-colors",
                                 isSelected ? "bg-white/20 text-white" : "bg-blue-50 text-blue-600"
                               )}>
-                                {getBrotherName(id).charAt(0)}
+                                {primeiraLetra(getBrotherName(id))}
                               </div>
                               <span className={clsx(
                                 "text-base sm:text-lg font-bold tracking-tight",
