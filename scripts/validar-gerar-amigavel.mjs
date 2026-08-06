@@ -47,6 +47,16 @@ try {
   const campoDe = pagina.locator('input[type="date"]').first()
   const campoAte = pagina.locator('input[type="date"]').nth(1)
 
+  /*
+    🔴 O PADRÃO É LIDO AQUI, ANTES DE O TESTE TOCAR EM QUALQUER CAMPO.
+
+    A primeira versão desta checagem lia o "Até" lá embaixo, depois de o próprio teste já ter
+    preenchido os campos várias vezes — e então acusava o produto de sugerir seis meses quando a tela
+    recém-aberta sugeria o ano inteiro. **Media o próprio rastro e chamava de defeito do produto.**
+  */
+  const ateInicialPadrao = await campoAte.inputValue()
+  const janelaPadrao = (await pagina.locator('#root').innerText()).split(String.fromCharCode(10)).map((x) => x.trim()).find((x) => /dia\(s\)/.test(x)) ?? ''
+
   // ── 1. o intervalo começa DEPOIS do último turno publicado ───────────────
   const deInicial = await campoDe.inputValue()
   conferir('o intervalo começa depois da escala já publicada', deInicial >= '2026-12-31',
@@ -262,27 +272,21 @@ try {
     /não é uma data válida/i.test(anoLongo) && /quatro dígitos/i.test(anoLongo),
     'recusado com a causa nomeada')
 
-  // ── 8. 🔴 O TAMANHO DA JANELA APARECE, E A SUGESTÃO NÃO SALTA UM ANO ─────────────
+  // ── 8. 🔴 O ANO INTEIRO, E A JANELA À VISTA ────────────────────────────
   //
-  // 06/08/2026, relatado pelo dono com a tela na mão: ele publicou **doze meses de escala sem
-  // perceber**. O campo "Até" saltava sozinho para 31/12 do ano seguinte quando a janela do ano
-  // corrente ficava curta, e nada na tela dizia que aquilo era um ano.
-  await pagina.getByRole('button', { name: /^Gerar escala/i }).first().click()
-  await pagina.waitForTimeout(700)
-  await campoDe.fill('2026-12-31')
-  await pagina.waitForTimeout(700)
-  const fimSugerido = await campoAte.inputValue()
-  conferir('🔴 o fim sugerido NÃO salta para o fim do ano seguinte',
-    fimSugerido !== '2027-12-31' && fimSugerido > '2026-12-31',
-    `De 31/12/2026 → Até ${fimSugerido}`)
-
-  const etiqueta = (await pagina.locator('body').innerText()).split(String.fromCharCode(10)).map((x) => x.trim()).find((x) => /dia\(s\) ·/.test(x)) ?? ''
-  conferir('🔴 a tela mostra o TAMANHO da janela antes de gerar', /\d+ dia\(s\)/.test(etiqueta), etiqueta || '(sem etiqueta)')
-
-  await campoAte.fill('2027-12-31')
-  await pagina.waitForTimeout(700)
-  const longa = (await pagina.locator('body').innerText()).split(String.fromCharCode(10)).map((x) => x.trim()).find((x) => /dia\(s\) ·/.test(x)) ?? ''
-  conferir('🔴 janela de um ano digitada à mão vem com AVISO', /⚠/.test(longa), longa || '(sem etiqueta)')
+  // O dono publicou doze meses sem perceber, e eu concluí que o problema era o tamanho. Não era: era
+  // o tamanho ser INVISÍVEL. Ele desfez a trava que inventei — *"eu não pedi para você travar aí em
+  // 6 meses"*, *"você vai calcular o ano inteiro"*, *"não tem mínimo nem máximo"*.
+  //
+  // Ficam duas exigências, e só duas: o fim sugerido cobre o ano, e o tamanho aparece — **sem
+  // julgamento**, porque informar é trabalho da tela e decidir é dele.
+  conferir('🔴 o fim sugerido cobre o ANO INTEIRO, sem trava',
+    ateInicialPadrao.endsWith('-12-31'),
+    `Até = ${ateInicialPadrao}`)
+  conferir('🔴 a tela mostra o TAMANHO da janela antes de gerar',
+    /\d+ dia\(s\)/.test(janelaPadrao), janelaPadrao || '(sem etiqueta)')
+  conferir('🔴 e NÃO julga o tamanho — sem mínimo nem máximo',
+    !/⚠/.test(janelaPadrao), janelaPadrao || '(sem etiqueta)')
 
   conferir('nenhum erro no console', erros.length === 0, erros.slice(0, 2).join(' · ') || 'limpo')
   await pagina.screenshot({ path: join(RAIZ, 'capturas', 'gerar-amigavel.png'), fullPage: false })

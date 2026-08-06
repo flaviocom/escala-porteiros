@@ -1560,23 +1560,22 @@ const AbaGerar: React.FC<{
 
             A sugestão foi limitada a seis meses, mas isso sozinho não basta: o campo é dele e ele pode
             digitar o que quiser. **O que impede a surpresa é o número estar à vista** — e ele fica
-            âmbar acima de seis meses, porque aí já é mais escala do que alguém confere turno a turno.
+            ⚠️ E ela é NEUTRA, de propósito. Cheguei a pôr um alerta âmbar acima de seis meses, e estava
+            errado duas vezes: o sistema sugeria um ano e em seguida reclamava do próprio palpite; e a
+            regra do dono é explícita — *"os dias futuros podem ser alterados livremente, por 1, 2
+            anos… ilimitado. Não tem mínimo nem máximo."*
+
+            **O número fica; o julgamento sai.** Informar é trabalho da tela; decidir é dele.
           */}
           {(() => {
             const dias = de && ate && ehDataValida(de) && ehDataValida(ate) ? diferencaEmDias(de, ate) + 1 : 0
             if (dias <= 0) return null
             const meses = dias / 30.4
-            const longo = dias > 190
             return (
               <span
-                title={longo
-                  ? 'Escala longa. Confira se é mesmo isto que você quer publicar — são muitos turnos para conferir de uma vez.'
-                  : 'Quanto tempo a escala vai cobrir'}
-                className={longo
-                  ? 'self-end mb-2 rounded-lg bg-amber-100 px-2.5 py-1 text-xs font-bold text-amber-900'
-                  : 'self-end mb-2 rounded-lg bg-gray-100 px-2.5 py-1 text-xs font-semibold text-gray-600'}
+                title="Quanto tempo a escala vai cobrir"
+                className="self-end mb-2 rounded-lg bg-gray-100 px-2.5 py-1 text-xs font-semibold text-gray-600"
               >
-                {longo && '⚠️ '}
                 {dias} dia(s) · {meses < 1 ? 'menos de 1 mês' : `~${Math.round(meses)} ${Math.round(meses) === 1 ? 'mês' : 'meses'}`}
               </span>
             )
