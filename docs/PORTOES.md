@@ -40,7 +40,7 @@ alguma tiver caractere de controle.
 
 ---
 
-## Os 26 passos do `npm run gate`
+## Os 28 passos do `npm run gate`
 
 ### 1. `segredos` — nenhum segredo em arquivo versionado
 **População:** todo arquivo que `git ls-files` lista (148 hoje) · **5 formas** procuradas · 4 isentos
@@ -100,7 +100,38 @@ artificial"*). Os 13 de absolvição são o que impede o portão de virar ruído
 nem na lista, nem nas isenções. Foi invertido para lista de exclusão:
 **lista de permissão erra em silêncio; lista de exclusão erra alto.**
 
-### 8. `cadeia` — os documentos apontam para o handoff mais recente
+### 8. `ordem-do-gate` — a ORDEM escrita é a ordem que roda
+**População:** as duas listas numeradas do projeto — os títulos `### N. \`nome\`` deste documento e
+as linhas `| N | \`nome\` |` do [`OPERACAO.md`](OPERACAO.md) — **todas**, e o próprio portão imprime
+quantas foram (escrever o número aqui seria criar, dentro do portão que existe contra número podre,
+mais um número podre).
+**Fonte da verdade:** `package.json` → `scripts.gate`, e nada mais.
+
+**Confere três coisas**, porque duas não bastavam:
+
+1. cada número aponta para o passo que roda naquela posição;
+2. **os números crescem na ordem física do arquivo** — sem isto, "21, 24, 22, 23" passaria com cada
+   número certo e a leitura embaralhada, e quem lê a lista lê de cima para baixo;
+3. nenhum passo do gate fica de fora das listas.
+
+> 🔴 **Por que ele existe.** O `medir-fatos.mjs` já media o **total** de passos — por isso os quatro
+> documentos que dizem "N passos" nunca ficam para trás. Mas ele mede um número, e o `OPERACAO.md`
+> promete mais do que um número: *"nesta ordem — lida do `package.json`, não de memória"*.
+>
+> Em 06/08/2026, ao acrescentar um passo, descobri que a lista deste documento **já estava fora de
+> ordem antes**: `build` aparecia como passo 21 quando roda em 24º. O total batia; a ordem, não.
+>
+> É a classe de defeito que este projeto já registrou três vezes: **o portão responde só à pergunta
+> que se fez a ele.** "Quantos passos?" foi perguntado. "Em que ordem?" não. E aqui é pior que um
+> número errado: se `build` viesse mesmo antes de `ensaio`, os testes de ponta a ponta rodariam
+> contra um `docs/` velho — e a lista seria a razão de alguém acreditar nisso.
+
+**Fora de escopo, declarado:** passo citado em prosa solta. A lista é o que se lê como sequência; a
+prosa cita um passo pelo nome, sem prometer posição.
+**Provado nas duas pontas:** número trocado, passo renomeado e ordem física embaralhada → EXIT=1, cada
+um com a linha que explica; árvore limpa → EXIT=0.
+
+### 9. `cadeia` — os documentos apontam para o handoff mais recente
 **Critério de "mais recente":** por **data no nome** e, no mesmo dia, pelo **sufixo** (`-b`, `-c`…),
 com o **sem sufixo sendo o PRIMEIRO** do dia. Ordenar alfabeticamente mentiria: `HANDOFF_2026-08-05.md`
 vem antes de `HANDOFF_2026-08-05-b.md` no alfabeto e é o mais **antigo** dos dois.
@@ -108,7 +139,7 @@ vem antes de `HANDOFF_2026-08-05-b.md` no alfabeto e é o mais **antigo** dos do
 **Autoteste:** acusa ponteiro antigo · aprova o atual · **ignora** link para handoff antigo que
 esteja fora de uma linha que se diz "mais recente".
 
-### 9. `generico` — nenhum nome de cliente cravado (§0)
+### 10. `generico` — nenhum nome de cliente cravado (§0)
 **População:** 32 arquivos (`src/` + `index.html` + `package.json` + `README.md`) · **20 testes pulados**, contados
 e impressos.
 **Os 8 termos:** `JD. São Luiz` · `Congregação Cristã` · `CCB` (com borda por classe de caracteres,
@@ -139,23 +170,23 @@ trombasse com a própria documentação seria contornado no primeiro dia.
 **Por que `.test.ts` é pulado:** as fixtures usam o nome do cliente de propósito, e teste não vai
 para o ar. Troca consciente, com o par no autoteste (mesmo conteúdo fora de teste **é** achado).
 
-### 10. `generico:autoteste` — prova que o de cima morde
+### 11. `generico:autoteste` — prova que o de cima morde
 **21 casos:** 20 de varredura (infratores que devem reprovar + limpos que devem passar) + 1 de
 autodefesa. Entre os limpos, dois valem nota: **"irmandade" não pode acusar** (a borda tem de estar
 viva) e **`escala-porteiros` como slug não pode acusar**.
 **O caso de autodefesa** injeta o byte de backspace num **clone** do portão e exige saída 2.
 
-### 11. `doc:regras:conferir` — o catálogo documentado bate com o código
+### 12. `doc:regras:conferir` — o catálogo documentado bate com o código
 `docs/CATALOGO_DE_REGRAS.md` é **gerado**. Este passo regenera em memória e compara **byte a byte**
 (ignorando fim de linha, porque o Windows reescreve CRLF). Muda o `titulo` ou a `explicacao` de uma
 regra sem regenerar → vermelho.
 
-### 12. `doc:comandos` — todo comando citado existe
+### 13. `doc:comandos` — todo comando citado existe
 **População:** os 17 documentos vivos · isentos os append-only.
 **Critério:** todo `npm run <nome>` está no `package.json`; todo `node scripts/<arquivo>` existe em
 disco. **Achou defeito na primeira execução:** `npm run tempo`, citado na documentação, não existia.
 
-### 13. `arquitetura` — as três invariantes que a documentação afirma
+### 14. `arquitetura` — as três invariantes que a documentação afirma
 1. `src/dominio/` **não importa nada de fora** (nem `../`, nem pacote externo).
 2. `conferencia-independente.ts` **não importa** `regras`, `validacao` nem `gerador`.
 3. **`docs/.nojekyll` existe.**
@@ -171,14 +202,14 @@ publicada · o site mostra a escala nova em cerca de um minuto"*. Ninguém no pa
 por tempo indeterminado. Um arquivo de 0 byte elimina a classe, e ele já sumiu uma vez sem ninguém
 ver: é o argumento inteiro para portão em vez de disciplina.
 
-### 14. `fatos:conferir` — nenhum documento desmente um número medido
+### 15. `fatos:conferir` — nenhum documento desmente um número medido
 **16 fatos**, todos de fonte executável: passos do gate (do `package.json`), casos do autoteste (da
 saída dele), checagens da auditoria, arquivos e termos do portão genérico, documentos vivos, piso do
 bloco publicado, turnos congelados, fontes declaradas, regras do catálogo, regras duras.
 **Nenhum é digitado.** Achou 4 contradições na primeira execução, e depois **pegou a própria
 mudança**: ao entrar no gate, virou o 16º passo e reprovou os documentos que diziam 15.
 
-### 15. `datas` — `toISOString()` não decide dia nem mês
+### 16. `datas` — `toISOString()` não decide dia nem mês
 **População:** 89 arquivos de `src/` e `scripts/` · isento `datas.test.ts`, que **cita** o
 antipadrão para provar que ele erra.
 **Critério, em dois níveis:**
@@ -191,7 +222,7 @@ antipadrão para provar que ele erra.
 `datas.ts`, no `RECONSTRUIR.md`, no `AGENTS.md` e em três comentários de teste. **E não havia nada
 que a cobrasse.** Quando alguém foi olhar, havia 4 usos e o `BACKLOG.md` declarava 1.
 
-### 16. `citacoes` — citação `arquivo:linha` que aponta para o vazio
+### 17. `citacoes` — citação `arquivo:linha` que aponta para o vazio
 **População:** os documentos vivos · isentos os append-only, porque corrigir a citação de um handoff
 seria mentir sobre o que se sabia naquele dia (e o número de pulados é impresso).
 **Critério:** o arquivo existe, e a linha existe.
@@ -207,14 +238,14 @@ que transforma a citação de coordenada em afirmação verificável.
 **Limite declarado:** ele não confere se a linha *diz* o que o documento afirma — isso exigiria
 entender a frase. Pega arquivo renomeado, apagado e linha além do fim, que é a maior parte.
 
-### 17. `crescimento` — o dado ainda cabe onde é servido
+### 18. `crescimento` — o dado ainda cabe onde é servido
 **Critério:** nenhum arquivo de `dados/` passa de **60%** do teto de 1 MB da Contents API do GitHub,
 que é a que a área administrativa usa para publicar.
 **Também mede o ritmo**, do próprio dado: bytes por turno × turnos por ano → anos de folga.
 **Por que 60% e não 90%:** sobra ano suficiente para arquivar sem pressa. Alarme que grita cedo
 demais é alarme que alguém desliga.
 
-### 18. `tamanho-docs` — nenhum documento passou do teto do próprio regime
+### 19. `tamanho-docs` — nenhum documento passou do teto do próprio regime
 **De onde vêm os tetos:** de `docs/regimes-documentos.json`, a declaração do PROJETO — não de um
 número escrito no script. O regime vem do **caminho**: raiz = **vivo** (400 linhas / 40 KB,
 carregado toda sessão) · subpasta = **referência** (800 / 100, lido sob demanda) · a lista
@@ -225,29 +256,52 @@ isenta**, porque medir o passado imutável não faz sentido.
 *"no pré-voo **e no GATE**"* — e o GATE não tinha o passo. Quando a auditoria externa mostrou
 isso, a dívida foi **declarada** em vez de fechada; algumas horas depois, fechada.
 
-### 19. `auditoria` — 20 ataques ao próprio código
+### 20. `auditoria` — 20 ataques ao próprio código
 Cada ataque **injeta um infrator** e exige que a validação o pegue. Frentes: validação, datas e fuso,
 gerador, dado publicado (inclusive *"os dois arquivos de dados são iguais?"* — que pegou um defeito
 real), e camada de tela.
 ⚠️ **Relatório sem achado é declarado SUSPEITO pelo próprio script**, com o motivo estrutural: quem
 auditou escreveu o código.
 
-### 20. `regras-mestras` — tooltip em todo botão
+### 21. `regras-mestras` — tooltip em todo botão
 **População:** 66 botões medidos.
 **Também mede:** clicáveis fora de `<button>` (div/span com `onClick` e sem papel declarado) — hoje 0
 — e aspas duplas dentro do atributo, que quebram o HTML em silêncio.
 
-### 21. `build` — compila e gera em `docs/`
-
 ---
 
-### 22. `ensaio` — o cenário que ORIGINOU o projeto, ponta a ponta
+### 22. `vivo:rotulos` — todo campo tem NOME que dá para alcançar
+Abre as **7 cenas** do produto (a trava, as cinco abas do admin e a tela dos irmãos), enumera cada
+`input`/`select`/`textarea` visível e exige um nome de verdade: `aria-label`, `aria-labelledby` que
+aponte para texto real, um `<label>` que envolva o campo, um `label[for]`, ou um `placeholder`.
+
+**`title` NÃO conta, de propósito** — era exatamente o que os dois campos defeituosos tinham.
+
+> 🔴 **Nasceu de um defeito que se pagou duas vezes** (05/08/2026). O campo de data da Santa Ceia
+> entrou na aba "Gerar" só com `title`. Quem usa leitor de tela ficou sem saber o que ele era — e o
+> validador de "Gerar", que procurava os campos de data **por posição** (`nth(2)`, `nth(3)`), passou
+> a digitar a data da ausência dentro dele, deixando o "último dia" vazio. A tela recusava a
+> ausência, com razão, e o teste acusava a tela.
+>
+> **Campo sem rótulo é campo invisível: para quem não enxerga e para quem mede.**
+
+Duas fronteiras do próprio portão, fechadas porque isenção calada é buraco com outro nome:
+
+- **as abas são lidas da tela**, não escritas no script — uma lista fixa envelheceria calada no dia
+  em que uma aba nova aparecesse;
+- **aba travada é destravada** (gerando uma escala) e medida; se alguma continuar travada, ela é
+  nomeada na saída e o portão **reprova**. Um portão que pula o que não conseguiu abrir mede menos
+  do que a frase dele promete.
+
+### 23. `ensaio` — o cenário que ORIGINOU o projeto, ponta a ponta
 Alguém sai do elenco, outro entra com as cinco restrições, e a escala se refaz a partir de um corte.
 **11 promessas medidas**, entre elas *"o passado antes do corte fica byte a byte idêntico"*.
 
-### 23. `tempo` — a geração não regrediu de desempenho
+### 24. `tempo` — a geração não regrediu de desempenho
 
-### 24. `imagem` — o único passo que RENDERIZA O PIXEL
+### 25. `build` — compila e gera em `docs/`
+
+### 26. `imagem` — o único passo que RENDERIZA O PIXEL
 Gera a imagem pelo botão de verdade e **mede o DOM que virou o PNG**, no instante anterior à
 rasterização: texto cortado pela própria caixa, rótulo duplicado na mesma pílula, rodapé coerente.
 **Por quê:** três defeitos da imagem escaparam de todos os outros portões em 05/08/2026 e só
@@ -256,14 +310,14 @@ tarde, e a pílula da Santa Ceia imprimindo o rótulo duas vezes. Ler o PNG a ol
 ⚠️ A medição usa um `MutationObserver` instalado **antes** do clique: `gerarImagem.ts` monta um palco,
 rasteriza e chama `palco.remove()`, então medir depois acha uma página vazia.
 
-### 25. `refazer` — a escala NO AR pode ser refeita
+### 27. `refazer` — a escala NO AR pode ser refeita
 Pega o que o bloco publicado registra (período, elenco, malha, piso, semente), refaz a escala e
 compara turno a turno. É a promessa do `ALGORITMO.md` — *"conferir daqui a um ano"* — medida contra o
 **dado publicado**, não contra entrada de teste. Bloco `importado` é isento, declarado e contado.
 ⚠️ Fica vermelho no dia em que o algoritmo mudar de propósito. É o ponto: nesse dia a promessa se
 quebra para o que já está no ar, e alguém tem de decidir — aceitar e declarar, ou republicar.
 
-### 26. `selo:gravar` — o verde acima é DESTA árvore
+### 28. `selo:gravar` — o verde acima é DESTA árvore
 Guarda a impressão digital de todo arquivo versionado. `npm run selo:conferir`, antes de commitar,
 compara. **Por quê:** em 05/08/2026 um `git add -A` capturou o mutante de um auditor e o commit
 entrou na história afirmando `EXIT_GATE=0` — o gate tinha sido verde minutos antes, sobre outra

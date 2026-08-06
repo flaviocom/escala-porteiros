@@ -123,7 +123,7 @@ está errada** — e é melhor descobrir antes da congregação descobrir.
 npm run gate
 ```
 
-26 passos, **nesta ordem** — lida do `package.json`, não de memória:
+28 passos, **nesta ordem** — lida do `package.json`, não de memória:
 
 | # | Passo | O que prova |
 |---|---|---|
@@ -134,25 +134,27 @@ npm run gate
 | 5 | `denominacao` | nenhum jargão comoditizado em texto que alguém lê |
 | 6 | `fontes` | nenhuma fonte externa chamada sem estar declarada no inventário |
 | 7 | `contagem` | nenhum documento **ou código** declara um número de regras que o catálogo desmente |
-| 8 | `cadeia` | os documentos apontam para o handoff que É o mais recente |
-| 9 | `generico` | nenhum nome de cliente cravado (§0) |
-| 10 | `generico:autoteste` | prova que o de cima **morde** — e que a autodefesa dele morde |
-| 11 | `doc:regras:conferir` | o catálogo de regras documentado bate com o código |
-| 12 | `doc:comandos` | todo comando citado na documentação existe de verdade |
-| 13 | `arquitetura` | o domínio continua sendo ilha; a 2ª régua não virou espelho |
-| 14 | `fatos:conferir` | nenhum documento vivo desmente um número **medido** |
-| 15 | `datas` | `toISOString()` não decide dia nem mês em lugar nenhum |
-| 16 | `citacoes` | nenhuma citação `arquivo:linha` aponta para o vazio |
-| 17 | `crescimento` | o dado publicado ainda cabe onde vai ser servido |
-| 18 | `tamanho-docs` | nenhum documento passou do teto do regime dele (raiz 400 · subpasta 800 · append-only 2.000) |
-| 19 | `auditoria` | 20 ataques ao próprio código, com infrator injetado |
-| 20 | `regras-mestras` | tooltip em todo botão |
-| 21 | `ensaio` | 🔴 o cenário que ORIGINOU o projeto, ponta a ponta: alguém sai do elenco, outro entra com as 5 restrições, a escala se refaz a partir de um corte |
-| 22 | `tempo` | a geração não regrediu de desempenho |
-| 23 | `build` | compila e gera em `docs/` |
-| 24 | `imagem` | 🔴 o único passo que **renderiza o pixel**: gera a imagem pelo botão de verdade e mede o DOM que virou o PNG — texto cortado, rótulo duplicado, rodapé coerente. Três defeitos da imagem escaparam de todos os outros portões e só apareceram ao ABRIR o arquivo |
-| 25 | `refazer` | 🔁 **a escala NO AR pode ser refeita** a partir do que ela mesma registra — período, elenco, malha, piso e semente. É a promessa do `ALGORITMO.md` medida contra o dado publicado, não contra entrada de teste |
-| 26 | `selo:gravar` | 🔒 guarda a impressão digital da árvore. `npm run selo:conferir`, antes de commitar, prova que o verde acima é **desta** árvore |
+| 8 | `ordem-do-gate` | 🔢 **a ordem escrita é a ordem que roda** — as duas listas numeradas conferidas contra o `package.json`: número aponta para o passo certo, números crescem na ordem física do arquivo, nenhum passo fica de fora. O total já era medido; a ordem, não, e `build` estava documentado como 21º rodando em 24º |
+| 9 | `cadeia` | os documentos apontam para o handoff que É o mais recente |
+| 10 | `generico` | nenhum nome de cliente cravado (§0) |
+| 11 | `generico:autoteste` | prova que o de cima **morde** — e que a autodefesa dele morde |
+| 12 | `doc:regras:conferir` | o catálogo de regras documentado bate com o código |
+| 13 | `doc:comandos` | todo comando citado na documentação existe de verdade |
+| 14 | `arquitetura` | o domínio continua sendo ilha; a 2ª régua não virou espelho |
+| 15 | `fatos:conferir` | nenhum documento vivo desmente um número **medido** |
+| 16 | `datas` | `toISOString()` não decide dia nem mês em lugar nenhum |
+| 17 | `citacoes` | nenhuma citação `arquivo:linha` aponta para o vazio |
+| 18 | `crescimento` | o dado publicado ainda cabe onde vai ser servido |
+| 19 | `tamanho-docs` | nenhum documento passou do teto do regime dele (raiz 400 · subpasta 800 · append-only 2.000) |
+| 20 | `auditoria` | 20 ataques ao próprio código, com infrator injetado |
+| 21 | `regras-mestras` | tooltip em todo botão |
+| 22 | `vivo:rotulos` | 🏷️ **todo campo tem nome que dá para alcançar** nas 7 cenas do produto — `title` não conta, era o que os dois campos defeituosos tinham. Aba travada é destravada e medida; se alguma não abrir, ela é nomeada e o portão reprova |
+| 23 | `ensaio` | 🔴 o cenário que ORIGINOU o projeto, ponta a ponta: alguém sai do elenco, outro entra com as 5 restrições, a escala se refaz a partir de um corte |
+| 24 | `tempo` | a geração não regrediu de desempenho |
+| 25 | `build` | compila e gera em `docs/` |
+| 26 | `imagem` | 🔴 o único passo que **renderiza o pixel**: gera a imagem pelo botão de verdade e mede o DOM que virou o PNG — texto cortado, rótulo duplicado, rodapé coerente. Três defeitos da imagem escaparam de todos os outros portões e só apareceram ao ABRIR o arquivo |
+| 27 | `refazer` | 🔁 **a escala NO AR pode ser refeita** a partir do que ela mesma registra — período, elenco, malha, piso e semente. É a promessa do `ALGORITMO.md` medida contra o dado publicado, não contra entrada de teste |
+| 28 | `selo:gravar` | 🔒 guarda a impressão digital da árvore. `npm run selo:conferir`, antes de commitar, prova que o verde acima é **desta** árvore |
 
 > ⚠️ Esta tabela já esteve **fora de ordem e incompleta**: listava 12 linhas para 15 comandos e
 > trocava `auditoria` de posição — achado por auditoria externa em 05/08/2026. Mexeu no `gate`,

@@ -1565,14 +1565,27 @@ const AbaGerar: React.FC<{
             </div>
           )}
 
-          <div className="mt-3 flex flex-wrap items-center gap-2">
-            <input
-              type="date"
-              value={novaCeia}
-              title="A data de uma Santa Ceia"
-              onChange={(e) => setNovaCeia(e.target.value)}
-              className="rounded-xl border border-gray-300 px-3 py-2 text-sm"
-            />
+          <div className="mt-3 flex flex-wrap items-end gap-2">
+            {/*
+              🔴 Este campo nasceu SEM rótulo (05/08/2026) — só com `title`, que o leitor de tela lê
+              tarde e que nenhum localizador por rótulo alcança. Quem pagou não foi só quem usa
+              leitor de tela: o validador de "Gerar" procurava os campos de data POR POSIÇÃO, este
+              entrou no meio, e a data da ausência foi digitada aqui dentro. A ausência era recusada
+              — corretamente — e o teste acusava a tela errada.
+
+              A lição vale para todo campo novo: **campo sem rótulo é campo invisível** — para quem
+              não enxerga e para quem mede.
+            */}
+            <label className="text-xs text-gray-500">
+              data da Santa Ceia
+              <input
+                type="date"
+                value={novaCeia}
+                title="A data de uma Santa Ceia"
+                onChange={(e) => setNovaCeia(e.target.value)}
+                className="mt-1 block rounded-xl border border-gray-300 px-3 py-2 text-sm"
+              />
+            </label>
             <button
               title="Acrescenta a data. Vale na próxima geração"
               onClick={() => {

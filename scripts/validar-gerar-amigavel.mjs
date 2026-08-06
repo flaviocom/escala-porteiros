@@ -64,8 +64,15 @@ try {
   const quem = pagina.locator('select').first()
   const nomeAusente = await quem.locator('option').nth(1).innerText()
   await quem.selectOption({ index: 1 })
-  await pagina.locator('input[type="date"]').nth(2).fill('2026-09-01')
-  await pagina.locator('input[type="date"]').nth(3).fill('2026-09-30')
+  // 🔴 POR RÓTULO, NUNCA POR POSIÇÃO. Estas duas linhas eram `nth(2)` e `nth(3)`. Em 05/08/2026 um
+  // campo de data novo (a Santa Ceia) entrou na aba, no meio, e empurrou os dois para nth(3)/nth(4).
+  // O teste passou a digitar a data da ausência DENTRO do campo da Santa Ceia e a deixar o "último
+  // dia" vazio — a tela recusava a ausência, com razão, e o teste acusava a tela.
+  //
+  // Posição não é identidade. `getByLabel` quebra alto no dia em que o rótulo sumir (e o rótulo
+  // sumindo é, ele mesmo, um defeito de acessibilidade que a gente quer ver quebrar).
+  await pagina.getByLabel('primeiro dia').fill('2026-09-01')
+  await pagina.getByLabel('último dia').fill('2026-09-30')
   await pagina.getByRole('button', { name: /Marcar ausência/i }).click()
   await pagina.waitForTimeout(600)
 

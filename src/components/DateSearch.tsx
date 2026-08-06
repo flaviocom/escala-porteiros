@@ -184,6 +184,16 @@ export const DateSearch: React.FC<DateSearchProps> = ({ value, onChange, onDateR
               className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10"
               onChange={handleDateChange}
               title="Selecionar data"
+              /*
+                Campo invisível por cima do botão: ele existe só para abrir o calendário nativo. Está
+                fora da ordem de tabulação (`tabIndex={-1}`), mas um leitor de tela ainda chega nele
+                em modo de leitura — e `title` sozinho é lido tarde, quando é lido.
+
+                `aria-hidden` seria o gesto óbvio e seria errado: o botão ao lado dá foco a este
+                campo, e esconder de AT um elemento que recebe foco é violação de ARIA. Então ele
+                ganha nome próprio, igual ao do botão.
+              */
+              aria-label="Escolher uma data no calendário"
             />
             <button
               type="button"
