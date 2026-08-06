@@ -160,6 +160,35 @@ npm run gate
 | 31 | `refazer` | 🔁 **a escala NO AR pode ser refeita** a partir do que ela mesma registra — período, elenco, malha, piso e semente. É a promessa do `ALGORITMO.md` medida contra o dado publicado, não contra entrada de teste |
 | 32 | `selo:gravar` | 🔒 guarda a impressão digital da árvore. `npm run selo:conferir`, antes de commitar, prova que o verde acima é **desta** árvore |
 
+---
+
+## 🔴 DEPOIS DO PUSH: `push` NÃO é publicação
+
+O gate verde, o selo conferido e o `push` sem erro dizem tudo sobre **a sua máquina** e nada sobre
+**o que o servidor está servindo**. Entre os dois existe um terceiro ator — a fila de publicação do
+GitHub Pages — que não responde a nada que este projeto controla.
+
+Em 06/08/2026 ela falhou **quatro vezes seguidas**: o build passava, a publicação era criada, e
+ficava em `deployment_queued` até bater o teto de 10 minutos (`Timeout reached, aborting!`). O
+`githubstatus.com` marcava Pages como **operacional** no mesmo instante. Três correções da tela
+pública ficaram commitadas e fora do ar, e todos os sinais do projeto apontavam verde.
+
+```bash
+npm run vivo:no-ar    # compara o pacote NO AR com o commitado — é o último passo, sempre
+```
+
+⚠️ **Duas armadilhas aprendidas na hora de destravar:**
+
+- **o identificador da publicação é o SHA do commit.** Cancelar uma publicação travada pela API
+  envenena toda tentativa seguinte **do mesmo commit** — ela nasce "Deployment cancelled". Para
+  destravar de verdade é preciso um **SHA novo**: um commit a mais;
+- **`gh api --method POST .../pages/builds` reenfileira**, mas reutiliza o mesmo SHA — logo, sozinho
+  não resolve depois de um cancelamento.
+
+Se falhar de novo, o caminho é esperar: a fila é do GitHub, e o repositório aqui tem 42 arquivos e
+881 KB — não é tamanho, não é Jekyll (`docs/.nojekyll` existe) e não é cota.
+
+
 > ⚠️ Esta tabela já esteve **fora de ordem e incompleta**: listava 12 linhas para 15 comandos e
 > trocava `auditoria` de posição — achado por auditoria externa em 05/08/2026. Mexeu no `gate`,
 > mexe aqui no mesmo passo (e o portão `fatos:conferir` cobra).
