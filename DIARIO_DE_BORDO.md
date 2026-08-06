@@ -1404,3 +1404,36 @@ a lista do `package.json`, e a validação nova entrou sozinha. Foi exatamente p
 lida em vez de escrita.
 
 **Como reverter.** `git revert` do commit desta entrada tira o portão; nada mais depende dele.
+
+---
+
+## DB-032 · 06/08/2026 — o commit subiu, o gate estava verde, e o site continuou velho
+
+**O quê.** Três correções da tela pública — a rolagem automática para o próximo culto, "Esta Semana"
+de domingo a domingo, e a ordem dos atalhos — foram commitadas, empurradas e **não chegaram ao ar**.
+O GitHub Pages falhou em publicar **duas vezes seguidas**.
+
+**O que a API mostrou:** o *build* passa; quem falha é o **deploy**, que fica em
+`deployment_queued` até bater o teto de 10 minutos e ser abortado — `Timeout reached, aborting!`.
+Duração registrada: **0ms**, que é o que confunde. O `githubstatus.com` marcava Pages e Actions como
+**operacionais** no mesmo momento.
+
+**O porquê que interessa, e é o registro que vale.** Todos os sinais de sucesso deste projeto
+apontavam para verde: `EXIT_GATE=0` em 32 passos, selo conferido, `git push` sem erro, `origin/main`
+igual ao local. **Nenhum deles fala sobre o que o servidor está servindo.** Entre o `push` e o site
+existe um terceiro ator — a fila de publicação do GitHub — que não responde a nada que o projeto
+controla, e que pode falhar em silêncio.
+
+Quem pegou foi o `vivo`, porque ele compara **o pacote no ar com o commitado**:
+
+    🔴 no ar: index-DVJ3kamb.js · commitado: index-jkDAsxOh.js — o Pages ainda não publicou
+
+Sem essa comparação, eu teria dito "publicado" com sinceridade e estaria errado — e o dono mandaria
+o link para os irmãos com a versão que abre em março.
+
+**A regra que fica:** *`push` não é publicação.* A publicação se prova comparando o que o servidor
+entrega com o que a árvore commitou, e é o **último** passo, sempre — depois do gate, depois do selo,
+depois do push. É a mesma família do selo (o verde vale só para a árvore medida): aqui, o verde vale
+só para a máquina que mediu.
+
+**Como reverter.** Não há o que reverter: o defeito é externo. O que fica é o registro e o hábito.
