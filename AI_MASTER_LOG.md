@@ -873,3 +873,15 @@ verificada, número dedicado, modelo aprovado, telefones+consentimento); rota N�
 com risco real de banir o número — recusada como recomendação); e o ATALHO `.ics` que resolve o
 lembrete HOJE pelo calendário do celular, sem risco nenhum. Recomendação: `.ics` agora, oficial na
 fase 2. **Solicitação:** S-050.
+
+---
+
+## 07/08/2026 · tarde (6) — S-051: a ponte Charmway construída até a fronteira do acesso
+
+Ele escolheu a rota B pela ponte do Charmway (números dedicados — o risco não recai no número da
+igreja; o raciocínio da recusa segue registrado para quem não tiver essa infra). **Avaliação de
+acesso honesta:** VPS de pé, padrão worker+cron maduro, mas a chave SSH da fase 0 não está nesta
+máquina. **Construído até a fronteira:** chave nova `claude-escala-lembrete` gerada · worker
+`scripts/vps/lembrete_escala.py` (grupo, URL publicada, zero segredo, kill-switch) · dry-run
+provado com o dado real (domingo 2 turnos · Santa Ceia própria · dia sem culto = silêncio) ·
+runbook `docs/LEMBRETE_WHATSAPP.md` com os 3 passos dele. **Diário:** DB-048 · **Solicitação:** S-051.

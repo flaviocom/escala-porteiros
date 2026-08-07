@@ -235,6 +235,7 @@ aqui. Escrito para quem **não participou de nada** — inclusive outra intelig�
 | **O que o Flavio pediu**, e onde cada pedido foi parar | [`docs/solicitacoes/INDICE_DE_SOLICITACOES.md`](docs/solicitacoes/INDICE_DE_SOLICITACOES.md) |
 | Comunicar com os irmãos porteiros (modelo de WhatsApp, versículos ARC) | [`docs/COMUNICACOES.md`](docs/COMUNICACOES.md) |
 | Requisitos e sugestões da FASE 2 (malha parametrizável, logo, lembretes) | [`docs/FASE2.md`](docs/FASE2.md) |
+| Lembrete de véspera no WhatsApp (ponte Charmway, VPS, passos do dono) | [`docs/LEMBRETE_WHATSAPP.md`](docs/LEMBRETE_WHATSAPP.md) |
 | Fatias arquivadas dos logs | [`docs/historico/INDICE.md`](docs/historico/INDICE.md) |
 | **De onde vem cada dado**, a que custo, e se dá para pagar menos | [`docs/INVENTARIO_DE_FONTES.md`](docs/INVENTARIO_DE_FONTES.md) |
 | Método de trabalho | `D:\Antigravity\_padroes-globais\` |

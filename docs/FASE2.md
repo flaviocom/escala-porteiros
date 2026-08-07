@@ -74,9 +74,13 @@ Qual o grau?"* — as três rotas, com a verdade de cada uma:
 | **B · Não-oficial (a tentadora)** | Bibliotecas que automatizam o WhatsApp Web (Evolution API, Baileys e afins) — grátis, envia para grupo, usa o número dele | baixo de esforço | 🔴 **ALTO de risco: viola os termos do WhatsApp e o número pode ser BANIDO** — e seria o número que a igreja usa. Recusada como recomendação; fica registrada porque alguém sempre a sugere |
 | **C · O atalho que resolve HOJE** | **`.ics` no site** (sugestão A da §P4.w): cada irmão importa "Minha Escala" no calendário do celular UMA vez, e o **lembrete nativo do telefone** dispara sozinho na véspera/na hora — sem servidor, sem número, sem Meta, sem risco | **baixo** (horas, fase 1) | nenhum. Limite honesto: o lembrete é do calendário, não chega "no WhatsApp" |
 
-**Recomendação registrada:** C agora (resolve o lembrete em fase 1, zero risco), A na fase 2 como o
-caminho definitivo — com os passos que só o dono pode dar (conta Meta Business, número dedicado,
-verificação) destacados ANTES de qualquer código. B, não.
+**Recomendação registrada:** C agora, A na fase 2, B não — **e a DECISÃO DO DONO (07/08/2026,
+S-051) foi outra, e mudou o cálculo**: rota B **pela ponte do Charmway**, que já opera disparos em
+produção com números DEDICADOS (o risco não recai sobre o número da igreja). Construído:
+`scripts/vps/lembrete_escala.py` (espelho; dry-run provado com o dado real) + runbook
+[`LEMBRETE_WHATSAPP.md`](LEMBRETE_WHATSAPP.md) com os 3 passos que só ele pode dar. A recusa
+original segue registrada acima porque o RACIOCÍNIO dela continua certo para quem não tiver a
+infraestrutura que ele tem.
 
 ### P4.z 💡 Observações da verificação de 07/08/2026 (S-047) — decisão do dono 👤
 Duas notas de produto que a medição do fluxo plurianual revelou; nenhuma é defeito hoje:

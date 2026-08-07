@@ -1342,3 +1342,36 @@ existe vira reimplementação do que já estava pronto** — por isso a §P4.w c
 
 **Como reverter.** `git revert` do commit desta entrada — o aviso some da tela; o registro de
 fase 2 é documentação.
+
+---
+
+## DB-048 · 07/08/2026 — ele escolheu a rota B, e a escolha dele estava mais certa que o meu aviso
+
+**O pedido:** *"Eu escolho o B porque está em uma das minhas rotas, que é o Charmway (…) não
+haveria risco de banimento, porque são números específicos para bases específicas (…) avalie o seu
+acesso a essa inteligência já desenvolvida."*
+
+**Por que a decisão dele muda o cálculo.** Meu aviso da S-050 era sobre banir O NÚMERO DA IGREJA.
+A ponte dele usa o número DEDICADO de disparo do Charmway — o mesmo modelo que as campanhas dele já
+operam em produção, com teto por conta, blacklist e kill-switch. O raciocínio da recusa continua
+certo para quem não tem essa infraestrutura; ele tem. Registrei as duas coisas, na ordem certa.
+
+**O acesso, avaliado sem fingir:** a VPS está de pé e o padrão de worker+cron existe — mas a chave
+SSH da fase 0 não está nesta máquina, e a senha root vive só no gerenciador dele (regra fixa: eu
+nunca digito valor de credencial). Em vez de parar, **construí até a fronteira**: chave nova de
+automação gerada aqui (`claude-escala-lembrete` — a PÚBLICA vai no runbook; a privada não sai de
+`~/.ssh`), worker pronto e testado em dry-run com o dado real, runbook com os 3 passos que só ele
+pode dar.
+
+**As decisões de desenho que importam:**
+1. **Grupo, não números individuais** — zero telefone pessoal no script, zero LGPD, e a mensagem
+   chega onde a escala já é assunto;
+2. **A fonte é a URL publicada** — o lembrete lê o que os irmãos veem; cópia paralela de escala é
+   como nascem as divergências;
+3. **Nenhum segredo no repositório** — a chave da Evolution continua onde já vive
+   (`/opt/charmway-crm/.env` na VPS); o script a lê lá;
+4. **Espelho versionado** (padrão da casa Charmway): a VPS não é repo; o arquivo aqui é a cópia de
+   rebuild.
+
+**Como reverter.** Apagar o cron e a pasta na VPS (ou criar o arquivo STOP, que desliga sem
+desinstalar); `git revert` do commit desta entrada remove o espelho e o runbook.
