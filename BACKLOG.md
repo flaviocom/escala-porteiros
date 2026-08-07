@@ -153,6 +153,29 @@ fronteira de escopo declarada, não defeito: **pares proibidos/preferidos** (cô
 juntos, ou só servem juntos — carona), **alocação fixa por data** ("fulano sempre no 1º domingo").
 Ambas pedem decisão de produto antes de qualquer código.
 
+### P4.y 💡 FASE 2 — publicação comercializável (decisão de 07/08/2026: fica para depois) 👤
+Pergunta do dono (S-043): *"este é o melhor formato [token no navegador]? em questão de usabilidade
+para quem faz a gestão (…) ou deixamos assim e ajeitamos numa próxima fase?"*
+
+**Decisão registrada: fica assim na fase 1, e a fase 2 já tem o desenho.** O modelo atual
+(site estático + Publicar = commit via token fine-grained) é o CERTO para uso interno com um
+administrador: custo zero de operação, histórico do git de graça, publicação real em ~1 minuto —
+e o [`ARQUITETURA.md` §"Por que estático"](docs/ARQUITETURA.md) declara o custo desde o começo.
+
+O que ele NÃO serve, declarado: **cliente leigo**. Comercializar exige que "publicar" não dependa
+de conta GitHub nem de token — a pesquisa de rostering (§2) mostra que todos os sistemas comerciais
+(Planning Center, Ministry Scheduler Pro, ChurchTools) usam backend hospedado com conta e-mail/senha.
+Desenho da fase 2, quando a comercialização for decidida:
+
+1. **backend + banco** (padrão do mercado: Supabase/Postgres) — "publicar" vira salvar, na hora,
+   sem deploy; login e-mail/senha de verdade; **multi-tenant** (uma instância, N igrejas/empresas);
+2. o **domínio não muda uma linha** — a separação medida pelo portão `arquitetura` (domínio não
+   importa nada de fora) é exatamente o que torna essa migração barata;
+3. o formato dos três JSON vira o contrato da API; o histórico append-only vira tabela de versões.
+
+⚠️ Nada disso começa sem decisão explícita do dono — é a regra §0 do `AGENTS.md` aplicada: genérico
+no motor primeiro (malha, identidade, vocabulário — já feito), infraestrutura por último.
+
 ---
 
 ## P2 — Método e infraestrutura 🔵

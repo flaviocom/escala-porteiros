@@ -29,6 +29,13 @@ processo rodando em lugar nenhum.
 A decisão de fundo: **o custo de operação precisa ser zero**, porque quem vai administrar isto é um
 voluntário, não um time de plantão.
 
+> ✅ **Revisitada em 07/08/2026 a pedido do dono (S-043)**: para a fase 1 (uso interno, um
+> administrador) este é o formato certo, e ele **publica de verdade** — commit → deploy → site, ~1
+> minuto. Para **comercializar** (produto genérico, cliente leigo), o modelo muda: backend + conta
+> e-mail/senha + multi-tenant, com o desenho já registrado no
+> [`BACKLOG.md` §P4.y](../BACKLOG.md). O domínio não muda uma linha — é o que o portão
+> `arquitetura` garante.
+
 ---
 
 ## As camadas, e a regra que as separa

@@ -1908,3 +1908,39 @@ Revertido sítio a sítio, com verificação linha a linha antes de cada troca.
 
 **Como reverter.** `git revert` do commit desta entrada. O veredito é leitura, não escrita — nada
 do produto muda com ele.
+
+---
+
+## DB-045 · 07/08/2026 — "token no navegador é o melhor formato?" — decisão de FASE, registrada
+
+**O pedido:** ele quis saber se as próximas escalas saem no mesmo padrão (zero pendência), e se o
+modelo de publicação — token no navegador — é o melhor **em usabilidade** para quem faz a gestão,
+ou se muda quando houver comercialização.
+
+**A primeira resposta é estrutural, não promessa.** O padrão das próximas escalas não depende de
+ninguém lembrar dele: o gerador é determinístico; a tela **bloqueia o Publicar** enquanto a
+validação reprovar (`Admin.tsx` — *"Publicar está bloqueado — volte…"*); o gate de 32 passos roda
+antes de todo commit; e as 5 validações NO AR conferem o site depois de toda publicação, incluindo
+o veredito das duas réguas (`vivo:veredito`). O que pode aparecer é AVISO de qualidade (como o Q4
+de hoje) — aviso não bloqueia, e é assim por desenho.
+
+**A segunda resposta é uma decisão de fase, e ficou escrita em três lugares ligados.** Medido o
+fluxo real de quem administra: entrar (1 clique, sem senha para gerar/validar; senha só decifra o
+cofre para publicar), gerar, conferir, publicar — o site serve o dado novo em ~1 minuto. **Para um
+administrador, isso é usabilidade boa de verdade** — o custo do modelo é o CADASTRO do token (uma
+vez por navegador), não o dia a dia.
+
+O que ele não serve — e a pesquisa de rostering (§2) confirma ao mostrar que todo sistema comercial
+usa backend hospedado com conta — é **cliente leigo**: comercializar exigirá login e-mail/senha,
+multi-tenant e "publicar = salvar". O desenho está na §P4.y do BACKLOG; o `ARQUITETURA.md` ganhou o
+ponteiro da decisão na seção que já declarava o custo; e o `github.ts` — o arquivo que será
+reescrito naquela fase — avisa quem chegar lá que os três JSON são o contrato e o histórico de
+commits vira tabela de versões.
+
+**O porquê que interessa:** a regra §0 (produto genérico) já foi cumprida onde ela é cara — motor,
+malha, identidade, vocabulário são dado, não código. Infraestrutura de publicação é a camada que
+MENOS custa trocar depois, justamente porque o portão `arquitetura` prova que o domínio não importa
+nada de fora. Trocar agora seria pagar o servidor antes de existir o cliente.
+
+**Como reverter.** Nada a reverter — esta entrada registra decisão e ligações, não muda
+comportamento.

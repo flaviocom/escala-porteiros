@@ -12,6 +12,13 @@
  * que o Pages serve. Gravar só num deles produziria o pior desfecho possível: a publicação "dá
  * certo", e o site continua mostrando a escala velha. Por isso `publicarDados` escreve nos dois e
  * confere os dois.
+ *
+ * 🔴 ESTE MODELO É DECISÃO DE FASE, não teto do produto — o dono perguntou em 07/08/2026 (S-043) se
+ * "token no navegador" é o melhor formato de publicação em USABILIDADE, e a resposta registrada é:
+ * para a fase 1 (um administrador, uso interno), sim — publica de verdade, ~1 minuto, custo zero.
+ * Para comercializar (cliente leigo, N inquilinos), a publicação vira backend com conta e-mail/senha
+ * — desenho na §P4.y do `BACKLOG.md`, e o domínio não muda uma linha. Quem for reescrever este
+ * arquivo naquela fase: os três JSON são o contrato; o histórico de commits vira tabela de versões.
  */
 
 const DONO = 'flaviocom'

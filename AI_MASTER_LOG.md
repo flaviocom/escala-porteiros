@@ -782,3 +782,21 @@ independente chega ao mesmo veredito? As ligações da pesquisa existem em docum
    17 de 17 · piso de 4 dias"* no bloco vigente.
 
 **Estado:** gate a rodar · **Diário:** DB-044 · **Handoff:** [`HANDOFF_2026-08-07.md`](docs/handoff/HANDOFF_2026-08-07.md).
+
+---
+
+## 07/08/2026 · manhã (3) — S-043: o formato de publicação é decisão de FASE, registrada
+
+**Pergunta dele:** as próximas escalas saem no mesmo padrão? E o token no navegador é o melhor
+formato de publicação em usabilidade — ou muda na comercialização?
+
+1. **Próximas escalas: o padrão é estrutural.** Gerador determinístico · Publicar BLOQUEADO com
+   falha dura · gate de 32 passos antes de todo commit · 5 validações NO AR depois de toda
+   publicação (incluindo `vivo:veredito`). Não depende de ninguém lembrar.
+2. **Publica de verdade:** commit → deploy → site em ~1 minuto, medido ontem na publicação dele.
+3. **Decisão: fica assim na fase 1.** Para comercializar, fase 2 = backend + conta e-mail/senha +
+   multi-tenant, com o domínio intacto. Escrita em TRÊS lugares ligados: `BACKLOG.md` §P4.y (o
+   desenho) · `ARQUITETURA.md` (a decisão na seção do custo) · `github.ts` (aviso a quem for
+   reescrever: os 3 JSON são o contrato, commits viram tabela de versões).
+
+**Diário:** DB-045 · **Handoff:** [`HANDOFF_2026-08-07.md` §3b](docs/handoff/HANDOFF_2026-08-07.md).
