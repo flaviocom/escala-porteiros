@@ -1026,9 +1026,9 @@
       "observacao": "Importado do site flaviocom/escala-irmaos-2026-mar rodando o gerador antigo uma vez. IMUTÁVEL: é o que os irmãos já viram. A Santa Ceia de 07/06/2026 aqui é dado histórico do site antigo; a data correta, 16/08/2026, vale do bloco seguinte em diante."
     },
     {
-      "id": "bloco-2026-08-06-2026-12-30",
+      "id": "bloco-2026-08-06-2026-12-31",
       "inicio": "2026-08-06",
-      "fim": "2026-12-30",
+      "fim": "2026-12-31",
       "geradoEm": "2026-08-06",
       "origem": "algoritmo",
       "pisoAlcancado": 4,
