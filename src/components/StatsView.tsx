@@ -1,58 +1,51 @@
 import React, { useMemo } from 'react';
-import { Shift, BROTHERS } from '../types/scheduler';
-import { mesDeData } from '../dominio/datas';
+import type { DadosPublicados } from '../dados/carregar';
+import { distribuir } from '../dominio/estatisticas';
+import { formatarBR, ROTULO_MES } from '../dominio/datas';
 import { clsx } from 'clsx';
 import { BarChart3 } from 'lucide-react';
-import { format, parseISO } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
 
 interface StatsViewProps {
-  shifts: Shift[];
+  dados: DadosPublicados;
   /** Como este cliente chama quem é escalado — vem de `config.identidade.pessoa`. */
   vocabulario: { singular: string; plural: string };
 }
 
-export const StatsView: React.FC<StatsViewProps> = ({ shifts, vocabulario }) => {
+/**
+ * 🔴 A CONTAGEM NÃO MORA MAIS AQUI — 06/08/2026.
+ *
+ * Este componente somava turnos por conta própria: um `Record` montado com `forEach`, a chave do mês
+ * tirada de um `Date`, e a decisão de quem aparece embutida no `filter` do JSX. Quando o dono pediu a
+ * mesma tabela na área administrativa, a saída fácil era escrever a soma de novo lá — **duas réguas
+ * medindo a mesma coisa**, que é como gerador e validação divergiam no site anterior sem ninguém
+ * notar.
+ *
+ * A contagem virou `src/dominio/estatisticas.ts`, função pura e testada, e as duas telas consomem
+ * ela. Criar a fonte única sem migrar os consumidores não conserta nada: o defeito continuaria vivo
+ * do lado que ninguém migrou.
+ *
+ * Duas decisões que eram DAQUI e passaram a ser do domínio, onde podem ser testadas:
+ *
+ * - **quem aparece** (todo mundo com turno, mais quem está ativo com zero) — o `if (counts[bId])`
+ *   que descartava em silêncio o turno de quem tinha saído do elenco morreu junto;
+ * - **o mês de cada turno**, lido da string ISO em vez de um `Date`. `new Date('2026-08-01')` é
+ *   meia-noite UTC, que em fuso negativo cai em 31/07: o turno do dia 1º contava no mês anterior.
+ *
+ * ⚠️ O que este componente continua decidindo, porque é mesmo de tela: o rótulo do mês, as cores, e
+ * a frase do cabeçalho.
+ */
+export const StatsView: React.FC<StatsViewProps> = ({ dados, vocabulario }) => {
+  const d = useMemo(() => distribuir(dados.turnos, dados.pessoas), [dados]);
+
   /*
     O período é DERIVADO dos turnos que chegaram — não passado por fora, não escrito à mão. Assim ele
     não pode discordar da tabela que está logo abaixo: é a mesma lista.
   */
   const periodo = useMemo(() => {
-    if (shifts.length === 0) return null
-    const datas = shifts.map((s) => s.date.getTime())
-    const br = (t: number) => new Date(t).toLocaleDateString('pt-BR')
-    return `${br(Math.min(...datas))} a ${br(Math.max(...datas))}`
-  }, [shifts]);
-
-  const stats = useMemo(() => {
-    const counts: Record<string, { total: number; byMonth: Record<string, number> }> = {};
-
-    BROTHERS.forEach(b => {
-      counts[b.id] = { total: 0, byMonth: {} };
-    });
-
-    shifts.forEach(shift => {
-      const monthKey = mesDeData(shift.date); // mes LOCAL, nunca UTC
-      shift.assignedBrothers.forEach(bId => {
-        // 🔴 Sem `if (counts[bId])`. O guard descartava EM SILÊNCIO todo turno de quem não estivesse
-        // na lista — e quem saía do elenco caía exatamente aí: os cultos passados dele sumiam do
-        // total, sem uma linha de aviso. Contar sempre é o certo; se aparecer um id desconhecido,
-        // ele vira uma linha visível em vez de um número menor que ninguém confere.
-        if (!counts[bId]) counts[bId] = { total: 0, byMonth: {} };
-        counts[bId].total++;
-        const m = counts[bId].byMonth;
-        m[monthKey] = (m[monthKey] || 0) + 1;
-      });
-    });
-
-    return counts;
-  }, [shifts]);
-
-  const months = useMemo(() => {
-    const m = new Set<string>();
-    shifts.forEach(s => m.add(mesDeData(s.date)));
-    return Array.from(m).sort();
-  }, [shifts]);
+    if (dados.turnos.length === 0) return null;
+    const datas = dados.turnos.map((t) => t.data).sort();
+    return `${formatarBR(datas[0])} a ${formatarBR(datas[datas.length - 1])}`;
+  }, [dados.turnos]);
 
   return (
     <div className="bg-surface-card rounded-radius-2xl shadow-card border border-border-default overflow-hidden">
@@ -67,7 +60,7 @@ export const StatsView: React.FC<StatsViewProps> = ({ shifts, vocabulario }) => 
           {/*
             🔴 A TELA PRECISA DIZER QUAL PERÍODO ELA ESTÁ CONTANDO — 06/08/2026.
 
-            Esta tabela recebe `shifts` INTEIRO, de propósito: distribuição só significa alguma coisa
+            Esta tabela conta a escala INTEIRA, de propósito: distribuição só significa alguma coisa
             sobre o período todo; uma semana não diz nada sobre equilíbrio de carga. Mas ela ignora os
             filtros da escala **em silêncio**, e o filtro fica visível ao lado, em vermelho.
 
@@ -88,53 +81,45 @@ export const StatsView: React.FC<StatsViewProps> = ({ shifts, vocabulario }) => 
         <table className="min-w-full divide-y divide-border-subtle text-text-sm relative">
           <thead className="bg-surface-subtle sticky top-0 z-20 shadow-sm">
             <tr>
-              <th className="px-space-4 py-space-3 text-left font-semibold text-text-secondary uppercase tracking-wider text-text-xs sticky left-0 top-0 bg-surface-subtle z-30 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] border-b border-border-subtle">{vocabulario.singular}</th>
-              <th className="px-space-4 py-space-3 text-center font-semibold text-action-primary uppercase tracking-wider text-text-xs bg-surface-subtle border-b border-border-subtle">Total</th>
-              {months.map(m => (
-                <th key={m} className="px-space-2 py-space-3 text-center font-semibold text-text-secondary uppercase tracking-wider text-[10px] bg-surface-subtle border-b border-border-subtle">
-                  {format(parseISO(m), 'MMM', { locale: ptBR }).replace(/^\w/, c => c.toUpperCase())}
+              <th scope="col" className="px-space-4 py-space-3 text-left font-semibold text-text-secondary uppercase tracking-wider text-text-xs sticky left-0 top-0 bg-surface-subtle z-30 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] border-b border-border-subtle">{vocabulario.singular}</th>
+              <th scope="col" className="px-space-4 py-space-3 text-center font-semibold text-action-primary uppercase tracking-wider text-text-xs bg-surface-subtle border-b border-border-subtle">Total</th>
+              {d.meses.map(m => (
+                <th scope="col" key={m} className="px-space-2 py-space-3 text-center font-semibold text-text-secondary uppercase tracking-wider text-[10px] bg-surface-subtle border-b border-border-subtle">
+                  {ROTULO_MES[Number(m.slice(5, 7)) - 1]}
                 </th>
               ))}
             </tr>
           </thead>
           <tbody className="divide-y divide-border-subtle bg-surface-card">
-            {BROTHERS
-              // Quem está no elenco aparece sempre; quem saiu, só se tiver turno no período em
-              // vista — presente onde o passado dele existe, sem poluir onde não existe.
-              .filter(b => b.ativo || (stats[b.id]?.total ?? 0) > 0)
-              .sort((a, b) => Number(b.ativo) - Number(a.ativo))
-              .map((brother, idx) => {
-              const s = stats[brother.id] || { total: 0, byMonth: {} };
-              return (
-                <tr key={brother.id} className={clsx(
-                  "hover:bg-surface-subtle transition-colors",
+            {d.linhas.map((linha, idx) => (
+              <tr key={linha.id} className={clsx(
+                "hover:bg-surface-subtle transition-colors",
+                idx % 2 === 0 ? "bg-[#ffffff]" : "bg-[#f9fafb]"
+              )}>
+                <td className={clsx(
+                  "px-space-4 py-space-3 font-medium text-text-primary sticky left-0 z-10 border-r border-border-subtle shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)]",
                   idx % 2 === 0 ? "bg-[#ffffff]" : "bg-[#f9fafb]"
                 )}>
-                  <td className={clsx(
-                    "px-space-4 py-space-3 font-medium text-text-primary sticky left-0 z-10 border-r border-border-subtle shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)]",
-                    idx % 2 === 0 ? "bg-[#ffffff]" : "bg-[#f9fafb]"
-                  )}>
-                    {brother.name}
-                    {!brother.ativo && (
-                      <span
-                        title="Saiu do elenco. Os turnos passados dele continuam contando — nada foi apagado."
-                        className="ml-2 text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-500 align-middle"
-                      >
-                        saiu
-                      </span>
-                    )}
+                  {linha.nome}
+                  {!linha.ativo && (
+                    <span
+                      title="Saiu do elenco. Os turnos passados dele continuam contando — nada foi apagado."
+                      className="ml-2 text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-500 align-middle"
+                    >
+                      saiu
+                    </span>
+                  )}
+                </td>
+                <td className="px-space-4 py-space-3 text-center font-bold text-action-primary bg-surface-subtle/50">
+                  {linha.total}
+                </td>
+                {d.meses.map(m => (
+                  <td key={m} className="px-space-2 py-space-3 text-center text-text-secondary">
+                    {linha.porMes[m] || '-'}
                   </td>
-                  <td className="px-space-4 py-space-3 text-center font-bold text-action-primary bg-surface-subtle/50">
-                    {s.total}
-                  </td>
-                  {months.map(m => (
-                    <td key={m} className="px-space-2 py-space-3 text-center text-text-secondary">
-                      {s.byMonth[m] || '-'}
-                    </td>
-                  ))}
-                </tr>
-              );
-            })}
+                ))}
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>

@@ -220,7 +220,7 @@ pulada na contagem, com o motivo escrito no código.
 anúncio apagada — e aprova a árvore limpa.
 
 ### 13. `generico` — nenhum nome de cliente cravado (§0)
-**População:** 32 arquivos (`src/` + `index.html` + `package.json` + `README.md`) · **21 testes pulados**, contados
+**População:** 32 arquivos (`src/` + `index.html` + `package.json` + `README.md`) · **22 testes pulados**, contados
 e impressos.
 **Os 8 termos:** `JD. São Luiz` · `Congregação Cristã` · `CCB` (com borda por classe de caracteres,
 sem barra invertida) · `Escala (de) Porteiros` · o prompt do motor cravado · `porteiro(s)` como
@@ -465,6 +465,12 @@ Duas fronteiras do próprio portão, declaradas:
   cliques atrás é legítimo: ele pediu *outra*, não *inédita*. Repetir a que está na tela é que quebra
   a promessa do botão;
 - **não julga se a escala nova é melhor** — disso cuidam o catálogo duro e os testes do gerador.
+
+E mede uma terceira coisa, na mesma passada: **a frase abaixo do botão**. *"A melhor de 8 versões"* é
+verdade na primeira geração e deixa de ser depois de uma recusa — a melhor de todas pode ser
+justamente a que ele recusou. O portão exige que a frase se corrija, e reprova se ela continuar
+prometendo o que já não acontece. Deixar o texto antigo ali seria repor, em prosa, o defeito que a
+correção tirou do botão.
 
 > ⚠️ **O portão nasceu vermelho com a correção certa no lugar.** A primeira versão localizava o
 > cartão por texto solto e agarrou só o cabeçalho: 83 caracteres que não mudam nunca. Sonda medindo o

@@ -149,3 +149,13 @@ export function sugerirFim(inicio: DataISO): DataISO {
   const fimDoAno = `${anoDoInicio}-12-31` as DataISO
   return diferencaEmDias(inicio, fimDoAno) >= 30 ? fimDoAno : (`${anoDoInicio + 1}-12-31` as DataISO)
 }
+
+/**
+ * Rótulo curto de mês, indexado por 0 (janeiro).
+ *
+ * 🔴 Existe para que a tela possa rotular a coluna a partir da string `AAAA-MM` **sem construir um
+ * `Date`**. `parseISO('2026-08')` e `new Date('2026-08-01')` caem em meia-noite UTC, que em fuso
+ * negativo é 31/07 — o rótulo passaria a dizer "Jul" sobre a coluna de agosto, e ninguém confere um
+ * cabeçalho. O mês já vem escrito na chave; convertê-lo só cria a chance de errar.
+ */
+export const ROTULO_MES = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'] as const

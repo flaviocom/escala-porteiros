@@ -1702,3 +1702,89 @@ isso pareceu prova de que a correção não era necessária. `git status` limpo 
 
 **Como reverter.** `git revert` do commit desta entrada devolve o comportamento antigo — o botão
 volta a entregar sempre a mesma escala.
+
+---
+
+## DB-040 · 06/08/2026 — a correção consertou o botão e deixou a frase mentindo
+
+**Como apareceu:** na captura do site **já publicado**, olhando a tela depois de dar o trabalho por
+fechado. Abaixo do botão continuava escrito:
+
+```
+Esta escala é a melhor de 8 versões que o sistema montou e comparou internamente.
+```
+
+**Verdade na primeira geração. Falsa depois de um "Não gostei"** — a partir da recusa a escolha é
+feita entre as que **diferem** da recusada, e a melhor de todas pode ser justamente a que ele
+recusou. A frase passou a descrever um comportamento que a correção daquele mesmo dia tinha mudado.
+
+**O porquê que interessa.** Isto é a mesma classe de defeito que eu tinha acabado de fechar, mudada
+de suporte: no botão era uma ação que não fazia o que a etiqueta dizia; aqui é uma frase que descreve
+o que já não acontece. **Corrigir o comportamento sem corrigir o texto que o explica deixa a mentira
+de pé — só que agora com um portão verde por cima.** Foi o olho na captura que pegou, não medição
+nenhuma; é o mesmo par que o `markdown-cru` já tinha registrado (olho e medida pegam coisas
+diferentes).
+
+A frase agora tem dois estados, e o `vivo:outra` mede a virada: antes da recusa promete *"a melhor de
+N versões"*; depois, *"a melhor entre as N que ficaram diferentes da que você recusou"*, dizendo em
+seguida que pode haver combinação melhor entre as recusadas. Provado com mutante: fixando o estado em
+`false`, o portão reprova nomeando a frase.
+
+⚠️ **E o aviso "Saiu a mesma escala" mudou de significado sem mudar de lugar.** Ele nasceu para
+explicar por que o botão repetia — explicava bem uma recusa que não devia existir. Hoje vale só para
+o caso limite de verdade: nenhuma das oito ficou diferente. Nos dados atuais, não aparece mais.
+
+**Como reverter.** `git revert` do commit desta entrada devolve a frase única.
+
+---
+
+## DB-041 · 06/08/2026 — a estatística que ele pediu, e o alarme que ela quase deu à toa
+
+**O pedido:** *"na escala na área do administrador, abaixo de distanciamento por pessoa, coloque uma
+estatística tipo essa ou melhor. Aceito sugestão. Somente das datas no intervalo de datas
+selecionado em De–Até."* Ele mandou junto a tabela da tela pública como referência.
+
+**O intervalo não precisou de filtro:** o bloco recém-gerado **é** o De–Até. Mesmo assim o período
+vai escrito no subtítulo — pela mesma razão que a tabela pública passou a escrever o dela hoje: uma
+tabela que não diz o que conta é lida como se contasse tudo.
+
+**O "melhor" que ofereci, e por quê.** Duas coisas que a grade por mês não mostra:
+
+1. **colunas por tipo de turno.** Nesta malha, domingo de manhã e o ENSAIO (uma tarde de sábado por
+   mês) são vagas escassas e de peso diferente da noite de quarta. Dois irmãos com 19 turnos cada
+   podem ter carga bem diferente se um pegou todas as manhãs e o outro nenhuma — e o total, sozinho,
+   jura que estão iguais. Nos dados reais isso apareceu na hora: o Adilson tem 19 turnos, **todos de
+   noite**, porque a restrição dele é essa;
+2. **a linha de equilíbrio** (menor · maior · diferença), que responde de relance a pergunta que a
+   tabela inteira existe para responder.
+
+🔴 **E foi a linha de equilíbrio que quase repetiu o erro do dia.** A primeira versão comparava todo
+mundo, e a tela anunciou **"diferença de 12 turnos"**, em âmbar, sobre a escala de um ano. Medido: os
+12 eram **inteiros o teto do Williams** — 3 por mês × 12 meses = 36, contra 48 de quem não tem teto.
+Não havia desequilíbrio nenhum. **O número estava certo e a leitura era falsa.**
+
+É a mesma armadilha que ele apontou horas antes, noutro aviso: *quando um aviso precisa ser
+interpretado, ele ainda não está pronto.* Um alarme que dispara sobre uma restrição que ele mesmo
+cadastrou treina a ignorar o alarme — e aí ele deixa de servir no dia em que houver desequilíbrio de
+verdade. Quem tem teto saiu da conta **e é nomeado**, com o teto e o total, seguindo a regra que ele
+deu para a conferência independente: dizer quantos não basta, tem de dizer **quem**.
+
+**A decisão de arquitetura.** A contagem não ficou na tela nova: virou `src/dominio/estatisticas.ts`,
+função pura com 13 testes — e **a tela pública foi migrada para ela**. Contar de novo no componente
+novo teria criado duas réguas para a mesma medida, que é exatamente como gerador e validação
+divergiam no site anterior sem ninguém notar. Criar a fonte única sem migrar o consumidor não
+conserta nada: o defeito seguiria vivo do lado que ficou de fora.
+
+Duas decisões subiram da tela para o domínio na migração, e as duas agora têm teste: **quem aparece**
+(o `if (counts[bId])` que descartava em silêncio o turno de quem saiu do elenco morreu junto) e **o
+mês de cada turno**, lido da string ISO — `new Date('2026-08-01')` é meia-noite UTC, que em fuso
+negativo cai em 31/07.
+
+⚠️ **E a checagem nova nasceu inerte.** Escrita como *"não tem a linha OU o formato está certo"*, ela
+passou **verde com o cartão inteiro fora da tela** — sem cartão não há linha, e a negação é
+verdadeira. **Propriedade negativa não mede ausência**; o `ensaio` já tinha registrado essa classe
+neste projeto. Agora ela lê `pessoas.json`: se existe alguém ativo com teto, a linha é obrigatória —
+e se um dia ninguém tiver, ela **declara na saída** que se isentou.
+
+**Como reverter.** `git revert` do commit desta entrada tira o cartão do administrador e devolve a
+contagem antiga para a tela pública.

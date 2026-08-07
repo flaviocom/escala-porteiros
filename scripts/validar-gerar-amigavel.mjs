@@ -11,6 +11,7 @@
  * Uso: node scripts/validar-gerar-amigavel.mjs
  */
 import { chromium } from 'playwright'
+import { readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { subirServidor } from './lib/servidor-de-teste.mjs'
@@ -113,6 +114,49 @@ try {
     'explicações de D1 e D6 presentes')
   conferir('separa o que IMPEDE publicar do que só avisa',
     /impede publicar/i.test(corpo) && /não impede publicar/i.test(corpo), 'legenda presente')
+
+  /*
+    ── 2b. a tabela de distribuição está na tela, com linhas ────────────────
+    🔴 Peça testada e SEM CONSUMIDOR é a classe de defeito que este projeto já pagou três vezes:
+    código correto, teste verde, e ninguém chamando. `estatisticas.ts` tem 13 testes; nenhum deles
+    prova que o cartão aparece depois de gerar.
+
+    E a checagem exige LINHAS, não o título. Um cabeçalho sozinho — foi assim que a sonda do
+    `vivo:outra` nasceu vermelha — passaria como se a tabela estivesse lá.
+  */
+  const tabela = pagina.getByRole('region', { name: 'Distribuição de turnos' })
+  const temTabela = await tabela.count()
+  const textoTabela = temTabela ? await tabela.innerText() : ''
+  const linhasDaTabela = (textoTabela.match(/\n/g) ?? []).length
+  conferir('a tabela de distribuição aparece depois de gerar, com linhas',
+    temTabela > 0 && linhasDaTabela >= 5,
+    temTabela ? `${linhasDaTabela} linhas de texto` : 'o cartão NÃO está na tela')
+  conferir('a tabela diz o período que está contando',
+    /só o que você acabou de gerar/i.test(textoTabela) && /\d{2}\/\d{2}\/\d{4} a \d{2}\/\d{2}\/\d{4}/.test(textoTabela),
+    'período no subtítulo')
+  /*
+    🔴 E quem tem teto mensal precisa estar NOMEADO fora da conta de equilíbrio. Com os dados reais,
+    o teto de 3/mês do Williams sozinho produzia "diferença de 12 turnos" em âmbar sobre um ano — um
+    alarme sobre uma restrição que o próprio dono cadastrou. Nomear é a regra que ele deu para a
+    conferência independente, e vale igual aqui: dizer QUANTOS não basta, tem de dizer QUEM.
+  */
+  /*
+    ⚠️ A EXPECTATIVA VEM DO DADO, não de um `if` que se satisfaz sozinho. A primeira versão desta
+    checagem era `!temALinha || formatoCerto` — e passou VERDE com o cartão inteiro fora da tela,
+    porque sem cartão não há linha e a negação é verdadeira. **Propriedade negativa não mede
+    ausência**; é a classe que o `ensaio` já tinha registrado neste projeto.
+
+    Agora ela lê `pessoas.json`: se existe alguém ativo com teto, a linha é OBRIGATÓRIA. Se ninguém
+    tiver teto um dia, a checagem se isenta sozinha — e diz na saída que se isentou.
+  */
+  const ativosComTeto = JSON.parse(readFileSync(join(RAIZ, 'public/dados/pessoas.json'), 'utf8'))
+    .pessoas.filter((p) => p.ativo && p.restricoes?.tetoMensal != null)
+  const nomeouOTeto = /Fora da conta acima/i.test(textoTabela) && /máx\. \d+\/mês — ficou com \d+/i.test(textoTabela)
+  conferir('quem tem teto mensal é NOMEADO fora da conta de equilíbrio',
+    ativosComTeto.length === 0 || nomeouOTeto,
+    ativosComTeto.length === 0
+      ? 'isento: ninguém ativo tem teto cadastrado'
+      : `${ativosComTeto.length} com teto (${ativosComTeto.map((p) => p.nome).join(', ')}) — ${nomeouOTeto ? 'nomeado' : 'NÃO nomeado'}`)
 
   // ── 3. o motor explicado ─────────────────────────────────────────────────
   conferir('a proposta do motor tem "o que é isto"',

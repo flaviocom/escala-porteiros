@@ -233,7 +233,7 @@ relatou: *"Piso alcançado: 6 dias. Tentei 9, 8, 7 — não foi possível cobrir
 | Quarta → sábado | 6 casos | **0** |
 | Santa Ceia | 07/06 errada; 16/08 com 6 escalados | **16/08 correta, 0 escalados** |
 | Validação | 6 regras, nenhuma de espaçamento ou capacidade | **16 de 16** (eram 15 em 04/08; D11 nasceu em 05/08) |
-| Testes | nenhum | **354** hoje (eram 71 em 04/08), verdes em 2 fusos |
+| Testes | nenhum | **367** hoje (eram 71 em 04/08), verdes em 2 fusos |
 | Equilíbrio | — | 16–17 turnos, diferença de **1** |
 
 **A área administrativa está no ar**: elenco com X para tirar e + para acrescentar, as quatro

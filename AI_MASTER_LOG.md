@@ -593,8 +593,54 @@ diferentes.
 `documentacao-auditavel`, `ponytail` (a correção é um parâmetro opcional e um filtro, não um motor
 novo).
 
+6. **E a frase abaixo do botão mentia depois da correção** — achado ao OLHAR a captura do site já
+   publicado. *"A melhor de 8 versões"* é verdade na primeira geração e falsa depois de uma recusa,
+   porque a melhor de todas pode ser justamente a que ele recusou. **Mesma classe de defeito, outro
+   suporte:** corrigir o comportamento sem corrigir o texto que o explica deixa a mentira de pé, agora
+   com um portão verde por cima. A frase ganhou dois estados e o `vivo:outra` mede a virada.
+
 **Estado:** `EXIT_GATE=0` em **32 passos** · **354 testes** · selo conferido · 183 turnos no ar ·
 0 estouros de teto · 14 ativos.
 
 **Handoff:** [`HANDOFF_2026-08-06.md` §6d](docs/handoff/HANDOFF_2026-08-06.md) ·
-**Diário:** DB-039.
+**Diário:** DB-039 e DB-040.
+
+---
+
+## 06/08/2026 · noite (2) — a estatística no administrador, e um alarme que quase mentiu
+
+**Solicitação (S-039):** *"na escala na área do administrador, abaixo de distanciamento por pessoa,
+coloque uma estatística tipo essa ou melhor. Aceito sugestão. Somente das datas no intervalo de datas
+selecionado em De–Até."*
+
+1. **Cartão "Distribuição de turnos"** na aba Gerar, sobre o bloco recém-gerado — que **já é** o
+   De–Até, sem filtro a aplicar. O período vai escrito no subtítulo mesmo assim: tabela que não diz o
+   que conta é lida como se contasse tudo.
+2. **O "melhor" oferecido:** colunas por **tipo de turno** (a grade por mês esconde que manhã de
+   domingo e ENSAIO são vagas escassas — o Adilson tem 19 turnos, todos de noite, e o total sozinho
+   jura que está igual aos outros) e a **linha de equilíbrio** (menor · maior · diferença).
+3. 🔴 **A linha de equilíbrio quase repetiu o erro do dia.** Anunciou *"diferença de 12 turnos"* em
+   âmbar sobre um ano, e os 12 eram **inteiros o teto do Williams** (3/mês × 12 = 36 contra 48). O
+   número certo, a leitura falsa. Alarme sobre restrição que o próprio dono cadastrou treina a
+   ignorar o alarme. Quem tem teto saiu da conta **e é nomeado**, com teto e total.
+4. **A contagem virou domínio** (`src/dominio/estatisticas.ts`, 13 testes) e **a tela pública foi
+   migrada para ela**. Contar de novo no componente novo criaria duas réguas para a mesma medida —
+   como gerador e validação divergiam no site anterior. Fonte única sem migrar consumidor não
+   conserta nada.
+5. **Duas decisões subiram da tela para o domínio**, e agora têm teste: quem aparece (morreu o
+   `if (counts[bId])` que descartava em silêncio o turno de quem saiu do elenco) e o mês de cada
+   turno, lido da string ISO em vez de um `Date` — que em fuso negativo joga o dia 1º no mês anterior.
+6. ⚠️ **A checagem nova nasceu inerte** e passou verde com o cartão fora da tela: escrita como
+   *"não tem a linha OU o formato está certo"*, ela era vacuamente verdadeira. **Propriedade negativa
+   não mede ausência.** Passou a ler `pessoas.json` e a declarar quando se isenta.
+
+**Provado nas duas pontas:** com o cartão desligado, `vivo:gerar` reprova nomeando-o; com a linha de
+teto desligada, reprova nomeando o Williams. Na árvore limpa, 36 de 36 checagens.
+
+**Skills acionadas:** `engineering-loop`, `loop-autonomo`, `documentacao-auditavel`, `ponytail`
+(contagem em função pura, sem camada nova), `impeccable` (tabela legível, sem clichê).
+
+**Estado:** `EXIT_GATE=0` em **32 passos** · **367 testes** · selo conferido.
+
+**Handoff:** [`HANDOFF_2026-08-06.md`](docs/handoff/HANDOFF_2026-08-06.md) ·
+**Diário:** DB-041.

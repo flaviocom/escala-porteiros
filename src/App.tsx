@@ -744,7 +744,7 @@ function App({ shifts, dados }: AppProps) {
           )}
 
           {view === 'stats' && (
-            <StatsView shifts={shifts} vocabulario={voc} />
+            <StatsView dados={dados} vocabulario={voc} />
           )}
 
           {view === 'validation' && (

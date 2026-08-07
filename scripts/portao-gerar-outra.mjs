@@ -95,6 +95,24 @@ try {
   const botao = pagina.getByRole('button', { name: /Não gostei — gerar outra combinação/i }).first()
   if (!(await botao.count())) throw new Error('o botão "Não gostei" não está na tela — nada a medir')
 
+  /*
+    🔴 E A FRASE DE BAIXO TAMBÉM É MEDIDA — porque ela promete um número.
+
+    "A melhor de 8 versões" é verdade na primeira geração e deixa de ser depois de uma recusa: a
+    escolha passa a ser entre as que DIFEREM da recusada, e a melhor de todas pode ter ficado de
+    fora. Deixar a frase antiga ali seria repor em texto o defeito que este portão acabou de fechar
+    no botão — um rótulo descrevendo algo que já não acontece.
+  */
+  const frase = async () => {
+    const p = pagina.getByText(/é a melhor de|ficaram diferentes da que você recusou|melhor entre as/i).first()
+    return (await p.count()) ? (await p.innerText()).replace(/\s+/g, ' ').trim() : ''
+  }
+  const fraseAntes = await frase()
+  if (!/é a melhor de/i.test(fraseAntes)) {
+    console.log(`🔴 antes de qualquer recusa, a frase deveria dizer "é a melhor de N versões". Veio: "${fraseAntes.slice(0, 80)}"`)
+    process.exit(1)
+  }
+
   let anterior = await digital()
   const repetidos = []
   const vistas = new Set([anterior])
@@ -109,8 +127,12 @@ try {
     anterior = agora
   }
 
+  const fraseDepois = await frase()
+  const fraseMudou = /diferentes da que você recusou/i.test(fraseDepois)
+
   console.log(`\n  cliques medidos ........... ${CLIQUES}`)
   console.log(`  combinações distintas ..... ${vistas.size}`)
+  console.log(`  a frase se corrigiu ....... ${fraseMudou ? 'sim' : '🔴 NÃO'}`)
 
   if (repetidos.length) {
     console.log(`\n🔴 o botão repetiu a escala que já estava na tela nos cliques: ${repetidos.join(', ')}.`)
@@ -118,7 +140,14 @@ try {
     console.log('   Ver `recusada` em src/dominio/gerador.ts — a escala recusada tem de sair da disputa.')
     process.exit(1)
   }
-  console.log(`\n✅ os ${CLIQUES} cliques devolveram, cada um, uma escala diferente da que estava na tela.`)
+  if (!fraseMudou) {
+    console.log(`\n🔴 depois da recusa, a frase continua dizendo: "${fraseDepois.slice(0, 100)}"`)
+    console.log('   Ela promete "a melhor de N versões", e isso deixou de ser verdade: a melhor pode')
+    console.log('   ser justamente a que ele recusou. Ver `jaRecusouAlguma` em src/admin/Admin.tsx.')
+    process.exit(1)
+  }
+  console.log(`\n✅ os ${CLIQUES} cliques devolveram, cada um, uma escala diferente da que estava na tela,`)
+  console.log('   e a frase abaixo do botão parou de prometer "a melhor de todas" depois da recusa.')
 } finally {
   await navegador?.close()
   // `derrubar`, NÃO `parar` — ver a nota em portao-rotulos.mjs.

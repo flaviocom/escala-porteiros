@@ -22,11 +22,12 @@ import { ROTULO_TURNO } from '../dominio/tipos'
 import { idDoNome } from '../utils/nomes'
 import { construirGrade, diaTemCulto } from '../dominio/malha'
 import { gerarVariasVersoes } from '../dominio/gerador'
+import { distribuir } from '../dominio/estatisticas'
 import { validar, resumir } from '../dominio/validacao'
 import { CATALOGO, menorIntervalo } from '../dominio/regras'
 import { conferirPorFora } from '../dominio/conferencia-independente'
 import { conferirBuracoNaEscala, conferirPassadoPreservado, conferirReversao, cotaMensalJaPublicada, montarBlocosParaPublicar, publicacaoImpedida, travaDeDataRetroativa } from '../dominio/blocos'
-import { diferencaEmDias, ehDataValida, formatarBR, sugerirFim, hojeSaoPaulo, NOMES_DIA, NOMES_DIA_CURTO, somarDias } from '../dominio/datas'
+import { diferencaEmDias, ehDataValida, formatarBR, sugerirFim, hojeSaoPaulo, NOMES_DIA, NOMES_DIA_CURTO, ROTULO_MES, somarDias } from '../dominio/datas'
 import { AbaAjustar } from './AbaAjustar'
 import { lerRascunho, gravarRascunho, limparRascunho, type Rascunho } from './rascunho'
 import { arbitrar, auditar, medir, pedirProposta, type Placar, type ProgressoMotor } from './motor'
@@ -482,6 +483,17 @@ export const Admin: React.FC<{ dados: DadosPublicados }> = ({ dados: dadosInicia
    * o bloco vive.
    */
   const [versoesComparadas, setVersoesComparadas] = useState(0)
+  /**
+   * Se a escala na tela saiu de um "Não gostei" — muda o que a frase abaixo do botão pode prometer.
+   *
+   * Mora aqui, junto do bloco e de `versoesComparadas`, pelo mesmo motivo que aquele subiu da aba:
+   * trocar de aba desmonta `AbaGerar`, e um estado que descreve o bloco tem de viver onde o bloco
+   * vive — senão a frase volta a zero enquanto a escala continua lá.
+   *
+   * É DERIVADO de `executar` ter recebido uma escala recusada, não de um clique. Gerar do zero passa
+   * sem `recusada` e o desliga sozinho; não há um segundo lugar para esquecer de atualizar.
+   */
+  const [jaRecusouAlguma, setJaRecusouAlguma] = useState(false)
 
   /**
    * 🔴 O INTERVALO MORA AQUI, e não dentro da aba — corrigido em 05/08/2026 a pedido do Flavio.
@@ -722,7 +734,8 @@ export const Admin: React.FC<{ dados: DadosPublicados }> = ({ dados: dadosInicia
             aoMudarPessoas={setPessoas}
             config={config}
             aoMudarConfig={setConfig}
-            aoGerar={(b, r, versoes) => { setBlocoNovo(b); setBlocoOriginal(b); setRelatoGeracao(r); setVersoesComparadas(versoes ?? 0) }}
+            jaRecusouAlguma={jaRecusouAlguma}
+            aoGerar={(b, r, versoes, veioDeRecusa) => { setBlocoNovo(b); setBlocoOriginal(b); setRelatoGeracao(r); setVersoesComparadas(versoes ?? 0); setJaRecusouAlguma(veioDeRecusa === true) }}
           />
         )}
         {aba === 'ajustar' && blocoNovo && blocoOriginal && (
@@ -1281,9 +1294,10 @@ const AbaGerar: React.FC<{
   aoMudarPessoas: (p: Pessoa[]) => void
   config: Configuracao
   aoMudarConfig: (c: Configuracao) => void
-  aoGerar: (b: Bloco | null, relato: string, versoesComparadas?: number) => void
+  aoGerar: (b: Bloco | null, relato: string, versoesComparadas?: number, veioDeRecusa?: boolean) => void
   versoesComparadas: number
-}> = ({ dados, pessoas, blocoNovo, relato, segredos, de, ate, rascunhoInicial, aoMudarDe, aoMudarAte, aoMudarPessoas, config, aoMudarConfig, aoGerar, versoesComparadas }) => {
+  jaRecusouAlguma: boolean
+}> = ({ dados, pessoas, blocoNovo, relato, segredos, de, ate, rascunhoInicial, aoMudarDe, aoMudarAte, aoMudarPessoas, config, aoMudarConfig, aoGerar, versoesComparadas, jaRecusouAlguma }) => {
   const [ocupado, setOcupado] = useState(false)
   const [falha, setFalha] = useState<string>('')
   /** Muda a cada "gerar outra combinação" — é o que faz a próxima rodada explorar outro caminho. */
@@ -1538,16 +1552,21 @@ const AbaGerar: React.FC<{
         return
       }
       /*
-        🔴 ÀS VEZES NÃO EXISTE OUTRA COMBINAÇÃO MELHOR, E ISSO PRECISA SER DITO.
+        🔴 ÀS VEZES NÃO EXISTE OUTRA COMBINAÇÃO, E ISSO PRECISA SER DITO.
 
         Medido pela quinta auditoria externa: numa varredura de 8 períodos × 4 capacidades × 3
-        sementes, a versão gulosa (a que não usa semente) venceu a cascata **67 de 96 vezes**. Nesses
-        casos, dez sementes-base diferentes produzem uma escala só — e a tela dizia "pedir outra
-        explora combinações diferentes", deixando o Flavio clicando num botão que já tinha feito tudo
-        o que podia.
+        sementes, a versão gulosa (a que não usa semente) venceu a cascata **67 de 96 vezes** — e a
+        gulosa é a mesma sempre. Foi daí que nasceu este aviso.
+
+        ⚠️ **Em 06/08/2026 ficou claro que o aviso era o remédio errado.** Ele descrevia com
+        honestidade um comportamento que não devia existir: o dono pedia outra escala, recebia a
+        mesma, e a tela explicava por quê. Explicar bem uma recusa não é o mesmo que atender ao
+        pedido. Agora a escala recusada sai da disputa (`recusada`, em `gerarVariasVersoes`), e este
+        aviso passou a valer só para o caso limite de verdade — quando **nenhuma** das oito ficou
+        diferente da que ele recusou. Nos dados reais de hoje, ele não aparece mais.
       */
       setRepetiu(blocoNovo != null && JSON.stringify(r.bloco.turnos) === JSON.stringify(blocoNovo.turnos))
-      aoGerar(r.bloco, r.relato, validas)
+      aoGerar(r.bloco, r.relato, validas, recusada != null)
       } catch (e) {
         setOcupado(false)
         setFalha(
@@ -1890,12 +1909,33 @@ const AbaGerar: React.FC<{
 
               Por isso a condição não é "tem número", é **de onde a escala veio**.
             */}
+            {/*
+              🔴 E A FRASE MUDA DEPOIS DE UMA RECUSA — 06/08/2026, na captura do site já publicado.
+
+              "A melhor de 8 versões" é verdade na primeira geração. **Depois de "Não gostei" deixa
+              de ser**: a escolha passa a ser feita entre as que DIFEREM da recusada, e a melhor de
+              todas pode ter ficado de fora — foi ele quem a recusou.
+
+              Manter a frase antiga ali seria repor, em texto, exatamente o defeito que a correção
+              deste dia tirou do botão: um rótulo que descreve algo que já não é o que acontece.
+            */}
             {blocoNovo.origem === 'algoritmo' && versoesComparadas > 0 ? (
               <p className="mt-2 text-xs leading-relaxed text-gray-600">
-                Esta escala é a melhor de <strong>{versoesComparadas} versões</strong> que o sistema montou e
-                comparou internamente — primeiro pelo espaçamento entre as escalas de cada um, e
-                depois pelo equilíbrio de carga. Pedir outra explora combinações diferentes; a
-                anterior não volta sozinha.
+                {jaRecusouAlguma ? (
+                  <>
+                    Esta é a melhor entre as <strong>{versoesComparadas} versões</strong> que ficaram
+                    <strong> diferentes da que você recusou</strong> — comparadas primeiro pelo
+                    espaçamento entre as escalas de cada um, e depois pelo equilíbrio de carga. Pode
+                    haver uma combinação melhor entre as recusadas; pedir outra continua explorando.
+                  </>
+                ) : (
+                  <>
+                    Esta escala é a melhor de <strong>{versoesComparadas} versões</strong> que o sistema montou e
+                    comparou internamente — primeiro pelo espaçamento entre as escalas de cada um, e
+                    depois pelo equilíbrio de carga. Pedir outra explora combinações diferentes; a
+                    anterior não volta sozinha.
+                  </>
+                )}
               </p>
             ) : blocoNovo.origem === 'manual' ? (
               /*
@@ -2234,9 +2274,133 @@ const AbaGerar: React.FC<{
               })}
             </div>
           </Cartao>
+
+          <TabelaDeDistribuicao bloco={blocoNovo} pessoas={pessoas} vocabulario={config.identidade.pessoa} />
         </>
       )}
     </>
+  )
+}
+
+/**
+ * A DISTRIBUIÇÃO DO QUE ACABOU DE SER GERADO — pedido do dono em 06/08/2026:
+ *
+ *   > *"na escala na área do administrador, abaixo de distanciamento por pessoa, coloque uma
+ *   >  estatística tipo essa ou melhor. Somente das datas no intervalo de datas selecionado em
+ *   >  De–Até."*
+ *
+ * Ele mandou a tabela da tela pública como referência. **O intervalo é o do bloco**, e não há filtro
+ * a aplicar: o bloco É o De–Até que ele acabou de gerar. Mesmo assim o período fica escrito no
+ * cabeçalho, derivado dos turnos — pela mesma razão que a tela pública passou a escrever o dela, em
+ * 06/08: uma tabela que não diz o que está contando é lida como se contasse tudo.
+ *
+ * ── O QUE ESTA TABELA TEM A MAIS QUE A PÚBLICA, e por quê ────────────────────────────────────────
+ *
+ * **As colunas por TIPO de turno.** A grade por mês esconde uma injustiça real: nesta malha o
+ * domingo de manhã e o ENSAIO (uma tarde de sábado por mês) são vagas escassas e de peso diferente
+ * da noite de quarta. Dois irmãos com 36 turnos cada podem ter carga bem diferente se um pegou todas
+ * as manhãs e o outro nenhuma — e o total, sozinho, jura que estão iguais.
+ *
+ * **A linha de equilíbrio** (menor · maior · diferença), que responde de relance a pergunta que a
+ * tabela inteira existe para responder. Só sobre quem está ativo: quem saiu costuma ter parado no
+ * meio do período, e entraria como um desequilíbrio que não existe.
+ *
+ * A contagem NÃO mora aqui — mora em `src/dominio/estatisticas.ts`, e a tela pública consome a mesma.
+ * Duas contagens da mesma coisa divergem num caso de borda e ninguém percebe.
+ */
+const TabelaDeDistribuicao: React.FC<{
+  bloco: Bloco
+  pessoas: Pessoa[]
+  vocabulario: { singular: string; plural: string }
+}> = ({ bloco, pessoas, vocabulario }) => {
+  const d = useMemo(() => distribuir(bloco.turnos, pessoas), [bloco, pessoas])
+  const periodo = `${formatarBR(bloco.inicio)} a ${formatarBR(bloco.fim)}`
+  const diferenca = d.menor != null && d.maior != null ? d.maior - d.menor : null
+
+  if (d.linhas.length === 0) return null
+
+  return (
+    <Cartao
+      titulo="Distribuição de turnos"
+      subtitulo={`Por ${vocabulario.singular.toLowerCase()}, mês e tipo de turno · ${periodo} — só o que você acabou de gerar`}
+    >
+      {diferenca != null && (
+        <p className="mb-3 text-sm text-gray-700">
+          Quem pegou menos ficou com <strong>{d.menor}</strong>; quem pegou mais, <strong>{d.maior}</strong>.{' '}
+          {/*
+            O juízo é da TELA, não do domínio: "2 de diferença está bom" depende de quantos meses o
+            período tem, e quem decide isso é quem olha. A cor só sublinha o número que já está lá.
+          */}
+          <span className={clsx('font-semibold', diferenca <= 2 ? 'text-green-700' : 'text-amber-700')}>
+            Diferença de {diferenca} turno{diferenca === 1 ? '' : 's'}.
+          </span>
+        </p>
+      )}
+      {/*
+        Quem foi tirado da comparação aparece por NOME, com o motivo e o número — regra que o dono
+        deu para a conferência independente e que vale igual aqui: contar quantos não basta, é
+        preciso dizer QUEM. Sem esta linha, o "menor" de cima esconderia gente.
+      */}
+      {d.comTeto.length > 0 && (
+        <p className="mb-3 text-xs leading-relaxed text-gray-600">
+          Fora da conta acima, porque {d.comTeto.length === 1 ? 'tem teto próprio' : 'têm teto próprio'}:{' '}
+          {d.comTeto.map((c, i) => (
+            <React.Fragment key={c.nome}>
+              {i > 0 && ', '}
+              <strong>{c.nome}</strong> (máx. {c.tetoMensal}/mês — ficou com {c.total})
+            </React.Fragment>
+          ))}
+          . Menos turnos aqui é a restrição funcionando, não desequilíbrio.
+        </p>
+      )}
+      <div className="overflow-x-auto">
+        <table className="min-w-full text-sm">
+          <thead>
+            <tr className="border-b border-gray-200 text-xs uppercase tracking-wider text-gray-500">
+              <th scope="col" className="py-2 pr-4 text-left font-semibold">{vocabulario.singular}</th>
+              <th scope="col" className="px-2 py-2 text-center font-semibold text-indigo-700">Total</th>
+              {d.tipos.map((t) => (
+                <th key={t} scope="col" className="px-2 py-2 text-center font-semibold">{ROTULO_TURNO[t]}</th>
+              ))}
+              {d.meses.map((m) => (
+                <th key={m} scope="col" className="px-2 py-2 text-center font-semibold">
+                  {/*
+                    Rótulo do mês montado da própria string `AAAA-MM`. Passar por `new Date` traria
+                    de volta o defeito do dia 1º em fuso negativo — e aqui nem faria falta: o mês já
+                    está escrito na chave.
+                  */}
+                  {ROTULO_MES[Number(m.slice(5, 7)) - 1]}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {d.linhas.map((l, i) => (
+              <tr key={l.id} className={clsx('border-b border-gray-50', i % 2 === 1 && 'bg-gray-50/60')}>
+                <td className="py-2 pr-4 font-medium text-gray-800">
+                  {l.nome}
+                  {!l.ativo && (
+                    <span
+                      title="Saiu do elenco. Os turnos dele continuam contando — nada foi apagado."
+                      className="ml-2 rounded-full bg-gray-100 px-1.5 py-0.5 align-middle text-[10px] font-semibold text-gray-500"
+                    >
+                      saiu
+                    </span>
+                  )}
+                </td>
+                <td className="px-2 py-2 text-center font-bold text-indigo-700">{l.total}</td>
+                {d.tipos.map((t) => (
+                  <td key={t} className="px-2 py-2 text-center text-gray-600">{l.porTipo[t] || '-'}</td>
+                ))}
+                {d.meses.map((m) => (
+                  <td key={m} className="px-2 py-2 text-center text-gray-600">{l.porMes[m] || '-'}</td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </Cartao>
   )
 }
 
