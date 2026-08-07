@@ -17,7 +17,7 @@
  * "token no navegador" é o melhor formato de publicação em USABILIDADE, e a resposta registrada é:
  * para a fase 1 (um administrador, uso interno), sim — publica de verdade, ~1 minuto, custo zero.
  * Para comercializar (cliente leigo, N inquilinos), a publicação vira backend com conta e-mail/senha
- * — desenho na §P4.y do `BACKLOG.md`, e o domínio não muda uma linha. Quem for reescrever este
+ * — desenho em `docs/FASE2.md` (§ publicação comercializável), e o domínio não muda uma linha. Quem for reescrever este
  * arquivo naquela fase: os três JSON são o contrato; o histórico de commits vira tabela de versões.
  */
 

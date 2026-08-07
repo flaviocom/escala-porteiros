@@ -862,3 +862,14 @@ registrar**: o logo já é dado e o site já o esconde com o campo vazio — fal
 trocar arquivo). Sugestões registradas na §P4.w com custo honesto: .ics "Minha Escala" (fase 1
 viável), equidade acumulada entre blocos, Q4 como desempate da cascata, preferências leves, troca
 com aprovação e lembrete de véspera (fase 2). **Solicitação:** S-049.
+
+---
+
+## 07/08/2026 · tarde (5) — S-050: lembrete de véspera no WhatsApp — o mapa das três rotas
+
+Pergunta dele respondida com o desenho registrado (§P4.f): rota OFICIAL (Meta Cloud API + cron do
+GitHub Actions que o repositório já usa; médio; não envia a grupo — individual, com conta Meta
+verificada, número dedicado, modelo aprovado, telefones+consentimento); rota NÃO-OFICIAL (fácil e
+com risco real de banir o número — recusada como recomendação); e o ATALHO `.ics` que resolve o
+lembrete HOJE pelo calendário do celular, sem risco nenhum. Recomendação: `.ics` agora, oficial na
+fase 2. **Solicitação:** S-050.

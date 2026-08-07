@@ -33,7 +33,7 @@ voluntário, não um time de plantão.
 > administrador) este é o formato certo, e ele **publica de verdade** — commit → deploy → site, ~1
 > minuto. Para **comercializar** (produto genérico, cliente leigo), o modelo muda: backend + conta
 > e-mail/senha + multi-tenant, com o desenho já registrado no
-> [`BACKLOG.md` §P4.y](../BACKLOG.md). O domínio não muda uma linha — é o que o portão
+> [`docs/FASE2.md`](FASE2.md). O domínio não muda uma linha — é o que o portão
 > `arquitetura` garante.
 
 ---

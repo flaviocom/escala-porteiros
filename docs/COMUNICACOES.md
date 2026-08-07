@@ -73,5 +73,5 @@ https://flaviocom.github.io/escala-porteiros/
 5. O link está na última linha?
 
 > ⚠️ **Fronteira declarada:** este modelo é da fase 1 — comunicação manual, pelo dono. Se a fase 2
-> (comercialização, [`BACKLOG.md` §P4.y](../BACKLOG.md)) trouxer envio automático, este documento é
+> (comercialização, [`FASE2.md`](FASE2.md)) trouxer envio automático, este documento é
 > o requisito de produto, não um script.

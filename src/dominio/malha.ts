@@ -112,7 +112,7 @@ export function construirGrade(op: OpcoesMalha): Turno[] {
  * é CRAVADA nesta constante em vez de vir da configuração editável na tela; (2) o evento é um TIPO
  * fixo (MANHA/TARDE/NOITE) em vez de horário real de início e fim; (3) não há evento avulso em data
  * específica; (4) o vocabulário (culto/ensaio/Santa Ceia) não é configurável. O desenho completo,
- * com o mapa "já existe × falta", está na §P4.w do `BACKLOG.md`.
+ * com o mapa "já existe × falta", está em `docs/FASE2.md` (§ malha parametrizável).
  */
 export const MALHA_ATUAL: Malha = {
   regras: [
