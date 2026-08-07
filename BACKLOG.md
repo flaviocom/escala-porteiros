@@ -100,6 +100,25 @@ como parametrizar, de forma geral, um evento que ocorre num dia da semana e hor�
    "Santa Ceia" → "dia sem expediente/feriado" (ver P4.z item 1). O precedente é o vocabulário
    `Irmão/porteiro`, que já é dado (`config.identidade`).
 
+5. **Logotipo parametrizável — excluir completamente E trocar** (pedido dele, S-049, 07/08/2026:
+   *"a imagem que está no site, logotipo da ccb, deve ser parametrizável, excluir completamente e
+   também alterar!"*). O medido: `config.identidade.logo` JÁ é dado e o site JÁ esconde a imagem
+   quando o campo está vazio (`voc.logo && <img…>` — remoção é UMA edição de JSON). O que falta é
+   TELA: campo na seção de identidade para limpar o logo e para enviar outro arquivo (o `logo.png`
+   vive em `dados/` e sobe pela mesma publicação dos JSON).
+
+**Sugestões do assistente** (S-049 — pertinência vinda do motor e da pesquisa de rostering; tudo
+decisão dele, nada começa sozinho):
+
+| # | Sugestão | Por quê, e o custo honesto |
+|---|---|---|
+| A | **"Minha Escala" no calendário do celular (.ics)** | cada pessoa importa os próprios dias no Google/Apple Calendar, com lembrete nativo — dá para fazer **ainda na fase 1** (arquivo gerado no navegador, sem servidor) |
+| B | **Equidade ACUMULADA entre blocos** | hoje o equilíbrio é por bloco; a cota mensal atravessa a fronteira, o total acumulado não. Depois de várias republicações no meio do ano, os totais podem derivar. Entrada nova `escalasAcumuladasAnterior` como desempate — mesma família da fronteira que já existe |
+| C | **Q4 como desempate do gerador** | "variedade de companhia" hoje só AVISA (é o único ponto de atenção da escala no ar). Entre versões empatadas em piso e Jain, a cascata poderia preferir a que repete menos formações — o aviso tenderia a sumir sozinho. Barato: 3º critério na cascata, com o `refazer` protegido por versão |
+| D | **Preferências LEVES por pessoa** ("prefere manhã") | a pesquisa (§4–5) separa restrição dura de preferência; hoje só temos as duras. Preferência entra como desempate, nunca como barreira — e a tela diz quando não foi possível atender |
+| E | **Troca entre escalados com aprovação** | padrão dos sistemas comerciais: um pede, o outro aceita, o administrador aprova, a escala republica com D2/D7 conferidos. Exige fase 2 (backend) |
+| F | **Lembrete automático na véspera** (WhatsApp) | reduz falta; exige fase 2 (backend + API de envio) |
+
 ⚠️ Nada começa sem decisão explícita dele. Quando começar: os campos novos entram como OPCIONAIS no
 JSON (blocos publicados continuam válidos), e o `refazer` continua provando a reprodução.
 

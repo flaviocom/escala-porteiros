@@ -852,3 +852,13 @@ conceito genérico "dia sem expediente"; e ceia em dia sem culto passa calada (r
    vocabulário neutro (porteiros de prédio, segurança — "afastar a questão religiosa").
 
 **Diário:** DB-047 · **Solicitação:** S-048.
+
+---
+
+## 07/08/2026 · tarde (4) — S-049: logotipo parametrizável + 6 sugestões para a fase 2
+
+Pedido dele: logo removível E substituível; e sugestões minhas pertinentes. **Medido antes de
+registrar**: o logo já é dado e o site já o esconde com o campo vazio — falta só a TELA (limpar /
+trocar arquivo). Sugestões registradas na §P4.w com custo honesto: .ics "Minha Escala" (fase 1
+viável), equidade acumulada entre blocos, Q4 como desempate da cascata, preferências leves, troca
+com aprovação e lembrete de véspera (fase 2). **Solicitação:** S-049.
