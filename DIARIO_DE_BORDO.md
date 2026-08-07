@@ -1788,3 +1788,48 @@ e se um dia ninguém tiver, ela **declara na saída** que se isentou.
 
 **Como reverter.** `git revert` do commit desta entrada tira o cartão do administrador e devolve a
 contagem antiga para a tela pública.
+
+---
+
+## DB-042 · 07/08/2026 — o auditor que acusou o auditado por um erro dele mesmo
+
+**O pedido:** ele publicou, viu que três deploys apareciam como *cancelled*, e perguntou duas coisas:
+se houve perda, e se dava para fazer **outra auditoria independente** confrontando os números do site.
+
+**A primeira resposta é curta e está medida:** cancelar um *deploy* não cancela um *commit*. Cada
+publicação sobe a árvore inteira do SHA dela, e a última já contém o estado das anteriores. Dos
+quatro commits, dois eram de escala e **dois estavam vazios** — `pessoas.json` não muda desde 06/08
+12:52, então salvar o elenco não teve o que gravar.
+
+⚠️ **Mas o caminho até essa resposta deu um susto que vale mais que ela.** Comparei por `sha256` o
+que o site serve com o que o repositório tem: **3 dos 4 arquivos "diferentes"**. Era quebra de linha
+— a cópia de trabalho no Windows tem CRLF, o servido tem LF. **Comparar bytes onde a pergunta é sobre
+DADO produz alarme falso**, e um alarme falso numa pergunta sobre perda de dados é exatamente o tipo
+de coisa que faz alguém desfazer o que estava certo. A comparação certa é `JSON.parse` dos dois lados.
+
+**A segunda resposta exigiu decidir o que "independente" significa aqui.** Não é outro agente: é
+outra **régua**. O script não importa uma linha de `src/` — nem `distribuir()`, nem `menorIntervalo()`.
+Se importasse, estaria confirmando uma régua com ela mesma, e um erro apareceria nos dois lados
+saindo como "conferido". E lê o dado **pela URL publicada**, porque o arquivo no disco desta máquina é
+uma hipótese sobre o que o site serve.
+
+E declara o que ela **não** é: quem escreveu a segunda contagem foi o mesmo autor da primeira. Um
+engano de *interpretação* da regra passaria pelas duas. O que ela pega é engano de implementação — a
+classe comum. Para a outra, o remédio é a definição em português no cabeçalho de cada medida, exposta
+para o dono conferir com os olhos.
+
+🔴 **E o auditor nasceu acusando as 14 linhas do site, com os números batendo em todas.** A expressão
+exigia espaço entre o nome e o número; no DOM os dois `span` vêm colados: `Adilson19 turnos`. **O
+auditor acusou o auditado por um erro dele mesmo.**
+
+É a classe de defeito mais cara que um auditor pode ter, e é pior que um auditor cego: quem lê
+quatorze acusações falsas passa a desconfiar do relatório **inteiro**, inclusive das partes certas —
+e a próxima acusação verdadeira chega já desacreditada. Um auditor que erra para o lado do alarme não
+é "conservador": é ruído com aparência de rigor.
+
+**Resultado depois de corrigido:** 87 turnos, 258 vagas, 14 pessoas, **zero divergências** — total,
+mínimo, tipo e mês, pessoa a pessoa. E o autoteste (`vivo:auditoria:autoteste`), que injeta um turno
+inventado **na auditoria** e exige acusação, saiu com 5 divergências nomeando a pessoa e a coluna.
+
+**Como reverter.** `git revert` do commit desta entrada remove o script de auditoria; nada do produto
+depende dele.

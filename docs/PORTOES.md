@@ -478,6 +478,39 @@ correção tirou do botão.
 > leu as linhas por pessoa** antes de comparar. Sem esse sinal de vida, ele reprovaria para sempre
 > pelo motivo errado.
 
+#### `vivo:auditoria` — recontar o site do zero e confrontar com a tela
+*(grupo NO AR: roda DEPOIS do push, nunca no gate — depende da rede e do GitHub Pages)*
+Nasceu do pedido do dono em 07/08/2026, depois de ele publicar: *"faz uma outra auditoria
+independente na escala do site (…) só para confrontar com o apresentado no site, usando as mesmas
+pessoas que estão na escala escalada no site hoje, de 6/8/2026 a 31/12/2026?"*
+
+Baixa `blocos.json` e `pessoas.json` **pela URL publicada**, recalcula do zero a distribuição (total,
+por mês, por tipo) e o distanciamento de cada pessoa, abre a área administrativa no site, gera o
+mesmo período e **confronta linha a linha** com os dois cartões da tela.
+
+**A independência é da RÉGUA:** o script não importa uma linha de `src/` — nem `distribuir()`, nem
+`menorIntervalo()`. Importar seria confirmar uma régua com ela mesma; um erro apareceria dos dois
+lados e sairia "conferido".
+
+> ⚠️ **A independência que ele NÃO tem, declarada:** quem escreveu a segunda contagem foi o mesmo
+> autor da primeira. Um engano de **interpretação** da regra passaria pelas duas. O que ele pega é
+> engano de implementação — a classe comum. Para a outra, o remédio é a definição em português no
+> cabeçalho de cada medida, que fica exposta para o dono conferir com os olhos.
+
+**Autoteste obrigatório:** `npm run vivo:auditoria:autoteste` injeta **um turno inventado na
+auditoria** (o dado do site fica intocado) e exige que o relatório acuse. Ele **não entra em grupo
+nenhum** dos disparadores — existe para sair vermelho, e um passo que reprova por projeto dentro de
+um conjunto que soma reprovações faria alguém desligar o auditor inteiro.
+
+> 🔴 **A primeira versão acusou as 14 linhas do site com os números batendo em todas.** A expressão
+> exigia espaço entre o nome e o número, e no DOM os dois `span` vêm colados (`Adilson19 turnos`).
+> **O auditor acusou o auditado por um erro dele mesmo** — a classe de defeito mais cara que um
+> auditor pode ter, porque quem lê passa a desconfiar do relatório inteiro, inclusive das partes
+> certas.
+
+**Provado nas duas pontas:** árvore no ar → 0 divergências; com `--autoteste` → 5 divergências,
+nomeando a pessoa e a coluna exata.
+
 ### 26. `ensaio` — o cenário que ORIGINOU o projeto, ponta a ponta
 Alguém sai do elenco, outro entra com as cinco restrições, e a escala se refaz a partir de um corte.
 **11 promessas medidas**, entre elas *"o passado antes do corte fica byte a byte idêntico"*.

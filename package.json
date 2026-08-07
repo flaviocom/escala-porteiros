@@ -65,6 +65,8 @@
     "markdown-cru": "node scripts/portao-markdown-cru.mjs",
     "vivo:quebrada": "node scripts/portao-tela-quebrada.mjs",
     "vivo:outra": "node scripts/portao-gerar-outra.mjs",
+    "vivo:auditoria": "node scripts/auditoria-independente-do-site.mjs",
+    "vivo:auditoria:autoteste": "node scripts/auditoria-independente-do-site.mjs --autoteste",
     "vivo:publicar": "node scripts/validar-publicar-de-verdade.mjs"
   },
   "dependencies": {

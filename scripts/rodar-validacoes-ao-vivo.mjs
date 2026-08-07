@@ -41,7 +41,13 @@ const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..')
 const bandeira = process.argv.find((a) => a === '--local' || a === '--no-ar')
 
 /** Medem o SITE PUBLICADO. Rodam depois do push, nunca no gate. */
-const NO_AR = new Set(['vivo', 'vivo:conferir', 'vivo:conferir-passado'])
+const NO_AR = new Set(['vivo', 'vivo:conferir', 'vivo:conferir-passado', 'vivo:auditoria'])
+/*
+  ⚠️ `vivo:auditoria:autoteste` NÃO entra em grupo nenhum: ele existe para SAIR VERMELHO (mente de
+  propósito e confere se o auditor pega). Um passo que reprova por projeto dentro de um disparador
+  que soma reprovações derrubaria o conjunto todo, e alguém desligaria o auditor inteiro por isso.
+*/
+const NUNCA_AUTOMATICO = new Set(['vivo:auditoria:autoteste'])
 /** Exigem argumento que só uma pessoa tem. */
 const PRECISA_DE_ARGUMENTO = { 'vivo:divulgado': 'exige `--antigo <url>` — o site que a congregação já tem o link' }
 // A lista é LIDA do `package.json`, não escrita aqui. Validação nova entra sozinha — e uma lista à
@@ -60,7 +66,7 @@ const scripts = JSON.parse(readFileSync(join(RAIZ, 'package.json'), 'utf8')).scr
  */
 const EU_MESMO = 'rodar-validacoes-ao-vivo.mjs'
 const todas = Object.keys(scripts).filter(
-  (n) => (n === 'vivo' || n.startsWith('vivo:')) && !scripts[n].includes(EU_MESMO),
+  (n) => (n === 'vivo' || n.startsWith('vivo:')) && !scripts[n].includes(EU_MESMO) && !NUNCA_AUTOMATICO.has(n),
 )
 const pulados = todas.filter((n) => n in PRECISA_DE_ARGUMENTO)
 const candidatas = todas.filter((n) => !(n in PRECISA_DE_ARGUMENTO))

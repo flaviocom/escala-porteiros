@@ -679,3 +679,49 @@ os quatro commits do dono mudaram a árvore sob o selo gravado na sessão anteri
 sobre a árvore sincronizada: **EXIT_GATE=0**, 32 passos, 367 testes, selo `fbb8747d87fd`.
 
 **Estado:** `EXIT_GATE=0` · 183 turnos no ar · 0 estouros de teto · 14 ativos.
+
+---
+
+## 07/08/2026 · madrugada (2) — auditoria independente do site, a pedido do dono
+
+**Solicitação (S-040):** *"por ele ter cancelado os três commits, houve perda de dados ou de
+configurações? E tem como fazer uma outra auditoria independente na escala do site (…) só para
+confrontar com o apresentado no site, usando as mesmas pessoas que estão na escala escalada no site
+hoje, de 6/8/2026 a 31/12/2026?"*
+
+### 1. Os deploys cancelados — nada se perdeu, e está medido
+
+**Cancelar um deploy não cancela um commit.** Cada publicação sobe a árvore inteira do SHA dela; a
+última (`b2c6e47`) já contém o estado das três anteriores. Provado por três medidas:
+
+| Medida | Resultado |
+|---|---|
+| Os 4 commits, arquivo a arquivo | 2 de escala (1 linha em cada pasta de dados) e **2 VAZIOS** |
+| Por que os dois vazios | `pessoas.json` não muda desde **06/08 12:52** — ele salvou o elenco e não havia o que mudar |
+| O que o site SERVE × o repositório | **idêntico como dado** nos 4 arquivos (a diferença de bytes é CRLF local × LF servido) |
+
+⚠️ **O susto do caminho:** comparar por `sha256` acusou 3 dos 4 arquivos como diferentes. Era quebra
+de linha — a cópia de trabalho no Windows tem CRLF, o servido tem LF. **Comparar bytes onde a
+pergunta é sobre DADO produz alarme falso**; a comparação certa é `JSON.parse` dos dois lados.
+
+### 2. A auditoria independente — `scripts/auditoria-independente-do-site.mjs`
+
+Recontagem **do zero**, sem importar uma linha de `src/`, sobre o dado baixado **pela URL publicada**.
+87 turnos, 258 vagas, 14 pessoas. **Zero divergências** contra os dois cartões da tela — total,
+mínimo, tipo e mês, pessoa a pessoa.
+
+- equilíbrio: menor 18 · maior 19 · **diferença 1** (idêntico ao que a tela anuncia);
+- menor distanciamento do período: **4 dias** — Donizete, Flavio, Isac, Luíz Cezar, Williams;
+- Williams, teto 3/mês: **12 turnos**, nenhum mês acima do teto.
+
+🔴 **A primeira versão do auditor acusou as 14 linhas com os números batendo em todas.** A expressão
+exigia espaço entre nome e número, e no DOM os dois `span` vêm colados (`Adilson19 turnos`). **O
+auditor acusou o auditado por um erro dele mesmo** — a classe mais cara que um auditor pode ter,
+porque quem lê passa a desconfiar do relatório inteiro, inclusive das partes certas.
+
+**Autoteste permanente:** `vivo:auditoria:autoteste` injeta um turno inventado **na auditoria** (o
+dado do site fica intocado) e exige acusação — saiu com 5 divergências nomeando a pessoa e a coluna.
+Ele fica **fora de todo disparador**: existe para sair vermelho, e um passo que reprova por projeto
+dentro de um conjunto que soma reprovações faria alguém desligar o auditor inteiro.
+
+**Estado:** `EXIT_GATE=0` em **32 passos** · 367 testes · selo `03c8bf4dbb5f` · `vivo:no-ar` 4/4.
