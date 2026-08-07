@@ -838,3 +838,17 @@ Duas observações de produto para decisão dele (P4.z): rótulo "Santa Ceia" cr
 conceito genérico "dia sem expediente"; e ceia em dia sem culto passa calada (risco de typo).
 
 **Solicitação:** S-047 · **BACKLOG:** P4.z.
+
+---
+
+## 07/08/2026 · tarde (3) — S-048: o aviso de Ceia em dia sem culto + o requisito da fase 2
+
+1. **Aviso no ar** (pedido: *"Aviso, não trava — faça isso"*): Ceia em dia sem culto fica ÂMBAR com
+   o dia da semana (*"⚠️ quinta — sem culto na malha"*), continua na lista. `diaTemCulto` já existia;
+   a tela passou a usá-lo. Provado ao vivo nas duas pontas + captura.
+2. **Fase 2 registrada com o mapa "já existe × falta"** (§P4.w do BACKLOG, ligada em `malha.ts` na
+   própria constante-fronteira): `RegraMalha` já cobre mesmo-dia-duas-vezes, 1º sábado do mês,
+   rótulo e capacidade; falta horário início/fim, tela de edição da malha, evento avulso por data e
+   vocabulário neutro (porteiros de prédio, segurança — "afastar a questão religiosa").
+
+**Diário:** DB-047 · **Solicitação:** S-048.

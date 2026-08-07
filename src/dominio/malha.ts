@@ -100,7 +100,20 @@ export function construirGrade(op: OpcoesMalha): Turno[] {
   return turnos.sort((a, b) => (a.data === b.data ? peso[a.tipo] - peso[b.tipo] : a.data < b.data ? -1 : 1))
 }
 
-/** A malha que a congregação usa hoje: dom manhã+noite · qua noite · sáb noite · 1º sáb tarde. */
+/**
+ * A malha que a congregação usa hoje: dom manhã+noite · qua noite · sáb noite · 1º sáb tarde.
+ *
+ * 🔴 ESTA CONSTANTE É A FRONTEIRA DA FASE 2 — requisito do dono, 07/08/2026 (S-048):
+ * *"é muito importante ser parametrizável (…) o dia da semana e o horário de início e fim; pode se
+ * repetir no mesmo dia (…) escala ampla, não religiosa: porteiros de prédio, segurança."*
+ *
+ * O MODELO (`RegraMalha`) já cobre quase tudo — dois eventos no mesmo dia, "1º sábado do mês"
+ * (`somenteOcorrencia`), rótulo livre, capacidade por regra. O que falta, e mora AQUI: (1) a malha
+ * é CRAVADA nesta constante em vez de vir da configuração editável na tela; (2) o evento é um TIPO
+ * fixo (MANHA/TARDE/NOITE) em vez de horário real de início e fim; (3) não há evento avulso em data
+ * específica; (4) o vocabulário (culto/ensaio/Santa Ceia) não é configurável. O desenho completo,
+ * com o mapa "já existe × falta", está na §P4.w do `BACKLOG.md`.
+ */
 export const MALHA_ATUAL: Malha = {
   regras: [
     { diaSemana: 0, turnos: ['MANHA', 'NOITE'] },

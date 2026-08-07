@@ -69,6 +69,40 @@ fronteira de escopo declarada, não defeito: **pares proibidos/preferidos** (cô
 juntos, ou só servem juntos — carona), **alocação fixa por data** ("fulano sempre no 1º domingo").
 Ambas pedem decisão de produto antes de qualquer código.
 
+### P4.w 💡 FASE 2 — malha PARAMETRIZÁVEL e vocabulário NEUTRO (requisito do dono, S-048, 07/08/2026) 👤
+Palavras dele: *"é muito importante ser parametrizável (…) o dia e os horários do culto, dos
+ensaios, cultos extras e outras atividades (…) temos que afastar a questão religiosa — escala
+ampla: porteiros de prédio, segurança e assim por diante (…) selecionar o dia da semana e o horário
+de início e fim; pode se repetir no mesmo dia (…) e o ensaio, que é o primeiro sábado de cada mês —
+como parametrizar, de forma geral, um evento que ocorre num dia da semana e horário específicos?"*
+
+**O que o MODELO já sabe fazer** (`RegraMalha` em `src/dominio/tipos.ts` — o motor já é genérico):
+
+| Pedido dele | Já existe? |
+|---|---|
+| Evento por dia da semana | ✅ `diaSemana: 0–6` |
+| Dois eventos no MESMO dia (manhã crianças, noite adultos) | ✅ duas regras com o mesmo `diaSemana` — é como domingo funciona hoje |
+| "Primeiro sábado do mês" (o ensaio) | ✅ `somenteOcorrencia: 1` — é literalmente a regra do ENSAIO em produção |
+| Padrões quinzenais/alternados | ✅ `cadaNDias` + `ancora` |
+| Nome do evento | ✅ `rotulo` (livre — "ENSAIO" é só o valor atual) |
+| Vagas por evento | ✅ `capacidade` por regra |
+
+**O que FALTA para a fase 2** (nada disso muda o motor — muda dado e tela):
+
+1. **Horário de início e fim** — hoje o evento é um TIPO fixo (`MANHA`/`TARDE`/`NOITE`); o pedido é
+   hora real (`inicio: "09:00"`, `fim: "11:30"`), com o tipo virando rótulo derivado ou livre;
+2. **Tela para editar a malha** — hoje a `MALHA_ATUAL` é cravada em `src/dominio/malha.ts`; o
+   administrador precisa criar/editar regras sem tocar código (mesma família da identidade, que já
+   é dado);
+3. **Evento avulso em DATA específica** (culto extra, evento único) — hoje só há recorrência + o
+   dia especial *sem* expediente; falta o avulso *com* expediente;
+4. **Vocabulário neutro configurável** — "culto" → "evento/atividade", "ensaio" → rótulo livre,
+   "Santa Ceia" → "dia sem expediente/feriado" (ver P4.z item 1). O precedente é o vocabulário
+   `Irmão/porteiro`, que já é dado (`config.identidade`).
+
+⚠️ Nada começa sem decisão explícita dele. Quando começar: os campos novos entram como OPCIONAIS no
+JSON (blocos publicados continuam válidos), e o `refazer` continua provando a reprodução.
+
 ### P4.z 💡 Observações da verificação de 07/08/2026 (S-047) — decisão do dono 👤
 Duas notas de produto que a medição do fluxo plurianual revelou; nenhuma é defeito hoje:
 
@@ -76,10 +110,10 @@ Duas notas de produto que a medição do fluxo plurianual revelou; nenhuma é de
    sem expediente" — o dono descreveu como feriado). Para "qualquer outro propósito de escala"
    (regra §0), o rótulo deveria vir da identidade configurável, como já acontece com
    "Irmão/porteiro". Mesma família do vocabulário que já é dado;
-2. **Ceia cadastrada em dia SEM culto é silenciosamente inerte** (medido: 15/07/2027, quinta —
-   nada aparece, nada quebra). Coerente com "feriado em dia sem expediente", mas um ERRO DE
-   DIGITAÇÃO (queria domingo 18, digitou quinta 15) passaria calado e o domingo ficaria
-   desprotegido. Um aviso na tela — "esta data não tem culto na malha" — fecharia o buraco.
+2. ~~Ceia cadastrada em dia SEM culto passa calada~~ — ✅ **FECHADO em 07/08/2026, por pedido
+   dele** (*"Aviso, não trava — faça isso"*). A data em dia sem culto aparece em ÂMBAR com o dia da
+   semana (*"⚠️ quinta — sem culto na malha"*) e continua na lista. Provado nas duas pontas ao
+   vivo: quinta 15/10 acusa, domingo 18/10 não.
 
 ### P4.y 💡 FASE 2 — publicação comercializável (decisão de 07/08/2026: fica para depois) 👤
 Pergunta do dono (S-043): *"este é o melhor formato [token no navegador]? em questão de usabilidade

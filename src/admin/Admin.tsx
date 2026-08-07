@@ -27,7 +27,7 @@ import { validar, resumir } from '../dominio/validacao'
 import { CATALOGO, menorIntervalo } from '../dominio/regras'
 import { conferirPorFora } from '../dominio/conferencia-independente'
 import { conferirBuracoNaEscala, conferirPassadoPreservado, conferirReversao, cotaMensalJaPublicada, montarBlocosParaPublicar, publicacaoImpedida, travaDeDataRetroativa } from '../dominio/blocos'
-import { diferencaEmDias, ehDataValida, formatarBR, sugerirFim, hojeSaoPaulo, NOMES_DIA, NOMES_DIA_CURTO, ROTULO_MES, somarDias } from '../dominio/datas'
+import { diaDaSemana, diferencaEmDias, ehDataValida, formatarBR, sugerirFim, hojeSaoPaulo, NOMES_DIA, NOMES_DIA_CURTO, ROTULO_MES, somarDias } from '../dominio/datas'
 import { AbaAjustar } from './AbaAjustar'
 import { lerRascunho, gravarRascunho, limparRascunho, type Rascunho } from './rascunho'
 import { arbitrar, auditar, medir, pedirProposta, type Placar, type ProgressoMotor } from './motor'
@@ -1747,17 +1747,33 @@ const AbaGerar: React.FC<{
             <div className="mt-3 flex flex-wrap gap-1.5">
               {[...(config.santaCeia ?? [])].sort().map((d) => {
                 const passou = diferencaEmDias(d, hojeSaoPaulo()) > 0
+                /*
+                  🔴 CEIA EM DIA SEM CULTO É PROVAVELMENTE UM ENGANO — pedido do dono, 07/08/2026.
+
+                  Medido antes: uma Ceia cadastrada numa quinta-feira era silenciosamente inerte —
+                  coerente com "feriado em dia sem expediente", MAS um erro de digitação (queria o
+                  domingo 18, digitou quinta 15) deixava o domingo real desprotegido, sem nenhum
+                  sinal. Palavra dele: *"Aviso, não trava"* — a data fica, o aviso aparece. O rótulo
+                  âmbar diz o dia da semana para o engano se denunciar sozinho.
+                */
+                const semCulto = !diaTemCulto(d, config.malhaPadrao)
                 return (
                   <span
                     key={d}
-                    title={passou ? 'Já passou — fica registrada, e o histórico não se reescreve' : 'Cadastrada'}
+                    title={
+                      semCulto
+                        ? 'Esta data não tem culto na malha — a Ceia aqui não muda nada. Confira se não é engano de digitação.'
+                        : passou ? 'Já passou — fica registrada, e o histórico não se reescreve' : 'Cadastrada'
+                    }
                     className={clsx(
                       'inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-semibold',
-                      passou ? 'border-gray-200 bg-white text-gray-400' : 'border-red-200 bg-red-50 text-red-800',
+                      semCulto ? 'border-amber-300 bg-amber-50 text-amber-900'
+                        : passou ? 'border-gray-200 bg-white text-gray-400' : 'border-red-200 bg-red-50 text-red-800',
                     )}
                   >
                     {formatarBR(d)}
-                    {passou && <em className="font-normal">(passou)</em>}
+                    {semCulto && <em className="font-normal">⚠️ {NOMES_DIA[diaDaSemana(d)]} — sem culto na malha</em>}
+                    {!semCulto && passou && <em className="font-normal">(passou)</em>}
                     <button
                       title="Tira esta data da lista"
                       onClick={() => aoMudarConfig({ ...config, santaCeia: (config.santaCeia ?? []).filter((x) => x !== d) })}
