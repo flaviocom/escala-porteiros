@@ -4,7 +4,7 @@
 > como reverter.** Documento **append-only**, fatiado por período ao estourar o teto. **Nada é
 > excluído, nunca.**
 >
-> **Cadeia de navegação:** [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-06.md) → [`BACKLOG.md`](BACKLOG.md)
+> **Cadeia de navegação:** [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-07.md) → [`BACKLOG.md`](BACKLOG.md)
 > **Roteador:** [`AGENTS.md`](AGENTS.md) ·
 > **Solicitações:** [`docs/solicitacoes/INDICE_DE_SOLICITACOES.md`](docs/solicitacoes/INDICE_DE_SOLICITACOES.md) ·
 > **Histórico:** [`docs/historico/INDICE.md`](docs/historico/INDICE.md)
@@ -1874,3 +1874,37 @@ semente e a regra.
 
 **Como reverter.** `git revert` do commit desta entrada. As correções de ausência/grade vazia são
 comportamento novo do motor; revertê-las devolve os dois silêncios.
+
+---
+
+## DB-044 · 07/08/2026 — o veredito medido, e os órfãos que a cobrança dele achou
+
+**O pedido:** *"Foi documentada a pesquisa com ligação em nossos documentos e códigos? (…) O motor
+está na melhor versão de si mesmo? O validador autônomo é autônomo mesmo? (…) me diga se a escala
+publicada está correta em todas as validações, citando a quantidade — não de cabeça, mas no código."*
+
+**O veredito, medido pela URL** (`npm run vivo:veredito`, que nasceu deste pedido): 1ª régua 17/17
+com 0 falhas duras e 1 aviso de qualidade (Q4, variedade de companhia); 2ª régua 8/8 promessas com
+258 escalações conferidas uma a uma; auditor do site 0 divergências contra a tela pública. Piso 4
+declarado = real. **As três réguas concordam: pode divulgar.**
+
+**A cobrança dele achou três órfãos de verdade:**
+
+1. a pesquisa estava ligada no índice, no BACKLOG e no diário — mas **não no `gerador.ts`**, que é
+   onde a decisão negativa (busca local recusada) precisa morar para o confronto futuro;
+2. o BACKLOG mandava *"re-rodar o experimento"* e o experimento **não existia como arquivo** — tinha
+   sido um script efêmero, apagado depois de medir. Referência a prova que não existe é pior que
+   não ter prova. Virou `scripts/experimento-busca-local.mjs` (`npm run experimento:busca-local`),
+   o portão de reabertura da decisão: se um dia achar troca melhoradora, a recusa perde a prova;
+3. **não havia handoff de 07/08** — S-040 e S-041 estavam registradas no índice e no diário, mas o
+   elo do meio da cadeia (`ESTADO → handoff → BACKLOG`) apontava para 06/08.
+
+⚠️ **E o conserto do 3º órfão quase repetiu um erro registrado em memória:** avancei os ponteiros
+com substituição global de `HANDOFF_2026-08-06 → 07`, e o replace acertou os 6 ponteiros da cadeia
+**e reescreveu 8 referências históricas** — entradas de 05–06/08 do AI_MASTER_LOG e do BACKLOG que
+citavam o handoff de 06/08 como CONTEÚDO, não como ponteiro. É a lição de
+`substituicao-cega-de-nome-apaga-historico`, de novo: **no índice o nome antigo é conteúdo.**
+Revertido sítio a sítio, com verificação linha a linha antes de cada troca.
+
+**Como reverter.** `git revert` do commit desta entrada. O veredito é leitura, não escrita — nada
+do produto muda com ele.

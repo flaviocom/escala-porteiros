@@ -6,7 +6,7 @@
 > **Última atualização:** 05/08/2026
 >
 > **Cadeia de navegação, nesta ordem:**
-> [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-06.md) → **`BACKLOG.md` (você está aqui)**
+> [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-07.md) → **`BACKLOG.md` (você está aqui)**
 >
 > **Roteador do projeto:** [`AGENTS.md`](AGENTS.md) ·
 > **Solicitações:** [`docs/solicitacoes/INDICE_DE_SOLICITACOES.md`](docs/solicitacoes/INDICE_DE_SOLICITACOES.md) ·
@@ -143,7 +143,9 @@ provado com mutante nas duas pontas:
   continuavam verdes — promessa com teste não é campo com teste. Infratores injetados fecham os dois.
 
 **Busca local pós-GRASP: medida e RECUSADA** — 0 trocas melhoradoras nos dados reais (ótimo local;
-Jain 0,9965 é o máximo aritmético). Re-rodar o experimento se elenco/malha mudarem de forma.
+Jain 0,9965 é o máximo aritmético). A prova é re-rodável: `npm run experimento:busca-local`
+(`scripts/experimento-busca-local.mjs`) — se o elenco/malha mudarem de forma e ele achar troca, a
+recusa perde a prova e a decisão reabre.
 
 ### P4.x 💡 Oportunidades de produto apontadas pela pesquisa (decisão do dono)
 A pesquisa de 07/08 (§4) lista variações que sistemas maduros suportam e este produto não tem —

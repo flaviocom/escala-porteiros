@@ -41,7 +41,7 @@ const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..')
 const bandeira = process.argv.find((a) => a === '--local' || a === '--no-ar')
 
 /** Medem o SITE PUBLICADO. Rodam depois do push, nunca no gate. */
-const NO_AR = new Set(['vivo', 'vivo:conferir', 'vivo:conferir-passado', 'vivo:auditoria'])
+const NO_AR = new Set(['vivo', 'vivo:conferir', 'vivo:conferir-passado', 'vivo:auditoria', 'vivo:veredito'])
 /*
   ⚠️ `vivo:auditoria:autoteste` NÃO entra em grupo nenhum: ele existe para SAIR VERMELHO (mente de
   propósito e confere se o auditor pega). Um passo que reprova por projeto dentro de um disparador

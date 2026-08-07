@@ -2,10 +2,10 @@
 
 > **Onde o projeto está agora.** Documento **vivo**: sobrescrito, não acumulado.
 >
-> **Última atualização:** 06/08/2026 · **Fuso:** America/São_Paulo
+> **Última atualização:** 07/08/2026 · **Fuso:** America/São_Paulo
 >
 > **Cadeia de navegação, nesta ordem:**
-> **`ESTADO.md` (você está aqui)** → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-06.md) → [`BACKLOG.md`](BACKLOG.md)
+> **`ESTADO.md` (você está aqui)** → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-07.md) → [`BACKLOG.md`](BACKLOG.md)
 > *onde estamos · o que aconteceu na última sessão e por quê · o que fazer a seguir*
 >
 > **Reconstruir do zero (portabilidade entre IAs):** [`docs/RECONSTRUIR.md`](docs/RECONSTRUIR.md)
@@ -23,7 +23,24 @@ conferida.** O nome do cliente saiu do código e virou dado. As duas decisões q
 **foram tomadas pelo Flavio em 05/08** — a data de início (06/08) e o escopo de finalidade (fase 1,
 uso interno). O que falta é só o que depende das credenciais dele.
 
-## O mais recente: ele publicou, e foi conferido por fora (07/08, madrugada)
+## O mais recente: veredito medido — a escala no ar PODE SER DIVULGADA (07/08, manhã)
+
+Pedido dele: *"me diga se a escala publicada está correta em todas as validações, citando a
+quantidade — e se o validador independente chegou ao mesmo veredito."* Medido pela URL, não pelo
+disco (`npm run vivo:veredito`): **1ª régua 17/17, 0 falhas duras** (1 aviso Q4, qualidade);
+**2ª régua 8/8 promessas, 258 escalações conferidas uma a uma**; **auditor do site 0 divergências**
+contra a tela pública. Piso 4 declarado = real. Equilíbrio 18–19, diferença 1. Williams dentro do
+teto em todos os meses. **As três réguas concordam: pode divulgar.**
+
+No mesmo dia, a **pesquisa mundial de métodos** (registro auditado em
+[`PESQUISA_2026-08-07-metodos-rostering.md`](docs/superpowers/specs/PESQUISA_2026-08-07-metodos-rostering.md))
+confirmou o GRASP e teve a recomendação central **medida e recusada** — busca local: 0 trocas nos
+dados reais; prova re-rodável em `npm run experimento:busca-local`. E a varredura de variações
+fechou **três defeitos com mutante nas duas pontas** — o pior: as duas réguas cegas para a MESMA
+ausência invertida (pessoa escalada dentro da própria viagem, tudo verde). Detalhe:
+[`HANDOFF_2026-08-07.md`](docs/handoff/HANDOFF_2026-08-07.md) · [DB-042 a DB-044](DIARIO_DE_BORDO.md).
+
+## Ele publicou, e foi conferido por fora (07/08, madrugada)
 
 O dono publicou pela tela e pediu para conferir. Medido no que o site **serve**, não no que o deploy
 diz: bloco `bloco-2026-08-06-2026-12-31`, **87 turnos, piso 4**, passado intacto byte a byte, 14

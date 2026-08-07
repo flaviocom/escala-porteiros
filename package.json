@@ -66,8 +66,10 @@
     "vivo:quebrada": "node scripts/portao-tela-quebrada.mjs",
     "vivo:outra": "node scripts/portao-gerar-outra.mjs",
     "vivo:auditoria": "node scripts/auditoria-independente-do-site.mjs",
+    "vivo:veredito": "vite-node scripts/veredito-do-publicado.mjs",
     "vivo:auditoria:autoteste": "node scripts/auditoria-independente-do-site.mjs --autoteste",
-    "vivo:publicar": "node scripts/validar-publicar-de-verdade.mjs"
+    "vivo:publicar": "node scripts/validar-publicar-de-verdade.mjs",
+    "experimento:busca-local": "vite-node scripts/experimento-busca-local.mjs"
   },
   "dependencies": {
     "clsx": "^2.1.1",

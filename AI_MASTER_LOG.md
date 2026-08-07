@@ -4,7 +4,7 @@
 > O **porquê** de cada decisão vive no [`DIARIO_DE_BORDO.md`](DIARIO_DE_BORDO.md); aqui fica o
 > registro do que foi feito, passo a passo.
 >
-> **Cadeia de navegação:** [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-06.md) → [`BACKLOG.md`](BACKLOG.md)
+> **Cadeia de navegação:** [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-07.md) → [`BACKLOG.md`](BACKLOG.md)
 > **Roteador:** [`AGENTS.md`](AGENTS.md) ·
 > **Solicitações:** [`docs/solicitacoes/INDICE_DE_SOLICITACOES.md`](docs/solicitacoes/INDICE_DE_SOLICITACOES.md) ·
 > **Fatias arquivadas:** [`docs/historico/INDICE.md`](docs/historico/INDICE.md)
@@ -759,3 +759,26 @@ com todas as variações de campos. Valide, corrija e audite também o Validador
    ("Eduardosaiu" — selo colado ao nome; casar contra o CADASTRO, não regex).
 
 **Estado:** 393 testes (354→393) · typecheck limpo · gate a rodar antes do commit.
+
+---
+
+## 07/08/2026 · manhã (2) — o veredito medido do que está no ar, e os órfãos fechados
+
+**Solicitação (S-042):** a escala publicada está correta em todas as validações? O validador
+independente chega ao mesmo veredito? As ligações da pesquisa existem em documento E código?
+
+1. **Veredito** (`npm run vivo:veredito`, novo — entra no grupo NO AR): 1ª régua **17/17, 0 falhas
+   duras** (1 aviso Q4); 2ª régua **8/8 promessas**, 258 escalações uma a uma; auditor do site
+   **0 divergências**. Piso 4 declarado = real. **Pode divulgar.**
+2. **Três órfãos fechados**: a pesquisa ligada no `gerador.ts` (decisão negativa + portão de
+   reabertura); o experimento virou arquivo (`npm run experimento:busca-local` — o BACKLOG mandava
+   re-rodar um script que não existia); e nasceu o **HANDOFF_2026-08-07.md**, indexado, com a cadeia
+   inteira apontando (`cadeia` verde).
+3. ⚠️ **Quase-incidente registrado**: o avanço dos ponteiros por replace global reescreveu **8
+   referências históricas** (AML e BACKLOG citavam o handoff de 06/08 como CONTEÚDO). Revertido
+   sítio a sítio — é a lição de `substituicao-cega-de-nome-apaga-historico`, de novo.
+4. **Visual das três telas do site no ar, olhado**: escala ancorada no próximo culto (08/08),
+   Estatísticas íntegra (a mesma tabela que o auditor confrontou), Validação mostrando *"Aprovada ·
+   17 de 17 · piso de 4 dias"* no bloco vigente.
+
+**Estado:** gate a rodar · **Diário:** DB-044 · **Handoff:** [`HANDOFF_2026-08-07.md`](docs/handoff/HANDOFF_2026-08-07.md).

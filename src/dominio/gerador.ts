@@ -377,6 +377,14 @@ export function gerar(op: OpcoesGeracao): Resultado {
  * 🔴 Pedido do Flavio em 05/08/2026, e a decisão inteira — com o que foi RECUSADO da pesquisa —
  * está em `docs/superpowers/specs/PESQUISA_2026-08-05-gerar-n-versoes.md`.
  *
+ * 🔴 E a SEGUNDA pesquisa (07/08/2026, mundial — nurse rostering, competições INRC, sistemas de
+ * igreja) confirmou este desenho e teve a recomendação central MEDIDA E RECUSADA: busca local
+ * pós-GRASP achou **zero trocas melhoradoras** nos dados reais publicados — esta cascata já produz
+ * um ótimo local, e Jain 0,9965 é o máximo que a aritmética permite (258 vagas ∤ 14 pessoas).
+ * Registro auditado: `docs/superpowers/specs/PESQUISA_2026-08-07-metodos-rostering.md` · prova
+ * re-rodável: `npm run experimento:busca-local` (se um dia achar troca, a recusa perde a prova e a
+ * decisão reabre — é o portão de reabertura, não um enfeite).
+ *
  * O critério de escolha é em CASCATA, e a ordem importa mais que os pesos:
  *
  *   1. **maior piso alcançado** — espaçamento é o defeito que originou o projeto, e nenhum ganho de
