@@ -800,3 +800,12 @@ formato de publicação em usabilidade — ou muda na comercialização?
    reescrever: os 3 JSON são o contrato, commits viram tabela de versões).
 
 **Diário:** DB-045 · **Handoff:** [`HANDOFF_2026-08-07.md` §3b](docs/handoff/HANDOFF_2026-08-07.md).
+
+---
+
+## 07/08/2026 · manhã (4) — S-044: a mensagem de divulgação para o grupo de porteiros
+
+Texto do WhatsApp corrigido e formatado; versículo **Salmos 84:10 (ARC — a tradução da CCB)**
+conferido na fonte antes de citar, e não de memória. Correções sobre o rascunho: vigência é HOJE
+(07/08/2026), não "este sábado"; pedido explícito de apagar a escala antiga de agosto. A mensagem é
+comunicação, não produto — registrada no índice (S-044), não no código.
