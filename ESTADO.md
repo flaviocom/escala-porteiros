@@ -164,7 +164,7 @@ tela (usava o guloso; a tela compara 8 versões) e gravava em **uma pasta só**.
 [`docs/RECONSTRUIR.md`](docs/RECONSTRUIR.md): modelo de dados, catálogo de regras (⚙️ **gerado do
 código**, com portão que reprova se divergir), algoritmo, arquitetura (grafo de importações
 **medido**), operação e instalação do zero. O portão `contagem` foi **invertido**: tinha lista fixa
-de 5 documentos e deixava 4 invisíveis; agora descobre e mede **18 documentos**.
+de 5 documentos e deixava 4 invisíveis; agora descobre e mede **19 documentos**.
 
 **7. A finalidade ficou escrita, em três fases** (decisão dele, S-029). **Hoje o produto atende UMA
 congregação, e só ela** — os porteiros da comum do Jd. São Luiz. Outras comuns e a venda são planos

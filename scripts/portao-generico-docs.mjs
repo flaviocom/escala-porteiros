@@ -55,6 +55,7 @@ const INVENTARIO = {
   'docs/PORTOES.md': 3, //            descreve o portão que procura estes três termos
   'ESTADO.md': 1, //                  o escopo da fase corrente: "esta congregação, e só ela"
   'BACKLOG.md': 1, //                 cita o `alt="Logo CCB"` que foi REMOVIDO — registro de defeito fechado
+  'docs/COMUNICACOES.md': 1, //       o modelo de comunicação DESTA instalação: a tradução bíblica (ARC) é a dos impressos oficiais da congregação — decisão S-045, 07/08/2026
 }
 
 console.log('📄 O NOME DO CLIENTE NA DOCUMENTAÇÃO — inventário fechado\n')

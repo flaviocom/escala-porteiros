@@ -1944,3 +1944,33 @@ nada de fora. Trocar agora seria pagar o servidor antes de existir o cliente.
 
 **Como reverter.** Nada a reverter — esta entrada registra decisão e ligações, não muda
 comportamento.
+
+---
+
+## DB-046 · 07/08/2026 — o modelo de comunicação vira documento, e a virada de ano vira runbook
+
+**Os pedidos:** salvar o formato da mensagem de WhatsApp como "a forma de comunicação com os Irmãos
+Porteiros" ligada aos documentos; e provar que a escala é reproduzível para 2027, 2028, 2029 — por
+código E documentação, ao ponto de outra inteligência artificial replicá-la tal e qual.
+
+**1. `docs/COMUNICACOES.md`.** O exemplar canônico é A MENSAGEM COMO ELE ENVIOU — inclusive as duas
+correções dele sobre a minha versão: *"sexta-feira"* (a minha dizia quinta para 07/08/2026, que É
+sexta — e por isso o checklist do modelo agora manda CONFERIR o dia da semana, nunca de cabeça) e
+*"pela misericórdia do Criador"*. A estrutura está explicada bloco a bloco com o porquê de cada um
+— o mais importante é o bloco da REVOGAÇÃO: sem o pedido explícito de apagar a versão velha, duas
+escalas circulam juntas, que é o pior cenário possível. Banco de 5 versículos ARC sobre porteiros
+e a Casa, com a regra de conferir na fonte a cada uso (edição muda vírgula).
+
+**2. A reprodutibilidade plurianual foi MEDIDA antes de afirmada.** 2027, 2028 e 2029, com o elenco
+real e a fronteira real de 2026: ~220 turnos por ano, duas gerações idênticas byte a byte, zero
+falhas nas duas réguas. O código já era plurianual; **o que não existia era a documentação da
+virada** — "virada", "novo ano", "ano seguinte": zero ocorrências em OPERACAO e RECONSTRUIR. O furo
+não era hipotético: um bloco de 2027 já tinha sido gerado SEM Santa Ceia nenhuma (104 domingos
+escalados) e só não foi ao ar porque o dono viu. A seção nova do `OPERACAO.md` põe o calendário do
+ano novo como PRIMEIRO passo, antes de gerar.
+
+**O porquê que interessa:** máquina determinística não garante reprodução se o OPERADOR não souber
+os passos — reprodutibilidade é código E runbook, e a metade que faltava era o runbook.
+
+**Como reverter.** `git revert` do commit desta entrada — nada de comportamento muda; os dois
+documentos somem.

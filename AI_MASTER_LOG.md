@@ -809,3 +809,18 @@ Texto do WhatsApp corrigido e formatado; versículo **Salmos 84:10 (ARC — a tr
 conferido na fonte antes de citar, e não de memória. Correções sobre o rascunho: vigência é HOJE
 (07/08/2026), não "este sábado"; pedido explícito de apagar a escala antiga de agosto. A mensagem é
 comunicação, não produto — registrada no índice (S-044), não no código.
+
+---
+
+## 07/08/2026 · tarde — S-045/S-046: o modelo de comunicação e a prova plurianual
+
+1. **`docs/COMUNICACOES.md`**: a mensagem COMO ELE ENVIOU vira exemplar canônico (com as correções
+   dele registradas — "sexta-feira" e "pela misericórdia"); estrutura bloco a bloco; banco de 5
+   versículos ARC sobre porteiros/a Casa; checklist de envio. Ligado no roteador e no inventário do
+   `generico:docs` (documento de INSTALAÇÃO, decisão registrada).
+2. **Reprodutibilidade 2027–2029: MEDIDA.** Elenco real + fronteira de 2026 → ~220 turnos/ano, duas
+   gerações idênticas byte a byte, 0 falhas nas duas réguas. O furo era o RUNBOOK: nasceu
+   *"A virada de ano"* no `OPERACAO.md` — Santa Ceia do ano novo antes de gerar (a lacuna dos 104
+   domingos), elenco, fronteira automática, divulgação pelo modelo da casa.
+
+**Estado:** gate a rodar · **Diário:** DB-046 · **Solicitações:** S-045, S-046.

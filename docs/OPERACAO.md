@@ -91,6 +91,27 @@ Desde 05/08/2026 esse caminho tem guarda, e ele lê a versão **antes** de grava
 
 ---
 
+### A virada de ano — a escala de 2027, 2028, 2029…
+
+O motor gera qualquer ano **hoje**: medido em 07/08/2026 com o elenco real e a fronteira de 2026,
+os anos 2027, 2028 e 2029 saíram com ~220 turnos cada, determinísticos (duas gerações idênticas
+byte a byte) e aprovados pelas duas réguas. **O que o motor NÃO sabe sozinho é o calendário do ano
+novo** — e é só isso que a virada exige de quem administra:
+
+1. **Cadastrar as Santas Ceias do ano novo ANTES de gerar** (aba Gerar → "Dias de Santa Ceia").
+   ⚠️ É a lacuna que já mordeu: em 06/08/2026 um bloco de 2027 foi gerado sem nenhuma Santa Ceia —
+   **104 domingos com porteiros escalados** num ano em que as Ceias nem estavam marcadas. A tela
+   avisa (*"Nenhuma Santa Ceia cadastrada entre … e …"*) — **leia o aviso**;
+2. Conferir o **elenco** (quem entrou, quem saiu, restrições novas);
+3. Gerar com "De" no primeiro dia após a última escala publicada — a sugestão de "Até" já cobre o
+   ano inteiro; a **fronteira** (espaçamento e cota do mês) com o bloco anterior o sistema carrega
+   sozinho;
+4. Conferir (Validação + Conferir por fora), publicar, e **divulgar pelo modelo da casa**
+   ([`COMUNICACOES.md`](COMUNICACOES.md)) — inclusive o pedido de apagar a escala velha.
+
+Nada disso é código novo: é operação. O que é do código — gerar, validar, publicar, refazer — já é
+plurianual e está provado pelos portões (`refazer` reconstrói o publicado turno a turno).
+
 ## Parte 2 — Como conferir que está certo
 
 ### A validação que os irmãos veem
