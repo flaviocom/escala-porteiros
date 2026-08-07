@@ -40,7 +40,7 @@ próximo leitor não confunda com defeito.
 
 | Período | Documento | Fatia | Resumo |
 |---|---|---|---|
-| — | — | — | *Nenhuma ainda. Os dois documentos vivem na raiz, dentro do teto.* |
+| 06–07/08/2026 | `BACKLOG.md` | [`2026-08_BACKLOG_itens-fechados.md`](2026-08_BACKLOG_itens-fechados.md) | Itens P1.4 a P1.7, todos ✅ com prova: os 7 achados da sétima auditoria · as 3 fronteiras de portão · o botão "Não gostei" · a varredura de variações com as duas réguas cegas para a ausência invertida. Rotacionados quando o BACKLOG estourou 40 KB |
 
 ---
 

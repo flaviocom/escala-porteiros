@@ -824,3 +824,17 @@ comunicação, não produto — registrada no índice (S-044), não no código.
    domingos), elenco, fronteira automática, divulgação pelo modelo da casa.
 
 **Estado:** gate a rodar · **Diário:** DB-046 · **Solicitações:** S-045, S-046.
+
+---
+
+## 07/08/2026 · tarde (2) — S-047: o modelo mental dele, conferido afirmação por afirmação
+
+Ele descreveu como entende o sistema e pediu verificação um a um. **Tudo conferido no código e
+medido num ensaio do cenário exato** (2027 publicado em janeiro; ciência das Ceias em fevereiro;
+recálculo do corte em diante; emenda): trava retroativa barra passado e libera futuro; passado
+preservado byte a byte na emenda (29/29); Ceia em domingo = dia marcado, 0 escalados; Ceia em dia
+SEM culto = inerte (coerente com "feriado"); fronteira atravessa o corte; 0 falhas nas duas réguas.
+Duas observações de produto para decisão dele (P4.z): rótulo "Santa Ceia" cravado (~20 pontos) vs
+conceito genérico "dia sem expediente"; e ceia em dia sem culto passa calada (risco de typo).
+
+**Solicitação:** S-047 · **BACKLOG:** P4.z.
