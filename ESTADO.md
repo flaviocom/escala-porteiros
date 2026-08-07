@@ -23,7 +23,19 @@ conferida.** O nome do cliente saiu do código e virou dado. As duas decisões q
 **foram tomadas pelo Flavio em 05/08** — a data de início (06/08) e o escopo de finalidade (fase 1,
 uso interno). O que falta é só o que depende das credenciais dele.
 
-## O mais recente: "o botão é uma farsa" (06/08, noite)
+## O mais recente: ele publicou, e foi conferido por fora (07/08, madrugada)
+
+O dono publicou pela tela e pediu para conferir. Medido no que o site **serve**, não no que o deploy
+diz: bloco `bloco-2026-08-06-2026-12-31`, **87 turnos, piso 4**, passado intacto byte a byte, 14
+ativos, Eduardo e Thiago com 0 turnos, **17 de 17 regras** no site publicado, e a escala **refazível**
+turno a turno. As **duas** pastas de dados moveram.
+
+🔴 **E o que a pergunta dele não previa:** comparado com a escala que já estava no ar, deu **87
+iguais, 0 mudados**. A única mudança foi a data final do bloco — 30/12 → 31/12, que é quinta-feira,
+sem culto. **O site atualizou e o dia de ninguém mudou** — correto, porque o gerador é determinístico
+e o bloco não traz semente (saiu de um "Gerar escala" limpo, não de um "Não gostei").
+
+## "O botão é uma farsa" (06/08, noite)
 
 > *"Distanciamento por pessoa, mesmo clicando várias vezes, não muda nada. O 'Não gostei — gerar
 > outra combinação' é uma farsa."*

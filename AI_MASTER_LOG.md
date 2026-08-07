@@ -644,3 +644,38 @@ teto desligada, reprova nomeando o Williams. Na árvore limpa, 36 de 36 checagen
 
 **Handoff:** [`HANDOFF_2026-08-06.md`](docs/handoff/HANDOFF_2026-08-06.md) ·
 **Diário:** DB-041.
+
+---
+
+## 07/08/2026 · madrugada — publicação do dono, conferida por fora
+
+**Gatilho.** Ele publicou pela tela e pediu: *"Eu publiquei a nova escala. Veja se atualizou."*
+
+**Medido no que o site SERVE, não no que o deploy diz.** Deploy verde é sobre o artefato; a pergunta
+dele é sobre o dado. Baixei `blocos.json` e `pessoas.json` da URL publicada, com quebra de cache:
+
+| | |
+|---|---|
+| Commits | 4, às 01:07 (elenco + escala, uma dupla por pasta de dados) |
+| Deploy | `success` no último (`b2c6e47`); os intermediários **cancelados** pela concorrência, como projetado |
+| Pastas de dados | as **duas** moveram — `public/dados` e `docs/dados`. Escrever só numa é a falha silenciosa deste projeto |
+| Bloco no ar | `bloco-2026-08-06-2026-12-31` · 87 turnos · piso 4 · sem semente (guloso) |
+| Passado | 96 turnos, **intacto byte a byte** |
+| Elenco | 14 ativos · Eduardo e Thiago com **0 turnos** |
+| Regras no site publicado | **17 de 17** (`vivo:conferir`) |
+| Refazível | ✅ 87 turnos reconstruídos idênticos, turno a turno |
+
+🔴 **O achado que a pergunta dele não previa:** comparado turno a turno com a escala que já estava no
+ar, deu **87 iguais, 0 mudados, 0 dias novos, 0 dias perdidos**. A única mudança foi a data final do
+bloco — 30/12 → 31/12, e 31/12 é quinta-feira, sem culto.
+
+**O site atualizou e o dia de ninguém mudou.** Está correto — o gerador é determinístico, e o bloco
+publicado não traz semente, o que prova que saiu de um "Gerar escala" limpo e não de um "Não gostei".
+Foi dito a ele com essas palavras, porque *"publiquei"* e *"mudou"* não são a mesma coisa, e a
+diferença só aparece quando alguém compara.
+
+⚠️ **E o selo da árvore fez o trabalho dele:** `selo:conferir` reprovou (EXIT=1) antes do gate, porque
+os quatro commits do dono mudaram a árvore sob o selo gravado na sessão anterior. Gate rodado de novo
+sobre a árvore sincronizada: **EXIT_GATE=0**, 32 passos, 367 testes, selo `fbb8747d87fd`.
+
+**Estado:** `EXIT_GATE=0` · 183 turnos no ar · 0 estouros de teto · 14 ativos.
