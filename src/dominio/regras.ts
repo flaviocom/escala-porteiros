@@ -1109,8 +1109,21 @@ export function podeAssumir(
   if (r.tetoMensal != null && contagemNoMes >= r.tetoMensal)
     return { pode: false, motivo: `já atingiu o teto de ${r.tetoMensal} no mês` }
   for (const a of r.ausencias ?? []) {
-    if (diferencaEmDias(a.inicio, turno.data) >= 0 && diferencaEmDias(turno.data, a.fim) >= 0)
-      return { pode: false, motivo: `ausente de ${formatarBR(a.inicio)} a ${formatarBR(a.fim)}` }
+    /*
+      🔴 AUSÊNCIA INVERTIDA (fim < início) NÃO PODE SER IGNORADA — varredura de 07/08/2026.
+
+      A condição original nunca casava com o intervalo invertido, e o efeito era o pior possível:
+      a pessoa cadastrou que estaria fora e **era escalada dentro da própria viagem**, em silêncio.
+      `pessoas.json` é um arquivo que alguém pode editar à mão — foi assim que o `'noite'` minúsculo
+      entrou — e a segunda régua tinha a MESMA cegueira, então as duas aprovariam a violação juntas.
+
+      A leitura segura é a intenção óbvia: uma ausência cobre os dias ENTRE as duas datas, em
+      qualquer ordem. Datas ISO comparam-se como texto, então min/max resolve.
+    */
+    const inicioReal = a.inicio <= a.fim ? a.inicio : a.fim
+    const fimReal = a.inicio <= a.fim ? a.fim : a.inicio
+    if (diferencaEmDias(inicioReal, turno.data) >= 0 && diferencaEmDias(turno.data, fimReal) >= 0)
+      return { pode: false, motivo: `ausente de ${formatarBR(inicioReal)} a ${formatarBR(fimReal)}` }
   }
   return { pode: true }
 }

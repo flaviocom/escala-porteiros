@@ -179,9 +179,19 @@ export function conferirPorFora(
           furos.push(`${l.pessoa.nome} em ${NOMES_DIA[dia]} (${formatarBR(t.data)}), dia vetado para ele`)
         if (r.turnosPermitidos && !r.turnosPermitidos.includes(t.tipo))
           furos.push(`${l.pessoa.nome} no turno ${t.tipo} em ${formatarBR(t.data)}, turno que ele não faz`)
-        for (const a of r.ausencias ?? [])
-          if (diferencaEmDias(a.inicio, t.data) >= 0 && diferencaEmDias(t.data, a.fim) >= 0)
-            furos.push(`${l.pessoa.nome} escalado em ${formatarBR(t.data)}, dentro da ausência de ${formatarBR(a.inicio)} a ${formatarBR(a.fim)}`)
+        for (const a of r.ausencias ?? []) {
+          /*
+            Ausência cobre os dias ENTRE as duas datas, em qualquer ordem — um intervalo invertido
+            (fim < início) é dado torto, não permissão. A condição original nunca casava com o
+            invertido, e o gerador tinha a MESMA cegueira: as duas réguas aprovavam juntas alguém
+            escalado dentro da própria viagem. Normalização própria, de propósito — copiar a função
+            da outra régua traria o defeito dela junto.
+          */
+          const ini = a.inicio <= a.fim ? a.inicio : a.fim
+          const fim = a.inicio <= a.fim ? a.fim : a.inicio
+          if (t.data >= ini && t.data <= fim)
+            furos.push(`${l.pessoa.nome} escalado em ${formatarBR(t.data)}, dentro da ausência de ${formatarBR(ini)} a ${formatarBR(fim)}`)
+        }
       }
     }
     registrar('Dias, turnos e ausências de cada pessoa são respeitados', furos,

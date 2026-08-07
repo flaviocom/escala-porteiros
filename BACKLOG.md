@@ -126,6 +126,33 @@ arquivo, nunca a mensagem do script.**
 
 ---
 
+### P1.7 ✅ Varredura de TODAS as variações de campos + auditoria das duas réguas — 07/08/2026 🤖
+Pedido do dono: *"Corrija o motor que gera a escala com todas as variações de campos. Valide,
+corrija e audite também o Validador independente."* Pesquisa delegada ao Gemini
+([registro auditado](docs/superpowers/specs/PESQUISA_2026-08-07-metodos-rostering.md)) + varredura
+matricial + 150 elencos forjados por semente. **Três defeitos reais achados e corrigidos**, cada um
+provado com mutante nas duas pontas:
+
+- 🔴 **ausência INVERTIDA (fim < início) era ignorada em silêncio — pelas DUAS réguas.** A pessoa
+  era escalada dentro da própria viagem, e gerador e conferência cegavam juntos (a classe exata de
+  "erro igual dos dois lados sai como conferido"). Agora o intervalo torto vale como ausência, com
+  normalização INDEPENDENTE em cada régua;
+- 🔴 **grade vazia saía como sucesso**: período invertido ou sem dia de culto devolvia `ok: true`
+  com escala vazia — meia escala com cara de sucesso. Agora declara a falha, nomeando o motivo;
+- 🔴 **a 2ª régua podia parar de conferir `diasProibidos` e `turnosPermitidos`** e as 28 verdes dela
+  continuavam verdes — promessa com teste não é campo com teste. Infratores injetados fecham os dois.
+
+**Busca local pós-GRASP: medida e RECUSADA** — 0 trocas melhoradoras nos dados reais (ótimo local;
+Jain 0,9965 é o máximo aritmético). Re-rodar o experimento se elenco/malha mudarem de forma.
+
+### P4.x 💡 Oportunidades de produto apontadas pela pesquisa (decisão do dono)
+A pesquisa de 07/08 (§4) lista variações que sistemas maduros suportam e este produto não tem —
+fronteira de escopo declarada, não defeito: **pares proibidos/preferidos** (cônjuges que não servem
+juntos, ou só servem juntos — carona), **alocação fixa por data** ("fulano sempre no 1º domingo").
+Ambas pedem decisão de produto antes de qualquer código.
+
+---
+
 ## P2 — Método e infraestrutura 🔵
 
 | # | Item | Estado |

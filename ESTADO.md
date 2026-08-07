@@ -147,7 +147,7 @@ tela (usava o guloso; a tela compara 8 versões) e gravava em **uma pasta só**.
 [`docs/RECONSTRUIR.md`](docs/RECONSTRUIR.md): modelo de dados, catálogo de regras (⚙️ **gerado do
 código**, com portão que reprova se divergir), algoritmo, arquitetura (grafo de importações
 **medido**), operação e instalação do zero. O portão `contagem` foi **invertido**: tinha lista fixa
-de 5 documentos e deixava 4 invisíveis; agora descobre e mede **17 documentos**.
+de 5 documentos e deixava 4 invisíveis; agora descobre e mede **18 documentos**.
 
 **7. A finalidade ficou escrita, em três fases** (decisão dele, S-029). **Hoje o produto atende UMA
 congregação, e só ela** — os porteiros da comum do Jd. São Luiz. Outras comuns e a venda são planos
@@ -245,7 +245,7 @@ relatou: *"Piso alcançado: 6 dias. Tentei 9, 8, 7 — não foi possível cobrir
 | Quarta → sábado | 6 casos | **0** |
 | Santa Ceia | 07/06 errada; 16/08 com 6 escalados | **16/08 correta, 0 escalados** |
 | Validação | 6 regras, nenhuma de espaçamento ou capacidade | **16 de 16** (eram 15 em 04/08; D11 nasceu em 05/08) |
-| Testes | nenhum | **367** hoje (eram 71 em 04/08), verdes em 2 fusos |
+| Testes | nenhum | **393** hoje (eram 71 em 04/08), verdes em 2 fusos |
 | Equilíbrio | — | 16–17 turnos, diferença de **1** |
 
 **A área administrativa está no ar**: elenco com X para tirar e + para acrescentar, as quatro

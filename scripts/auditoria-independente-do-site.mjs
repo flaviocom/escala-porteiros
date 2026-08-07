@@ -134,7 +134,16 @@ if (AUTOTESTE) {
   dist.get(vitima).tipo.NOITE += 1
   const primeiroMes = meses0(turnos)[0]
   dist.get(vitima).mes[primeiroMes] = (dist.get(vitima).mes[primeiroMes] ?? 0) + 1
-  console.log(`\n  🧪 AUTOTESTE LIGADO — ${nomeDe.get(vitima)} recebeu 1 turno inventado NA AUDITORIA.`)
+  /*
+    ⚠️ E o DISTANCIAMENTO também mente — auditoria do auditor, 07/08/2026. A primeira versão do
+    autoteste só distorcia a distribuição; o confronto de "mín. N dias" nunca teve prova de mordida.
+    Um confronto sem prova de mordida é exatamente o que este autoteste existe para não permitir:
+    encolher o mínimo medido para 1 obriga a tela (que mostra o real, maior) a divergir — e o
+    auditor TEM de acusar essa linha também.
+  */
+  const d = distancia.get(vitima)
+  if (d?.menor != null && d.menor > 1) distancia.set(vitima, { ...d, menor: 1 })
+  console.log(`\n  🧪 AUTOTESTE LIGADO — ${nomeDe.get(vitima)} recebeu 1 turno inventado e mínimo encolhido para 1, NA AUDITORIA.`)
   console.log('     O dado do site está intocado. O relatório TEM de acusar; verde aqui é defeito do auditor.\n')
 }
 
@@ -208,15 +217,110 @@ for (const l of linhas.filter((l) => l.teto != null)) {
 }
 
 /*
-  ── O CONFRONTO COM A TELA ────────────────────────────────────────────────────────────────────────
-  Aqui a auditoria deixa de falar sozinha. Abre o site publicado, gera o MESMO período na área
-  administrativa (o gerador é determinístico: o `refazer` já provou que reconstrói o publicado turno
-  a turno) e lê os dois cartões — os mesmos que o dono olha.
+  ── CONFRONTO 1 · A TELA PÚBLICA DE ESTATÍSTICAS — roda SEMPRE ────────────────────────────────────
+
+  🔴 Por que ela é o alvo principal, e não a área administrativa — 07/08/2026. A primeira versão
+  deste confronto gerava o período `--de … --ate` na aba Gerar do admin. Funcionou no dia da
+  publicação e QUEBROU no dia seguinte: a tela recusa geração retroativa (regra fixa do produto), e
+  um período que ontem começava "hoje" passou a começar "ontem". **Auditor que só funciona no dia da
+  publicação é auditor de um dia só** — e o defeito era meu, não da tela.
+
+  A tela pública de Estatísticas descreve a ESCALA PUBLICADA INTEIRA, sem depender de gerar nada —
+  está disponível todo dia, para qualquer visitante, e é exatamente "o apresentado no site". A
+  recontagem dela aqui é feita à parte, sobre TODOS os turnos publicados (todos os blocos), porque é
+  isso que a tabela declara contar.
 */
-console.log('\n── CONFRONTO COM O QUE A TELA MOSTRA ──────────────────────────────────────────────\n')
+console.log('\n── CONFRONTO 1 · TELA PÚBLICA DE ESTATÍSTICAS (a escala publicada inteira) ────────\n')
+const todosOsTurnos = blocos.blocos.flatMap((b) => b.turnos)
+const distTudo = new Map()
+for (const t of todosOsTurnos) {
+  for (const id of t.pessoas) {
+    if (!distTudo.has(id)) distTudo.set(id, { total: 0, mes: {} })
+    const d = distTudo.get(id)
+    d.total++
+    d.mes[t.data.slice(0, 7)] = (d.mes[t.data.slice(0, 7)] ?? 0) + 1
+  }
+}
+if (AUTOTESTE) {
+  // A mesma mentira, na recontagem da escala inteira — o confronto público também tem de morder.
+  const vitima = [...distTudo.keys()][0]
+  distTudo.get(vitima).total += 1
+  const m1 = Object.keys(distTudo.get(vitima).mes).sort()[0]
+  distTudo.get(vitima).mes[m1] += 1
+}
+
 const nav = await chromium.launch()
 try {
   const p = await nav.newPage({ viewport: { width: 1500, height: 1600 } })
+  await p.goto(SITE, { waitUntil: 'networkidle', timeout: 60_000 })
+  await p.waitForTimeout(1500)
+  await p.getByRole('button', { name: /Estatísticas/i }).first().click()
+  await p.waitForTimeout(1200)
+
+  const tabela = await p.evaluate(() => {
+    const t = document.querySelector('table')
+    if (!t) return null
+    const cab = [...t.querySelectorAll('thead th')].map((th) => th.textContent.trim())
+    const corpo = [...t.querySelectorAll('tbody tr')].map((tr) =>
+      [...tr.children].map((td) => td.textContent.replace(/\s+/g, ' ').trim()))
+    return { cab, corpo }
+  })
+  if (!tabela || tabela.corpo.length === 0) {
+    acusar({ o: '🔴 a tabela de Estatísticas não foi encontrada na tela pública — confronto vazio não é acordo' })
+  } else {
+    console.log(`  linhas lidas da tabela pública ... ${tabela.corpo.length} · colunas: ${tabela.cab.join(' ')}`)
+    const MES_DE = { Mar: '03', Abr: '04', Mai: '05', Jun: '06', Jul: '07', Ago: '08', Set: '09', Out: '10', Nov: '11', Dez: '12', Jan: '01', Fev: '02' }
+    const anoDe = (rot) => {
+      // O cabeçalho traz "Ago/26" ou "Ago"; sem ano, vale o ano dos turnos publicados naquele mês.
+      const m = rot.match(/^([A-Za-zç]{3})[./]?(\d{2})?$/)
+      if (!m || !MES_DE[m[1]]) return null
+      if (m[2]) return `20${m[2]}-${MES_DE[m[1]]}`
+      const candidato = [...new Set(todosOsTurnos.map((t) => t.data.slice(0, 7)))].find((x) => x.slice(5) === MES_DE[m[1]])
+      return candidato ?? null
+    }
+    const nomesNaTela = new Set()
+    for (const tr of tabela.corpo) {
+      /*
+        ⚠️ A célula do nome pode vir com o selo "saiu" COLADO ("Eduardosaiu") — o badge é um
+        elemento irmão e o textContent não põe espaço. Mesma classe do "Adilson19 turnos" do
+        confronto do admin. A regra certa não é regex sobre o texto: é casar contra o CADASTRO —
+        o nome da tela ou é um nome publicado, ou é um nome publicado + "saiu", ou é furo.
+      */
+      const cru = tr[0]
+      const idDaPessoa = [...nomeDe.entries()].find(([, n]) => cru === n || cru === `${n}saiu` || cru === `${n} saiu`)?.[0]
+      const nome = idDaPessoa ? nomeDe.get(idDaPessoa) : cru
+      nomesNaTela.add(nome)
+      if (!idDaPessoa) { acusar({ o: `🔴 a tabela pública mostra "${cru}" e o cadastro publicado não tem esse nome` }); continue }
+      const meu = distTudo.get(idDaPessoa) ?? { total: 0, mes: {} }
+      if (Number(tr[1]) !== meu.total) acusar({ o: `🔴 TOTAL público diverge — ${nome}`, tela: tr[1], auditoria: meu.total })
+      tabela.cab.slice(2).forEach((rot, i) => {
+        const chave = anoDe(rot)
+        if (!chave) return
+        const valorTela = tr[i + 2] === '-' || tr[i + 2] === '' ? 0 : Number(tr[i + 2])
+        const meuValor = meu.mes[chave] ?? 0
+        if (valorTela !== meuValor) acusar({ o: `🔴 ${nome} · ${rot} (público)`, tela: valorTela, auditoria: meuValor })
+      })
+    }
+    // E a população: quem tem turno publicado tem de estar na tabela — sumir é o furo mais grave.
+    for (const [id, d] of distTudo) {
+      if (d.total > 0 && !nomesNaTela.has(nomeDe.get(id) ?? id))
+        acusar({ o: `🔴 ${nomeDe.get(id) ?? id} tem ${d.total} turno(s) publicados e NÃO aparece na tabela pública` })
+    }
+  }
+
+  /*
+    ── CONFRONTO 2 · A ÁREA ADMINISTRATIVA — só quando o período NÃO é retroativo ──────────────────
+    A aba Gerar recusa data no passado (regra do produto). Quando `--de` já ficou para trás, este
+    confronto é IMPOSSÍVEL de fazer honestamente — e isenção calada é buraco, então ela sai NOMEADA
+    no relatório em vez de fingir que mediu.
+  */
+  const hoje = new Date().toLocaleDateString('sv-SE', { timeZone: 'America/Sao_Paulo' })
+  if (DE < hoje) {
+    console.log('\n── CONFRONTO 2 · ÁREA ADMINISTRATIVA — PULADO, e declarado ────────────────────────\n')
+    console.log(`  o período começa em ${DE} e hoje é ${hoje}: a tela recusa geração retroativa (regra do produto).`)
+    console.log('  O distanciamento por pessoa foi recontado acima só por esta régua, sem confronto de tela.')
+  } else {
+  console.log('\n── CONFRONTO 2 · ÁREA ADMINISTRATIVA (distanciamento e distribuição) ──────────────\n')
   await p.goto(SITE + '#/admin', { waitUntil: 'networkidle', timeout: 60_000 })
   await p.waitForTimeout(1500)
   await p.getByRole('button', { name: /Entrar agora/i }).first().click()
@@ -309,6 +413,7 @@ try {
       acusar({ o: '🔴 a linha de equilíbrio da tela diverge', tela: nums.join('/'), auditoria: `${menorTotal}/${maiorTotal}` })
     }
   }
+  } // fim do confronto 2 (condicional ao período não ser retroativo)
 } finally {
   await nav.close()
 }

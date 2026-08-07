@@ -220,7 +220,7 @@ pulada na contagem, com o motivo escrito no código.
 anúncio apagada — e aprova a árvore limpa.
 
 ### 13. `generico` — nenhum nome de cliente cravado (§0)
-**População:** 32 arquivos (`src/` + `index.html` + `package.json` + `README.md`) · **22 testes pulados**, contados
+**População:** 32 arquivos (`src/` + `index.html` + `package.json` + `README.md`) · **23 testes pulados**, contados
 e impressos.
 **Os 8 termos:** `JD. São Luiz` · `Congregação Cristã` · `CCB` (com borda por classe de caracteres,
 sem barra invertida) · `Escala (de) Porteiros` · o prompt do motor cravado · `porteiro(s)` como
@@ -309,7 +309,7 @@ o motivo certo; árvore limpa → EXIT=0.
 regra sem regenerar → vermelho.
 
 ### 18. `doc:comandos` — todo comando citado existe
-**População:** os 17 documentos vivos · isentos os append-only.
+**População:** os 18 documentos vivos · isentos os append-only.
 **Critério:** todo `npm run <nome>` está no `package.json`; todo `node scripts/<arquivo>` existe em
 disco. **Achou defeito na primeira execução:** `npm run tempo`, citado na documentação, não existia.
 

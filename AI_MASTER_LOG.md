@@ -725,3 +725,37 @@ Ele fica **fora de todo disparador**: existe para sair vermelho, e um passo que 
 dentro de um conjunto que soma reprovações faria alguém desligar o auditor inteiro.
 
 **Estado:** `EXIT_GATE=0` em **32 passos** · 367 testes · selo `03c8bf4dbb5f` · `vivo:no-ar` 4/4.
+
+---
+
+## 07/08/2026 · manhã — pesquisa mundial de métodos + varredura de variações + auditoria das réguas
+
+**Solicitação (S-041):** *"Corrija tudo autonomamente, pesquise na Internet toda por sistemas
+semelhantes. Qual é o método que usam e qual é o mais inteligente? Corrija o motor que gera a escala
+com todas as variações de campos. Valide, corrija e audite também o Validador independente."*
+
+**Ordem executada: pesquisa (delegada ao Gemini) → registro auditado → decisão → correção → prova.**
+
+1. **Pesquisa** em `docs/superpowers/specs/PESQUISA_2026-08-07-metodos-rostering.md`, com a
+   auditoria PREPENDADA (inclusive um erro do relatório: assumiu teto mensal para os 14; só 1 tem).
+   Veredito: **manter GRASP** — CP-SAT/WASM no navegador é custo sem ganho nesta escala.
+2. **Busca local pós-GRASP (recomendação central): medida e RECUSADA.** Experimento nos dados reais:
+   0 trocas melhoradoras em dois critérios — a escala já é ótimo local; Jain 0,9965 é o máximo
+   aritmético (258 ∤ 14). Método mais inteligente é o que ganha na medição, não o de nome bonito.
+3. **Três defeitos reais, corrigidos com mutante nas duas pontas:**
+   - 🔴 ausência INVERTIDA ignorada em silêncio **pelas duas réguas** — pessoa escalada dentro da
+     própria viagem com tudo verde. Normalização independente em cada régua;
+   - 🔴 grade vazia saía `ok: true` (período invertido/sem culto) — agora declara a falha;
+   - 🔴 2ª régua sem infrator de `diasProibidos`/`turnosPermitidos` — `if (false)` nos dois e as 28
+     verdes dela continuavam verdes. Promessa com teste ≠ campo com teste.
+4. **Varredura matricial** (`variacoes.test.ts`): 5 campos sozinhos + combinações + estrutura +
+   caminho da tela, e **150 elencos forjados por PRNG semeado** (PBT da pesquisa §6, sem dependência;
+   metade das ausências invertida de propósito). Mordida provada: 4 mutantes de campo derrubam 3–7
+   testes cada; o de teto derruba o forjado nomeando a semente e a regra.
+5. **Auditor do site redesenhado**: quebrou no dia seguinte à publicação (gerava período retroativo,
+   que a tela recusa — auditor de um dia só). Confronto 1 = tela pública de Estatísticas, SEMPRE
+   (16 linhas × 10 meses, 0 divergências); confronto 2 = admin, pulado-e-DECLARADO quando
+   retroativo. Autoteste ampliado (distância também mente) e leitor consertado de novo
+   ("Eduardosaiu" — selo colado ao nome; casar contra o CADASTRO, não regex).
+
+**Estado:** 393 testes (354→393) · typecheck limpo · gate a rodar antes do commit.

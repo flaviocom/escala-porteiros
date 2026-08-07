@@ -1833,3 +1833,44 @@ inventado **na auditoria** e exige acusação, saiu com 5 divergências nomeando
 
 **Como reverter.** `git revert` do commit desta entrada remove o script de auditoria; nada do produto
 depende dele.
+
+---
+
+## DB-043 · 07/08/2026 — as duas réguas cegas para o MESMO dado torto
+
+**O pedido:** *"Corrija tudo autonomamente, pesquise na Internet toda por sistemas semelhantes. Qual
+é o método que usam e qual é o mais inteligente? Corrija o motor que gera a escala com todas as
+variações de campos. Valide, corrija e audite também o Validador independente das escalas."*
+
+**A ordem foi a do protocolo: pesquisa → registro → decisão.** A pesquisa foi delegada ao Gemini e
+auditada antes de qualquer adoção (o registro com a auditoria em cima está em
+`docs/superpowers/specs/PESQUISA_2026-08-07-metodos-rostering.md` — inclusive um erro do relatório:
+ele assumiu teto mensal para os 14, quando só 1 pessoa tem).
+
+**O achado que interessa: a ausência invertida.** `fim < início` no cadastro fazia a condição de
+ausência nunca casar — no gerador **e** na conferência independente, que tem código próprio mas
+reproduzia a mesma leitura. A pessoa avisava que estaria fora e era escalada dentro da própria
+viagem, com as duas réguas verdes. É a forma mais pura do defeito que a segunda régua existe para
+impedir: **duas réguas independentes não valem nada se interpretam o dado torto do mesmo jeito.** A
+correção foi normalizar em cada uma SEPARADAMENTE (código próprio, de propósito) — e o teste da
+mordida derruba cada lado sozinho.
+
+**Os outros dois:** grade vazia saía como sucesso (período invertido/sem culto → `ok: true` com
+escala vazia — agora declara a falha); e a 2ª régua podia parar de conferir `diasProibidos` e
+`turnosPermitidos` com a suíte dela inteira verde — a promessa tinha teste, os CAMPOS não.
+
+**A decisão negativa, que vale tanto quanto as positivas.** A recomendação central da pesquisa
+(busca local pós-GRASP, padrão INRC) foi **medida antes de adotada**: experimento sobre os dados
+reais publicados, dois critérios de aceitação, **0 trocas melhoradoras** — a escala do GRASP já é
+ótimo local, e Jain 0,9965 é o máximo que a aritmética permite (258 vagas não dividem por 14).
+Adotar custaria versionamento de motor no `refazer` em troca de nada. **Método mais inteligente não
+é o de nome mais bonito: é o que ganha na medição.** O experimento fica registrado para re-rodar se
+o elenco ou a malha mudarem de forma.
+
+**O que entrou de método:** property-based testing (§6 da pesquisa), em forma sem dependência — 150
+elencos forjados por PRNG semeado, metade das ausências invertida de propósito, contrato inteiro
+(gerar → 1ª régua → 2ª régua) em cada um. Mordida provada: o mutante de teto derruba nomeando a
+semente e a regra.
+
+**Como reverter.** `git revert` do commit desta entrada. As correções de ausência/grade vazia são
+comportamento novo do motor; revertê-las devolve os dois silêncios.

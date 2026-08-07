@@ -303,6 +303,28 @@ function tentarComPiso(
  * Gera a escala, descobrindo o maior piso de distanciamento que cabe.
  */
 export function gerar(op: OpcoesGeracao): Resultado {
+  /*
+    🔴 GRADE VAZIA NÃO É SUCESSO — varredura de 07/08/2026.
+
+    Período invertido (fim < início) e período sem nenhum dia de culto produziam uma grade vazia, e
+    o laço abaixo "preenchia" zero turnos com zero falhas: `ok: true` com uma escala vazia. É a
+    definição literal de meia escala com cara de sucesso — o contrato deste gerador é gerar por
+    inteiro OU dizer que não deu.
+
+    A tela já recusava esses períodos antes de chamar; o guarda aqui protege quem chama por script,
+    que é exatamente por onde os dados entram sem a tela no meio.
+  */
+  if (op.grade.length === 0) {
+    return {
+      ok: false,
+      motivo: op.fim < op.inicio
+        ? `O período está invertido: começa em ${formatarBR(op.inicio)} e termina em ${formatarBR(op.fim)}.`
+        : `Não há nenhum dia de culto entre ${formatarBR(op.inicio)} e ${formatarBR(op.fim)} — não existe turno a escalar.`,
+      pisosTentados: [],
+      candidatosBarrados: [],
+    }
+  }
+
   const teto = op.pisoMaximo ?? pisoTeorico(op.grade, op.elenco.length, op.inicio, op.fim)
   const tentados: number[] = []
   let ultimaFalha: Extract<ReturnType<typeof tentarComPiso>, { ok: false }> | null = null

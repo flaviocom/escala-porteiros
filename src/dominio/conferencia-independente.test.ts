@@ -119,6 +119,26 @@ describe('a segunda régua acha o furo sozinha', () => {
     expect(furosDe(r)).toContain('fora dos dias que pode')
   })
 
+  /*
+    🔴 OS DOIS INFRATORES QUE NUNCA TINHAM SIDO INJETADOS — auditoria da régua, 07/08/2026.
+
+    A promessa "Dias, turnos e ausências" confere QUATRO campos, e só dois tinham teste com
+    infrator. Medido com mutante: a régua podia parar de conferir `diasProibidos` e
+    `turnosPermitidos` — `if (false)` no lugar da condição — e **as 28 verdes continuavam verdes**.
+    Promessa com teste não é o mesmo que campo com teste: o portão media menos do que dizia.
+  */
+  it('🔴 escalado em dia VETADO para ele (diasProibidos)', () => {
+    const semQuarta = [pessoa('ana', { restricoes: { diasProibidos: [3] } }), pessoa('bia'), pessoa('caio')]
+    const r = conferirPorFora(bloco([turno('2026-09-02', 'NOITE', ['ana', 'bia', 'caio'])], IDS), semQuarta, CONFIG)
+    expect(furosDe(r)).toContain('dia vetado')
+  })
+
+  it('🔴 escalado em TURNO que ele não faz (turnosPermitidos)', () => {
+    const soNoite = [pessoa('ana', { restricoes: { turnosPermitidos: ['NOITE'] } }), pessoa('bia'), pessoa('caio')]
+    const r = conferirPorFora(bloco([turno('2026-09-06', 'MANHA', ['ana', 'bia', 'caio'])], IDS), soNoite, CONFIG)
+    expect(furosDe(r)).toContain('turno que ele não faz')
+  })
+
   it('escalado durante a própria ausência', () => {
     const deFerias = [pessoa('ana', { restricoes: { ausencias: [{ inicio: '2026-09-01', fim: '2026-09-30' }] } }), pessoa('bia'), pessoa('caio')]
     const r = conferirPorFora(bloco([turno('2026-09-06', 'NOITE', ['ana', 'bia', 'caio'])], IDS), deFerias, CONFIG)
