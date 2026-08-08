@@ -4,7 +4,7 @@
 > como reverter.** Documento **append-only**, fatiado por período ao estourar o teto. **Nada é
 > excluído, nunca.**
 >
-> **Cadeia de navegação:** [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-07.md) → [`BACKLOG.md`](BACKLOG.md)
+> **Cadeia de navegação:** [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-08.md) → [`BACKLOG.md`](BACKLOG.md)
 > **Roteador:** [`AGENTS.md`](AGENTS.md) ·
 > **Solicitações:** [`docs/solicitacoes/INDICE_DE_SOLICITACOES.md`](docs/solicitacoes/INDICE_DE_SOLICITACOES.md) ·
 > **Histórico:** [`docs/historico/INDICE.md`](docs/historico/INDICE.md)
@@ -1375,3 +1375,41 @@ pode dar.
 
 **Como reverter.** Apagar o cron e a pasta na VPS (ou criar o arquivo STOP, que desliga sem
 desinstalar); `git revert` do commit desta entrada remove o espelho e o runbook.
+
+---
+
+## DB-049 · 08/08/2026 — a mudança de máquina pôs as réguas no banco dos réus, e quatro confessaram
+
+**O pedido:** S-053 — *"Vamos trabalhá-las uma a uma, autonomamente, até o fim. No nosso padrão
+ouro, Go."*
+
+**O que a mudança de máquina revelou.** O gate sempre rodou na máquina de origem, e lá está verde.
+Rodado num contêiner Linux mais lento, **sete validações ao vivo reprovaram — e nenhuma era defeito
+do produto**. Eram as réguas, em quatro formas:
+
+1. **Corrida de largada** (P2.16): `subirServidor` devolvia sem esperar a porta abrir. Na origem o
+   vite ganhava a corrida sempre; aqui, `vivo:abas` e `vivo:caminho` levavam `ERR_CONNECTION_REFUSED`
+   sobre um produto certo. A espera existia — copiada em parte dos consumidores. Desceu para a
+   fonte única, com teto, acusação de servidor morto e derrubada no estouro.
+2. **Órfão sem rede de segurança** (P2.16): a limpeza de emergência só existia para Windows — um
+   vite órfão foi encontrado VIVO neste contêiner, prova de que a lacuna não era teórica. E o
+   `vivo:seletor` nem usava a fonte única: nascera com o `spawn('npx'…, shell: true)` que o
+   cabeçalho dela existe para denunciar. Migrado.
+3. **Espera que confunde "estabilizou" com "acabou"** (P2.17): ~3,6 s para downloads múltiplos;
+   máquina lenta = `0 arquivo(s)` com o produto certo. Agora espera-se o número PROMETIDO pelo
+   botão, mantendo a sobra que flagra um arquivo a mais.
+4. **Grupo LOCAL abrindo a URL PUBLICADA** (P2.18): `vivo:admin`, `vivo:celular` e
+   `vivo:acessibilidade` mediam, dentro do gate, a árvore que JÁ ESTÁ no ar — "verde de outra
+   árvore" por construção, e zero cobertura onde a rede é fechada. Os três agora servem o build
+   local; a URL por argumento continua valendo para o pós-push.
+
+**E a régua de foco acusou 19 inocentes** (P2.19): `outline: auto` É o anel do navegador, mas este
+build do Chromium computa a largura dele como `0px`, e a fórmula exigia largura > 0. A prova veio
+por PIXEL antes da correção: a captura do botão focado mostra o anel pintado. Depois: 47 de 47.
+
+**O porquê que interessa:** régua que só roda numa máquina não mede o produto — mede a máquina.
+Foi preciso mudar de máquina para as quatro confessarem, e é exatamente por isso que a
+portabilidade (S-046) é regra padrão-ouro: cada ambiente novo é uma auditoria de graça.
+
+**Como reverter.** `git revert` do commit desta entrada — os scripts voltam a depender da corrida
+e da URL publicada; nenhum comportamento de produto muda.

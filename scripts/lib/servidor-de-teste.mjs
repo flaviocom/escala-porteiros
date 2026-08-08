@@ -35,7 +35,7 @@
  * Um portão que não consegue garantir contra o que mede tem de reprovar, nunca seguir no escuro.
  */
 import { spawn, spawnSync } from 'node:child_process'
-import { createServer } from 'node:net'
+import { connect, createServer } from 'node:net'
 import { existsSync } from 'node:fs'
 import { join } from 'node:path'
 
@@ -46,6 +46,15 @@ export function portaLivre(porta) {
     s.once('error', () => resolve(false))
     s.once('listening', () => s.close(() => resolve(true)))
     s.listen(porta, '127.0.0.1')
+  })
+}
+
+/** A porta está respondendo? Resolve `true` se alguém ACEITA conexão nela agora — o inverso de `portaLivre`. */
+function portaRespondendo(porta) {
+  return new Promise((resolve) => {
+    const s = connect({ port: porta, host: '127.0.0.1' })
+    s.once('connect', () => { s.destroy(); resolve(true) })
+    s.once('error', () => resolve(false))
   })
 }
 
@@ -107,11 +116,34 @@ export async function subirServidor({ raiz, porta, modo = 'dev' }) {
   }
 
   // Rede de segurança: se o script estourar sem passar pelo `finally`, ainda assim não deixamos lixo.
+  // 🔴 Medido em 08/08/2026, num contêiner Linux: ela só existia para Windows — um script que
+  // estourava antes do `finally` deixava o vite ÓRFÃO segurando a porta, exatamente a classe de
+  // defeito que o cabeçalho deste arquivo conta. Agora vale nas duas famílias de sistema.
   process.once('exit', () => {
-    if (!derrubado && process.platform === 'win32' && servidor.pid) {
+    if (derrubado || !servidor.pid) return
+    if (process.platform === 'win32') {
       spawnSync('taskkill', ['/F', '/T', '/PID', String(servidor.pid)], { stdio: 'ignore' })
+    } else {
+      try { servidor.kill('SIGKILL') } catch { /* já morreu — era o que se queria */ }
     }
   })
+
+  // 🔴 Devolver antes de a porta ABRIR era corrida de largada (P2.16, 08/08/2026): na máquina de
+  // origem o vite ganhava sempre; num contêiner mais lento, o primeiro `goto` do consumidor levava
+  // `ERR_CONNECTION_REFUSED` e o script acusava um produto certo. A espera morava COPIADA em parte
+  // dos consumidores — agora mora aqui, na fonte única, ao lado da recusa de porta ocupada.
+  const PRAZO_MS = 30_000
+  const inicio = Date.now()
+  while (!(await portaRespondendo(porta))) {
+    if (servidor.exitCode !== null) {
+      throw new Error(`o servidor morreu antes de abrir a porta ${porta} (código ${servidor.exitCode}).`)
+    }
+    if (Date.now() - inicio > PRAZO_MS) {
+      await derrubar()
+      throw new Error(`o servidor não abriu a porta ${porta} em ${PRAZO_MS / 1000} s.`)
+    }
+    await new Promise((r) => setTimeout(r, 150))
+  }
 
   return { url: `http://127.0.0.1:${porta}/`, derrubar, pid: servidor.pid }
 }
