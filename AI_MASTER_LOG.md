@@ -4,7 +4,7 @@
 > O **porquê** de cada decisão vive no [`DIARIO_DE_BORDO.md`](DIARIO_DE_BORDO.md); aqui fica o
 > registro do que foi feito, passo a passo.
 >
-> **Cadeia de navegação:** [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-07.md) → [`BACKLOG.md`](BACKLOG.md)
+> **Cadeia de navegação:** [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-08.md) → [`BACKLOG.md`](BACKLOG.md)
 > **Roteador:** [`AGENTS.md`](AGENTS.md) ·
 > **Solicitações:** [`docs/solicitacoes/INDICE_DE_SOLICITACOES.md`](docs/solicitacoes/INDICE_DE_SOLICITACOES.md) ·
 > **Fatias arquivadas:** [`docs/historico/INDICE.md`](docs/historico/INDICE.md)
@@ -904,3 +904,16 @@ do lockfile) foi REVERTIDO, não commitado — mudança acidental não entra na 
 
 ⚠️ A chave `claude-escala-lembrete` perdeu o par privado junto com o contêiner antigo — o runbook
 ganhou o aviso; chave nova nasce no "go". **Solicitação:** S-052.
+
+---
+
+## 08/08/2026 — S-053: "Go" — as réguas corrigidas até o gate fechar verde na máquina nova
+
+O "go" mandou trabalhar as pendências uma a uma, autonomamente, no padrão-ouro. A fila autônoma
+era o próprio achado da manhã: P2.16 (espera do servidor na fonte única + rede de segurança POSIX +
+migração do `vivo:seletor`, que nem usava a fonte), P2.17 (espera pelo número prometido, não por
+"estabilizou"), P2.18 (os três scripts do grupo LOCAL passam a medir o build local, não a URL
+publicada) e P2.19, descoberto no caminho (a régua de foco reprovava o anel `outline: auto` do
+navegador; prova por pixel antes da correção). Depois das correções: `vivo:tudo --local` com as 15
+validações verdes neste contêiner — incluindo as 7 que reprovavam. Registro: DB-049, S-053,
+handoff de 08/08. **Solicitação:** S-053.

@@ -8,11 +8,21 @@
  * O que se afere aqui é o que só o navegador prova: se a página **rola de lado** (o pior defeito de
  * mobile), se os botões têm alvo de toque suficiente, e se os campos não estouram a largura.
  *
+ * 🔴 P2.18 (08/08/2026): grupo LOCAL do `vivo:tudo` medindo a URL PUBLICADA era "verde de outra
+ * árvore" dentro do gate — e não rodava onde a rede é fechada. O padrão agora é o build local;
+ * a URL por argumento continua valendo para medir o site no ar.
+ *
  * Uso: node scripts/validar-celular.mjs [url]
  */
 import { chromium, devices } from 'playwright'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { subirServidor } from './lib/servidor-de-teste.mjs'
 
-const BASE = process.argv[2] ?? 'https://flaviocom.github.io/escala-porteiros/'
+const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..')
+const PORTA = 4303
+const servidor = process.argv[2] ? null : await subirServidor({ raiz: RAIZ, porta: PORTA, modo: 'preview' })
+const BASE = process.argv[2] ?? servidor.url
 const APARELHO = devices['iPhone 13']
 
 const navegador = await chromium.launch()
@@ -173,6 +183,7 @@ console.log(relevantes.length ? relevantes.slice(0, 6).map((e) => '  🔴 ' + e)
 
 await pagina.screenshot({ path: 'capturas/ao-vivo-celular.png' })
 await navegador.close()
+await servidor?.derrubar()
 
 const falhou = checagens.some((c) => !c.ok) || relevantes.length > 0
 console.log(falhou ? '\n🔴 REPROVOU NO CELULAR' : '\n✅ APROVADO NO CELULAR')
