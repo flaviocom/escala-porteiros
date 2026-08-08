@@ -9,6 +9,7 @@
 
 | Data | Handoff | O que aconteceu |
 |---|---|---|
+| 08/08/2026 | [`HANDOFF_2026-08-08-b.md`](HANDOFF_2026-08-08-b.md) | **Parte 2 — merge na `main` e o loop que mapeou antes de mexer** — P0/P1 zerados pela informação do dono (a divulgação já tinha acontecido); S-052 a S-055 mergeados por rebase com a prova de que o servido não muda um byte; e a fila P5 fechada com o mapa mandando: **P5.4 já estava pronto no código** (só o registro devia), P5.7 medido por sonda e travado em 4 testes, P5.3 meio-medido (~49 KB/ano; teto da API por medir, rede bloqueada). |
 | 08/08/2026 | [`HANDOFF_2026-08-08.md`](HANDOFF_2026-08-08.md) | **A sessão perdida, a retomada pelos registros e as réguas no banco dos réus** — o gate rodou pela primeira vez fora da máquina de origem e 7 validações ao vivo reprovaram **sem nenhum defeito de produto**: corrida de largada na fonte única do servidor de teste, espera curta para downloads múltiplos, grupo LOCAL abrindo a URL publicada ("verde de outra árvore") e a régua de foco reprovando o anel `outline: auto` (19 inocentes, prova por pixel). Tudo corrigido: **15 de 15 verdes**. ⚠️ A chave do lembrete perdeu o par privado — aviso no runbook. |
 | 07/08/2026 | [`HANDOFF_2026-08-07.md`](HANDOFF_2026-08-07.md) | **Conferência do publicado + pesquisa mundial + auditoria das duas réguas** — os deploys cancelados não perderam nada (2 commits eram VAZIOS, medido); pesquisa de rostering confirmou o GRASP e teve a recomendação central **medida e recusada** (busca local: 0 trocas nos dados reais); **três defeitos fechados com mutante**, o pior: as duas réguas cegas para a MESMA ausência invertida. Veredito medido do que está no ar: **17/17 + 8/8 + 0 divergências** — pode divulgar. |
 | 06/08/2026 | [`HANDOFF_2026-08-06.md`](HANDOFF_2026-08-06.md) | **Sétima auditoria + republicação da escala** — o buraco de **93 dias** que o Publicar aceitava, a aba `Ajustar` acusando tudo de amarelo, e um item do BACKLOG marcado como FECHADO **sem ter sido feito**. A escala foi **regerada e republicada** (Williams 5/3 → 3/3, 85 de 87 turnos mudaram) com autorização do Flavio. **Três portões novos**, cada um de um defeito que ninguém tinha perguntado: campo sem rótulo, ordem do gate, e a LISTA de regras (não só o número). |
@@ -31,7 +32,7 @@
 
 ---
 
-**Handoff mais recente:** [`HANDOFF_2026-08-08.md`](HANDOFF_2026-08-08.md)
+**Handoff mais recente:** [`HANDOFF_2026-08-08-b.md`](HANDOFF_2026-08-08-b.md)
 
 Ligações: [`../solicitacoes/INDICE_DE_SOLICITACOES.md`](../solicitacoes/INDICE_DE_SOLICITACOES.md) ·
 [`../historico/INDICE.md`](../historico/INDICE.md) ·

@@ -4,7 +4,7 @@
 > O **porquê** de cada decisão vive no [`DIARIO_DE_BORDO.md`](DIARIO_DE_BORDO.md); aqui fica o
 > registro do que foi feito, passo a passo.
 >
-> **Cadeia de navegação:** [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-08.md) → [`BACKLOG.md`](BACKLOG.md)
+> **Cadeia de navegação:** [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-08-b.md) → [`BACKLOG.md`](BACKLOG.md)
 > **Roteador:** [`AGENTS.md`](AGENTS.md) ·
 > **Solicitações:** [`docs/solicitacoes/INDICE_DE_SOLICITACOES.md`](docs/solicitacoes/INDICE_DE_SOLICITACOES.md) ·
 > **Fatias arquivadas:** [`docs/historico/INDICE.md`](docs/historico/INDICE.md)
@@ -937,3 +937,13 @@ Autorização total ("sem pedir até o fim"). Provado antes do merge que o diff 
 toca produto nem dado publicado; merge por rebase (história linear, `main` em `35d7519`);
 check-ins encerrados; branch realinhada. O veredito NO AR de 07/08 permanece a medição válida do
 site servido. **Solicitação:** S-055.
+
+---
+
+## 08/08/2026 — S-056: o loop fechou a fila P5 — dois de três itens já estavam prontos no código
+
+Go em loop, ordem minha. Mapeamento antes de mão: P5.4 já implementado desde 06/08 (registro
+fechado com prova datada), P5.7 medido por sonda — o código já fazia o certo; saída esperada
+escrita no `ALGORITMO.md` e travada em `casos-limite.test.ts` (4 testes) —, P5.3 meio-medido
+(228 bytes/turno, ~49 KB/ano; teto da API declarado por medir, rede bloqueada). Handoff da parte 2
+criado e cadeia apontando. **Solicitação:** S-056.
