@@ -928,3 +928,12 @@ está pago desde 06/08 — commits dele via API; resta só a chave OPCIONAL do m
 P1.3 (a divulgação do site novo era a condição de fechamento dos três, e aconteceu — palavras
 dele). P5.6 perdeu a metade envelhecida ("sem LICENSE" — ela existe desde 06/08). Detalhe e risco
 residual do link antigo: DB-050. **Solicitação:** S-054.
+
+---
+
+## 08/08/2026 — S-055: merge do PR #1 na main, com a prova de que o servido não muda
+
+Autorização total ("sem pedir até o fim"). Provado antes do merge que o diff (S-052 a S-054) não
+toca produto nem dado publicado; merge por rebase (história linear, `main` em `35d7519`);
+check-ins encerrados; branch realinhada. O veredito NO AR de 07/08 permanece a medição válida do
+site servido. **Solicitação:** S-055.
