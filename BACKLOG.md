@@ -3,7 +3,7 @@
 > **O que falta fazer, em ordem.** Lugar único: item que não está aqui não existe como pendência.
 > Documento **vivo** — item concluído sai daqui e vira registro no histórico.
 >
-> **Última atualização:** 07/08/2026
+> **Última atualização:** 08/08/2026
 >
 > **Cadeia de navegação, nesta ordem:**
 > [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-07.md) → **`BACKLOG.md` (você está aqui)**
@@ -82,6 +82,9 @@ Fechados entre 06 e 07/08/2026, com prova. Detalhe completo, imutável:
 | P2.13 | Portão `contagem` — documento vivo não declara número de regras que o catálogo desmente | ✅ 04/08 — achou 8 divergências de uma vez |
 | P2.14 | Portão `cadeia` — a cadeia de navegação aponta para o handoff que **é** o mais recente | ✅ 04/08 — `AGENTS.md` apontava para a parte 4 de 7 |
 | P2.15 | Servidor de teste único, que **recusa** porta ocupada | ✅ 04/08 — 3 scripts vazavam o vite no Windows e validavam servidor fantasma |
+| P2.16 | 🔴 **`subirServidor` devolve sem esperar a porta abrir** (`scripts/lib/servidor-de-teste.mjs:88`): `vivo:abas` (`scripts/validar-estado-entre-abas.mjs:47`) e `vivo:caminho` (`scripts/validar-caminho-do-flavio.mjs:66`) navegam em seguida e levam `ERR_CONNECTION_REFUSED` em máquina mais lenta que a de origem. A espera existe, mas **copiada em cada script que passou** (`scripts/validar-seletor-de-meses.mjs:42`) — deve morar na fonte única | 🤖 aberto — medido 08/08/2026 num contêiner Linux; na máquina de origem o vite ganha a corrida e o defeito é invisível |
+| P2.17 | 🔴 **Janela de estabilização curta para downloads múltiplos** (`scripts/validar-seletor-de-meses.mjs:84`): a checagem "gera SÓ os meses marcados" conclui `0 arquivo(s)` se o primeiro download não chega em ~3,6 s — reprova com o produto certo em máquina lenta. As outras 10 checagens do mesmo script passam | 🤖 aberto — medido 08/08/2026; mesma classe do P2.16, verde/vermelho por corrida do ambiente |
+| P2.18 | ⚪ **Três validações ao vivo miram a URL publicada mesmo sob `--local`** (`vivo:admin`, `vivo:celular`, `vivo:acessibilidade`): em ambiente com saída de rede fechada elas nunca rodam, e a reprovação não distingue "site errado" de "site inalcançável" | declarado 08/08/2026 — decidir se ganham alvo local ou se declaram a dependência de rede |
 
 ---
 

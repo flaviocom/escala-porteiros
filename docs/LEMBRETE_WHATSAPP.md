@@ -40,6 +40,12 @@ mensagem própria, ninguém escalado) saem no modelo da casa.
    ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGK7TfzdOE9woYgAMnaUWutOmcZPOVAbVd09auZlgzP7 claude-escala-lembrete
    ```
 
+   ⚠️ **Esta chave pública perdeu o par (08/08/2026).** A parte privada vivia só no contêiner da
+   sessão em que foi gerada, e ele foi recolhido quando aquela sessão se perdeu na atualização do
+   aplicativo. Autorizá-la não faz mal, mas não serve para nada: **no "go", uma chave nova é gerada
+   na mesma sessão que fará a instalação, e esta linha é substituída** — cole no hPanel a versão
+   nova, não esta.
+
 2. **Pôr o número de disparo do Charmway DENTRO do grupo** dos porteiros (quem envia a um grupo
    precisa ser membro dele).
 
