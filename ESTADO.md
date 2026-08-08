@@ -18,10 +18,10 @@
 
 ## Em uma frase
 
-**O produto está no ar, auditado por fora CINCO vezes, e a escala de 06/08 a 31/12 está publicada e
-conferida.** O nome do cliente saiu do código e virou dado. As duas decisões que estavam pendentes
-**foram tomadas pelo Flavio em 05/08** — a data de início (06/08) e o escopo de finalidade (fase 1,
-uso interno). O que falta é só o que depende das credenciais dele.
+**O produto está no ar, divulgado e em uso: os irmãos consultam a própria escala pelo site**
+(palavras do dono, 08/08 — S-054). Auditado por fora CINCO vezes, escala de 06/08 a 31/12 publicada
+e conferida, o nome do cliente fora do código. **P0 e P1 estão sem item aberto** — a única
+credencial em aberto é a chave do motor, **opcional**; nada trava sem ela.
 
 ## O mais recente: o gate ficou portátil — verde fora da máquina de origem (08/08)
 
@@ -31,8 +31,9 @@ A sessão de 07/08 se perdeu numa atualização do aplicativo e a retomada saiu 
 curta para downloads, grupo LOCAL abrindo a URL publicada, e a régua de foco reprovando o anel
 `outline: auto` — 19 inocentes, prova por pixel). Corrigidas: **15 de 15 verdes**. ⚠️ A chave do
 lembrete de WhatsApp **perdeu o par privado** com o contêiner da sessão perdida — aviso no runbook;
-a nova nasce no "go" da instalação. Detalhe: [`HANDOFF_2026-08-08.md`](docs/handoff/HANDOFF_2026-08-08.md)
-· [DB-049](DIARIO_DE_BORDO.md).
+a nova nasce no "go" da instalação. E, à tarde, a informação dele fechou **cinco registros
+vencidos** de uma vez: a divulgação do site já tinha acontecido, e P0/P1 zeraram ([DB-050](DIARIO_DE_BORDO.md)).
+Detalhe: [`HANDOFF_2026-08-08.md`](docs/handoff/HANDOFF_2026-08-08.md) · [DB-049](DIARIO_DE_BORDO.md).
 
 ## O anterior: veredito medido — a escala no ar PODE SER DIVULGADA (07/08, manhã)
 
@@ -355,9 +356,11 @@ deste projeto. Corrigido, com teste.
 
 | O que | De quem depende |
 |---|---|
-| Publicar pela tela | 👤 Flavio cola `GITHUB_PAT_ESCALA_PORTEIROS` no primeiro acesso |
 | O motor funcionar | 👤 Flavio cola `ANTHROPIC_API_KEY_ESCALA` (opcional — sem ela o algoritmo segue) |
 | Desenvolver na pasta `D:` | 👤 Flavio decide se investiga o antivírus/disco |
+
+✅ **Publicar pela tela deixou de bloquear em 06/08** — o token está no navegador dele, provado
+pelos commits de dados com autor via API (DB-050).
 
 O pré-voo **não reprova mais** por causa do disco: a ausência de `node_modules` em `D:` é proposital
 e agora está declarada em `docs/pre-voo.json`, com motivo escrito. Ela aparece no relatório em ⚪ com
