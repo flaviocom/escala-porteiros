@@ -1413,3 +1413,38 @@ portabilidade (S-046) é regra padrão-ouro: cada ambiente novo é uma auditoria
 
 **Como reverter.** `git revert` do commit desta entrada — os scripts voltam a depender da corrida
 e da URL publicada; nenhum comportamento de produto muda.
+
+---
+
+## DB-050 · 08/08/2026 — a divulgação já tinha acontecido, e o registro mentia para o lado do medo
+
+**O pedido:** S-054 — ele perguntou o que eram P0.2 e P1.1, *"porque o site já está em produção,
+já foi divulgado, os irmãos já têm conhecimento, cada um através da sua escala, pelo site"*.
+
+**A resposta mudou o BACKLOG, não o produto.** A pergunta dele expôs cinco registros vencidos —
+a classe que este projeto já nomeou: *"registro que mente para o lado do medo custa igual: alguém
+refaz trabalho pronto, ou desconfia de um portão que funciona"*. Um a um:
+
+1. **P0.1 (aprovar o desenho)** — aberto no papel desde 04/08, pago pelo fato: ele dirigiu a
+   construção solicitação a solicitação, gerou, publicou e divulgou. Fechado.
+2. **P0.2 (as duas credenciais)** — metade paga com prova: os commits de dados de 06/08 22:07 têm
+   autor dele **via API**, o que só existe com o `GITHUB_PAT` colado no navegador. A metade aberta
+   (`ANTHROPIC_API_KEY_ESCALA`) é **opcional** — liga só o motor; nada trava sem ela.
+3. **P1.1 (Santa Ceia errada no site antigo)** — a correção decidida era a divulgação do site novo
+   antes de 16/08. Aconteceu, nas palavras dele. Risco residual declarado: quem guardou o link
+   antigo ainda vê a data errada, e o site antigo fica como está por decisão (S-024).
+4. **P1.3 (site antigo não mostra o passado)** — a condição de fechamento era literalmente
+   "some quando o link novo for divulgado". Foi.
+5. **P1.2 (distanciamento ausente no gerador antigo)** — com a divulgação, a escala consultada É a
+   do projeto novo, onde a regra existe e é validada.
+
+E no mesmo gesto, a linha P5.6 ("sem LICENSE e sem CI") perdeu a metade envelhecida: a licença
+proprietária existe na raiz desde 06/08 (`b3ca016`).
+
+**O porquê que interessa:** P0 e P1 ficaram **vazios de itens abertos** pela primeira vez — não
+porque alguém trabalhou hoje, mas porque o registro finalmente alcançou a realidade. O contrário do
+P7.7 (fechado sem ter sido feito) é igualmente caro, e agora as duas direções já têm exemplar
+registrado neste diário.
+
+**Como reverter.** `git revert` do commit desta entrada — os itens voltam a parecer abertos; nada
+de comportamento muda.

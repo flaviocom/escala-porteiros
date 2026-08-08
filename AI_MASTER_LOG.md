@@ -917,3 +917,14 @@ publicada) e P2.19, descoberto no caminho (a régua de foco reprovava o anel `ou
 navegador; prova por pixel antes da correção). Depois das correções: `vivo:tudo --local` com as 15
 validações verdes neste contêiner — incluindo as 7 que reprovavam. Registro: DB-049, S-053,
 handoff de 08/08. **Solicitação:** S-053.
+
+---
+
+## 08/08/2026 — S-054: P0 e P1 zerados pelo registro alcançar a realidade
+
+A pergunta dele ("o que é P0.2? e P1.1? o site já foi divulgado, os irmãos já usam") expôs cinco
+registros vencidos. Fechados com prova: P0.1 (aprovado pelo fato), metade do P0.2 (o `GITHUB_PAT`
+está pago desde 06/08 — commits dele via API; resta só a chave OPCIONAL do motor), P1.1, P1.2 e
+P1.3 (a divulgação do site novo era a condição de fechamento dos três, e aconteceu — palavras
+dele). P5.6 perdeu a metade envelhecida ("sem LICENSE" — ela existe desde 06/08). Detalhe e risco
+residual do link antigo: DB-050. **Solicitação:** S-054.
