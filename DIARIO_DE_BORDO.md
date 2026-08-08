@@ -1448,3 +1448,25 @@ registrado neste diário.
 
 **Como reverter.** `git revert` do commit desta entrada — os itens voltam a parecer abertos; nada
 de comportamento muda.
+
+---
+
+## DB-051 · 08/08/2026 — o merge autorizado, e por que NO AR não tinha nada novo a medir
+
+**O pedido:** S-055 — *"Go! Siga autônomo sem pedir autorização até o fim, com todos os passos."*
+
+**As decisões deste fechamento, com o porquê:**
+
+1. **Rebase, não merge commit** — a `main` deste projeto é uma história linear de commits S-0xx;
+   um merge commit criaria o primeiro nó de costura sem informação nova. O rebase preservou os três
+   commits com as mensagens (e SHAs novos: `ea2aff9`, `4075c8b`, `35d7519`).
+2. **Mergeado sem re-rodar NO AR — e isso não é atalho.** Antes do merge, medido: o diff não toca
+   `src/`, `public/`, `docs/dados/`, `docs/assets/` nem `docs/index.html`. O Pages passa a servir
+   bytes idênticos aos de antes; logo, o veredito NO AR de 07/08 (17/17 · 8/8 · 0 divergências)
+   continua sendo a medição válida do que está servido. A rede deste contêiner não alcança o site
+   — e não precisou: não existia pergunta nova para a URL responder.
+3. **Check-ins encerrados e branch realinhada** — o PR mergeado é desfecho final; o gatilho de
+   1 hora foi apagado e a branch de trabalho renasceu da `main`.
+
+**Como reverter.** `git revert` dos três commits na `main` (na ordem inversa) — as réguas voltam a
+depender da máquina de origem; o site servido não muda em nada.
