@@ -220,7 +220,7 @@ pulada na contagem, com o motivo escrito no código.
 anúncio apagada — e aprova a árvore limpa.
 
 ### 13. `generico` — nenhum nome de cliente cravado (§0)
-**População:** 32 arquivos (`src/` + `index.html` + `package.json` + `README.md`) · **23 testes pulados**, contados
+**População:** 32 arquivos (`src/` + `index.html` + `package.json` + `README.md`) · **24 testes pulados**, contados
 e impressos.
 **Os 8 termos:** `JD. São Luiz` · `Congregação Cristã` · `CCB` (com borda por classe de caracteres,
 sem barra invertida) · `Escala (de) Porteiros` · o prompt do motor cravado · `porteiro(s)` como

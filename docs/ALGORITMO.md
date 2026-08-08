@@ -238,6 +238,19 @@ Há teste que gera uma escala de verdade e a valida, provando a concordância.
 | Entregar escala pela metade | Ninguém. Se não fecha, **declara** e diz onde travou |
 | Publicar | Só a pessoa, e só depois das 17 regras passarem |
 
+## Casos-limite — a saída esperada, medida antes de escrita
+
+O desenho (ERRO 10) lista três casos-limite e, até 08/08/2026, nenhum documento dizia qual é a
+saída correta de cada um (era o P5.7). Medidos no código real e **travados** em
+`src/dominio/casos-limite.test.ts` — a decisão D-03 ("quando não fecha, declara") cobre os três:
+
+| Caso | Saída esperada |
+|---|---|
+| **Elenco vazio** | `ok: false`, motivo nomeando os três remédios (acrescentar gente, afrouxar restrição, reduzir capacidade) e o turno que travou |
+| **Bloco de um dia com culto** | Gera normalmente: os turnos daquele dia, piso 1 |
+| **Bloco de um dia sem culto** | `ok: false` — *"não existe turno a escalar"* (mesma recusa de qualquer período sem dia de culto) |
+| **Todos ausentes no período** | `ok: false`, mesma recusa declarada do elenco vazio — **nunca** uma escala vazia com `ok: true`, que é a forma do defeito fundador |
+
 ---
 
 ## Como medir isto por fora

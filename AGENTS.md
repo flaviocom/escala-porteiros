@@ -7,7 +7,7 @@
 > **Este arquivo é o ROTEADOR do projeto.** Ordem de leitura, e ela importa:
 >
 > **1.** este arquivo (como se trabalha) → **2.** [`ESTADO.md`](ESTADO.md) (onde estamos) →
-> **3.** [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-08.md) (o que aconteceu e por quê) →
+> **3.** [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-08-b.md) (o que aconteceu e por quê) →
 > **4.** [`BACKLOG.md`](BACKLOG.md) (o que fazer a seguir)
 >
 > Só depois, e só o trecho de que precisar, os índices:
@@ -91,16 +91,18 @@ escala é o pior defeito possível, porque ninguém confere 549 linhas à mão.
 O motor **distribui também** — foi pedido do Flavio —, mas a proposta dele passa pelas **mesmas**
 regras da do algoritmo antes de chegar à tela de publicação.
 
-**Estágio atual (05/08/2026):** **no ar e funcionando.**
+**Estágio atual (08/08/2026):** **no ar, divulgado e em uso** — os irmãos consultam a própria
+escala pelo site (S-054).
 
 - Site: <https://flaviocom.github.io/escala-porteiros/>
 - Área administrativa: <https://flaviocom.github.io/escala-porteiros/#/admin>
-- Escala publicada: **01/03 → 05/08** (histórico congelado, 96 turnos) + **06/08 → 30/12**
+- Escala publicada: **01/03 → 05/08** (histórico congelado, 96 turnos) + **06/08 → 31/12**
   (87 turnos, piso de **4** dias — caiu de 7 em 06/08, quando Eduardo e Thiago saíram do elenco)
 - ⚠️ O recorte para 05/08 foi o trabalho de `47fb59f`: a escala nova desmentia, em **todos** os
   turnos de hoje em diante, o site que a congregação já tem o link. Medível de novo com
   `npm run vivo:divulgado -- --antigo <url do site anterior>`.
-- Falta: o Flavio colar as duas credenciais para publicar pela tela e ligar o motor.
+- O token de publicação está pago desde 06/08 (provado pelos commits via API — DB-050). A única
+  credencial em aberto é a chave do **motor**, opcional: nada trava sem ela.
 
 ## 2. Idioma e formatação
 
@@ -227,7 +229,7 @@ aqui. Escrito para quem **não participou de nada** — inclusive outra intelig�
 | Vou mexer em… | Leia antes |
 |---|---|
 | Estado atual | [`ESTADO.md`](ESTADO.md) |
-| O que aconteceu na última sessão, e por quê | [`docs/handoff/HANDOFF_2026-08-08.md`](docs/handoff/HANDOFF_2026-08-08.md) · [índice](docs/handoff/INDICE.md) |
+| O que aconteceu na última sessão, e por quê | [`docs/handoff/HANDOFF_2026-08-08-b.md`](docs/handoff/HANDOFF_2026-08-08-b.md) · [índice](docs/handoff/INDICE.md) |
 | O que falta | [`BACKLOG.md`](BACKLOG.md) |
 | Regras da escala, modelo de dados, motor | [`o desenho`](docs/superpowers/specs/2026-08-04-area-administrativa-escala-design.md) |
 | **Por que** uma decisão foi tomada, e como revertê-la | [`DIARIO_DE_BORDO.md`](DIARIO_DE_BORDO.md) |

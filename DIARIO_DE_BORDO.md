@@ -4,7 +4,7 @@
 > como reverter.** Documento **append-only**, fatiado por período ao estourar o teto. **Nada é
 > excluído, nunca.**
 >
-> **Cadeia de navegação:** [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-08.md) → [`BACKLOG.md`](BACKLOG.md)
+> **Cadeia de navegação:** [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-08-b.md) → [`BACKLOG.md`](BACKLOG.md)
 > **Roteador:** [`AGENTS.md`](AGENTS.md) ·
 > **Solicitações:** [`docs/solicitacoes/INDICE_DE_SOLICITACOES.md`](docs/solicitacoes/INDICE_DE_SOLICITACOES.md) ·
 > **Histórico:** [`docs/historico/INDICE.md`](docs/historico/INDICE.md)
@@ -1470,3 +1470,30 @@ de comportamento muda.
 
 **Como reverter.** `git revert` dos três commits na `main` (na ordem inversa) — as réguas voltam a
 depender da máquina de origem; o site servido não muda em nada.
+
+---
+
+## DB-052 · 08/08/2026 — o loop em que o mapa valeu mais que a mão
+
+**O pedido:** S-056 — go workflow completo em loop, padrão-ouro, ordem minha, mapeando todas as
+ligações antes de mexer.
+
+**O mapeamento mudou o plano duas vezes — e essa é a lição.** A fila que eu tinha desenhado era
+"implementar P5.4, testar P5.7, medir P5.3". O mapa mostrou outra coisa:
+
+1. **P5.4 já estava implementado desde 06/08** (`conferirEsquema`, ligado no `carregarDados`, com
+   teste nas duas pontas). Se eu tivesse codado antes de mapear, teria REIMPLEMENTADO validação
+   por cima de validação — o custo exato que o registro vencido cobra. Terceira ocorrência da
+   classe; as três agora estão nomeadas no BACKLOG.
+2. **P5.7 não era defeito de código** — os três casos-limite foram MEDIDOS por sonda e o gerador
+   já fazia o certo em todos (D-03). O que faltava era a saída esperada ESCRITA e TRAVADA: agora
+   uma regressão que troque recusa declarada por escala vazia silenciosa fica vermelha em 4 testes.
+3. **P5.3 ficou meio-medido de propósito**: 228 bytes/turno e ~49 KB/ano são medição local; o teto
+   da API exige a documentação, que a rede daqui não alcança — e teto citado de memória é chute
+   vestido de fato.
+
+**E a linha das credenciais:** o caminho que ele mandou (`D:\...\.credenciais.env`) está no PC
+dele — fisicamente inalcançável da nuvem — e a regra é dele: §9.1, "nem com autorização". O loop
+inteiro rodou sem precisar de credencial nenhuma, que é como deve ser.
+
+**Como reverter.** `git revert` do commit desta entrada.
