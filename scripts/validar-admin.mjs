@@ -3,14 +3,27 @@
  *
  * Confere o que só o navegador prova: que a engrenagem leva à área administrativa, que o cofre
  * realmente **cifra** (senha errada não abre), e que o fluxo elenco → gerar → conferir funciona
- * sobre os dados publicados.
+ * sobre os dados da árvore atual.
  *
  * ⚠️ O token e a chave usados aqui são de MENTIRA. Este script nunca publica nada, e nunca toca em
  * credencial de verdade.
+ *
+ * 🔴 P2.18 (08/08/2026): este script está no grupo LOCAL do `vivo:tudo` — o que roda no GATE —,
+ * mas abria a URL PUBLICADA por padrão. No gate, isso aprova a árvore que JÁ ESTÁ no ar, não a que
+ * se quer aprovar ("verde de outra árvore"); e num ambiente sem saída de rede, nem roda. Agora o
+ * padrão é servir o build local; medir o site no ar continua possível passando a URL:
+ *
+ * Uso: node scripts/validar-admin.mjs [url]
  */
 import { chromium } from 'playwright'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { subirServidor } from './lib/servidor-de-teste.mjs'
 
-const BASE = process.argv[2] ?? 'https://flaviocom.github.io/escala-porteiros/'
+const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..')
+const PORTA = 4302
+const servidor = process.argv[2] ? null : await subirServidor({ raiz: RAIZ, porta: PORTA, modo: 'preview' })
+const BASE = process.argv[2] ?? servidor.url
 const navegador = await chromium.launch()
 const pagina = await navegador.newPage()
 
@@ -167,6 +180,7 @@ else console.log('  ✅ sem erros inesperados')
 
 await pagina.screenshot({ path: 'capturas/ao-vivo-admin.png' })
 await navegador.close()
+await servidor?.derrubar()
 
 const falhou = checagens.some((c) => !c.ok) || relevantes.length > 0
 console.log(falhou ? '\n🔴 REPROVOU' : '\n✅ ÁREA ADMINISTRATIVA APROVADA AO VIVO')

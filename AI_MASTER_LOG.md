@@ -4,7 +4,7 @@
 > O **porquê** de cada decisão vive no [`DIARIO_DE_BORDO.md`](DIARIO_DE_BORDO.md); aqui fica o
 > registro do que foi feito, passo a passo.
 >
-> **Cadeia de navegação:** [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-07.md) → [`BACKLOG.md`](BACKLOG.md)
+> **Cadeia de navegação:** [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-08.md) → [`BACKLOG.md`](BACKLOG.md)
 > **Roteador:** [`AGENTS.md`](AGENTS.md) ·
 > **Solicitações:** [`docs/solicitacoes/INDICE_DE_SOLICITACOES.md`](docs/solicitacoes/INDICE_DE_SOLICITACOES.md) ·
 > **Fatias arquivadas:** [`docs/historico/INDICE.md`](docs/historico/INDICE.md)
@@ -885,3 +885,46 @@ máquina. **Construído até a fronteira:** chave nova `claude-escala-lembrete` 
 `scripts/vps/lembrete_escala.py` (grupo, URL publicada, zero segredo, kill-switch) · dry-run
 provado com o dado real (domingo 2 turnos · Santa Ceia própria · dia sem culto = silêncio) ·
 runbook `docs/LEMBRETE_WHATSAPP.md` com os 3 passos dele. **Diário:** DB-048 · **Solicitação:** S-051.
+
+---
+
+## 08/08/2026 — S-052: a sessão perdida, e a retomada provada em contêiner novo
+
+A sessão de 07/08 sumiu na atualização do aplicativo, e a resposta veio dos REGISTROS, não de
+memória: nada se perdeu — S-043 a S-051 commitados, cadeia documental íntegra. Acessos verificados
+com evidência num contêiner Linux novo: push aceito (dry-run), autor do git corrigido para o
+obrigatório do projeto, dependências instaladas, navegador substituto ligado por link FORA do
+repositório, e o gate rodado inteiro. Portões de código, documento e build: verdes.
+
+As 7 reprovações do `vivo:tudo` foram trianguladas uma a uma e NENHUMA é defeito do produto: 3 são
+a rede deste ambiente fechada para o site publicado (limitação declarada), 3 são corrida de largada
+dos scripts de validação (→ P2.16/P2.17 do BACKLOG) e a última é alvo publicado sob `--local`
+(→ P2.18). O ruído de ambiente (CRLF→LF no `docs/index.html` com assets idênticos; campos `libc`
+do lockfile) foi REVERTIDO, não commitado — mudança acidental não entra na história.
+
+⚠️ A chave `claude-escala-lembrete` perdeu o par privado junto com o contêiner antigo — o runbook
+ganhou o aviso; chave nova nasce no "go". **Solicitação:** S-052.
+
+---
+
+## 08/08/2026 — S-053: "Go" — as réguas corrigidas até o gate fechar verde na máquina nova
+
+O "go" mandou trabalhar as pendências uma a uma, autonomamente, no padrão-ouro. A fila autônoma
+era o próprio achado da manhã: P2.16 (espera do servidor na fonte única + rede de segurança POSIX +
+migração do `vivo:seletor`, que nem usava a fonte), P2.17 (espera pelo número prometido, não por
+"estabilizou"), P2.18 (os três scripts do grupo LOCAL passam a medir o build local, não a URL
+publicada) e P2.19, descoberto no caminho (a régua de foco reprovava o anel `outline: auto` do
+navegador; prova por pixel antes da correção). Depois das correções: `vivo:tudo --local` com as 15
+validações verdes neste contêiner — incluindo as 7 que reprovavam. Registro: DB-049, S-053,
+handoff de 08/08. **Solicitação:** S-053.
+
+---
+
+## 08/08/2026 — S-054: P0 e P1 zerados pelo registro alcançar a realidade
+
+A pergunta dele ("o que é P0.2? e P1.1? o site já foi divulgado, os irmãos já usam") expôs cinco
+registros vencidos. Fechados com prova: P0.1 (aprovado pelo fato), metade do P0.2 (o `GITHUB_PAT`
+está pago desde 06/08 — commits dele via API; resta só a chave OPCIONAL do motor), P1.1, P1.2 e
+P1.3 (a divulgação do site novo era a condição de fechamento dos três, e aconteceu — palavras
+dele). P5.6 perdeu a metade envelhecida ("sem LICENSE" — ela existe desde 06/08). Detalhe e risco
+residual do link antigo: DB-050. **Solicitação:** S-054.

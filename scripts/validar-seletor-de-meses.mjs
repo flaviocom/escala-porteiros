@@ -15,12 +15,16 @@
  * Uso: node scripts/validar-seletor-de-meses.mjs
  */
 import { chromium, devices } from 'playwright'
-import { spawn } from 'node:child_process'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { subirServidor } from './lib/servidor-de-teste.mjs'
 
+// 🔴 Este script nascera com o `spawn('npx', …, shell: true)` que o `servidor-de-teste.mjs` existe
+// para eliminar — e foi o dono do único órfão encontrado em 08/08/2026. Migrado para a fonte única:
+// recusa de porta ocupada, espera pela porta aberta e derrubada com rede de segurança, num lugar só.
+const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..')
 const PORTA = 4185
-const servidor = spawn('npx', ['vite', 'preview', '--port', String(PORTA), '--strictPort'], {
-  cwd: process.cwd(), shell: true, stdio: 'ignore',
-})
+const servidor = await subirServidor({ raiz: RAIZ, porta: PORTA, modo: 'preview' })
 
 const checagens = []
 const conferir = (nome, ok, detalhe) => checagens.push({ nome, ok, detalhe })
@@ -32,14 +36,8 @@ try {
   async function abrir(filtro) {
     const pagina = await navegador.newPage({ viewport: { width: 1400, height: 1000 } })
     pagina.on('pageerror', (e) => conferir('erro de JavaScript', false, e.message))
-    let subiu = false
-    for (let i = 0; i < 40 && !subiu; i++) {
-      try {
-        await pagina.goto(`http://127.0.0.1:${PORTA}/`, { waitUntil: 'networkidle', timeout: 3000 })
-        subiu = true
-      } catch { await pagina.waitForTimeout(500) }
-    }
-    if (!subiu) throw new Error(`o servidor não subiu na porta ${PORTA}`)
+    // A espera pela porta aberta mora no `subirServidor` — a cópia local que vivia aqui saiu.
+    await pagina.goto(servidor.url, { waitUntil: 'networkidle', timeout: 30_000 })
     await pagina.waitForTimeout(1600)
     if (filtro) {
       await pagina.locator('input[type="text"]').first().fill(filtro)
@@ -80,8 +78,12 @@ try {
       conferir('   …e o botão DIZ quantos arquivos vão sair', /Gerar \d+ imagens?/.test(rotulo), `"${rotulo.trim()}"`)
 
       await acao.click()
-      let antes = -1
-      while (antes !== baixados.length) { antes = baixados.length; await pg.waitForTimeout(1800) }
+      // 🔴 A espera anterior ("estabilizou = acabou") dava ~3,6 s no total e concluía `0 arquivo(s)`
+      // numa máquina mais lenta que a de origem — reprovando um produto certo (P2.17, 08/08/2026).
+      // Agora espera-se chegar o número prometido pelo rótulo do botão (até 20 s), e depois uma
+      // sobra proposital para flagrar um TERCEIRO arquivo indevido: o "SÓ" continua medido.
+      for (let i = 0; i < 40 && baixados.length < 2; i++) await pg.waitForTimeout(500)
+      await pg.waitForTimeout(1500)
       conferir('   …e gera SÓ os meses marcados', baixados.length === 2,
         `${baixados.length} arquivo(s): ${baixados.map((d) => d.suggestedFilename()).join(', ')}`)
     }
@@ -149,7 +151,7 @@ try {
 
   await navegador.close()
 } finally {
-  servidor.kill()
+  await servidor.derrubar()
 }
 
 for (const c of checagens) console.log(`  ${c.ok ? '✅' : '🔴'} ${c.nome.padEnd(48)} ${c.detalhe}`)

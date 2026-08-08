@@ -3,10 +3,10 @@
 > **O que falta fazer, em ordem.** Lugar único: item que não está aqui não existe como pendência.
 > Documento **vivo** — item concluído sai daqui e vira registro no histórico.
 >
-> **Última atualização:** 07/08/2026
+> **Última atualização:** 08/08/2026
 >
 > **Cadeia de navegação, nesta ordem:**
-> [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-07.md) → **`BACKLOG.md` (você está aqui)**
+> [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-08.md) → **`BACKLOG.md` (você está aqui)**
 >
 > **Roteador do projeto:** [`AGENTS.md`](AGENTS.md) ·
 > **Solicitações:** [`docs/solicitacoes/INDICE_DE_SOLICITACOES.md`](docs/solicitacoes/INDICE_DE_SOLICITACOES.md) ·
@@ -19,42 +19,44 @@
 
 ## P0 — Decisões do dono 👤
 
-### P0.1 🔴 Aprovar o desenho da área administrativa
-O desenho está em
-[`docs/superpowers/specs/2026-08-04-area-administrativa-escala-design.md`](docs/superpowers/specs/2026-08-04-area-administrativa-escala-design.md).
-Sem aprovação, nada de produto é construído — errar aqui custa a implementação inteira.
-- **Recomendação:** aprovar como está. As 12 decisões registradas são todas dele, e as três que o
-  assistente tomou (carga inicial, truncar ≠ reescrever, ler a última data no bloco anterior) estão
-  declaradas na §4 do documento.
+### P0.1 ✅ FECHADO 08/08/2026 — aprovado pelo fato
+O desenho ([`a spec`](docs/superpowers/specs/2026-08-04-area-administrativa-escala-design.md))
+pedia aprovação antes de construir. A construção foi dirigida por ele solicitação a solicitação
+(S-001 → S-053), a escala foi gerada por ele (S-027), publicada pela tela (S-030, commits de
+06/08 22:07 com autor dele via API) e **divulgada aos irmãos** (S-054). Produto em produção e em
+uso é a forma mais forte de aprovação — o item ficou aberto no papel por registro, não por dúvida.
 
-### P0.2 🔴 Colar os valores das duas credenciais
-`GITHUB_PAT_ESCALA_PORTEIROS` (fine-grained, Contents: write, só em `flaviocom/escala-porteiros`) e
-`ANTHROPIC_API_KEY_ESCALA`. **O assistente nunca digita, lê ou transcreve o valor** — ele entrega um
-`.cmd` na Área de Trabalho, com caminho absoluto e explicação antes de agir.
-- Sem a primeira: a área administrativa gera e valida, mas **não publica** (resta baixar o JSON).
-- Sem a segunda: o algoritmo gera e valida normalmente, **sem** a proposta e a explicação do motor.
+### P0.2 — era "colar as duas credenciais"; **metade está paga, e a metade aberta é opcional**
+**O assistente nunca digita, lê ou transcreve o valor** — regra intacta.
+- `GITHUB_PAT_ESCALA_PORTEIROS` ✅ **paga, provado em 06/08/2026**: publicar pela tela só existe
+  com o token no navegador, e os commits de dados de 06/08 22:07 têm autor dele via API.
+- `ANTHROPIC_API_KEY_ESCALA` ⏳ **aberta e opcional**: sem ela o algoritmo gera, valida e publica
+  normalmente — o que não liga é a proposta paralela do **motor**, com explicação e placar.
+  Cola quando (e se) quiser o motor. Nada trava sem ela.
 
 ---
 
 ## P1 — Defeitos conhecidos 🟠
 
-### P1.1 🔴🟠 Santa Ceia com data errada no site que está no ar 🤖
-O código de `escala-irmaos-2026-mar` marca `2026-06-07` como Santa Ceia. A data correta é
-**16/08/2026** — daqui a 12 dias, e é **domingo**. O site vai exibir **3 porteiros de manhã e 3 à
-noite** num dia em que ninguém deve ser escalado (irmãos de outra igreja atendem).
+### P1.1 ✅ FECHADO 08/08/2026 — pela divulgação do site novo
+O código de `escala-irmaos-2026-mar` marca `2026-06-07` como Santa Ceia; a correta é **16/08/2026**
+(domingo), e o site antigo exibiria 6 porteiros num dia em que ninguém deve ser escalado. A correção
+decidida era o site novo entrar no ar e ser divulgado antes de 16/08. **Aconteceu**: *"o site já
+foi divulgado, os irmãos já têm conhecimento, cada um através da sua escala, pelo site"* (o dono,
+08/08/2026 — S-054). O site novo mostra 16/08 como SANTA CEIA com **zero** escalados, conferido ao
+vivo pelas duas réguas (S-042).
+⚠️ **Risco residual, declarado:** o site antigo continua no ar servindo a data errada **para quem
+guardou o link antigo** — e fica assim por decisão dele (S-024: *"não faça alteração"*).
 
-⚠️ **Armadilha:** o Flavio decidiu que o repositório antigo **não é tocado**. Logo, a correção vem
-pelo projeto novo entrando no ar antes de 16/08 — ou por uma decisão dele em contrário.
+### P1.3 ✅ FECHADO 08/08/2026 — mesma razão
+O site antigo não mostra o passado (medido 04/08). A condição de fechamento escrita aqui era
+literal: *"some quando o link novo for divulgado"*. Foi divulgado (S-054); o site novo mostra o
+passado como dado congelado.
 
-### P1.3 🟠 O site antigo não mostra o passado 🤖
-Medido em 04/08/2026: o site antigo lista **do dia de hoje em diante**. Um irmão que abra o link
-hoje **não vê março a julho** — só digitando a data na busca. O site novo mostra, porque o passado
-ali é dado congelado, não recálculo.
-- Não tem correção no antigo (não é tocado). Some quando o link novo for divulgado — decisão 👤.
-
-### P1.2 🟠 Distanciamento não é regra no gerador atual 🤖
-Medido: Williams com **7 intervalos de 1 dia**, **18 pares com ≤3 dias**, 6 ocorrências de
-"quarta → sábado". Resolvido por desenho no projeto novo (regra Q1), não no antigo.
+### P1.2 ✅ FECHADO 08/08/2026 — mesma razão
+Distanciamento não é regra no gerador do site antigo (Williams com 7 intervalos de 1 dia, 18 pares
+≤3 dias). Resolvido por desenho no projeto novo (Q1) — e, com a divulgação, a escala que os irmãos
+consultam **é** a do projeto novo.
 
 ### ✅ Itens FECHADOS (P1.4 a P1.7) — rotacionados para o histórico
 Fechados entre 06 e 07/08/2026, com prova. Detalhe completo, imutável:
@@ -82,6 +84,10 @@ Fechados entre 06 e 07/08/2026, com prova. Detalhe completo, imutável:
 | P2.13 | Portão `contagem` — documento vivo não declara número de regras que o catálogo desmente | ✅ 04/08 — achou 8 divergências de uma vez |
 | P2.14 | Portão `cadeia` — a cadeia de navegação aponta para o handoff que **é** o mais recente | ✅ 04/08 — `AGENTS.md` apontava para a parte 4 de 7 |
 | P2.15 | Servidor de teste único, que **recusa** porta ocupada | ✅ 04/08 — 3 scripts vazavam o vite no Windows e validavam servidor fantasma |
+| P2.16 | **`subirServidor` devolvia sem esperar a porta abrir**, e a espera vivia COPIADA em parte dos consumidores: em máquina mais lenta que a de origem, `vivo:abas` e `vivo:caminho` levavam `ERR_CONNECTION_REFUSED` com o produto certo | ✅ 08/08 — a espera desceu para a fonte única (`scripts/lib/servidor-de-teste.mjs:135`): teto de 30 s, servidor morto é acusado pelo código de saída, estouro derruba. A rede de segurança da saída passou a valer **fora do Windows** (um órfão de vite VIVO neste contêiner foi a prova de que ela faltava) e o 4º consumidor fora da fonte única (`scripts/validar-seletor-de-meses.mjs:27` — nascera com o `spawn('npx'…, shell: true)` que o cabeçalho da própria fonte única denuncia) foi migrado. Prova: os dois scripts verdes no mesmo contêiner em que reprovavam |
+| P2.17 | **Janela de estabilização curta para downloads múltiplos** no `vivo:seletor`: a checagem "gera SÓ os meses marcados" concluía `0 arquivo(s)` antes de o primeiro download chegar — reprovava o produto certo em máquina lenta | ✅ 08/08 — espera o número prometido pelo rótulo do botão (até 20 s) e mantém a sobra proposital que flagra um TERCEIRO arquivo indevido (`scripts/validar-seletor-de-meses.mjs:87`). Prova: 11 de 11 checagens no contêiner em que dava 10 de 11 |
+| P2.18 | **`vivo:admin`, `vivo:celular` e `vivo:acessibilidade` estavam no grupo LOCAL do gate abrindo a URL PUBLICADA** — dentro do gate isso aprova a árvore que JÁ ESTÁ no ar, não a que se quer aprovar ("verde de outra árvore"), e onde a rede é fechada nem roda | ✅ 08/08 — os três servem o **build local** por padrão (`scripts/validar-admin.mjs:25`, `scripts/validar-celular.mjs:24`, `scripts/medir-acessibilidade.mjs:45`); a URL por argumento segue valendo para medir o site no ar depois do push. Prova: os três verdes num ambiente **sem** acesso ao site publicado |
+| P2.19 | **A régua de foco reprovava o anel `outline: auto`** — o desenhado pelo PRÓPRIO navegador: um build do Chromium computa a largura dele como `0px`, e a exigência de largura > 0 acusou **19 elementos certos** | ✅ 08/08 — `outline-style: auto` conta como anel (`scripts/medir-acessibilidade.mjs:213`), com **prova por pixel** antes da correção: a captura do botão focado mostra o anel pintado. Depois: foco visível em 47 de 47 |
 
 ---
 
@@ -179,7 +185,7 @@ precisa saber que existiram para não recriá-los:
 | P5.3 | 🟠 **`blocos.json` só cresce.** Nunca há arquivamento; a Contents API tem teto por arquivo | `public/dados/blocos.json` | Declarado. Hoje 183 turnos ≈ 42 KB. Medir o teto e decidir o corte antes de chegar perto |
 | P5.4 | 🟠 **Sem validação de esquema em `pessoas.json` e `blocos.json`.** Só `config.json` tem `completarConfig`. `id` duplicado, ou turno citando `id` inexistente, não são detectados | `src/dados/carregar.ts` | Declarado — o sintoma conhecido é o id cru aparecendo na tela |
 | P5.5 | **Idioma cravado** (pt-BR em toda tela) | todo texto de tela | ⏱️ **FASE 3, e só lá.** As fases 1 e 2 são congregações brasileiras. Não é dívida enquanto o escopo for o Brasil — está declarado, não esquecido |
-| P5.6 | ⚪ **Sem `LICENSE` e sem CI.** Repositório público de produto para vender, sem licença declarada; e o GATE roda na máquina de alguém — nada impede um `push` que nunca passou por ele | raiz do repositório | Declarado |
+| P5.6 | ⚪ **Sem CI.** O GATE roda na máquina de alguém — nada impede um `push` que nunca passou por ele. ⚠️ A metade "sem LICENSE" desta linha **envelheceu**: a licença proprietária existe na raiz desde 06/08/2026 (`b3ca016`), e este registro só foi corrigido em 08/08 | raiz do repositório | Declarado — ligar CI é decisão 👤 (consome minutos do GitHub Actions da conta) |
 | P5.7 | ⚪ **Casos-limite sem comportamento esperado escrito.** O desenho manda escrever os casos-limite (elenco vazio, bloco de um dia, todos ausentes) e lista os três — mas nunca diz qual é a saída correta de nenhum | `docs/superpowers/specs/` | Declarado |
 | P4.15 | 🏠 **Declarado — conferido nas TRÊS pontas em 06/08/2026** (código, este documento e a TELA: *"tolerância de 1 abaixo do teto (convenção de casa)"* aparece na conferência regra a regra, medido ao vivo). É o que o protocolo de desempate exige quando não há fonte externa. **A tolerância de 1 abaixo do teto é convenção de casa**, não padrão pesquisado. Se um cliente quiser outra, hoje é edição de código — `TOLERANCIA_ABAIXO_DO_TETO` em `regras.ts`. Candidata a virar configuração **quando alguém pedir**, não antes (§0 pede tela para o que varia; ninguém pediu ainda) | `src/dominio/regras.ts` | ⚪ **DECLARADA**, não é defeito — está no código, na tela e no `AGENTS.md` |
 | P4.9 | ⚪ **Declarado.** **O piso não é um máximo comprovado.** A busca é gulosa e **sem retrocesso**: é o maior que esta busca conseguiu, não o maior que existe. Já está declarado no docstring; trocar por busca com retrocesso é o que tornaria o número um máximo de fato | `src/dominio/gerador.ts` | Medido: piso 7 falha em 03/10/2026 |

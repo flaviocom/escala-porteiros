@@ -29,11 +29,21 @@
  * mede menos do que diz é pior que portão ausente: ele responde "está tudo bem" a uma pergunta
  * maior do que a que ele fez.
  *
+ * 🔴 P2.18 (08/08/2026): grupo LOCAL do `vivo:tudo` medindo a URL PUBLICADA era "verde de outra
+ * árvore" dentro do gate — e não rodava onde a rede é fechada. O padrão agora é o build local;
+ * a URL por argumento continua valendo para medir o site no ar.
+ *
  * Uso: node scripts/medir-acessibilidade.mjs [url]
  */
 import { chromium } from 'playwright'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { subirServidor } from './lib/servidor-de-teste.mjs'
 
-const URL = process.argv[2] ?? 'https://flaviocom.github.io/escala-porteiros/'
+const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..')
+const PORTA = 4304
+const servidor = process.argv[2] ? null : await subirServidor({ raiz: RAIZ, porta: PORTA, modo: 'preview' })
+const URL = process.argv[2] ?? servidor.url
 const PISO_NORMAL = 4.5
 const PISO_GRANDE = 3.0
 
@@ -196,7 +206,11 @@ async function medirFoco(pagina) {
       const w = window
       if (primeiraVolta) w.__primeiroFocavel = a
       const cs = getComputedStyle(a)
-      const temAnel = cs.outlineStyle !== 'none' && parseFloat(cs.outlineWidth) > 0
+      // 🔴 `outline-style: auto` É anel — o desenhado pelo próprio navegador. Um build do Chromium
+      // computa a largura dele como 0px (medido em 08/08/2026, com prova por pixel: o anel pinta);
+      // exigir largura > 0 nesse caso reprovava 19 elementos certos. A largura só desempata quando
+      // o estilo não é `auto`.
+      const temAnel = cs.outlineStyle === 'auto' || (cs.outlineStyle !== 'none' && parseFloat(cs.outlineWidth) > 0)
       return {
         tag: a.tagName,
         marca: `${a.tagName}|${(a.textContent ?? '').trim().slice(0, 30)}|${a.className?.toString?.().slice(0, 30) ?? ''}`,
@@ -395,6 +409,7 @@ if (!tabulados.length) problemas.push('nada recebe foco ao tabular — navegaç�
 else if (semAnel) problemas.push(`${semAnel} elemento(s) sem anel de foco visível`)
 
 console.log('─'.repeat(70))
+await servidor?.derrubar()
 if (problemas.length) {
   console.error(`\n🔴 ${problemas.join(' · ')}\n`)
   process.exit(1)
