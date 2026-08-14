@@ -134,6 +134,16 @@ escala pelo site (S-054).
    mantido. *Por quê:* `_padroes-globais/DENOMINACAO_SEM_JARGAO_DE_IA.md` — e renomear no código
    criaria dialeto privado que quebra a portabilidade.
 
+## 3.1 MÉTODO — o global diz o quê, aqui se diz o como
+
+Método de engenharia = **Gauntlet Loop**, padrão global desde 14/08/2026:
+`D:\Antigravity\_padroes-globais\METODO_GAUNTLET_LOOP.md` (§8 — "o global diz O QUÊ, o projeto diz
+COMO"). Protocolo de ciclo completo em `D:\Antigravity\_padroes-globais\ENGINEERING_LOOP.md`.
+
+**A adaptação local deste projeto mora NESTE arquivo** — o GATE de 10 passos (§5), o ciclo de
+trabalho (§8) e os "nunca faça" (§9) são o "como" concreto de escala-porteiros: fuso testado em
+Berlim, publicação bloqueada enquanto a validação reprovar, bloco publicado nunca reescrito.
+
 ## 4. Convenções de domínio já pesquisadas
 
 | Assunto | Convenção | Por quê |
@@ -240,6 +250,7 @@ aqui. Escrito para quem **não participou de nada** — inclusive outra intelig�
 | Lembrete de véspera no WhatsApp (ponte Charmway, VPS, passos do dono) | [`docs/LEMBRETE_WHATSAPP.md`](docs/LEMBRETE_WHATSAPP.md) |
 | Fatias arquivadas dos logs | [`docs/historico/INDICE.md`](docs/historico/INDICE.md) |
 | **De onde vem cada dado**, a que custo, e se dá para pagar menos | [`docs/INVENTARIO_DE_FONTES.md`](docs/INVENTARIO_DE_FONTES.md) |
+| Comparação de conformidade com o projeto-irmão `charmway-erp` | [`docs/TABELA_CONFORMIDADE_PROJETOS_IRMAOS.md`](docs/TABELA_CONFORMIDADE_PROJETOS_IRMAOS.md) |
 | Método de trabalho | `D:\Antigravity\_padroes-globais\` |
 
 ## 8. Como se trabalha

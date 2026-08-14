@@ -2,7 +2,7 @@
 
 > **Onde o projeto está agora.** Documento **vivo**: sobrescrito, não acumulado.
 >
-> **Última atualização:** 08/08/2026 · **Fuso:** America/São_Paulo
+> **Última atualização:** 14/08/2026 · **Fuso:** America/São_Paulo
 >
 > **Cadeia de navegação, nesta ordem:**
 > **`ESTADO.md` (você está aqui)** → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-08-b.md) → [`BACKLOG.md`](BACKLOG.md)
@@ -13,6 +13,18 @@
 > **Solicitações:** [`docs/solicitacoes/INDICE_DE_SOLICITACOES.md`](docs/solicitacoes/INDICE_DE_SOLICITACOES.md) ·
 > **Histórico:** [`docs/historico/INDICE.md`](docs/historico/INDICE.md) ·
 > **Fontes de dados:** [`docs/INVENTARIO_DE_FONTES.md`](docs/INVENTARIO_DE_FONTES.md)
+
+---
+
+## 🪑 MESA DO DONO
+
+> Recado do Flavio para quem assumir a sessão — lido ANTES de tudo o mais. **Vazio agora.** Como
+> usar: o dono escreve aqui em texto livre (prioridade, decisão, contexto que não cabe no
+> `BACKLOG.md`); a sessão seguinte lê isto primeiro, ao abrir o `ESTADO.md` — ordem de leitura
+> completa (e por quê) em [`AGENTS.md`](AGENTS.md) — e apaga o recado depois de atender: esta mesa
+> nunca acumula.
+
+*(nada na mesa agora)*
 
 ---
 

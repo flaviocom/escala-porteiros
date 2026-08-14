@@ -28,5 +28,12 @@
     "AGENTS.md",
     "ESTADO.md",
     "BACKLOG.md"
-  ]
+  ],
+
+  "_metadata_projeto": {
+    "_comentario": "Informativo — pre-voo.mjs NÃO lê estas chaves (só cli/env/git/arquivos/docs/deps; scripts/pre-voo.mjs:82-99). Ficam para o humano ou a IA que abrir o manifesto ter contexto rápido, sem virar portão silencioso.",
+    "site": "https://flaviocom.github.io/escala-porteiros/ — AGENTS.md:38, ESTADO.md:49",
+    "repositorio_github": "https://github.com/flaviocom/escala-porteiros — público, Pages via branch main + /docs. Sem .github/workflows (sem Actions/CI): publicação é por commit direto, não por pipeline.",
+    "hospedagem": "GitHub Pages — branch main + /docs"
+  }
 }
