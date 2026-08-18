@@ -5,7 +5,7 @@
 > **Última atualização:** 18/08/2026 · **Fuso:** America/São_Paulo
 >
 > **Cadeia de navegação, nesta ordem:**
-> **`ESTADO.md` (você está aqui)** → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-18.md) → [`BACKLOG.md`](BACKLOG.md)
+> **`ESTADO.md` (você está aqui)** → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-18-b.md) → [`BACKLOG.md`](BACKLOG.md)
 > *onde estamos · o que aconteceu na última sessão e por quê · o que fazer a seguir*
 >
 > **Reconstruir do zero (portabilidade entre IAs):** [`docs/RECONSTRUIR.md`](docs/RECONSTRUIR.md)
@@ -25,6 +25,15 @@
 > nunca acumula.
 
 *(nada na mesa agora)*
+
+---
+
+## Handoff ativo
+
+Sem handoff ativo.
+
+Formato em `COEXISTENCIA_HANDOFF_E_CONTEXTO.md`, dos padrões globais — usar quando houver troca de
+agente/harness ou trabalho paralelo em arquivos disjuntos.
 
 ---
 

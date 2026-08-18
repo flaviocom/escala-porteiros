@@ -7,7 +7,7 @@
 > **Este arquivo é o ROTEADOR do projeto.** Ordem de leitura, e ela importa:
 >
 > **1.** este arquivo (como se trabalha) → **2.** [`ESTADO.md`](ESTADO.md) (onde estamos) →
-> **3.** [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-18.md) (o que aconteceu e por quê) →
+> **3.** [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-18-b.md) (o que aconteceu e por quê) →
 > **4.** [`BACKLOG.md`](BACKLOG.md) (o que fazer a seguir)
 >
 > Só depois, e só o trecho de que precisar, os índices:
@@ -215,6 +215,15 @@ que `C:`. Clone numa pasta em `C:` para trabalhar, e traga de volta por `git pul
 - ⚠️ O `git fetch` na pasta `D:` cai com `early EOF` por causa do disco. Se acontecer:
   `git config http.postBuffer 524288000 && git config core.compression 0` e repita.
 
+## 6.1 Capacidades locais — nada de script órfão
+
+Os 60 scripts de `scripts/` (portões, validações ao vivo, ferramentas de dados) estão catalogados
+em [`docs/capacidades.json`](docs/capacidades.json), cada um com ramo, gatilho, propósito e o
+portão que prova que funciona — padrão de
+`D:\Antigravity\_padroes-globais\ARVORE_DE_CAPACIDADES.md`. Ao criar um script novo em `scripts/`,
+registre a folha no mesmo passo; `node D:/Antigravity/_padroes-globais/scripts/checar-capilaridade.mjs .`
+reprova capacidade local sem folha (o `pre-voo.mjs` já roda isso sozinho quando o manifesto existe).
+
 ## 7. Onde ler o quê
 
 ### 🔵 Nunca viu este projeto? Comece aqui
@@ -239,7 +248,7 @@ aqui. Escrito para quem **não participou de nada** — inclusive outra intelig�
 | Vou mexer em… | Leia antes |
 |---|---|
 | Estado atual | [`ESTADO.md`](ESTADO.md) |
-| O que aconteceu na última sessão, e por quê | [`docs/handoff/HANDOFF_2026-08-18.md`](docs/handoff/HANDOFF_2026-08-18.md) · [índice](docs/handoff/INDICE.md) |
+| O que aconteceu na última sessão, e por quê | [`docs/handoff/HANDOFF_2026-08-18-b.md`](docs/handoff/HANDOFF_2026-08-18-b.md) · [índice](docs/handoff/INDICE.md) |
 | O que falta | [`BACKLOG.md`](BACKLOG.md) |
 | Regras da escala, modelo de dados, motor | [`o desenho`](docs/superpowers/specs/2026-08-04-area-administrativa-escala-design.md) |
 | **Por que** uma decisão foi tomada, e como revertê-la | [`DIARIO_DE_BORDO.md`](DIARIO_DE_BORDO.md) |

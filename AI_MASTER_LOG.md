@@ -4,7 +4,7 @@
 > O **porquê** de cada decisão vive no [`DIARIO_DE_BORDO.md`](DIARIO_DE_BORDO.md); aqui fica o
 > registro do que foi feito, passo a passo.
 >
-> **Cadeia de navegação:** [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-18.md) → [`BACKLOG.md`](BACKLOG.md)
+> **Cadeia de navegação:** [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-18-b.md) → [`BACKLOG.md`](BACKLOG.md)
 > **Roteador:** [`AGENTS.md`](AGENTS.md) ·
 > **Solicitações:** [`docs/solicitacoes/INDICE_DE_SOLICITACOES.md`](docs/solicitacoes/INDICE_DE_SOLICITACOES.md) ·
 > **Fatias arquivadas:** [`docs/historico/INDICE.md`](docs/historico/INDICE.md)
@@ -966,3 +966,16 @@ atual). `ESTADO.md` estourou o teto do regime "vivo" e foi rotacionado por assun
 (`docs/HISTORICO_ESTADO_2026-08.md`, referência); o autoteste da guarda foi ligado ao gate como
 15º passo (33 no total), com as duas listas numeradas renumeradas e conferidas. `npm run gate`
 completo: 33 passos, `EXIT_GATE=0`, selo `eb588b17980c`. **Solicitação:** S-057.
+
+---
+
+## 18/08/2026 — S-058: a árvore de capacidades adotada, sem tocar no padrão-ouro
+
+Flavio apontou para método global novo (árvore de capacidades + coexistência de harnesses),
+100% não commitado em `_padroes-globais`, e pediu para adaptar ao projeto sem alterar o
+padrão-ouro em si. `docs/capacidades.json` cataloga os 60 scripts de `scripts/` em 4 ramos;
+`AGENTS.md` §6.1 aponta para o mapa; `## Handoff ativo` entrou em `ESTADO.md`.
+`checar-capilaridade.mjs` e `pre-voo.mjs` (globais) rodados contra o projeto: OK. Achado no
+caminho: `conferir-citacoes.mjs` é mais rigoroso (confere símbolo) que o `portao-citacoes.mjs`
+ligado ao gate, e estava órfão — virou P8.1 do BACKLOG, decisão do dono. `npm run gate`: 33
+passos, `EXIT_GATE=0`, selo `eb2cc89056dc`. **Solicitação:** S-058.

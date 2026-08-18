@@ -6,7 +6,7 @@
 > **Última atualização:** 18/08/2026
 >
 > **Cadeia de navegação, nesta ordem:**
-> [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-18.md) → **`BACKLOG.md` (você está aqui)**
+> [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-18-b.md) → **`BACKLOG.md` (você está aqui)**
 >
 > **Roteador do projeto:** [`AGENTS.md`](AGENTS.md) ·
 > **Solicitações:** [`docs/solicitacoes/INDICE_DE_SOLICITACOES.md`](docs/solicitacoes/INDICE_DE_SOLICITACOES.md) ·
@@ -189,6 +189,7 @@ precisa saber que existiram para não recriá-los:
 | P5.7 | **Casos-limite sem comportamento esperado escrito** — o desenho listava três (elenco vazio, bloco de um dia, todos ausentes) sem dizer a saída correta de nenhum | ✅ **FECHADO 08/08** — os três MEDIDOS antes de afirmados: o código já fazia o certo (D-03 cobre todos — recusa declarada com motivo acionável; um dia com culto gera com piso 1). Saída esperada escrita em `docs/ALGORITMO.md` (§ Casos-limite) e travada em `src/dominio/casos-limite.test.ts` (4 testes) — uma regressão que trocasse recusa declarada por escala vazia silenciosa agora fica vermelha |
 | P4.15 | 🏠 **Declarado — conferido nas TRÊS pontas em 06/08/2026** (código, este documento e a TELA: *"tolerância de 1 abaixo do teto (convenção de casa)"* aparece na conferência regra a regra, medido ao vivo). É o que o protocolo de desempate exige quando não há fonte externa. **A tolerância de 1 abaixo do teto é convenção de casa**, não padrão pesquisado. Se um cliente quiser outra, hoje é edição de código — `TOLERANCIA_ABAIXO_DO_TETO` em `regras.ts`. Candidata a virar configuração **quando alguém pedir**, não antes (§0 pede tela para o que varia; ninguém pediu ainda) | `src/dominio/regras.ts` | ⚪ **DECLARADA**, não é defeito — está no código, na tela e no `AGENTS.md` |
 | P4.9 | ⚪ **Declarado.** **O piso não é um máximo comprovado.** A busca é gulosa e **sem retrocesso**: é o maior que esta busca conseguiu, não o maior que existe. Já está declarado no docstring; trocar por busca com retrocesso é o que tornaria o número um máximo de fato | `src/dominio/gerador.ts` | Medido: piso 7 falha em 03/10/2026 |
+| P8.1 | 🔵 **Dois portões de citação fazem o mesmo trabalho, e o mais fraco é o que está ligado ao gate.** `scripts/conferir-citacoes.mjs` (origem do P6.10, 05/08) também confere o SÍMBOLO citado junto da linha — o wired `scripts/portao-citacoes.mjs` (`npm run citacoes`, no gate) só confere que arquivo e linha existem. Achado ao construir `docs/capacidades.json` (S-058, adoção da árvore de capacidades) — `conferir-citacoes.mjs` ficou órfão, sem `npm run` e fora do gate | `scripts/conferir-citacoes.mjs`, `scripts/portao-citacoes.mjs` | Declarado — decisão 👤: religar `conferir-citacoes.mjs` no lugar do atual, ou fundir o cheque de símbolo dentro dele. Nenhum dos dois some sem decisão |
 
 ---
 

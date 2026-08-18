@@ -4,7 +4,7 @@
 > como reverter.** Documento **append-only**, fatiado por período ao estourar o teto. **Nada é
 > excluído, nunca.**
 >
-> **Cadeia de navegação:** [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-18.md) → [`BACKLOG.md`](BACKLOG.md)
+> **Cadeia de navegação:** [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-18-b.md) → [`BACKLOG.md`](BACKLOG.md)
 > **Roteador:** [`AGENTS.md`](AGENTS.md) ·
 > **Solicitações:** [`docs/solicitacoes/INDICE_DE_SOLICITACOES.md`](docs/solicitacoes/INDICE_DE_SOLICITACOES.md) ·
 > **Histórico:** [`docs/historico/INDICE.md`](docs/historico/INDICE.md)
@@ -1577,3 +1577,56 @@ depreciado (nenhuma exploração conhecida, mas o aviso volta), as citações cr
 apontar para o repositório errado, P5.3 volta a "por medir", `ESTADO.md` volta a carregar o
 narrativo inteiro toda sessão, e o autoteste da guarda volta a não rodar em lugar nenhum. Produto:
 nada muda — nenhuma linha de `src/` foi tocada.
+
+---
+
+## DB-054 · 18/08/2026 — a árvore de capacidades chegou, e achou um checador melhor que ninguém usava
+
+**O pedido:** S-058 — *"onde está a pesquisa e os próximos passos? workflow completo alterado em
+D:\Antigravity\_padroes-globais adaptado ao nosso sistema, e Template Gauntlet Loop."* Depois de eu
+mostrar a pesquisa e perguntar o que fazer com o método global ainda não commitado, a resposta
+dele fechou o escopo: *"opere sempre da maneira definida em `_padroes-globais`... adapte o padrão
+à nossa realidade (do site...). Não é para alterar o padrão-ouro; quando for necessário, solicito."*
+
+**O que existia, sem eu ter escrito uma linha:** `_padroes-globais` tinha 14 arquivos modificados e
+6 novos, 100% não commitados — `ARVORE_DE_CAPACIDADES.md` (skill/agente/ferramenta/hook local vira
+"folha" catalogada, com portão `checar-capilaridade.mjs`) e `COEXISTENCIA_HANDOFF_E_CONTEXTO.md`
+(protocolo de handoff entre Claude Code/Codex/DeepSeek, portão `checar-handoff.mjs`), cada um com
+pesquisa própria registrada (`pesquisas/2026-08-18_*.md`, fontes oficiais citadas, "conclusões
+rejeitadas" declaradas). Rodei os dois autotestes novos: **os dois passam** — as travas mordem.
+Não toquei em nada dentro de `_padroes-globais`, por instrução explícita.
+
+**A adoção no escala-porteiros — "nossa realidade", não o padrão-ouro em si:**
+
+1. **`docs/capacidades.json`**: os 60 scripts de `scripts/` viraram folhas — cada um com ramo
+   (`metodo` → `PORTOES.md`, `validacao-ao-vivo` → `OPERACAO.md`, `dados-e-algoritmo` →
+   `ALGORITMO.md`, `comunicacao` → `LEMBRETE_WHATSAPP.md`), gatilho, propósito e portão. `AGENTS.md`
+   ganhou a §6.1 apontando para o mapa. `checar-capilaridade.mjs` rodado contra o projeto: **OK**.
+2. **`## Handoff ativo`** em `ESTADO.md`, com "Sem handoff ativo." — só um agente escrevendo agora.
+   `checar-handoff.mjs` roda **OK** (exit 0), mas imprime uma mensagem enganosa: "não contém Handoff
+   ativo" mesmo quando a seção existe e diz corretamente que não há handoff — o script confunde
+   "seção ausente" com "seção presente dizendo N/A" na mesma linha de log (`resultado(true, false)`
+   dos dois lugares). **Achado no método global, não corrigido** (não é para alterar o padrão-ouro
+   — fica registrado para o Flavio decidir).
+3. **`pre-voo.mjs` (global) já reconhece o manifesto**: rodado contra o projeto, o grupo MÉTODO
+   ganhou a linha "árvore de capacidades ✅" — a integração fecha nas duas pontas.
+
+**🔴 O achado que valeu a pena catalogar tudo:** ao dar nome a cada um dos 60 scripts,
+`scripts/conferir-citacoes.mjs` (122 linhas — origem do portão de citações, P6.10 do BACKLOG,
+05/08/2026) apareceu **sem `npm run`, fora do gate, órfão** — e é **mais rigoroso** que
+`scripts/portao-citacoes.mjs` (92 linhas, o que está ligado a `npm run citacoes` hoje): o órfão
+também confere o SÍMBOLO citado junto da linha, não só se a linha existe. Registrado como **P8.1**
+no `BACKLOG.md` — decisão do dono, não resolvido sozinho (é escolha de arquitetura, não bug
+mecânico). Um segundo achado, menor: `scripts/provar-conferencia-por-turno.mjs` referencia um
+caminho de build que não existe mais E compara contra `git show HEAD:...`, que hoje já contém a
+correção que a prova originalmente demonstrava — não é "path errado", é uma prova histórica que
+**não pode ser reexecutada com o mesmo sentido**. Corrigida só a DESCRIÇÃO no mapa, para não afirmar
+reprodutibilidade que não existe.
+
+**Gate final do escala-porteiros, depois da adoção:** 33 passos, `EXIT_GATE=0`, selo
+`eb2cc89056dc`.
+
+**Como reverter.** `git revert` do commit desta entrada — `docs/capacidades.json` some, a §6.1 do
+`AGENTS.md` e a seção "Handoff ativo" do `ESTADO.md` somem, P8.1 sai do BACKLOG. Produto: nada
+muda — nenhuma linha de `src/` tocada. `_padroes-globais` não tem nada deste projeto para reverter,
+porque nada foi commitado lá.

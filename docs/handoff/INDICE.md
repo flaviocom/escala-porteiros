@@ -9,6 +9,7 @@
 
 | Data | Handoff | O que aconteceu |
 |---|---|---|
+| 18/08/2026 | [`HANDOFF_2026-08-18-b.md`](HANDOFF_2026-08-18-b.md) | **Parte 2 — a árvore de capacidades chegou** — o Flavio apontou para um método global novo (árvore de capacidades + coexistência de harnesses), 100% não commitado em `_padroes-globais`; adaptado ao projeto sem tocar no padrão-ouro em si: `docs/capacidades.json` cataloga os 60 scripts, `## Handoff ativo` entrou em `ESTADO.md`. Achado no caminho: `conferir-citacoes.mjs` é mais rigoroso que o `portao-citacoes.mjs` ligado ao gate, e estava órfão (virou P8.1). Gate final: 33 passos, selo `eb2cc89056dc`. |
 | 18/08/2026 | [`HANDOFF_2026-08-18.md`](HANDOFF_2026-08-18.md) | **A reconciliação, e 3 defeitos achados sem ninguém pedir** — a cópia local estava 6 commits atrás do `origin/main`; um commit de sincronização escrito sobre base velha foi descartado antes do push. Com a cópia certa: `DEP0190` corrigido no disparador de validações ao vivo (`execFileSync`+`shell:true` → `execSync` + guarda testável), `npm run citacoes` VERMELHO por citações cruzando para o repositório charmway-erp (6 corrigidas, 2 com conteúdo ERRADO que o portão não detecta), e **P5.3 fechado com fonte oficial** (teto geral do GitHub; ~997 anos de folga). |
 | 08/08/2026 | [`HANDOFF_2026-08-08-b.md`](HANDOFF_2026-08-08-b.md) | **Parte 2 — merge na `main` e o loop que mapeou antes de mexer** — P0/P1 zerados pela informação do dono (a divulgação já tinha acontecido); S-052 a S-055 mergeados por rebase com a prova de que o servido não muda um byte; e a fila P5 fechada com o mapa mandando: **P5.4 já estava pronto no código** (só o registro devia), P5.7 medido por sonda e travado em 4 testes, P5.3 meio-medido (~49 KB/ano; teto da API por medir, rede bloqueada). |
 | 08/08/2026 | [`HANDOFF_2026-08-08.md`](HANDOFF_2026-08-08.md) | **A sessão perdida, a retomada pelos registros e as réguas no banco dos réus** — o gate rodou pela primeira vez fora da máquina de origem e 7 validações ao vivo reprovaram **sem nenhum defeito de produto**: corrida de largada na fonte única do servidor de teste, espera curta para downloads múltiplos, grupo LOCAL abrindo a URL publicada ("verde de outra árvore") e a régua de foco reprovando o anel `outline: auto` (19 inocentes, prova por pixel). Tudo corrigido: **15 de 15 verdes**. ⚠️ A chave do lembrete perdeu o par privado — aviso no runbook. |
@@ -33,7 +34,7 @@
 
 ---
 
-**Handoff mais recente:** [`HANDOFF_2026-08-18.md`](HANDOFF_2026-08-18.md)
+**Handoff mais recente:** [`HANDOFF_2026-08-18-b.md`](HANDOFF_2026-08-18-b.md)
 
 Ligações: [`../solicitacoes/INDICE_DE_SOLICITACOES.md`](../solicitacoes/INDICE_DE_SOLICITACOES.md) ·
 [`../historico/INDICE.md`](../historico/INDICE.md) ·

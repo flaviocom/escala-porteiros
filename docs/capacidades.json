@@ -1,0 +1,568 @@
+{
+  "versao": 1,
+  "tronco": [
+    "AGENTS.md",
+    "ESTADO.md",
+    "BACKLOG.md"
+  ],
+  "ramos": [
+    {
+      "id": "metodo",
+      "documento": "docs/PORTOES.md"
+    },
+    {
+      "id": "validacao-ao-vivo",
+      "documento": "docs/OPERACAO.md"
+    },
+    {
+      "id": "dados-e-algoritmo",
+      "documento": "docs/ALGORITMO.md"
+    },
+    {
+      "id": "comunicacao",
+      "documento": "docs/LEMBRETE_WHATSAPP.md"
+    }
+  ],
+  "folhas": [
+    {
+      "id": "portao-segredos",
+      "tipo": "ferramenta",
+      "caminho": "scripts/portao-segredos.mjs",
+      "ramo": "metodo",
+      "gatilho": "npm run segredos (1º passo do gate)",
+      "proposito": "nenhum segredo em arquivo versionado — repositório público",
+      "portao": "npm run gate — exit 0 obrigatório, autoteste nas duas pontas (token válido injetado → EXIT 1; árvore limpa → EXIT 0)"
+    },
+    {
+      "id": "testar-em-outro-fuso",
+      "tipo": "ferramenta",
+      "caminho": "scripts/testar-em-outro-fuso.mjs",
+      "ramo": "metodo",
+      "gatilho": "npm run test:fuso:berlim",
+      "proposito": "roda a suíte inteira em Europe/Berlin, depois de provar que o fuso mudou",
+      "portao": "npm run gate — exit 0 obrigatório"
+    },
+    {
+      "id": "medir-denominacao-sem-ia",
+      "tipo": "ferramenta",
+      "caminho": "scripts/medir-denominacao-sem-ia.mjs",
+      "ramo": "metodo",
+      "gatilho": "npm run denominacao",
+      "proposito": "nenhum jargão de IA (\"prompt\", \"chatbot\"...) em texto que alguém lê",
+      "portao": "npm run gate — exit 0; autoteste embutido (9 infratores + 13 absolvições)"
+    },
+    {
+      "id": "portao-markdown-cru",
+      "tipo": "ferramenta",
+      "caminho": "scripts/portao-markdown-cru.mjs",
+      "ramo": "metodo",
+      "gatilho": "npm run markdown-cru",
+      "proposito": "asterisco/crase de markdown vazando para a tela em vez de renderizar",
+      "portao": "npm run gate — exit 0; provado nas quatro pontas"
+    },
+    {
+      "id": "inventariar-fontes",
+      "tipo": "ferramenta",
+      "caminho": "scripts/inventariar-fontes.mjs",
+      "ramo": "metodo",
+      "gatilho": "npm run fontes",
+      "proposito": "nenhuma fonte externa (host) chamada sem estar declarada no inventário",
+      "portao": "npm run gate — exit 0; autoteste embutido"
+    },
+    {
+      "id": "conferir-contagem-de-regras",
+      "tipo": "ferramenta",
+      "caminho": "scripts/conferir-contagem-de-regras.mjs",
+      "ramo": "metodo",
+      "gatilho": "npm run contagem",
+      "proposito": "nenhum documento vivo declara um número de regras que o catálogo desmente",
+      "portao": "npm run gate — exit 0; autoteste embutido"
+    },
+    {
+      "id": "portao-ordem-do-gate",
+      "tipo": "ferramenta",
+      "caminho": "scripts/portao-ordem-do-gate.mjs",
+      "ramo": "metodo",
+      "gatilho": "npm run ordem-do-gate",
+      "proposito": "a ordem numerada escrita em PORTOES.md/OPERACAO.md é a ordem que o gate roda de verdade",
+      "portao": "npm run gate — exit 0; autoteste embutido"
+    },
+    {
+      "id": "conferir-cadeia-de-navegacao",
+      "tipo": "ferramenta",
+      "caminho": "scripts/conferir-cadeia-de-navegacao.mjs",
+      "ramo": "metodo",
+      "gatilho": "npm run cadeia",
+      "proposito": "AGENTS/ESTADO/BACKLOG e os índices apontam para o handoff que É o mais recente",
+      "portao": "npm run gate — exit 0; autoteste embutido"
+    },
+    {
+      "id": "portao-handoff-orfao",
+      "tipo": "ferramenta",
+      "caminho": "scripts/portao-handoff-orfao.mjs",
+      "ramo": "metodo",
+      "gatilho": "npm run handoff-orfao",
+      "proposito": "todo handoff em disco está no índice, e nenhum link do índice aponta para o vazio",
+      "portao": "npm run gate — exit 0"
+    },
+    {
+      "id": "portao-proximo-id",
+      "tipo": "ferramenta",
+      "caminho": "scripts/portao-proximo-id.mjs",
+      "ramo": "metodo",
+      "gatilho": "npm run proximo-id",
+      "proposito": "o \"próximo identificador livre\" anunciado é mesmo o próximo — nenhum S-xxx duplicado",
+      "portao": "npm run gate — exit 0"
+    },
+    {
+      "id": "portao-generico",
+      "tipo": "ferramenta",
+      "caminho": "scripts/portao-generico.mjs",
+      "ramo": "metodo",
+      "gatilho": "npm run generico",
+      "proposito": "nenhum nome de cliente cravado fora de docs/config.json (§0 do AGENTS.md)",
+      "portao": "npm run gate — exit 0"
+    },
+    {
+      "id": "autoteste-portao-generico",
+      "tipo": "ferramenta",
+      "caminho": "scripts/autoteste-portao-generico.mjs",
+      "ramo": "metodo",
+      "gatilho": "npm run generico:autoteste",
+      "proposito": "prova que portao-generico.mjs morde: 21 casos, infratores e limpos, mais autodefesa da regex",
+      "portao": "npm run gate — exit 0"
+    },
+    {
+      "id": "autoteste-guarda-nome-vivo",
+      "tipo": "ferramenta",
+      "caminho": "scripts/autoteste-guarda-nome-vivo.mjs",
+      "ramo": "metodo",
+      "gatilho": "npm run guarda-vivo:autoteste",
+      "proposito": "prova que a guarda do disparador ao vivo morde: 6 nomes limpos aprovados, 10 hostis barrados",
+      "portao": "npm run gate — exit 0"
+    },
+    {
+      "id": "portao-generico-docs",
+      "tipo": "ferramenta",
+      "caminho": "scripts/portao-generico-docs.mjs",
+      "ramo": "metodo",
+      "gatilho": "npm run generico:docs",
+      "proposito": "o nome do cliente na DOCUMENTAÇÃO é inventário fechado — citação a mais ou a menos reprova",
+      "portao": "npm run gate — exit 0"
+    },
+    {
+      "id": "portao-citacoes",
+      "tipo": "ferramenta",
+      "caminho": "scripts/portao-citacoes.mjs",
+      "ramo": "metodo",
+      "gatilho": "npm run citacoes",
+      "proposito": "toda citação `arquivo:linha` em documento vivo aponta para arquivo e linha que existem",
+      "portao": "npm run gate — exit 0"
+    },
+    {
+      "id": "conferir-citacoes",
+      "tipo": "ferramenta",
+      "caminho": "scripts/conferir-citacoes.mjs",
+      "ramo": "metodo",
+      "gatilho": "manual — node scripts/conferir-citacoes.mjs (NÃO ligado a nenhum npm run nem ao gate hoje)",
+      "proposito": "origem do portão de citações (BACKLOG P6.10, 05/08/2026) — mais rigoroso que o wired hoje: também confere o SÍMBOLO citado junto da linha, não só se a linha existe",
+      "portao": "nenhum — achado desta rodada: capacidade órfã, registrada no BACKLOG para decisão (consolidar com portao-citacoes.mjs ou religar)"
+    },
+    {
+      "id": "gerar-catalogo-de-regras",
+      "tipo": "ferramenta",
+      "caminho": "scripts/gerar-catalogo-de-regras.mjs",
+      "ramo": "metodo",
+      "gatilho": "npm run doc:regras / npm run doc:regras:conferir",
+      "proposito": "gera CATALOGO_DE_REGRAS.md a partir do código e confere que o documento bate com a fonte",
+      "portao": "npm run gate — exit 0"
+    },
+    {
+      "id": "conferir-comandos-da-documentacao",
+      "tipo": "ferramenta",
+      "caminho": "scripts/conferir-comandos-da-documentacao.mjs",
+      "ramo": "metodo",
+      "gatilho": "npm run doc:comandos",
+      "proposito": "todo `npm run X` e `node scripts/Y` citado na documentação existe de verdade",
+      "portao": "npm run gate — exit 0"
+    },
+    {
+      "id": "conferir-arquitetura",
+      "tipo": "ferramenta",
+      "caminho": "scripts/conferir-arquitetura.mjs",
+      "ramo": "metodo",
+      "gatilho": "npm run arquitetura",
+      "proposito": "o domínio (src/dominio/) não importa nada de fora dele; a 2ª régua não virou espelho da 1ª",
+      "portao": "npm run gate — exit 0"
+    },
+    {
+      "id": "medir-fatos",
+      "tipo": "ferramenta",
+      "caminho": "scripts/medir-fatos.mjs",
+      "ramo": "metodo",
+      "gatilho": "npm run fatos / npm run fatos:conferir",
+      "proposito": "mede fatos do projeto (passos do gate, testes, turnos...) e confere que nenhum documento os desmente",
+      "portao": "npm run gate — exit 0"
+    },
+    {
+      "id": "portao-datas",
+      "tipo": "ferramenta",
+      "caminho": "scripts/portao-datas.mjs",
+      "ramo": "metodo",
+      "gatilho": "npm run datas",
+      "proposito": "nenhuma data/mês é extraído de toISOString() nem Date.UTC lido com getter local (defeito de fuso)",
+      "portao": "npm run gate — exit 0"
+    },
+    {
+      "id": "medir-crescimento",
+      "tipo": "ferramenta",
+      "caminho": "scripts/medir-crescimento.mjs",
+      "ramo": "metodo",
+      "gatilho": "npm run crescimento",
+      "proposito": "os dados publicados (blocos/pessoas/config.json) ainda cabem no teto da Contents API do GitHub",
+      "portao": "npm run gate — exit 0"
+    },
+    {
+      "id": "conferir-tamanho-docs",
+      "tipo": "ferramenta",
+      "caminho": "scripts/conferir-tamanho-docs.mjs",
+      "ramo": "metodo",
+      "gatilho": "npm run tamanho-docs",
+      "proposito": "nenhum documento passou do teto do próprio regime (vivo 400L/40KB, referência 800L/100KB, histórico 2000L/200KB)",
+      "portao": "npm run gate — exit 0; autoteste embutido (401 linhas reprova, 399 passa)"
+    },
+    {
+      "id": "auditoria-adversarial",
+      "tipo": "ferramenta",
+      "caminho": "scripts/auditoria-adversarial.mjs",
+      "ramo": "metodo",
+      "gatilho": "npm run auditoria",
+      "proposito": "21 ataques ao próprio código, com infrator injetado em cada frente",
+      "portao": "npm run gate — exit 0"
+    },
+    {
+      "id": "medir-regras-mestras",
+      "tipo": "ferramenta",
+      "caminho": "scripts/medir-regras-mestras.mjs",
+      "ramo": "metodo",
+      "gatilho": "npm run regras-mestras",
+      "proposito": "tooltip em todo botão da tela, sem aspas duplas quebrando o atributo HTML",
+      "portao": "npm run gate — exit 0"
+    },
+    {
+      "id": "selar-arvore",
+      "tipo": "ferramenta",
+      "caminho": "scripts/selar-arvore.mjs",
+      "ramo": "metodo",
+      "gatilho": "npm run selo:gravar (fim do gate) / npm run selo:conferir (antes de commitar)",
+      "proposito": "grava e confere a impressão digital da árvore — prova que o verde do gate é DESTA árvore, não de outra",
+      "portao": "npm run selo:conferir — exit 0 obrigatório antes de qualquer commit"
+    },
+    {
+      "id": "refazer-o-publicado",
+      "tipo": "ferramenta",
+      "caminho": "scripts/refazer-o-publicado.mjs",
+      "ramo": "metodo",
+      "gatilho": "npm run refazer",
+      "proposito": "a escala NO AR pode ser refeita do zero a partir do que ela mesma registra (período, elenco, malha, piso, semente)",
+      "portao": "npm run gate — exit 0"
+    },
+    {
+      "id": "gerar-imagem-exemplo",
+      "tipo": "ferramenta",
+      "caminho": "scripts/gerar-imagem-exemplo.mjs",
+      "ramo": "metodo",
+      "gatilho": "npm run imagem",
+      "proposito": "único passo que RENDERIZA O PIXEL: gera a imagem do WhatsApp pelo botão de verdade e mede o DOM que virou PNG",
+      "portao": "npm run gate — exit 0"
+    },
+    {
+      "id": "medir-tempo-de-geracao",
+      "tipo": "ferramenta",
+      "caminho": "scripts/medir-tempo-de-geracao.mjs",
+      "ramo": "metodo",
+      "gatilho": "npm run tempo",
+      "proposito": "a geração da escala não regrediu de desempenho",
+      "portao": "npm run gate — exit 0"
+    },
+    {
+      "id": "ensaio-troca-de-elenco",
+      "tipo": "ferramenta",
+      "caminho": "scripts/ensaio-troca-de-elenco.mjs",
+      "ramo": "metodo",
+      "gatilho": "npm run ensaio",
+      "proposito": "o cenário que ORIGINOU o projeto, ponta a ponta: alguém sai, outro entra com 4 restrições, refaz a escala",
+      "portao": "npm run gate — exit 0"
+    },
+    {
+      "id": "lib-guarda-nome-vivo",
+      "tipo": "ferramenta",
+      "caminho": "scripts/lib/guarda-nome-vivo.mjs",
+      "ramo": "metodo",
+      "gatilho": "importado por rodar-validacoes-ao-vivo.mjs, nunca executado sozinho",
+      "proposito": "fonte única do padrão que um nome de script vivo:* tem de bater antes de virar string de shell (defesa contra DEP0190)",
+      "portao": "npm run guarda-vivo:autoteste — 6 limpos aprovados, 10 hostis barrados"
+    },
+    {
+      "id": "rodar-validacoes-ao-vivo",
+      "tipo": "ferramenta",
+      "caminho": "scripts/rodar-validacoes-ao-vivo.mjs",
+      "ramo": "validacao-ao-vivo",
+      "gatilho": "npm run vivo:tudo (grupo LOCAL, no gate) / npm run vivo:no-ar (grupo NO AR, depois do push)",
+      "proposito": "descobre e roda TODOS os vivo:* do package.json — nenhum fica esquecido por falta de gatilho",
+      "portao": "npm run gate — exit 0; as 5 do grupo NO AR rodam manualmente depois do push"
+    },
+    {
+      "id": "lib-servidor-de-teste",
+      "tipo": "ferramenta",
+      "caminho": "scripts/lib/servidor-de-teste.mjs",
+      "ramo": "validacao-ao-vivo",
+      "gatilho": "importado por todo script vivo:* que precisa de servidor local",
+      "proposito": "fonte única que sobe o vite, espera a porta abrir (teto 30s) e limpa órfãos — evita corrida de largada",
+      "portao": "exercido indiretamente por todo npm run vivo:* que passa (15/15)"
+    },
+    {
+      "id": "validar-ao-vivo",
+      "tipo": "ferramenta",
+      "caminho": "scripts/validar-ao-vivo.mjs",
+      "ramo": "validacao-ao-vivo",
+      "gatilho": "npm run vivo (grupo NO AR)",
+      "proposito": "confere as 17 regras do catálogo contra o site PUBLICADO, não contra dado local",
+      "portao": "npm run vivo:no-ar — exit 0"
+    },
+    {
+      "id": "validar-admin",
+      "tipo": "ferramenta",
+      "caminho": "scripts/validar-admin.mjs",
+      "ramo": "validacao-ao-vivo",
+      "gatilho": "npm run vivo:admin",
+      "proposito": "a área administrativa abre, autentica e cifra a senha de verdade no navegador",
+      "portao": "npm run gate — exit 0"
+    },
+    {
+      "id": "validar-celular",
+      "tipo": "ferramenta",
+      "caminho": "scripts/validar-celular.mjs",
+      "ramo": "validacao-ao-vivo",
+      "gatilho": "npm run vivo:celular",
+      "proposito": "alvo de toque ≥ 44px e layout usável em viewport de celular",
+      "portao": "npm run gate — exit 0"
+    },
+    {
+      "id": "conferir-site-contra-dados",
+      "tipo": "ferramenta",
+      "caminho": "scripts/conferir-site-contra-dados.mjs",
+      "ramo": "validacao-ao-vivo",
+      "gatilho": "npm run vivo:conferir (grupo NO AR)",
+      "proposito": "o que o site MOSTRA bate, escalação a escalação, com o que os dados publicados DIZEM",
+      "portao": "npm run vivo:no-ar — exit 0"
+    },
+    {
+      "id": "conferir-historico-contra-site-antigo",
+      "tipo": "ferramenta",
+      "caminho": "scripts/conferir-historico-contra-site-antigo.mjs",
+      "ramo": "validacao-ao-vivo",
+      "gatilho": "npm run vivo:conferir-passado (grupo NO AR)",
+      "proposito": "o histórico congelado (pré-06/08) bate, dia a dia, com o que o site ANTIGO mostrava na tela",
+      "portao": "npm run vivo:no-ar — exit 0"
+    },
+    {
+      "id": "validar-entrar-sem-senha",
+      "tipo": "ferramenta",
+      "caminho": "scripts/validar-entrar-sem-senha.mjs",
+      "ramo": "validacao-ao-vivo",
+      "gatilho": "npm run vivo:entrar",
+      "proposito": "primeiro acesso funciona sem senha prévia, e a senha passa a ser exigida depois",
+      "portao": "npm run gate — exit 0"
+    },
+    {
+      "id": "validar-gerar-amigavel",
+      "tipo": "ferramenta",
+      "caminho": "scripts/validar-gerar-amigavel.mjs",
+      "ramo": "validacao-ao-vivo",
+      "gatilho": "npm run vivo:gerar",
+      "proposito": "o fluxo de Gerar escala na tela é usável e amigável de ponta a ponta",
+      "portao": "npm run gate — exit 0"
+    },
+    {
+      "id": "validar-quem-saiu",
+      "tipo": "ferramenta",
+      "caminho": "scripts/validar-quem-saiu.mjs",
+      "ramo": "validacao-ao-vivo",
+      "gatilho": "npm run vivo:quem-saiu",
+      "proposito": "pessoa desativada some da tela sem quebrar o histórico dela",
+      "portao": "npm run gate — exit 0"
+    },
+    {
+      "id": "validar-identidade-configuravel",
+      "tipo": "ferramenta",
+      "caminho": "scripts/validar-identidade-configuravel.mjs",
+      "ramo": "validacao-ao-vivo",
+      "gatilho": "npm run vivo:identidade",
+      "proposito": "nome, vocabulário e emblema do cliente são DADO, editáveis pela tela — nunca cravados",
+      "portao": "npm run gate — exit 0"
+    },
+    {
+      "id": "comparar-com-site-divulgado",
+      "tipo": "ferramenta",
+      "caminho": "scripts/comparar-com-site-divulgado.mjs",
+      "ramo": "dados-e-algoritmo",
+      "gatilho": "npm run vivo:divulgado -- --antigo <url> (nunca automático — exige URL na mão)",
+      "proposito": "compara a escala nova com o site que a congregação já tem o link, turno a turno",
+      "portao": "gesto de migração manual, feito uma vez; não entra no gate por construção"
+    },
+    {
+      "id": "validar-estado-entre-abas",
+      "tipo": "ferramenta",
+      "caminho": "scripts/validar-estado-entre-abas.mjs",
+      "ramo": "validacao-ao-vivo",
+      "gatilho": "npm run vivo:abas",
+      "proposito": "estado (versão gerada, fronteira) sobrevive à troca de aba na área administrativa",
+      "portao": "npm run gate — exit 0"
+    },
+    {
+      "id": "validar-caminho-do-flavio",
+      "tipo": "ferramenta",
+      "caminho": "scripts/validar-caminho-do-flavio.mjs",
+      "ramo": "validacao-ao-vivo",
+      "gatilho": "npm run vivo:caminho",
+      "proposito": "a sequência de cliques que o dono realmente faz (entrar→gerar→conferir→publicar) funciona inteira",
+      "portao": "npm run gate — exit 0"
+    },
+    {
+      "id": "validar-caminho-de-erro",
+      "tipo": "ferramenta",
+      "caminho": "scripts/validar-caminho-de-erro.mjs",
+      "ramo": "validacao-ao-vivo",
+      "gatilho": "npm run vivo:erro",
+      "proposito": "erro de rede/servidor na tela produz mensagem em pt-BR, nunca stack trace cru",
+      "portao": "npm run gate — exit 0"
+    },
+    {
+      "id": "medir-acessibilidade",
+      "tipo": "ferramenta",
+      "caminho": "scripts/medir-acessibilidade.mjs",
+      "ramo": "validacao-ao-vivo",
+      "gatilho": "npm run vivo:acessibilidade",
+      "proposito": "foco visível em todo elemento interativo, medido por pixel — não só por atributo ARIA",
+      "portao": "npm run gate — exit 0"
+    },
+    {
+      "id": "validar-seletor-de-meses",
+      "tipo": "ferramenta",
+      "caminho": "scripts/validar-seletor-de-meses.mjs",
+      "ramo": "validacao-ao-vivo",
+      "gatilho": "npm run vivo:seletor",
+      "proposito": "o seletor de meses da imagem do WhatsApp gera exatamente os meses marcados, nem mais nem menos",
+      "portao": "npm run gate — exit 0"
+    },
+    {
+      "id": "portao-rotulos",
+      "tipo": "ferramenta",
+      "caminho": "scripts/portao-rotulos.mjs",
+      "ramo": "validacao-ao-vivo",
+      "gatilho": "npm run vivo:rotulos",
+      "proposito": "todo campo de formulário tem rótulo associado (acessibilidade de leitor de tela)",
+      "portao": "npm run gate — exit 0"
+    },
+    {
+      "id": "portao-tela-quebrada",
+      "tipo": "ferramenta",
+      "caminho": "scripts/portao-tela-quebrada.mjs",
+      "ramo": "validacao-ao-vivo",
+      "gatilho": "npm run vivo:quebrada",
+      "proposito": "nenhuma tela renderiza em branco ou com erro visível do React (error boundary não disparou)",
+      "portao": "npm run gate — exit 0"
+    },
+    {
+      "id": "portao-gerar-outra",
+      "tipo": "ferramenta",
+      "caminho": "scripts/portao-gerar-outra.mjs",
+      "ramo": "validacao-ao-vivo",
+      "gatilho": "npm run vivo:outra",
+      "proposito": "o botão \"Não gostei — gerar outra combinação\" de fato descarta a versão recusada, na tela real",
+      "portao": "npm run gate — exit 0"
+    },
+    {
+      "id": "auditoria-independente-do-site",
+      "tipo": "ferramenta",
+      "caminho": "scripts/auditoria-independente-do-site.mjs",
+      "ramo": "validacao-ao-vivo",
+      "gatilho": "npm run vivo:auditoria (grupo NO AR) / npm run vivo:auditoria:autoteste",
+      "proposito": "audita o site publicado por fora, sem usar o catálogo de regras do próprio projeto — segunda régua",
+      "portao": "npm run vivo:no-ar — exit 0; autoteste próprio prova que ele mente de propósito para se testar"
+    },
+    {
+      "id": "veredito-do-publicado",
+      "tipo": "ferramenta",
+      "caminho": "scripts/veredito-do-publicado.mjs",
+      "ramo": "dados-e-algoritmo",
+      "gatilho": "npm run vivo:veredito (grupo NO AR)",
+      "proposito": "veredito medido pela URL publicada: as duas réguas + o auditor do site, tudo num só relatório",
+      "portao": "npm run vivo:no-ar — exit 0"
+    },
+    {
+      "id": "validar-publicar-de-verdade",
+      "tipo": "ferramenta",
+      "caminho": "scripts/validar-publicar-de-verdade.mjs",
+      "ramo": "validacao-ao-vivo",
+      "gatilho": "npm run vivo:publicar",
+      "proposito": "o botão Publicar de fato grava commit via API do GitHub — não só simula sucesso na tela",
+      "portao": "npm run gate — exit 0"
+    },
+    {
+      "id": "experimento-busca-local",
+      "tipo": "ferramenta",
+      "caminho": "scripts/experimento-busca-local.mjs",
+      "ramo": "dados-e-algoritmo",
+      "gatilho": "npm run experimento:busca-local",
+      "proposito": "reabre a decisão de método (GRASP): mede se busca local pós-geração melhora o resultado nos dados reais",
+      "portao": "roda sob demanda para revalidar a decisão registrada em PESQUISA_2026-08-07-metodos-rostering.md"
+    },
+    {
+      "id": "carga-inicial",
+      "tipo": "ferramenta",
+      "caminho": "scripts/carga-inicial.mjs",
+      "ramo": "dados-e-algoritmo",
+      "gatilho": "manual — node scripts/carga-inicial.mjs (já rodado uma vez, histórico congelado)",
+      "proposito": "carga única do histórico 01/03→04/08 a partir do site antigo — script de migração, não de rotina",
+      "portao": "já executado e fechado (P4.7 do histórico); rerodar é decisão do dono"
+    },
+    {
+      "id": "gerar-bloco",
+      "tipo": "ferramenta",
+      "caminho": "scripts/gerar-bloco.mjs",
+      "ramo": "dados-e-algoritmo",
+      "gatilho": "manual — node scripts/gerar-bloco.mjs --escrever (usado nas gerações reais publicadas)",
+      "proposito": "gera um bloco de escala pelo MESMO caminho da tela (8 versões, piso+Jain) e grava nas duas pastas de dados",
+      "portao": "npm run refazer confirma que o resultado publicado bate com o que este script produziria hoje"
+    },
+    {
+      "id": "lib-dominio",
+      "tipo": "ferramenta",
+      "caminho": "scripts/lib/dominio.mjs",
+      "ramo": "dados-e-algoritmo",
+      "gatilho": "importado por scripts que precisam do gerador/regras fora do navegador (gerar-bloco, refazer, ensaio, experimento)",
+      "proposito": "ponte que expõe o domínio (src/dominio/) para scripts Node — a MESMA lógica que a tela usa, nunca uma cópia",
+      "portao": "npm run arquitetura confirma que o domínio não foi bifurcado; exercido por todo consumidor"
+    },
+    {
+      "id": "provar-conferencia-por-turno",
+      "tipo": "ferramenta",
+      "caminho": "scripts/provar-conferencia-por-turno.mjs",
+      "ramo": "dados-e-algoritmo",
+      "gatilho": "manual — NÃO reexecutável de forma significativa hoje: compara o código de trabalho contra `git show HEAD:...`, e o HEAD de hoje já contém a correção. Rodar agora reprovaria dos dois lados, não pela razão que o script assume",
+      "proposito": "prova histórica, de um instante específico (pré-commit da correção), de que a conferência por TURNO mordia onde a conferência por DIA era cega — capturada em HANDOFF_2026-08-04-f.md",
+      "portao": "nenhum hoje — mantido como registro do raciocínio da prova original, não como ferramenta de regressão; também referencia um caminho de build (C:/Users/oflav/AppData/Local/Temp/build-escala-porteiros) que não existe mais"
+    },
+    {
+      "id": "vps-lembrete_escala",
+      "tipo": "ferramenta",
+      "caminho": "scripts/vps/lembrete_escala.py",
+      "ramo": "comunicacao",
+      "gatilho": "cron diário 18h São Paulo na VPS do Charmway (fora deste repositório — espelho versionado aqui)",
+      "proposito": "lê a escala PUBLICADA e manda 1 mensagem/dia ao grupo do WhatsApp dos porteiros via Evolution API local",
+      "portao": "dry-run provado com dado real (S-051); ativação real depende dos 3 passos do dono na VPS — ver LEMBRETE_WHATSAPP.md"
+    }
+  ]
+}
