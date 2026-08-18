@@ -4,7 +4,7 @@
 > O **porquê** de cada decisão vive no [`DIARIO_DE_BORDO.md`](DIARIO_DE_BORDO.md); aqui fica o
 > registro do que foi feito, passo a passo.
 >
-> **Cadeia de navegação:** [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-08-b.md) → [`BACKLOG.md`](BACKLOG.md)
+> **Cadeia de navegação:** [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-18.md) → [`BACKLOG.md`](BACKLOG.md)
 > **Roteador:** [`AGENTS.md`](AGENTS.md) ·
 > **Solicitações:** [`docs/solicitacoes/INDICE_DE_SOLICITACOES.md`](docs/solicitacoes/INDICE_DE_SOLICITACOES.md) ·
 > **Fatias arquivadas:** [`docs/historico/INDICE.md`](docs/historico/INDICE.md)
@@ -947,3 +947,22 @@ fechado com prova datada), P5.7 medido por sonda — o código já fazia o certo
 escrita no `ALGORITMO.md` e travada em `casos-limite.test.ts` (4 testes) —, P5.3 meio-medido
 (228 bytes/turno, ~49 KB/ano; teto da API declarado por medir, rede bloqueada). Handoff da parte 2
 criado e cadeia apontando. **Solicitação:** S-056.
+
+---
+
+## 18/08/2026 — S-057: cópia local desatualizada reconciliada, e 3 defeitos achados sem pedido
+
+Sessão "resume" + "totalmente autônomo, Gauntlet Loop". A cópia local estava 6 commits atrás do
+`origin/main` (S-052 a S-056 nunca baixados); um commit de sincronização de documentação escrito
+sobre essa base ficou errado e foi descartado antes do push (`git reset --hard origin/main`, nada
+compartilhado tocado). Com a cópia certa, `vivo:no-ar` saiu 100% verde mas com aviso `DEP0190`:
+corrigido `execFileSync(...,{shell:true})` → `execSync` + guarda testável em
+`scripts/lib/guarda-nome-vivo.mjs` (autoteste: 6 limpos aprovados, 10 hostis barrados). Achado
+`npm run citacoes` VERMELHO por citações cruzadas entre repositórios em
+`docs/TABELA_CONFORMIDADE_PROJETOS_IRMAOS.md` — corrigidas 6, incluindo 2 que apontavam para texto
+ERRADO dentro do próprio `AGENTS.md` (linha existia, conteúdo não batia — o portão não mede isso).
+P5.3 fechado com fonte oficial do GitHub (teto geral 50–100 MiB; ~997 anos de folga no ritmo
+atual). `ESTADO.md` estourou o teto do regime "vivo" e foi rotacionado por assunto
+(`docs/HISTORICO_ESTADO_2026-08.md`, referência); o autoteste da guarda foi ligado ao gate como
+15º passo (33 no total), com as duas listas numeradas renumeradas e conferidas. `npm run gate`
+completo: 33 passos, `EXIT_GATE=0`, selo `eb588b17980c`. **Solicitação:** S-057.

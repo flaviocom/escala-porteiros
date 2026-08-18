@@ -7,7 +7,7 @@
 > **Este arquivo é o ROTEADOR do projeto.** Ordem de leitura, e ela importa:
 >
 > **1.** este arquivo (como se trabalha) → **2.** [`ESTADO.md`](ESTADO.md) (onde estamos) →
-> **3.** [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-08-b.md) (o que aconteceu e por quê) →
+> **3.** [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-18.md) (o que aconteceu e por quê) →
 > **4.** [`BACKLOG.md`](BACKLOG.md) (o que fazer a seguir)
 >
 > Só depois, e só o trecho de que precisar, os índices:
@@ -169,7 +169,7 @@ npm run dev
 **O GATE — nenhuma mudança significativa passa sem:**
 
 ```bash
-npm run gate      # 32 passos: typecheck · testes (2 fusos) · denominação · fontes · contagem · cadeia · genérico + autoteste · catálogo gerado · comandos citados · arquitetura · auditoria · regras mestras · build
+npm run gate      # 33 passos: typecheck · testes (2 fusos) · denominação · fontes · contagem · cadeia · genérico + autoteste · catálogo gerado · comandos citados · arquitetura · auditoria · regras mestras · build
 ```
 
 O que ele encadeia, e por que cada um existe:
@@ -239,7 +239,7 @@ aqui. Escrito para quem **não participou de nada** — inclusive outra intelig�
 | Vou mexer em… | Leia antes |
 |---|---|
 | Estado atual | [`ESTADO.md`](ESTADO.md) |
-| O que aconteceu na última sessão, e por quê | [`docs/handoff/HANDOFF_2026-08-08-b.md`](docs/handoff/HANDOFF_2026-08-08-b.md) · [índice](docs/handoff/INDICE.md) |
+| O que aconteceu na última sessão, e por quê | [`docs/handoff/HANDOFF_2026-08-18.md`](docs/handoff/HANDOFF_2026-08-18.md) · [índice](docs/handoff/INDICE.md) |
 | O que falta | [`BACKLOG.md`](BACKLOG.md) |
 | Regras da escala, modelo de dados, motor | [`o desenho`](docs/superpowers/specs/2026-08-04-area-administrativa-escala-design.md) |
 | **Por que** uma decisão foi tomada, e como revertê-la | [`DIARIO_DE_BORDO.md`](DIARIO_DE_BORDO.md) |

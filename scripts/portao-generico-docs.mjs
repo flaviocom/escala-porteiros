@@ -53,7 +53,7 @@ const INVENTARIO = {
   'docs/FINALIDADE_E_FASES.md': 2, // (1) quem a fase atende hoje · (2) o termo como EXEMPLO do que não se crava
   'docs/MODELO_DE_DADOS.md': 1, //    o valor dentro de um exemplo de JSON de configuração
   'docs/PORTOES.md': 3, //            descreve o portão que procura estes três termos
-  'ESTADO.md': 1, //                  o escopo da fase corrente: "esta congregação, e só ela"
+  'docs/HISTORICO_ESTADO_2026-08.md': 1, // rotacionado de ESTADO.md em 18/08: "os porteiros da comum do Jd. São Luiz"
   'BACKLOG.md': 1, //                 cita o `alt="Logo CCB"` que foi REMOVIDO — registro de defeito fechado
   'docs/COMUNICACOES.md': 1, //       o modelo de comunicação DESTA instalação: a tradução bíblica (ARC) é a dos impressos oficiais da congregação — decisão S-045, 07/08/2026
 }

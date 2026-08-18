@@ -4,7 +4,7 @@
 > como reverter.** Documento **append-only**, fatiado por período ao estourar o teto. **Nada é
 > excluído, nunca.**
 >
-> **Cadeia de navegação:** [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-08-b.md) → [`BACKLOG.md`](BACKLOG.md)
+> **Cadeia de navegação:** [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-18.md) → [`BACKLOG.md`](BACKLOG.md)
 > **Roteador:** [`AGENTS.md`](AGENTS.md) ·
 > **Solicitações:** [`docs/solicitacoes/INDICE_DE_SOLICITACOES.md`](docs/solicitacoes/INDICE_DE_SOLICITACOES.md) ·
 > **Histórico:** [`docs/historico/INDICE.md`](docs/historico/INDICE.md)
@@ -1497,3 +1497,83 @@ dele — fisicamente inalcançável da nuvem — e a regra é dele: §9.1, "nem 
 inteiro rodou sem precisar de credencial nenhuma, que é como deve ser.
 
 **Como reverter.** `git revert` do commit desta entrada.
+
+---
+
+## DB-053 · 18/08/2026 — a cópia local mentia 10 dias, e o auditor achou 3 defeitos que ninguém tinha pedido
+
+**O pedido:** S-057 — "resume" (retomar, sem dizer onde); depois, vendo a reconciliação,
+*"Siga de onde parou ou com os próximos passos, ou ainda resolva os problemas encontrados, você
+TOTALMENTE AUTONOMO, workflow completo, e Template Gauntlet Loop."*
+
+**Antes de mexer: a cópia de trabalho em `C:\Users\oflav\build\escala-porteiros` estava 7 dias e 6
+commits atrás do `origin/main`** (parou em S-051, o real já tinha S-052 a S-056 até 14/08). Um
+primeiro commit de sincronização de `ESTADO.md`/`BACKLOG.md` foi escrito sobre essa base velha —
+**e ficou errado** (dizia "credenciais vazias" quando a do GitHub já estava paga; citava uma chave
+SSH que a sessão perdida já tinha invalidado). Descartado (`git reset --hard origin/main`) antes de
+qualquer push — nada compartilhado foi tocado. **Lição registrada:** sincronizar documento sem
+antes conferir `git fetch` é editar sobre areia.
+
+**Com a cópia certa, `npm run vivo:no-ar` saiu 100% verde** (5/5 contra o site publicado) — mas
+imprimiu um aviso `DEP0190` do Node.js que não devia estar ali.
+
+1. **`scripts/rodar-validacoes-ao-vivo.mjs:92`** usava `execFileSync('npm', ['run', nome], {shell:
+   true})` — o padrão que o Node está depreciando: com `shell:true`, arquivo+args são concatenados
+   numa linha de comando SEM escapar. Hoje `nome` só vem de `Object.keys(package.json.scripts)`
+   (nunca de fora), então não é injeção explorável — mas essa garantia vivia implícita no fluxo de
+   dados, e o projeto já baniu esta MESMA classe uma vez (P2.16). Corrigido: `execSync` com string
+   única (não aciona o aviso) + `exigirNomeValido()` em `scripts/lib/guarda-nome-vivo.mjs`, fonte
+   única e testável — a garantia virou trava, não presunção. Autoteste
+   (`scripts/autoteste-guarda-nome-vivo.mjs`): 6 nomes limpos aprovados, 10 hostis (`; rm -rf /`,
+   `` `whoami` ``, `$(whoami)`, aspas, maiúsculas, string vazia…) barrados.
+2. **`npm run citacoes` estava VERMELHO** — 5 citações apodrecidas em
+   `docs/TABELA_CONFORMIDADE_PROJETOS_IRMAOS.md` (arquivo que chegou pela sincronização do método
+   global, não desta esteira). A causa: o documento compara DOIS repositórios lado a lado
+   (charmway-erp × escala-porteiros) usando os MESMOS nomes de arquivo relativo (`AGENTS.md`,
+   `docs/pre-voo.json`) — e o portão, corretamente escopado só a este repositório, resolvia a
+   citação do charmway-erp contra o arquivo homônimo DAQUI. Reescritas as 6 citações cruzadas
+   (5 que o portão pegou + 1 que passava por coincidência de número de linha, sem ser certa) para
+   prosa com o repositório nomeado, em vez de `` `arquivo:linha` `` — o formato que o próprio
+   `portao-citacoes.mjs` sugere para o que não é citação estável. **E duas das citações LOCAIS
+   (que o portão aprovava por a linha existir) apontavam para o texto ERRADO** — `AGENTS.md:73-77`
+   dizia ser a "Seção MÉTODO" e era o trecho do portão genérico; `AGENTS.md:38` dizia ser a URL do
+   site e era uma linha em branco. A seção MÉTODO real fica em `AGENTS.md:137-141`, a URL em
+   `AGENTS.md:97` — corrigidas. **O porquê que interessa:** o portão prova que o arquivo e a linha
+   existem, nunca que o conteúdo bate — é a limitação que ele já declara ter, e foi ela que deixou
+   estes dois passarem.
+3. **P5.3 (teto do `blocos.json`) fechado com fonte, não mais "por medir".** A sessão de 08/08
+   rodava sem rede; esta tem. Medido agora: 43.773 bytes / 183 turnos = 239 bytes/turno (228 em
+   08/08 — a diferença é o campo de esquema do P5.4, que nasceu depois); ~220 turnos/ano (medido em
+   DB-046) → ~52,6 KB/ano. Fonte oficial consultada
+   (`docs.github.com/.../about-large-files-on-github`): GitHub não documenta um teto específico do
+   endpoint PUT da Contents API — só o teto GERAL de arquivo (aviso 50 MiB, bloqueio 100 MiB), que
+   se aplica porque a Contents API grava por commit normal. Não encontrado um número mais
+   restritivo em nenhuma fonte — registrado como não encontrado, não chutado. Usando o mais
+   conservador dos dois (50 MiB): **~997 anos** de folga no ritmo atual.
+
+**Depois de tudo isso, dois efeitos de segunda ordem, achados só porque o gate roda de ponta a
+ponta:**
+
+4. **`ESTADO.md` estourou o teto do regime "vivo"** (400 linhas) com as seções que este registro
+   acrescentou. Rotacionado por assunto — regra do método, não decisão: o narrativo de 04/08 a
+   08/08 (as seis auditorias, "o que entrou em cada dia") mudou para
+   [`docs/HISTORICO_ESTADO_2026-08.md`](../docs/HISTORICO_ESTADO_2026-08.md) (regime referência,
+   800 linhas). `ESTADO.md` ficou com 154 linhas — só o estado atual. Isso moveu uma citação do
+   nome do cliente e mudou a contagem de "documentos vivos" (22→23); os dois portões que dependem
+   desses números (`generico:docs`, `fatos:conferir`) foram reconferidos e ficaram verdes.
+5. **O autoteste novo (`autoteste-guarda-nome-vivo.mjs`) não estava ligado a nada** — nem
+   `package.json`, nem o `gate`. É a mesma classe de defeito que motivou `rodar-validacoes-ao-vivo.mjs`
+   existir ("validador que não roda é pior que não existir"). Virou o script `guarda-vivo:autoteste`,
+   entrou no gate como o **15º passo** (33 no total), e as duas listas numeradas que descrevem a
+   ordem do gate (`docs/PORTOES.md`, `docs/OPERACAO.md`) foram renumeradas e conferidas pelo
+   próprio `npm run ordem-do-gate`. No caminho, achei e corrigi mais um apodrecimento
+   pré-existente, sem relação com esta sessão: as duas listas diziam "12 validações do grupo LOCAL"
+   e "3 do grupo NO AR" — hoje são 15 e 5.
+
+**Estado final:** `npm run gate` completo, **33 passos, `EXIT_GATE=0`**, selo `eb588b17980c`.
+
+**Como reverter.** `git revert` do commit desta entrada — os scripts voltam ao `execFileSync`
+depreciado (nenhuma exploração conhecida, mas o aviso volta), as citações cruzadas voltam a
+apontar para o repositório errado, P5.3 volta a "por medir", `ESTADO.md` volta a carregar o
+narrativo inteiro toda sessão, e o autoteste da guarda volta a não rodar em lugar nenhum. Produto:
+nada muda — nenhuma linha de `src/` foi tocada.

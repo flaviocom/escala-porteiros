@@ -32,10 +32,11 @@
  *
  * Uso: node scripts/rodar-validacoes-ao-vivo.mjs [--local | --no-ar]
  */
-import { execFileSync } from 'node:child_process'
+import { execSync } from 'node:child_process'
 import { readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { exigirNomeValido } from './lib/guarda-nome-vivo.mjs'
 
 const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..')
 const bandeira = process.argv.find((a) => a === '--local' || a === '--no-ar')
@@ -82,14 +83,22 @@ for (const p of pulados) console.log(`  nunca roda ................. ${p} — ${
 console.log(`  vão rodar agora ............ ${rodar.length}${bandeira ? ` (${bandeira})` : ' (os dois grupos)'}`)
 console.log('')
 
+// 🔒 `npm` é `npm.cmd` no Windows — `execFileSync` sem shell falha com EINVAL nele, então shell é
+// necessário. Mas `execFileSync(file, args, {shell:true})` é o padrão que o Node.js está
+// depreciando (DEP0190): com shell, file+args são concatenados numa linha de comando SEM escapar
+// — se `nome` viesse de fora, seria injeção. Aqui `nome` só vem de `Object.keys(scripts)` (linha
+// 55), nunca de entrada externa — mas `exigirNomeValido` (`lib/guarda-nome-vivo.mjs`) torna essa
+// garantia EXPLÍCITA e testável, e a troca para `execSync` com string única não aciona o aviso
+// porque não combina array de args com shell.
 const falharam = []
 const t0Total = process.hrtime.bigint()
 for (const nome of rodar) {
+  exigirNomeValido(nome)
   const t0 = process.hrtime.bigint()
   let ok = true
   let saida = ''
   try {
-    saida = execFileSync('npm', ['run', nome], { cwd: RAIZ, encoding: 'utf8', shell: true, stdio: 'pipe' })
+    saida = execSync(`npm run ${nome}`, { cwd: RAIZ, encoding: 'utf8', stdio: 'pipe' })
   } catch (e) {
     ok = false
     saida = (e.stdout ?? '') + (e.stderr ?? '')
