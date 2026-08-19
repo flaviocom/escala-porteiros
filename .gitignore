@@ -32,3 +32,8 @@ capturas/
 
 # O selo do gate é local: ele descreve ESTA árvore, e não faz sentido versionado.
 node_modules/.selo-do-gate
+
+# Bytecode do Python, gerado ao rodar os espelhos de scripts/vps/ localmente (S-064, 19/08/2026) —
+# artefato de execução, não código; a VPS de verdade nem usa este repositório (recebe por cópia).
+__pycache__/
+*.pyc

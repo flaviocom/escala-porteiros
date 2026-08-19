@@ -9,6 +9,7 @@
 
 | Data | Handoff | O que aconteceu |
 |---|---|---|
+| 19/08/2026 | [`HANDOFF_2026-08-19-c.md`](HANDOFF_2026-08-19-c.md) | **Parte 3 — o lembrete individual: telefone cadastrado, duas mensagens.** O Flavio pediu URL da versão nova e como cadastrar nome/telefone; perguntei se era para somar ao lembrete de grupo ou trocar — resposta: somar, com mensagem semanal (domingo a domingo) e diária (véspera), sem controle de LGPD (decisão dele). Construído: `Pessoa.nomeCompleto`/`telefone`, `src/utils/telefone.ts` (formato confirmado contra código real na VPS), tela no Elenco, `scripts/vps/lembrete_individual.py` (2 modos) + autoteste (19 casos). Dois defeitos achados testando ao vivo: aspas quebrando o JSX, telefone inválido sumindo em silêncio — os dois corrigidos. Ativação real segue bloqueada pelo número não conectado. |
 | 19/08/2026 | [`HANDOFF_2026-08-19-b.md`](HANDOFF_2026-08-19-b.md) | **Parte 2 — a pergunta certa achou o que faltava.** O Flavio perguntou se o fechamento do S-062 tinha verificação visual e auditoria de verdade — resposta honesta: não. Fechadas as duas: navegador real nas duas trilhas (achou 2 campos sem `id`/`name` em `DateSearch.tsx`, pré-existente, corrigido) e um agente auditor independente mandado a REFUTAR o conserto do selo, que achou um terceiro problema de parsing (renomeação staged virava candidato fantasma). Julgamento próprio corrigiu a interpretação da auditoria: renomear MUDA o caminho de verdade, então o selo deve continuar acusando — só a higiene do parsing precisava de conserto. Caso G novo no autoteste (6→7), gate 37 passos verde. |
 | 19/08/2026 | [`HANDOFF_2026-08-19.md`](HANDOFF_2026-08-19.md) | **`retomaescala` funcionou pela primeira vez, e a varredura de rotina achou um defeito real.** `npm run selo:conferir` acusava "árvore mudou" com `git status` limpo — o selo hashava o mesmo tipo de arquivo de duas formas (blob do índice LF-normalizado vs bytes crus do disco CRLF), e o fluxo `gate → git add` do próprio projeto disparava isso toda vez, sem mudança real. Corrigido: a impressão digital lê sempre o disco. `selar-arvore.mjs` nunca tinha autoteste — criado, 6 casos, reproduzindo o defeito exato. Gate 36→37 passos. VPS reconferida: número do lembrete ainda não conectado. |
 | 18/08/2026 | [`HANDOFF_2026-08-18-c.md`](HANDOFF_2026-08-18-c.md) | **Parte 3 — a trilha genérica, e o número do lembrete** — o Flavio fechou o número dedicado do lembrete (`551194950100`, S-059) e confirmou acesso à VPS (a chave `charmway_deploy` já funcionava, sem registro); depois perguntou (S-060) se dava para testar uma versão "só Escala" sem repositório novo. Resposta medida: sim — `npm run generico` já provava `src/` limpo, faltava um segundo build. Construído: `docs/generico/` (mesma esteira de publicação), `public-generico/dados/` neutro, portão dedicado com autoteste (achou uma guarda quebrada no Windows), gate 33→36 passos, verificado num navegador real antes de declarar pronto. |
@@ -37,7 +38,7 @@
 
 ---
 
-**Handoff mais recente:** [`HANDOFF_2026-08-19-b.md`](HANDOFF_2026-08-19-b.md)
+**Handoff mais recente:** [`HANDOFF_2026-08-19-c.md`](HANDOFF_2026-08-19-c.md)
 
 Ligações: [`../solicitacoes/INDICE_DE_SOLICITACOES.md`](../solicitacoes/INDICE_DE_SOLICITACOES.md) ·
 [`../historico/INDICE.md`](../historico/INDICE.md) ·

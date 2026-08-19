@@ -590,6 +590,24 @@
       "gatilho": "cron diário 18h São Paulo na VPS do Charmway (fora deste repositório — espelho versionado aqui)",
       "proposito": "lê a escala PUBLICADA e manda 1 mensagem/dia ao grupo do WhatsApp dos porteiros via Evolution API local",
       "portao": "dry-run provado com dado real (S-051); ativação real depende dos 3 passos do dono na VPS — ver LEMBRETE_WHATSAPP.md"
+    },
+    {
+      "id": "vps-lembrete_individual",
+      "tipo": "ferramenta",
+      "caminho": "scripts/vps/lembrete_individual.py",
+      "ramo": "comunicacao",
+      "gatilho": "cron na VPS do Charmway — semanal (domingo) e diário (véspera), fora deste repositório, espelho versionado aqui",
+      "proposito": "lê a escala PUBLICADA e manda mensagem PESSOAL no WhatsApp de quem tiver telefone cadastrado no Elenco — resumo da semana (domingo a domingo) e lembrete da véspera (S-064, 19/08/2026)",
+      "portao": "autoteste dedicado (19 casos, dado fabricado) prova seleção e composição; ativação real depende do mesmo bloqueio do lembrete de grupo — ver LEMBRETE_WHATSAPP.md"
+    },
+    {
+      "id": "vps-autoteste-lembrete_individual",
+      "tipo": "ferramenta",
+      "caminho": "scripts/vps/autoteste_lembrete_individual.py",
+      "ramo": "comunicacao",
+      "gatilho": "python3 scripts/vps/autoteste_lembrete_individual.py — manual, não entra no `npm run gate` (Python não é parte da esteira JS deste projeto, mesma fronteira do lembrete_escala.py)",
+      "proposito": "prova que a seleção (quem recebe o quê, com/sem telefone, com/sem turno, Santa Ceia sempre fora) e a composição da mensagem fazem o que dizem fazer, sem rede",
+      "portao": "19 de 19 casos corretos — nasceu no mesmo commit do script que prova"
     }
   ]
 }

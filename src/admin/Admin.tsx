@@ -10,7 +10,7 @@
  */
 import React, { useEffect, useMemo, useState } from 'react'
 import {
-  AlertTriangle, CheckCircle, Download, Eye, EyeOff, KeyRound, Loader2, LogOut, Plus, RefreshCw,
+  AlertTriangle, CheckCircle, Download, Eye, EyeOff, KeyRound, Loader2, LogOut, Phone, Plus, RefreshCw,
   History, RotateCcw, ShieldCheck, Trash2, Upload, X, XCircle,
 } from 'lucide-react'
 import { clsx } from 'clsx'
@@ -20,6 +20,7 @@ import { completarConfig, retratoPublicado, type ConfigLida, type DadosPublicado
 import type { ArquivoBlocos, ArquivoPessoas, Bloco, Configuracao, Pessoa, TipoTurno, Turno } from '../dominio/tipos'
 import { ROTULO_TURNO } from '../dominio/tipos'
 import { idDoNome } from '../utils/nomes'
+import { normalizarTelefone, formatarTelefone } from '../utils/telefone'
 import { construirGrade, diaTemCulto } from '../dominio/malha'
 import { gerarVariasVersoes } from '../dominio/gerador'
 import { distribuir } from '../dominio/estatisticas'
@@ -877,6 +878,11 @@ const CartaoPessoa: React.FC<{ pessoa: Pessoa; aoAlterar: (m: (p: Pessoa) => Pes
           <div className="font-semibold text-gray-900 flex items-center gap-2">
             {pessoa.nome}
             {!pessoa.ativo && <span className="text-[10px] uppercase tracking-wider bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full">fora</span>}
+            {pessoa.telefone && (
+              <span title="Recebe lembrete individual no WhatsApp" className="text-green-600">
+                <Phone className="w-3.5 h-3.5" />
+              </span>
+            )}
           </div>
           <div className="text-xs text-gray-500 mt-0.5 truncate">
             {etiquetas.length ? etiquetas.join(' · ') : 'sem restrição'}
@@ -893,6 +899,7 @@ const CartaoPessoa: React.FC<{ pessoa: Pessoa; aoAlterar: (m: (p: Pessoa) => Pes
 
       {aberto && (
         <div className="px-4 pb-4 pt-1 border-t border-gray-100 space-y-4">
+          <ContatoWhatsApp pessoa={pessoa} aoAlterar={aoAlterar} />
           <LinhaDias titulo="Só pode nestes dias" selecionados={r.diasPermitidos ?? []} aoAlternar={(d) => alternarDia('diasPermitidos', d)} />
           <LinhaDias titulo="Nunca pode nestes dias" selecionados={r.diasProibidos ?? []} aoAlternar={(d) => alternarDia('diasProibidos', d)} tom="vermelho" />
           <div>
@@ -933,6 +940,72 @@ const CartaoPessoa: React.FC<{ pessoa: Pessoa; aoAlterar: (m: (p: Pessoa) => Pes
           </div>
           <Ausencias pessoa={pessoa} aoAlterar={aoAlterar} />
         </div>
+      )}
+    </div>
+  )
+}
+
+/**
+ * NOME COMPLETO + TELEFONE — o lembrete individual do WhatsApp (S-064, 19/08/2026).
+ *
+ * "Essa lista tem que ficar aberta, não é para apagar" (palavras do Flavio): não existe botão de
+ * remover aqui — o mesmo X que tira a pessoa da escala (`ativo: false`) também para de mandar
+ * mensagem para ela, sem precisar de um segundo controle.
+ *
+ * O telefone digitado (parênteses, traço, +55, o que for) só vira o formato que a Evolution API
+ * exige (dígitos com DDI 55) quando o campo perde o foco — normalizar a cada tecla faria o cursor
+ * pular durante a digitação. Ver `src/utils/telefone.ts`.
+ */
+const ContatoWhatsApp: React.FC<{ pessoa: Pessoa; aoAlterar: (m: (p: Pessoa) => Pessoa) => void }> = ({ pessoa, aoAlterar }) => {
+  const [telefoneDigitado, setTelefoneDigitado] = useState(pessoa.telefone ? formatarTelefone(pessoa.telefone) : '')
+
+  useEffect(() => {
+    setTelefoneDigitado(pessoa.telefone ? formatarTelefone(pessoa.telefone) : '')
+  }, [pessoa.telefone])
+
+  return (
+    <div>
+      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+        Lembrete individual no WhatsApp
+      </p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        <input
+          title="Como chamar esta pessoa na mensagem — ex.: “Carlos Henrique”. Vazio usa o nome de sempre"
+          value={pessoa.nomeCompleto ?? ''}
+          onChange={(e) => aoAlterar((p) => ({ ...p, nomeCompleto: e.target.value || undefined }))}
+          placeholder={`Nome completo (ex.: "${pessoa.nome}")`}
+          className="px-3 py-2 border border-gray-300 rounded-lg text-sm"
+        />
+        <input
+          title="Telefone do WhatsApp desta pessoa — sem ele, ela não recebe lembrete individual"
+          type="tel"
+          value={telefoneDigitado}
+          onChange={(e) => setTelefoneDigitado(e.target.value)}
+          onBlur={() => {
+            const normalizado = normalizarTelefone(telefoneDigitado)
+            /*
+              🔴 Sem esta guarda, um telefone digitado errado (ex.: "123") era SILENCIOSAMENTE
+              apagado ao sair do campo — a pessoa não via aviso nenhum, só sumia o que tinha
+              digitado. Só reformata/grava quando dá para normalizar; se não der, o texto cru fica
+              no campo e o aviso vermelho (abaixo) continua visível até a pessoa corrigir ou apagar.
+            */
+            if (!telefoneDigitado.trim()) {
+              aoAlterar((p) => ({ ...p, telefone: undefined }))
+              return
+            }
+            if (!normalizado) return
+            aoAlterar((p) => ({ ...p, telefone: normalizado }))
+            setTelefoneDigitado(formatarTelefone(normalizado))
+          }}
+          placeholder="(11) 99999-9999"
+          className={clsx(
+            'px-3 py-2 border rounded-lg text-sm',
+            telefoneDigitado && !normalizarTelefone(telefoneDigitado) ? 'border-red-300 bg-red-50' : 'border-gray-300',
+          )}
+        />
+      </div>
+      {telefoneDigitado && !normalizarTelefone(telefoneDigitado) && (
+        <p className="text-xs text-red-600 mt-1">Esse telefone não ficou com DDD + número reconhecível — confira.</p>
       )}
     </div>
   )

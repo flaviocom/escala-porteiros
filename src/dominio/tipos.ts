@@ -64,6 +64,17 @@ export interface Pessoa {
    */
   ativo: boolean
   restricoes: Restricoes
+  /**
+   * Nome completo, para SAUDAR a pessoa na mensagem do WhatsApp — ex.: "Carlos Henrique" em vez do
+   * `nome` curto que a tela de escala usa. Ausente ou vazio: a mensagem usa `nome` mesmo (S-063/S-064).
+   */
+  nomeCompleto?: string
+  /**
+   * Telefone do WhatsApp, sempre normalizado para dígitos com DDI 55 (ex.: "5511999999999") por
+   * `normalizarTelefone` (`src/utils/telefone.ts`) — nunca o texto cru que a pessoa digitou. Ausente
+   * ou vazio: a pessoa não recebe lembrete individual, só continua na escala normalmente (S-064).
+   */
+  telefone?: string
 }
 
 export interface ArquivoPessoas {

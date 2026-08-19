@@ -65,5 +65,45 @@ mensagem própria, ninguém escalado) saem no modelo da casa.
 - O lembrete **lê** a escala publicada; não decide nada, não escreve nada.
 - Se o site estiver fora do ar na hora do cron, o script falha alto no log — e o culto de amanhã
   continua na imagem e no site quando voltarem.
-- Mensagem individual por pessoa (em vez de grupo) exigiria cadastro de telefones + consentimento —
-  fica como evolução possível, registrada na [`FASE2.md`](FASE2.md).
+
+## O lembrete INDIVIDUAL — construído em 19/08/2026 (S-064)
+
+O que a nota acima chamava de "evolução possível" foi pedido e construído no mesmo dia: *"Eu quero
+criar uma lista editável de nomes e telefones (...) A mensagem é para enviar (...) com agendamentos
+no começo da semana (...) e um dia antes (...) Não precisa se preocupar com nada de LGPD."* —
+palavras do dono, S-063. Decisão dele, registrada aqui por ser exatamente o desvio da fronteira que
+esta seção previa: **sem controle de consentimento** — quem não quiser mensagem individual, apenas
+não tem telefone cadastrado.
+
+**Onde cadastrar:** área administrativa → aba **Elenco** → abrir o card de qualquer pessoa → seção
+"Lembrete individual no WhatsApp". Dois campos: **nome completo** (como a mensagem saúda — vazio
+usa o nome curto de sempre) e **telefone** (aceita qualquer formatação digitada; normaliza sozinho
+para dígitos com DDI 55 ao sair do campo — `src/utils/telefone.ts`). **Não existe botão de apagar**:
+o mesmo "tirar da escala" que já existia (`ativo: false`) também para a mensagem, sem controle
+duplicado — "a lista fica aberta, não é para apagar".
+
+**Duas mensagens, cordiais, por pessoa:**
+
+| Modo | Quando | O que diz |
+|---|---|---|
+| `semanal` | domingo, início da semana | todos os turnos DELA na semana — domingo a domingo, incluindo o domingo seguinte (mesma regra do filtro "Esta Semana" da tela, `src/App.tsx`) |
+| `diario` | véspera (mesmo horário do lembrete de grupo) | só se ela estiver escalada amanhã |
+
+Quem não tem turno no período **não recebe mensagem** — silêncio, igual ao lembrete de grupo. Quem
+não tem telefone cadastrado nunca entra na seleção — sem erro, sem tentativa de envio.
+
+**Onde vive:** [`scripts/vps/lembrete_individual.py`](../scripts/vps/lembrete_individual.py) — espelho
+versionado, mesma pasta e mesmo `STOP` do `lembrete_escala.py` (kill-switch compartilhado), mesma
+instância Evolution (o número dedicado). Formato do número **confirmado contra código de referência
+real na própria VPS** (skill `int-evolution-api`, 19/08/2026): dígitos com DDI 55 +
+`@s.whatsapp.net` — diferente do envio a grupo, que usa `@g.us`.
+
+**Autoteste** (não entra no `npm run gate` — Python não é parte da esteira JS deste projeto, mesma
+fronteira do `lembrete_escala.py`, que também nunca entrou): 19 casos, dado fabricado, sem rede —
+seleção (quem recebe o quê, nas duas pontas: com/sem telefone, com/sem turno, Santa Ceia sempre
+fora) e composição da mensagem (saudação, data, ordenação). `python3
+scripts/vps/autoteste_lembrete_individual.py`.
+
+**O que falta para ligar de verdade:** o mesmo bloqueio de sempre — o número `551194950100` ainda
+não está conectado (§2 acima). Instalar o script na VPS e configurar o cron é o mesmo passo 3
+("dizer 'go'") já descrito, estendido para os dois scripts.

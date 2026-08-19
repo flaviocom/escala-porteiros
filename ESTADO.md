@@ -5,7 +5,7 @@
 > **Última atualização:** 19/08/2026 · **Fuso:** America/São_Paulo
 >
 > **Cadeia de navegação, nesta ordem:**
-> **`ESTADO.md` (você está aqui)** → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-19-b.md) → [`BACKLOG.md`](BACKLOG.md)
+> **`ESTADO.md` (você está aqui)** → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-19-c.md) → [`BACKLOG.md`](BACKLOG.md)
 > *onde estamos · o que aconteceu na última sessão e por quê · o que fazer a seguir*
 >
 > **Reconstruir do zero (portabilidade entre IAs):** [`docs/RECONSTRUIR.md`](docs/RECONSTRUIR.md)
@@ -44,7 +44,26 @@ agente/harness ou trabalho paralelo em arquivos disjuntos.
 e conferida, o nome do cliente fora do código. **P0 e P1 estão sem item aberto** — a única
 credencial em aberto é a chave do motor, **opcional**; nada trava sem ela.
 
-## O mais recente: a pergunta certa achou o que o fechamento anterior não tinha feito (S-063, 19/08)
+## O mais recente: lembrete individual no WhatsApp — telefone cadastrado, duas mensagens (S-064, 19/08)
+
+O Flavio perguntou a URL da versão nova e como cadastrar nome/telefone para o lembrete. Perguntei se
+era para trocar o lembrete de GRUPO (S-051, sem telefone de ninguém, de propósito) por individual,
+ou somar — resposta: somar. *"Lista editável (...) nome completo (...) e o telefone. Essa lista tem
+que ficar aberta, não é para apagar (...) mensagem bonita e cordial (...) agendamentos no começo da
+semana (...) domingo a domingo (...) e um dia antes (...) Não precisa se preocupar com nada de
+LGPD."* Decisão dele sobre LGPD, registrada como tal, não engolida. Construído: `Pessoa.nomeCompleto`/
+`telefone`; `src/utils/telefone.ts` (formato confirmado contra código de referência REAL lido na
+própria VPS do Charmway); tela no card de cada pessoa do Elenco, sem botão de apagar (reaproveita o
+`ativo: false` que já existia); `scripts/vps/lembrete_individual.py` — dois modos, `semanal`
+(domingo a domingo) e `diario` (véspera) — com autoteste dedicado (19 casos, sem rede). Dois
+defeitos achados testando AO VIVO no navegador local, corrigidos antes de fechar: aspas escapadas
+quebrando o JSX, e telefone inválido sendo apagado em silêncio ao perder o foco. Gate: **37 passos**,
+verde — o portão `fatos:conferir` pegou 2 números que meus próprios arquivos novos desatualizaram
+(testes na suíte, testes pulados), corrigidos. Ativação real segue bloqueada: número
+`551194950100` ainda não conectado. Detalhe: [`HANDOFF_2026-08-19-c.md`](docs/handoff/HANDOFF_2026-08-19-c.md) ·
+[DB-060](DIARIO_DE_BORDO.md).
+
+## O anterior: a pergunta certa achou o que o fechamento anterior não tinha feito (S-063, 19/08)
 
 O Flavio perguntou, direto, se o fechamento do S-062 tinha verificação visual e auditoria de
 verdade — *"Seja sincero!"*. A resposta honesta era **não**, em dois pontos: só `curl` (prova que o

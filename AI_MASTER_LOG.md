@@ -4,7 +4,7 @@
 > O **porquê** de cada decisão vive no [`DIARIO_DE_BORDO.md`](DIARIO_DE_BORDO.md); aqui fica o
 > registro do que foi feito, passo a passo.
 >
-> **Cadeia de navegação:** [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-19-b.md) → [`BACKLOG.md`](BACKLOG.md)
+> **Cadeia de navegação:** [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-19-c.md) → [`BACKLOG.md`](BACKLOG.md)
 > **Roteador:** [`AGENTS.md`](AGENTS.md) ·
 > **Solicitações:** [`docs/solicitacoes/INDICE_DE_SOLICITACOES.md`](docs/solicitacoes/INDICE_DE_SOLICITACOES.md) ·
 > **Fatias arquivadas:** [`docs/historico/INDICE.md`](docs/historico/INDICE.md)
@@ -1049,3 +1049,21 @@ continua, antes e depois do conserto); só a higiene do parsing precisava de con
 no lugar do fantasma). Caso G novo no autoteste (6→7), com a expectativa corrigida (a primeira
 versão copiou a leitura errada da auditoria). Gate: 37 passos, `EXIT_GATE=0`.
 **Solicitação:** S-063.
+
+---
+
+## 19/08/2026 — S-064: lembrete individual no WhatsApp — telefone cadastrado, duas mensagens
+
+Pedido: lista editável de nome completo + telefone por pessoa, nunca apagada (mesmo padrão do
+`ativo: false` já existente), com mensagem cordial disparada em dois momentos — resumo semanal
+(domingo a domingo) e lembrete de véspera. Dono dispensou controle de LGPD explicitamente; decisão
+registrada como dele. Construído: `Pessoa.nomeCompleto`/`Pessoa.telefone` (`src/dominio/tipos.ts`);
+`src/utils/telefone.ts` (normalização confirmada contra código de referência real na VPS do
+Charmway, skill `int-evolution-api`, 10 testes); tela `ContatoWhatsApp` no card de cada pessoa do
+Elenco (`Admin.tsx`); `scripts/vps/lembrete_individual.py` (modos `semanal`/`diario`, espelho
+versionado) + `autoteste_lembrete_individual.py` (19 casos, sem rede). Dois defeitos achados
+testando ao vivo, corrigidos antes de fechar: aspas escapadas quebrando o JSX (`title="...\"..."`),
+e telefone inválido sendo apagado em silêncio ao perder o foco (agora fica visível com aviso).
+Ativação real segue bloqueada — número `551194950100` ainda não conectado. Gate: 37 passos,
+`EXIT_GATE=0`.
+**Solicitação:** S-064.

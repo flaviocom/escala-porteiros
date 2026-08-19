@@ -4,7 +4,7 @@
 > como reverter.** Documento **append-only**, fatiado por período ao estourar o teto. **Nada é
 > excluído, nunca.**
 >
-> **Cadeia de navegação:** [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-19-b.md) → [`BACKLOG.md`](BACKLOG.md)
+> **Cadeia de navegação:** [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-19-c.md) → [`BACKLOG.md`](BACKLOG.md)
 > **Roteador:** [`AGENTS.md`](AGENTS.md) ·
 > **Solicitações:** [`docs/solicitacoes/INDICE_DE_SOLICITACOES.md`](docs/solicitacoes/INDICE_DE_SOLICITACOES.md) ·
 > **Histórico:** [`docs/historico/INDICE.md`](docs/historico/INDICE.md)
@@ -1859,3 +1859,63 @@ o candidato fantasma numa renomeação staged (o selo continua acusando renomea�
 só que com uma mensagem menos clara), o caso G do autoteste some (6 casos). Produto: a mudança em
 `DateSearch.tsx` é a única que toca `src/` — cosmética/acessibilidade, sem mudança de comportamento
 visível para os irmãos.
+
+## DB-060 · 19/08/2026 — o lembrete individual: cadastro de telefone, e duas mensagens por pessoa
+
+**O pedido (S-064):** depois de perguntar a URL da versão nova, o Flavio perguntou como cadastrar
+nome e telefone para o lembrete — *"nome como a pessoa deve ser chamada, nome completo como a
+pessoa deve ser chamada na mensagem e o telefone. Essa lista tem que ficar aberta, não é para
+apagar."* Perguntei se ele queria trocar o lembrete de GRUPO (já decidido em S-051, sem telefone de
+ninguém) por mensagem individual, ou somar os dois. Resposta: somar — *"com agendamentos no começo
+da semana (...) de domingo a domingo (...) e um dia antes (...) Não precisa se preocupar com nada
+de LGPD."*
+
+**Decisão registrada, não engolida:** a decisão de dispensar controle de consentimento é DELE,
+explícita, e fica documentada como tal em `LEMBRETE_WHATSAPP.md` — não é omissão minha, é escolha
+do dono do produto, e a mensagem individual só chega a quem ELE cadastrar.
+
+**O que já existia e o que foi reaproveitado:** o Elenco já tinha o padrão certo para "não apagar" —
+`ativo: false` em vez de remover o registro (D-04, decisão de 04/08). O telefone e o nome completo
+entraram no MESMO card, sem controle de exclusão próprio: o X que já tira alguém da escala também
+para a mensagem, sem inventar um segundo botão.
+
+**Construído:**
+
+1. `Pessoa.nomeCompleto` e `Pessoa.telefone` (`src/dominio/tipos.ts`), os dois opcionais.
+2. `src/utils/telefone.ts` — `normalizarTelefone`/`formatarTelefone`, 10 testes. Formato confirmado
+   contra código de referência REAL na VPS do Charmway (skill `int-evolution-api`,
+   `_format_number`): dígitos com DDI 55 + `@s.whatsapp.net` — não é suposição.
+3. Tela: `Admin.tsx` → `ContatoWhatsApp`, dentro do card de cada pessoa no Elenco. Telefone digitado
+   livre (parênteses, traço, +55) normaliza sozinho ao sair do campo.
+4. `scripts/vps/lembrete_individual.py` — espelho versionado, dois modos: `semanal` (domingo,
+   turnos da semana inteira — domingo a domingo, mesma regra do filtro "Esta Semana" da tela) e
+   `diario` (véspera, só quem está escalada amanhã). Mensagem cordial, saúda pelo nome completo.
+5. `scripts/vps/autoteste_lembrete_individual.py` — 19 casos, dado fabricado, sem rede: seleção
+   (com/sem telefone × com/sem turno) e composição da mensagem.
+
+**Dois defeitos achados no caminho, e corrigidos antes de fechar:**
+
+- 🔴 **Sintaxe:** `title="... \"Carlos Henrique\" ..."` num atributo JSX quebrava o build (`Expecting
+  Unicode escape sequence`). Achado ao abrir a tela de verdade no navegador local, não pelo
+  typecheck — o Babel aceita a sintaxe de um jeito que o `tsc` sozinho não pegou. Trocado por aspas
+  curvas (“ ”), sem escape.
+- 🔴 **UX:** a primeira versão do campo de telefone, ao perder o foco com um valor inválido (ex.:
+  "123"), APAGAVA o que a pessoa tinha digitado, em silêncio — achado testando ao vivo, não por
+  suposição. Corrigido: texto inválido fica no campo, com borda vermelha e aviso, até a pessoa
+  corrigir ou apagar — nunca mais some sozinho.
+
+**Verificado ao vivo**, servidor local, sem tocar no botão Publicar nem em nenhuma credencial: abri
+o Elenco, expandi "Carlos Henrique", digitei telefone e nome completo, confirmei a normalização e o
+selo verde (📞) aparecendo ao lado do nome, e reproduzi os dois defeitos acima antes de corrigi-los.
+
+**O que fica bloqueado — igual a sempre:** o número `551194950100` continua sem conectar (ação só
+dele). Instalar os dois scripts na VPS e configurar os crons é o mesmo passo "dizer 'go'" já
+descrito em `LEMBRETE_WHATSAPP.md`, agora cobrindo os dois scripts.
+
+**Gate:** 37 passos, `EXIT_GATE=0`.
+
+**Como reverter.** `git revert` do commit desta entrada: os dois campos somem do Elenco, `Pessoa`
+volta a não ter `nomeCompleto`/`telefone` (pessoas.json publicado não muda — os campos são
+opcionais, e nada os cravou), os dois scripts de VPS e o autoteste somem. Produto visível aos
+porteiros: nenhuma mudança — o Elenco é tela administrativa, e o lembrete individual não está
+ligado a nenhum cron ainda.
