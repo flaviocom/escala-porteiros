@@ -181,6 +181,8 @@ export const AbaAjustar: React.FC<Props> = ({ bloco, pessoas, fronteira, aoAlter
 
         <div className="p-5">
           <input
+            id="filtro-ajustar"
+            name="filtro-ajustar"
             value={filtro}
             onChange={(e) => setFiltro(e.target.value)}
             placeholder="Filtrar por data (16/08) ou por nome"

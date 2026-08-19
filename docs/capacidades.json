@@ -597,8 +597,8 @@
       "caminho": "scripts/vps/lembrete_individual.py",
       "ramo": "comunicacao",
       "gatilho": "cron na VPS do Charmway — semanal (segunda-feira de manhã) e diário (véspera), fora deste repositório, espelho versionado aqui",
-      "proposito": "lê a escala PUBLICADA e manda mensagem PESSOAL no WhatsApp de quem tiver telefone cadastrado no Elenco — resumo da semana (cálculo domingo a domingo, disparo segunda-feira — S-065) e lembrete da véspera (S-064, 19/08/2026)",
-      "portao": "autoteste dedicado (22 casos, dado fabricado) prova seleção e composição; ativação real depende do mesmo bloqueio do lembrete de grupo — ver LEMBRETE_WHATSAPP.md"
+      "proposito": "lê a escala PUBLICADA e manda mensagem PESSOAL no WhatsApp de quem tiver telefone cadastrado no Elenco — resumo da semana (cálculo domingo a domingo, disparo segunda-feira, nunca lista turno já passado, fim da janela devolvido uma vez só — S-065/S-066) e lembrete da véspera (S-064, 19/08/2026)",
+      "portao": "autoteste dedicado (32 casos, dado fabricado, contagem automática) prova seleção e composição; ativação real depende do mesmo bloqueio do lembrete de grupo — ver LEMBRETE_WHATSAPP.md"
     },
     {
       "id": "vps-autoteste-lembrete_individual",
@@ -606,8 +606,8 @@
       "caminho": "scripts/vps/autoteste_lembrete_individual.py",
       "ramo": "comunicacao",
       "gatilho": "python3 scripts/vps/autoteste_lembrete_individual.py — manual, não entra no `npm run gate` (Python não é parte da esteira JS deste projeto, mesma fronteira do lembrete_escala.py)",
-      "proposito": "prova que a seleção (quem recebe o quê, com/sem telefone, com/sem turno, Santa Ceia sempre fora) e a composição da mensagem (identificação, rótulos em negrito, ordenação) fazem o que dizem fazer, sem rede",
-      "portao": "22 de 22 casos corretos — nasceu no mesmo commit do script que prova; ampliado em S-065 (identificação + formatação pesquisadas)"
+      "proposito": "prova que a seleção (quem recebe o quê, com/sem telefone, com/sem turno, Santa Ceia sempre fora, turno já passado sempre fora) e a composição da mensagem (identificação, rótulos em negrito, ordenação, fim da janela consistente com o filtro) fazem o que dizem fazer, sem rede",
+      "portao": "32 de 32 casos corretos, contados automaticamente (não mais escritos à mão — achado do próprio S-066); ampliado em S-065 (identificação + formatação) e S-066 (fim da janela + sweep de acessibilidade)"
     }
   ]
 }

@@ -41,6 +41,7 @@ próximo leitor não confunda com defeito.
 | Período | Documento | Fatia | Resumo |
 |---|---|---|---|
 | 04/08/2026 | `DIARIO_DE_BORDO.md` | [`2026-08-04_DIARIO_DE_BORDO_DB001-012.md`](2026-08-04_DIARIO_DE_BORDO_DB001-012.md) | DB-001 a DB-012 — nascimento do projeto, desenho da área administrativa, as primeiras auditorias, o cofre do token e a imagem do WhatsApp. Fatiado quando o diário passou de 2.000 linhas |
+| 05–08/08/2026 | `DIARIO_DE_BORDO.md` | [`2026-08-05-a-08_DIARIO_DE_BORDO_DB013-052.md`](2026-08-05-a-08_DIARIO_DE_BORDO_DB013-052.md) | DB-013 a DB-052 — a Sessão 1 inteira: o produto foi ao ar, a área administrativa ganhou as 15 regras, o motor entrou, a §0 (escopo genérico) nasceu, a fila do GitHub Pages foi domada, e a última rodada de auditorias antes do hiato de 10 dias. Fatiado em 19/08/2026 quando o diário passou de 2.000 linhas de novo |
 | 06–07/08/2026 | `BACKLOG.md` | [`2026-08_BACKLOG_itens-fechados.md`](2026-08_BACKLOG_itens-fechados.md) | Itens P1.4 a P1.7, todos ✅ com prova: os 7 achados da sétima auditoria · as 3 fronteiras de portão · o botão "Não gostei" · a varredura de variações com as duas réguas cegas para a ausência invertida. Rotacionados quando o BACKLOG estourou 40 KB |
 
 ---

@@ -159,9 +159,12 @@ def montar_mensagem_diaria(pessoa, data_iso, turnos_da_pessoa, titulo):
     ])
 
 
-def montar_mensagem_semanal(pessoa, inicio_iso, turnos_da_pessoa, titulo):
+def montar_mensagem_semanal(pessoa, inicio_iso, fim_iso, turnos_da_pessoa, titulo):
+    # `fim_iso` vem de `selecionar_semanal` — NUNCA recalculado aqui. Recalcular por conta própria
+    # foi o segundo achado da auditoria de 19/08/2026: duas fórmulas para a mesma fronteira divergem
+    # sempre que `inicio` não é domingo, e o texto passava a prometer um dia que o filtro nunca
+    # buscou. Ver o comentário grande em `selecionar_semanal`.
     saudacao = pessoa.get("nomeCompleto") or pessoa["nome"]
-    fim_iso = somar_dias(inicio_iso, 7)
     linhas = [
         f"📅 *{titulo}* — sua escala da semana",
         "",
@@ -203,10 +206,33 @@ def selecionar_diario(alvo, pessoas, blocos):
 
 
 def selecionar_semanal(alvo, pessoas, blocos):
-    """Quem tem telefone E tem turno na semana (domingo a domingo) de `alvo` — puro, mesma forma de
-    `selecionar_diario`. Devolve (inicio_iso, [(pessoa, turnos_da_pessoa), ...])."""
-    inicio = domingo_da_semana(alvo)
-    fim = somar_dias(inicio, 7)
+    """Quem tem telefone E tem turno na semana (domingo a domingo) de `alvo`, DE HOJE PRA FRENTE —
+    puro, mesma forma de `selecionar_diario`. Devolve
+    (inicio_iso, fim_iso, [(pessoa, turnos_da_pessoa), ...]).
+
+    🔴 PRIMEIRO ACHADO (19/08/2026, S-065, no dia em que o disparo mudou de domingo para
+    segunda-feira): com disparo no domingo, `alvo == domingo_da_semana(alvo)` sempre, então nunca
+    fazia diferença. Com disparo na SEGUNDA, `domingo_da_semana` aponta para ONTEM — sem cortar,
+    alguém cujo único turno da semana fosse justamente domingo (já realizado) recebia "sua escala
+    desta semana: domingo, [ontem] — noite", um turno que já tinha acontecido. `inicio` é sempre
+    `alvo` — nunca lista, nem seleciona, turno anterior a hoje (`domingo_da_semana(alvo)` nunca é
+    posterior a `alvo`, então o antigo `max(domingo, alvo)` sempre resolvia para `alvo`; simplificado
+    porque a comparação nunca desempatava para o outro lado — achado da auditoria cega do próprio
+    conserto, mesmo dia).
+
+    🔴 SEGUNDO ACHADO, da MESMA auditoria: `fim` tem de ser DEVOLVIDO, não recalculado por quem
+    monta a mensagem. A primeira versão do conserto acima só devolvia `inicio`, e
+    `montar_mensagem_semanal` recalculava `fim = inicio + 7` sozinha — que é DIFERENTE do `fim` que
+    esta função usa para filtrar (`domingo_da_semana(alvo) + 7`) sempre que `alvo` não é domingo
+    (ou seja, em TODA mensagem semanal enviada sob o cron real de segunda-feira). Resultado: a
+    mensagem prometia "de HOJE a domingo+8" no texto, mas só tinha CONSULTADO até "domingo+7" — um
+    turno real no último dia prometido nunca era buscado, e a mensagem mesmo assim afirmava cobrir
+    aquele dia. Reproduzido ao vivo: turno em 31/08 dentro do período anunciado no texto, ausente da
+    lista, porque o filtro nunca foi além de 30/08. Conserto: `fim` sai daqui, uma vez só, e quem
+    monta a mensagem usa o mesmo valor — nunca dois cálculos para a mesma fronteira.
+    """
+    fim = somar_dias(domingo_da_semana(alvo), 7)
+    inicio = alvo
     turnos = [t for b in blocos["blocos"] for t in b["turnos"] if inicio <= t["data"] <= fim and not t.get("santaCeia")]
     resultado = []
     for p in pessoas["pessoas"]:
@@ -215,7 +241,7 @@ def selecionar_semanal(alvo, pessoas, blocos):
         turnos_da_pessoa = [t for t in turnos if p["id"] in t.get("pessoas", [])]
         if turnos_da_pessoa:
             resultado.append((p, turnos_da_pessoa))
-    return inicio, resultado
+    return inicio, fim, resultado
 
 
 def rodar_diario(alvo, pessoas, blocos, titulo, dry):
@@ -234,9 +260,9 @@ def rodar_diario(alvo, pessoas, blocos, titulo, dry):
 
 
 def rodar_semanal(alvo, pessoas, blocos, titulo, dry):
-    inicio, selecionados = selecionar_semanal(alvo, pessoas, blocos)
+    inicio, fim, selecionados = selecionar_semanal(alvo, pessoas, blocos)
     for p, turnos_da_pessoa in selecionados:
-        msg = montar_mensagem_semanal(p, inicio, turnos_da_pessoa, titulo)
+        msg = montar_mensagem_semanal(p, inicio, fim, turnos_da_pessoa, titulo)
         print(f"--- {p['nome']} ({p['telefone']}) — semana de {inicio} ---")
         print(msg)
         if dry:

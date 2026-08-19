@@ -332,6 +332,7 @@ const PrimeiroAcesso: React.FC<{ aoAbrir: (s: Segredos) => void }> = ({ aoAbrir 
         tipo="senha"
         valor={token}
         aoMudar={setToken}
+        nome="token-github"
         dica="Fine-grained · Only select repositories → escala-porteiros · Repository permissions → Contents: Read and write"
       />
       <p className="-mt-2 mb-4 text-xs leading-relaxed text-gray-500">
@@ -344,6 +345,7 @@ const PrimeiroAcesso: React.FC<{ aoAbrir: (s: Segredos) => void }> = ({ aoAbrir 
         tipo="senha"
         valor={chaveMotor}
         aoMudar={setChaveMotor}
+        nome="chave-do-motor"
         dica="Sem ela, o algoritmo continua gerando e validando — só não há proposta nem explicação do motor."
       />
       {/*
@@ -924,6 +926,8 @@ const CartaoPessoa: React.FC<{ pessoa: Pessoa; aoAlterar: (m: (p: Pessoa) => Pes
           <div>
             <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Máximo por mês</p>
             <input
+              id={`teto-mensal-${pessoa.id}`}
+              name={`teto-mensal-${pessoa.id}`}
               type="number"
               min={1}
               value={r.tetoMensal ?? ''}
@@ -972,6 +976,8 @@ const ContatoWhatsApp: React.FC<{ pessoa: Pessoa; aoAlterar: (m: (p: Pessoa) => 
       </p>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         <input
+          id={`nome-completo-${pessoa.id}`}
+          name={`nome-completo-${pessoa.id}`}
           title="Como chamar esta pessoa na mensagem — ex.: “Carlos Henrique”. Vazio usa o nome de sempre"
           value={pessoa.nomeCompleto ?? ''}
           onChange={(e) => aoAlterar((p) => ({ ...p, nomeCompleto: e.target.value || undefined }))}
@@ -979,6 +985,8 @@ const ContatoWhatsApp: React.FC<{ pessoa: Pessoa; aoAlterar: (m: (p: Pessoa) => 
           className="px-3 py-2 border border-gray-300 rounded-lg text-sm"
         />
         <input
+          id={`telefone-contato-${pessoa.id}`}
+          name={`telefone-contato-${pessoa.id}`}
           title="Telefone do WhatsApp desta pessoa — sem ele, ela não recebe lembrete individual"
           type="tel"
           value={telefoneDigitado}
@@ -1061,13 +1069,13 @@ const Ausencias: React.FC<{ pessoa: Pessoa; aoAlterar: (m: (p: Pessoa) => Pessoa
       <div className="flex flex-wrap gap-2 items-end mt-2">
         <label className="text-xs text-gray-500">
           de
-          <input type="date" value={de} onChange={(e) => setDe(e.target.value)} className="block px-2 py-1.5 border border-gray-300 rounded-lg text-sm" />
+          <input id={`ausencia-de-${pessoa.id}`} name={`ausencia-de-${pessoa.id}`} type="date" value={de} onChange={(e) => setDe(e.target.value)} className="block px-2 py-1.5 border border-gray-300 rounded-lg text-sm" />
         </label>
         <label className="text-xs text-gray-500">
           até
-          <input type="date" value={ate} onChange={(e) => setAte(e.target.value)} className="block px-2 py-1.5 border border-gray-300 rounded-lg text-sm" />
+          <input id={`ausencia-ate-${pessoa.id}`} name={`ausencia-ate-${pessoa.id}`} type="date" value={ate} onChange={(e) => setAte(e.target.value)} className="block px-2 py-1.5 border border-gray-300 rounded-lg text-sm" />
         </label>
-        <input value={motivo} onChange={(e) => setMotivo(e.target.value)} placeholder="motivo (opcional)" className="px-2 py-1.5 border border-gray-300 rounded-lg text-sm flex-1 min-w-[8rem]" />
+        <input id={`ausencia-motivo-${pessoa.id}`} name={`ausencia-motivo-${pessoa.id}`} value={motivo} onChange={(e) => setMotivo(e.target.value)} placeholder="motivo (opcional)" className="px-2 py-1.5 border border-gray-300 rounded-lg text-sm flex-1 min-w-[8rem]" />
         <button title="Acrescenta ao elenco. Só entra na escala quando você gerar de novo"
           onClick={() => {
             if (!de || !ate) return alert('Informe as duas datas.')
@@ -1177,7 +1185,7 @@ const AusenciasAntesDeGerar: React.FC<{
       <div className="flex flex-wrap items-end gap-2">
         <label className="text-xs text-gray-500">
           quem
-          <select value={quem} onChange={(e) => setQuem(e.target.value)}
+          <select id="ausencia-antes-quem" name="ausencia-antes-quem" value={quem} onChange={(e) => setQuem(e.target.value)}
             title="A pessoa que estará ausente"
             className="mt-1 block min-w-[10rem] rounded-lg border border-gray-300 px-2 py-1.5 text-sm"
           >
@@ -1187,15 +1195,15 @@ const AusenciasAntesDeGerar: React.FC<{
         </label>
         <label className="text-xs text-gray-500">
           primeiro dia
-          <input type="date" value={inicio} onChange={(e) => setInicio(e.target.value)} title="Primeiro dia da ausência"
+          <input id="ausencia-antes-inicio" name="ausencia-antes-inicio" type="date" value={inicio} onChange={(e) => setInicio(e.target.value)} title="Primeiro dia da ausência"
             className="mt-1 block rounded-lg border border-gray-300 px-2 py-1.5 text-sm" />
         </label>
         <label className="text-xs text-gray-500">
           último dia
-          <input type="date" value={fim} onChange={(e) => setFim(e.target.value)} title="Último dia da ausência (inclusive)"
+          <input id="ausencia-antes-fim" name="ausencia-antes-fim" type="date" value={fim} onChange={(e) => setFim(e.target.value)} title="Último dia da ausência (inclusive)"
             className="mt-1 block rounded-lg border border-gray-300 px-2 py-1.5 text-sm" />
         </label>
-        <input value={motivo} onChange={(e) => setMotivo(e.target.value)} placeholder="motivo (opcional)"
+        <input id="ausencia-antes-motivo" name="ausencia-antes-motivo" value={motivo} onChange={(e) => setMotivo(e.target.value)} placeholder="motivo (opcional)"
           title="Aparece só aqui, para você lembrar depois"
           className="min-w-[8rem] flex-1 rounded-lg border border-gray-300 px-2 py-1.5 text-sm" />
         <button onClick={acrescentar} title="Marca a ausência. Ela vale na próxima vez que você gerar"
@@ -1727,11 +1735,11 @@ const AbaGerar: React.FC<{
             inviolável deste projeto é que o passado não se reescreve, porque isso faz o site
             desmentir o que os irmãos já viram. O navegador agora nem deixa escolher.
           */}
-          <input type="date" min={hojeSaoPaulo()} value={de} onChange={(e) => aoMudarDe(e.target.value)} className="block mt-1 px-3 py-2 border border-gray-300 rounded-xl text-sm" />
+          <input id="gerar-de" name="gerar-de" type="date" min={hojeSaoPaulo()} value={de} onChange={(e) => aoMudarDe(e.target.value)} className="block mt-1 px-3 py-2 border border-gray-300 rounded-xl text-sm" />
           </label>
           <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
             Até
-            <input type="date" min={de || hojeSaoPaulo()} value={ate} onChange={(e) => aoMudarAte(e.target.value)} className="block mt-1 px-3 py-2 border border-gray-300 rounded-xl text-sm" />
+            <input id="gerar-ate" name="gerar-ate" type="date" min={de || hojeSaoPaulo()} value={ate} onChange={(e) => aoMudarAte(e.target.value)} className="block mt-1 px-3 py-2 border border-gray-300 rounded-xl text-sm" />
           </label>
           {/*
             🔴 O TAMANHO DA JANELA, ANTES DE GERAR — 06/08/2026.
@@ -1780,6 +1788,8 @@ const AbaGerar: React.FC<{
         <label className="mt-4 flex flex-wrap items-center gap-2 text-sm text-gray-700">
           <span className="font-semibold">Pessoas por turno:</span>
           <input
+            id="capacidade-padrao"
+            name="capacidade-padrao"
             type="number"
             min={1}
             max={20}
@@ -1876,6 +1886,8 @@ const AbaGerar: React.FC<{
             <label className="text-xs text-gray-500">
               data da Santa Ceia
               <input
+                id="nova-santa-ceia"
+                name="nova-santa-ceia"
                 type="date"
                 value={novaCeia}
                 title="A data de uma Santa Ceia"
@@ -1924,6 +1936,8 @@ const AbaGerar: React.FC<{
             <label className="text-xs font-semibold uppercase tracking-wider text-gray-500">
               Título
               <input
+                id="identidade-titulo"
+                name="identidade-titulo"
                 value={config.identidade.titulo}
                 title="O nome que aparece grande no cabeçalho — ex.: Escala de Recepção"
                 onChange={(e) => aoMudarConfig({ ...config, identidade: { ...config.identidade, titulo: e.target.value } })}
@@ -1933,6 +1947,8 @@ const AbaGerar: React.FC<{
             <label className="text-xs font-semibold uppercase tracking-wider text-gray-500">
               Subtítulo
               <input
+                id="identidade-subtitulo"
+                name="identidade-subtitulo"
                 value={config.identidade.subtitulo}
                 title="A linha menor embaixo do título — ex.: Unidade Centro. Pode ficar vazia"
                 onChange={(e) => aoMudarConfig({ ...config, identidade: { ...config.identidade, subtitulo: e.target.value } })}
@@ -1942,6 +1958,8 @@ const AbaGerar: React.FC<{
             <label className="text-xs font-semibold uppercase tracking-wider text-gray-500">
               Como chamar (singular)
               <input
+                id="identidade-pessoa-singular"
+                name="identidade-pessoa-singular"
                 value={config.identidade.pessoa.singular}
                 title="Ex.: Funcionário, Plantonista, Voluntário. Aparece no filtro e no cabeçalho da tabela"
                 onChange={(e) => aoMudarConfig({ ...config, identidade: { ...config.identidade, pessoa: { ...config.identidade.pessoa, singular: e.target.value } } })}
@@ -1951,6 +1969,8 @@ const AbaGerar: React.FC<{
             <label className="text-xs font-semibold uppercase tracking-wider text-gray-500">
               Como chamar (plural)
               <input
+                id="identidade-pessoa-plural"
+                name="identidade-pessoa-plural"
                 value={config.identidade.pessoa.plural}
                 title="Ex.: funcionários, plantonistas. Aparece no rodapé da imagem: “3 ___ por turno”"
                 onChange={(e) => aoMudarConfig({ ...config, identidade: { ...config.identidade, pessoa: { ...config.identidade.pessoa, plural: e.target.value } } })}
@@ -3174,6 +3194,7 @@ const Campo: React.FC<{
       <div className="relative mt-1.5">
         <input
           type={tipo === 'senha' && !visivel ? 'password' : 'text'}
+          id={nome}
           name={nome}
           autoComplete={autoCompletar ?? (tipo === 'senha' ? 'off' : undefined)}
           value={valor}

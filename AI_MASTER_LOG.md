@@ -4,7 +4,7 @@
 > O **porquê** de cada decisão vive no [`DIARIO_DE_BORDO.md`](DIARIO_DE_BORDO.md); aqui fica o
 > registro do que foi feito, passo a passo.
 >
-> **Cadeia de navegação:** [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-19-d.md) → [`BACKLOG.md`](BACKLOG.md)
+> **Cadeia de navegação:** [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-19-e.md) → [`BACKLOG.md`](BACKLOG.md)
 > **Roteador:** [`AGENTS.md`](AGENTS.md) ·
 > **Solicitações:** [`docs/solicitacoes/INDICE_DE_SOLICITACOES.md`](docs/solicitacoes/INDICE_DE_SOLICITACOES.md) ·
 > **Fatias arquivadas:** [`docs/historico/INDICE.md`](docs/historico/INDICE.md)
@@ -1085,3 +1085,22 @@ achado real: mensagens não se identificavam (erro nº1 apontado pela pesquisa) 
 removida, autoteste 19→22 casos. `docs/LEMBRETE_WHATSAPP.md` documenta as duas decisões, citadas.
 Gate: 37 passos, `EXIT_GATE=0`.
 **Solicitação:** S-065.
+
+---
+
+## 19/08/2026 — S-066: a pergunta certa achou um bug real na mensagem semanal
+
+Mesma pergunta de sempre sobre o S-065, resposta honesta: faltava verificação visual (achado:
+telefone inválido sumia em silêncio no S-064, corrigido) e auditoria de verdade. Agente auditor
+independente confirmou o conserto do "turno já passado" mas achou um SEGUNDO defeito real:
+`montar_mensagem_semanal` recalculava o fim da semana (`inicio+7`) separado do que
+`selecionar_semanal` usava para filtrar (`domingo+7`) — divergem sempre que o disparo não cai num
+domingo, inclusive na cadência real (segunda-feira), e a mensagem prometia um dia que o filtro
+nunca tinha buscado. Reproduzido ao vivo antes de aceitar. Corrigido: `fim` sai de
+`selecionar_semanal` uma vez, nunca recalculado; `max(domingo,alvo)` simplificado para `inicio =
+alvo` (a comparação nunca desempatava para o outro lado). Sweep completo do painel administrativo:
+12 campos sem `id`/`name` corrigidos (não só o já achado antes), verificado tela por tela.
+Achado lateral: o contador de casos do próprio autoteste era escrito à mão e tinha desatualizado
+(26 exibido, 32 rodando) — trocado por contagem automática, nos dois autotestes que tinham esse
+padrão. Autoteste: 26→**32 casos**. Gate: 37 passos, `EXIT_GATE=0`.
+**Solicitação:** S-066.

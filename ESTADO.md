@@ -5,7 +5,7 @@
 > **Última atualização:** 19/08/2026 · **Fuso:** America/São_Paulo
 >
 > **Cadeia de navegação, nesta ordem:**
-> **`ESTADO.md` (você está aqui)** → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-19-d.md) → [`BACKLOG.md`](BACKLOG.md)
+> **`ESTADO.md` (você está aqui)** → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-19-e.md) → [`BACKLOG.md`](BACKLOG.md)
 > *onde estamos · o que aconteceu na última sessão e por quê · o que fazer a seguir*
 >
 > **Reconstruir do zero (portabilidade entre IAs):** [`docs/RECONSTRUIR.md`](docs/RECONSTRUIR.md)
@@ -44,7 +44,25 @@ agente/harness ou trabalho paralelo em arquivos disjuntos.
 e conferida, o nome do cliente fora do código. **P0 e P1 estão sem item aberto** — a única
 credencial em aberto é a chave do motor, **opcional**; nada trava sem ela.
 
-## O mais recente: pesquisa ANTES do código — cadência e formatação do lembrete (S-065, 19/08)
+## O mais recente: a pergunta certa achou um bug real na mensagem semanal (S-066, 19/08)
+
+Mesma pergunta de auditoria de sempre, depois do S-065 — resposta honesta: faltava verificação
+visual (achado: telefone inválido ainda sumia em silêncio) e auditoria de verdade. Agente auditor
+independente, mandado a REFUTAR, confirmou o conserto do "turno já passado" mas achou um
+**SEGUNDO** defeito real: `montar_mensagem_semanal` recalculava o fim da semana (`inicio+7`)
+separado do que `selecionar_semanal` usava para filtrar (`domingo+7`) — as duas fórmulas divergem
+sempre que o disparo não cai num domingo, **inclusive na cadência real (segunda-feira)** — e a
+mensagem prometia um dia que o filtro nunca tinha buscado. Reproduzido ao vivo antes de aceitar.
+Corrigido: `fim` sai de um único lugar, nunca recalculado; `max(domingo,alvo)` simplificado para
+`inicio = alvo` (nunca desempatava para o outro lado). **Sweep completo do painel administrativo**
+(não só o achado anterior): 12 campos sem `id`/`name` corrigidos, verificado tela por tela, zero
+avisos restantes. **Achado lateral, no próprio instrumento de medição:** o contador de casos do
+autoteste era escrito à mão e tinha desatualizado (26 exibido, 32 rodando de verdade, em silêncio)
+— trocado por contagem automática, nos dois autotestes que tinham esse padrão. Autoteste: 26→**32
+casos**. Gate: **37 passos**, verde. Detalhe:
+[`HANDOFF_2026-08-19-e.md`](docs/handoff/HANDOFF_2026-08-19-e.md) · [DB-062](DIARIO_DE_BORDO.md).
+
+## O anterior: pesquisa ANTES do código — cadência e formatação do lembrete (S-065, 19/08)
 
 Depois do S-064, o Flavio perguntou o texto das mensagens e se o resumo semanal deveria disparar
 segunda em vez de domingo, com instrução explícita: *"coloque os agentes de pesquisa antes de você

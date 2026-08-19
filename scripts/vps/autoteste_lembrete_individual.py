@@ -21,10 +21,15 @@ if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
 
 falhas = 0
+total = 0  # 🔴 CONTADO, NUNCA ESCRITO À MÃO — achado em 19/08/2026, no próprio autoteste que
+# prega essa regra: um `total = N` fixo no fim do arquivo desatualizava toda vez que um caso novo
+# entrava (chegou a ficar em "26 de 26" com 32 casos realmente rodando — os 6 mais novos passavam
+# em silêncio, sem contar para nada). "Número escrito à mão apodrece" vale para o próprio autoteste.
 
 
 def caso(nome, ok, detalhe=""):
-    global falhas
+    global falhas, total
+    total += 1
     if not ok:
         falhas += 1
     marca = "✅" if ok else "🔴"
@@ -77,16 +82,71 @@ sel_ceia = m.selecionar_diario("2026-08-16", PESSOAS, BLOCOS)
 caso('diário: turno de SANTA CEIA (sem gente) nunca gera seleção', sel_ceia == [])
 
 # ---- selecionar_semanal — domingo a domingo, inclui o domingo seguinte (8 dias) ------------------
-inicio, sel_semana = m.selecionar_semanal("2026-08-19", PESSOAS, BLOCOS)
-caso('semanal: início da semana de 19/08 (quarta) é 16/08 (domingo)', inicio == "2026-08-16")
+# Disparo caindo no PRÓPRIO domingo (era o comportamento único até o cron mudar para segunda,
+# S-065) — `inicio` é o domingo mesmo, sem corte, porque `alvo == domingo_da_semana(alvo)`.
+inicio_dom, fim_dom, sel_dom = m.selecionar_semanal("2026-08-16", PESSOAS, BLOCOS)
+caso('semanal, disparo NO domingo: início é o próprio domingo, sem corte', inicio_dom == "2026-08-16")
+caso('semanal, disparo no domingo: fim é o domingo seguinte (8 dias)', fim_dom == "2026-08-23")
 caso(
-    'semanal: junta os turnos de "com_fone" na semana — 19/08 e 20/08 (16/08 é Santa Ceia, ignorada)',
-    len(sel_semana) == 1 and {t["data"] for t in sel_semana[0][1]} == {"2026-08-19", "2026-08-20"},
-    f"selecionou {sel_semana}",
+    'semanal, disparo no domingo: junta os turnos de "com_fone" na semana — 19/08 e 20/08 (16/08 é Santa Ceia, ignorada)',
+    len(sel_dom) == 1 and {t["data"] for t in sel_dom[0][1]} == {"2026-08-19", "2026-08-20"},
+    f"selecionou {sel_dom}",
 )
 
-_, sel_semana_vazia = m.selecionar_semanal("2026-09-01", PESSOAS, BLOCOS)
+_, _, sel_semana_vazia = m.selecionar_semanal("2026-09-01", PESSOAS, BLOCOS)
 caso('semanal: sem ninguém escalado naquela semana → seleção vazia', sel_semana_vazia == [])
+
+# ---- 🔴 selecionar_semanal, disparo na SEGUNDA-FEIRA — achado ao vivo em 19/08/2026, no mesmo
+#      dia em que o cron mudou de domingo para segunda (S-065). Sem o corte, alguém cujo único
+#      turno da semana fosse justamente domingo (JÁ REALIZADO) recebia uma mensagem sobre um turno
+#      que já tinha acontecido. `inicio` tem de ser HOJE, não o domingo que já passou. -------------
+PESSOA_SEGUNDA = {"pessoas": [{"id": "zeca", "nome": "Zeca", "telefone": "5511777777777"}]}
+
+so_domingo_passado = {"blocos": [{"turnos": [{"data": "2026-08-23", "tipo": "NOITE", "pessoas": ["zeca"]}]}]}
+inicio_seg, fim_seg, sel_seg = m.selecionar_semanal("2026-08-24", PESSOA_SEGUNDA, so_domingo_passado)  # segunda-feira
+caso('semanal, disparo na SEGUNDA: início é hoje, não o domingo anterior (que já passou)', inicio_seg == "2026-08-24")
+caso(
+    '🔴 semanal, disparo na segunda: turno de domingo JÁ REALIZADO não gera seleção — pessoa não recebe mensagem sobre o próprio passado',
+    sel_seg == [],
+    f"selecionou {sel_seg}, deveria ser vazio (o único turno dela já aconteceu ontem)",
+)
+
+domingo_passado_e_futuro = {"blocos": [{"turnos": [
+    {"data": "2026-08-23", "tipo": "NOITE", "pessoas": ["zeca"]},  # domingo, já passou
+    {"data": "2026-08-26", "tipo": "NOITE", "pessoas": ["zeca"]},  # quarta, ainda vem
+]}]}
+_, _, sel_seg2 = m.selecionar_semanal("2026-08-24", PESSOA_SEGUNDA, domingo_passado_e_futuro)
+caso(
+    'semanal, disparo na segunda: turno FUTURO da mesma pessoa aparece; o de domingo (passado) some da lista',
+    len(sel_seg2) == 1 and {t["data"] for t in sel_seg2[0][1]} == {"2026-08-26"},
+    f"selecionou {sel_seg2}",
+)
+
+# ---- 🔴 achado da AUDITORIA CEGA (19/08/2026, mesmo dia): `fim` tem de ser DEVOLVIDO por
+#      `selecionar_semanal`, nunca recalculado por quem monta a mensagem — as duas fórmulas
+#      divergiam sempre que o disparo não caía num domingo, e a mensagem prometia um dia que o
+#      filtro nunca tinha buscado (achado ao vivo: turno em 31/08 dentro do "De 24/08 a 31/08" do
+#      texto, ausente da lista, porque o filtro só ia até 30/08). ---------------------------------
+turno_no_ultimo_dia_prometido_pela_versao_antiga = {"blocos": [{"turnos": [
+    {"data": "2026-08-31", "tipo": "NOITE", "pessoas": ["zeca"]},  # o dia que "inicio+7" prometeria
+]}]}
+fim_real, sel_limite = m.selecionar_semanal("2026-08-24", PESSOA_SEGUNDA, turno_no_ultimo_dia_prometido_pela_versao_antiga)[1:]
+caso(
+    '🔴 fim do FILTRO (domingo+7) é o mesmo fim que a mensagem vai anunciar — não "início+7"',
+    fim_real == "2026-08-30",
+    f"fim devolvido: {fim_real} (a versão com o defeito prometeria 2026-08-31 e não acharia o turno)",
+)
+caso(
+    'turno no dia que SÓ a fórmula antiga prometia (31/08) fica de fora, coerente com o fim real (30/08)',
+    sel_limite == [],
+    f"selecionou {sel_limite} — se achou algo, o filtro está buscando além do que deveria",
+)
+
+# `fim` sempre bate com `domingo_da_semana(alvo) + 7`, para qualquer dia da semana que o disparo
+# caia — não só domingo e segunda (a auditoria apontou que só esses dois tinham cobertura).
+for alvo_dia, rotulo_dia in [("2026-08-18", "terça"), ("2026-08-22", "sábado")]:
+    _, fim_dia, _ = m.selecionar_semanal(alvo_dia, PESSOA_SEGUNDA, {"blocos": [{"turnos": []}]})
+    caso(f'semanal, disparo na {rotulo_dia}: fim continua sendo o domingo seguinte (2026-08-23)', fim_dia == "2026-08-23")
 
 # ---- montar_mensagem_diaria — conteúdo da mensagem ------------------------------------------------
 TITULO = "Escala de Teste"
@@ -114,7 +174,7 @@ turnos_fora_de_ordem = [
     {"data": "2026-08-22", "tipo": "NOITE", "pessoas": ["com_fone"]},
     {"data": "2026-08-16", "tipo": "MANHA", "pessoas": ["com_fone"], "rotulo": "Culto de oração"},
 ]
-msg_semanal = m.montar_mensagem_semanal(pessoa_com_fone, "2026-08-16", turnos_fora_de_ordem, TITULO)
+msg_semanal = m.montar_mensagem_semanal(pessoa_com_fone, "2026-08-16", "2026-08-23", turnos_fora_de_ordem, TITULO)
 pos_16 = msg_semanal.find("16/08")
 pos_22 = msg_semanal.find("22/08")
 caso(
@@ -129,12 +189,23 @@ caso(
     msg_semanal.startswith(f"📅 *{TITULO}*"),
     f"primeira linha: {msg_semanal.splitlines()[0]!r}",
 )
+# ---- 🔴 integração — seleciona E monta a mensagem para o disparo real (segunda-feira), prova que
+#      o TEXTO da mensagem promete exatamente o que foi buscado, ponta a ponta ---------------------
+inicio_int, fim_int, sel_int = m.selecionar_semanal("2026-08-24", PESSOA_SEGUNDA, {"blocos": [{"turnos": [
+    {"data": "2026-08-27", "tipo": "NOITE", "pessoas": ["zeca"]},
+]}]})
+msg_int = m.montar_mensagem_semanal(sel_int[0][0], inicio_int, fim_int, sel_int[0][1], TITULO)
+caso(
+    'ponta a ponta (segunda-feira): a mensagem promete "de 24/08 a 30/08" — o mesmo fim que o filtro usou, não "31/08"',
+    "24/08/2026 a 30/08/2026" in msg_int,
+    f"mensagem: {msg_int!r}",
+)
+
 caso(
     'nenhuma das duas mensagens usa sintaxe de lista do WhatsApp ("- item") — só "•" à mão, o único formato confirmado pela pesquisa',
     "\n- " not in msg_diaria and "\n- " not in msg_semanal,
 )
 
-total = 22
 print(f"\n  {'🔴' if falhas else '✅'} {total - falhas} de {total} casos corretos")
 if falhas:
     print("  A seleção ou a composição da mensagem NÃO fazem o que dizem fazer.")

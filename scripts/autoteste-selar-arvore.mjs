@@ -69,7 +69,13 @@ function conferir(raiz) {
 
 console.log('AUTOTESTE — selo da árvore (selar-arvore.mjs)\n')
 let falhas = 0
+// 🔴 CONTADO, NUNCA ESCRITO À MÃO — achado em 19/08/2026 no autoteste irmão
+// (autoteste_lembrete_individual.py): um `total` fixo no fim do arquivo desatualiza toda vez que um
+// caso novo entra, e passa em silêncio contando de menos. "Número escrito à mão apodrece" vale para
+// o próprio autoteste.
+let total = 0
 const caso = (nome, ok, detalhe) => {
+  total++
   if (!ok) falhas++
   console.log(`  ${ok ? '✅' : '🔴'} ${nome}`)
   if (!ok && detalhe) console.log(`       ${detalhe}`)
@@ -191,7 +197,6 @@ const caso = (nome, ok, detalhe) => {
   }
 }
 
-const total = 7
 console.log(`\n  ${falhas ? '🔴' : '✅'} ${total - falhas} de ${total} casos corretos`)
 if (falhas) console.log('  O selo NÃO está medindo o que diz medir.')
 process.exit(falhas ? 1 : 0)

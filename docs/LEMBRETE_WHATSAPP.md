@@ -150,10 +150,29 @@ real na própria VPS** (skill `int-evolution-api`, 19/08/2026): dígitos com DDI
 `@s.whatsapp.net` — diferente do envio a grupo, que usa `@g.us`.
 
 **Autoteste** (não entra no `npm run gate` — Python não é parte da esteira JS deste projeto, mesma
-fronteira do `lembrete_escala.py`, que também nunca entrou): 22 casos, dado fabricado, sem rede —
-seleção (quem recebe o quê, nas duas pontas: com/sem telefone, com/sem turno, Santa Ceia sempre
-fora) e composição da mensagem (saudação, identificação, rótulos em negrito, ordenação, ausência de
+fronteira do `lembrete_escala.py`, que também nunca entrou): 32 casos, contados automaticamente,
+dado fabricado, sem rede — seleção (quem recebe o quê, nas duas pontas: com/sem telefone, com/sem
+turno, Santa Ceia sempre fora, turno já passado sempre fora) e composição da mensagem (saudação,
+identificação, rótulos em negrito, ordenação, fim da janela consistente com o filtro, ausência de
 sintaxe de lista não confirmada). `python3 scripts/vps/autoteste_lembrete_individual.py`.
+
+> 🔴 **Achado ao vivo no mesmo dia da mudança de cron (S-065→S-066):** mover o disparo semanal de
+> domingo para segunda-feira quebrou o cálculo do conteúdo — sem correção, alguém cujo único turno
+> da semana fosse justamente domingo (já realizado) recebia uma mensagem sobre um turno que já
+> tinha acontecido, porque `domingo_da_semana()` aponta para ONTEM quando "hoje" é segunda.
+> Corrigido em `selecionar_semanal`: o início efetivo da janela é sempre "hoje" — nunca lista, nem
+> seleciona, turno que já passou.
+
+> 🔴 **Segundo achado, pela auditoria cega INDEPENDENTE do conserto acima, mesmo dia (S-066):** o
+> conserto do "turno já passado" estava certo, mas `montar_mensagem_semanal` recalculava o FIM da
+> janela (`início + 7`) separado do que `selecionar_semanal` realmente usava para buscar turnos
+> (`domingo + 7`) — as duas fórmulas só coincidem quando o disparo cai num domingo. Em qualquer
+> outro dia, **inclusive segunda-feira, a cadência real de produção**, elas divergem: a mensagem
+> prometia "de X a Y" no texto, mas o filtro nunca tinha buscado até Y — um turno real no último
+> dia prometido simplesmente não era encontrado. Reproduzido ao vivo antes de aceitar o achado.
+> Corrigido: `fim` sai de `selecionar_semanal` uma vez só, nunca recalculado por quem monta a
+> mensagem. 6 casos novos no autoteste (o segundo defeito + a mesma janela testada em mais dias da
+> semana, terça e sábado — a auditoria apontou que só domingo/segunda tinham cobertura).
 
 **O que falta para ligar de verdade:** o mesmo bloqueio de sempre — o número `551194950100` ainda
 não está conectado (§2 acima). Instalar o script na VPS e configurar o cron é o mesmo passo 3
