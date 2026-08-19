@@ -31,23 +31,30 @@ mensagem própria, ninguém escalado) saem no modelo da casa.
 
 ## Os passos que SÓ o dono pode dar (nesta ordem)
 
-1. **Autorizar a chave nova de automação na VPS.** A chave da fase 0 do Charmway não está mais
-   nesta máquina; foi gerada outra, exclusiva para isto. Cole a linha abaixo (é a chave PÚBLICA —
-   pode ser exibida) em **hPanel → VPS → SSH keys**, ou acrescente-a a
-   `/root/.ssh/authorized_keys`:
+1. ✅ **Acesso SSH resolvido (verificado ao vivo em 18/08/2026).** A chave `claude-escala-lembrete`
+   perdeu o par em 08/08 (registro abaixo, mantido como histórico), mas a chave `charmway_deploy`
+   (autorizada em 10/08/2026, já presente nesta máquina) **funciona** — testada com leitura real na
+   VPS (`whoami`, `docker ps`, Evolution API respondendo). Nada a fazer aqui.
+
+   <details><summary>Registro histórico — a chave perdida de 08/08/2026</summary>
 
    ```
    ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGK7TfzdOE9woYgAMnaUWutOmcZPOVAbVd09auZlgzP7 claude-escala-lembrete
    ```
 
-   ⚠️ **Esta chave pública perdeu o par (08/08/2026).** A parte privada vivia só no contêiner da
-   sessão em que foi gerada, e ele foi recolhido quando aquela sessão se perdeu na atualização do
-   aplicativo. Autorizá-la não faz mal, mas não serve para nada: **no "go", uma chave nova é gerada
-   na mesma sessão que fará a instalação, e esta linha é substituída** — cole no hPanel a versão
-   nova, não esta.
+   Esta chave pública perdeu o par em 08/08/2026 — a parte privada vivia só no contêiner da sessão
+   em que foi gerada, recolhido quando aquela sessão se perdeu na atualização do aplicativo. Ficou
+   sem uso; a `charmway_deploy` a substituiu de fato.
+   </details>
 
-2. **Pôr o número de disparo do Charmway DENTRO do grupo** dos porteiros (quem envia a um grupo
-   precisa ser membro dele).
+2. ⏳ **Número escolhido (S-059, 18/08/2026): `551194950100`.** Explícito por decisão do dono — *"não
+   irei usar os números que estão conectados na instância. Irei usar o número específico (…) que é o
+   551194950100 (…) ele fica conectado em Ritmo & Números da aba do administrador, no painel de
+   campanhas."* Levantamento ao vivo em 18/08/2026 confirmou que os 6 números já conectados na
+   instância (`fetchInstances` + `fetchAllGroups`) não servem — nenhum está em grupo de
+   porteiros/igreja, todos são do ecossistema comercial Charmway. O `551194950100` é dedicado e
+   ainda **não está conectado**. Falta: (a) ele conectar o número em Ritmo & Números — ação dele,
+   parear WhatsApp é login, fora do meu alcance — e (b) colocá-lo dentro do grupo dos porteiros.
 
 3. **Dizer "go"** — daí em diante é comigo: instalo o script na VPS, descubro a instância e o JID
    do grupo pela Evolution, configuro as duas constantes, instalo o cron, rodo o dry-run NA VPS e

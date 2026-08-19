@@ -64,6 +64,26 @@ decisão dele, nada começa sozinho):
 ⚠️ Nada começa sem decisão explícita dele. Quando começar: os campos novos entram como OPCIONAIS no
 JSON (blocos publicados continuam válidos), e o `refazer` continua provando a reprodução.
 
+### P4.w2 ✅ CONSTRUÍDO 18/08/2026 — a trilha genérica, o veículo para testar o P4.w sem tocar produção (S-059/S-060)
+Pergunta dele: *"talvez seja necessário criarmos um novo GitHub, uma nova pasta (…) a partir daí,
+fazemos as implementações e testes, e mesclaríamos com o que está em produção hoje somente os
+serviços e funcionalidades que escolhêssemos. Dá pra fazer assim?"*
+
+**Resposta medida, não opinião:** dá, e sem repositório novo. `npm run generico` (§0) já provava
+que `src/` não tem texto de cliente cravado — o bundle era genérico por dentro antes mesmo de existir
+um segundo config. `vite build --mode generico` gera um segundo site (`docs/generico/`, base
+`/escala-porteiros/generico/`) a partir do MESMO código, publicado pelo MESMO `publicar.yml` (ele já
+sobe `docs/` inteira). Detalhe técnico completo: [`ARQUITETURA.md`](ARQUITETURA.md) §"A segunda
+trilha". Portão dedicado (`npm run generico:dados`, autoteste `generico:dados:autoteste`) garante
+que a demonstração nunca carregue o cliente de produção.
+
+**O que isto destrava, de verdade:** um lugar para iterar as features do P4.w (horário real de
+início/fim, tela de editar malha, evento avulso, vocabulário neutro) e ver o resultado numa URL
+própria, sem qualquer risco à produção — porque as duas trilhas só compartilham código-fonte, nunca
+dado. "Mesclar só o que eu escolher" já é automático: qualquer commit em `src/` vale para as duas
+trilhas ao mesmo tempo (é o MESMO motor); qualquer mudança em `public-generico/dados/` fica isolada.
+**O que ainda falta é o P4.w em si** (as features) — a trilha é o palco, não a peça.
+
 ### P4.f 💡 Lembrete de véspera no WhatsApp — o desenho e os graus de dificuldade (S-050, 07/08/2026) 👤
 Pergunta dele: *"seria maravilhoso, inclusive para agora. Qual é a maneira correta? Há dificuldade?
 Qual o grau?"* — as três rotas, com a verdade de cada uma:

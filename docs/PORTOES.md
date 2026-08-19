@@ -40,7 +40,7 @@ alguma tiver caractere de controle.
 
 ---
 
-## Os 33 passos do `npm run gate`
+## Os 36 passos do `npm run gate`
 
 ### 1. `segredos` — nenhum segredo em arquivo versionado
 **População:** todo arquivo que `git ls-files` lista (148 hoje) · **5 formas** procuradas · 4 isentos
@@ -265,7 +265,16 @@ implícita no fluxo de dados (só vem de `Object.keys(package.json.scripts)`); e
 que, se essa garantia um dia quebrar, `exigirNomeValido()` (`scripts/lib/guarda-nome-vivo.mjs`)
 barra ANTES de a string hostil chegar ao `execSync`.
 
-### 16. `generico:docs` — o nome do cliente na DOCUMENTAÇÃO é inventário fechado
+### 16. `generico:dados:autoteste` — prova que o portão da trilha genérica morde
+Autoteste do passo 32 (`generico:dados`) — roda ANTES do build genérico existir de propósito,
+como os outros autotestes do bloco 13-16: prova que o portão bite antes de confiar nele mais
+adiante no gate, quando `docs/generico/` já existe de verdade. Ver o passo 32 para o critério.
+**6 casos**, com prova nas duas pontas: 3 infratores plantados (config de produção na fonte
+genérica, `CCB` solto no build, vocabulário `Irmãos` vazado) reprovam; 3 limpos (config genérico de
+verdade, pasta de build ainda ausente, termo do cliente num `.md` fora do escopo deste portão)
+passam.
+
+### 17. `generico:docs` — o nome do cliente na DOCUMENTAÇÃO é inventário fechado
 **População:** todo `.md` vivo do repositório · **isentos declarados:** os append-only
 (`AI_MASTER_LOG`, `DIARIO_DE_BORDO`, `docs/handoff/`, `docs/historico/`, `docs/solicitacoes/`) e as
 especificações em `docs/superpowers/` — registram o que era verdade então.
@@ -291,7 +300,7 @@ INSTALAÇÃO (legítimo) ou descreve o PRODUTO (e aí o nome não devia estar l�
 **Provado nas três pontas, cada uma pelo motivo certo**, mais a árvore limpa → EXIT=0. E ele nasceu
 achando: quatro citações legítimas que um `grep` à mão tinha deixado passar.
 
-### 17. `citacoes` — `arquivo:linha` que envelheceu sozinho
+### 18. `citacoes` — `arquivo:linha` que envelheceu sozinho
 **População:** todo `.md` vivo · **isentos:** os append-only (registram o que era verdade **então**;
 citação velha ali é o registro funcionando). Hoje 6 citações conferidas.
 **Confere:** o arquivo citado existe · o arquivo tem pelo menos aquela linha.
@@ -312,17 +321,17 @@ não finge pegar o resto.
 **Provado nas duas pontas:** linha além do fim do arquivo e arquivo inexistente → EXIT=1, cada um com
 o motivo certo; árvore limpa → EXIT=0.
 
-### 18. `doc:regras:conferir` — o catálogo documentado bate com o código
+### 19. `doc:regras:conferir` — o catálogo documentado bate com o código
 `docs/CATALOGO_DE_REGRAS.md` é **gerado**. Este passo regenera em memória e compara **byte a byte**
 (ignorando fim de linha, porque o Windows reescreve CRLF). Muda o `titulo` ou a `explicacao` de uma
 regra sem regenerar → vermelho.
 
-### 19. `doc:comandos` — todo comando citado existe
+### 20. `doc:comandos` — todo comando citado existe
 **População:** os 23 documentos vivos · isentos os append-only.
 **Critério:** todo `npm run <nome>` está no `package.json`; todo `node scripts/<arquivo>` existe em
 disco. **Achou defeito na primeira execução:** `npm run tempo`, citado na documentação, não existia.
 
-### 20. `arquitetura` — as três invariantes que a documentação afirma
+### 21. `arquitetura` — as três invariantes que a documentação afirma
 1. `src/dominio/` **não importa nada de fora** (nem `../`, nem pacote externo).
 2. `conferencia-independente.ts` **não importa** `regras`, `validacao` nem `gerador`.
 3. **`docs/.nojekyll` existe.**
@@ -338,14 +347,14 @@ publicada · o site mostra a escala nova em cerca de um minuto"*. Ninguém no pa
 por tempo indeterminado. Um arquivo de 0 byte elimina a classe, e ele já sumiu uma vez sem ninguém
 ver: é o argumento inteiro para portão em vez de disciplina.
 
-### 21. `fatos:conferir` — nenhum documento desmente um número medido
+### 22. `fatos:conferir` — nenhum documento desmente um número medido
 **16 fatos**, todos de fonte executável: passos do gate (do `package.json`), casos do autoteste (da
 saída dele), checagens da auditoria, arquivos e termos do portão genérico, documentos vivos, piso do
 bloco publicado, turnos congelados, fontes declaradas, regras do catálogo, regras duras.
 **Nenhum é digitado.** Achou 4 contradições na primeira execução, e depois **pegou a própria
 mudança**: ao entrar no gate, virou o 16º passo e reprovou os documentos que diziam 15.
 
-### 22. `datas` — `toISOString()` não decide dia nem mês
+### 23. `datas` — `toISOString()` não decide dia nem mês
 **População:** 89 arquivos de `src/` e `scripts/` · isento `datas.test.ts`, que **cita** o
 antipadrão para provar que ele erra.
 **Critério, em dois níveis:**
@@ -358,14 +367,14 @@ antipadrão para provar que ele erra.
 `datas.ts`, no `RECONSTRUIR.md`, no `AGENTS.md` e em três comentários de teste. **E não havia nada
 que a cobrasse.** Quando alguém foi olhar, havia 4 usos e o `BACKLOG.md` declarava 1.
 
-### 23. `crescimento` — o dado ainda cabe onde é servido
+### 24. `crescimento` — o dado ainda cabe onde é servido
 **Critério:** nenhum arquivo de `dados/` passa de **60%** do teto de 1 MB da Contents API do GitHub,
 que é a que a área administrativa usa para publicar.
 **Também mede o ritmo**, do próprio dado: bytes por turno × turnos por ano → anos de folga.
 **Por que 60% e não 90%:** sobra ano suficiente para arquivar sem pressa. Alarme que grita cedo
 demais é alarme que alguém desliga.
 
-### 24. `tamanho-docs` — nenhum documento passou do teto do próprio regime
+### 25. `tamanho-docs` — nenhum documento passou do teto do próprio regime
 **De onde vêm os tetos:** de `docs/regimes-documentos.json`, a declaração do PROJETO — não de um
 número escrito no script. O regime vem do **caminho**: raiz = **vivo** (400 linhas / 40 KB,
 carregado toda sessão) · subpasta = **referência** (800 / 100, lido sob demanda) · a lista
@@ -376,7 +385,7 @@ isenta**, porque medir o passado imutável não faz sentido.
 *"no pré-voo **e no GATE**"* — e o GATE não tinha o passo. Quando a auditoria externa mostrou
 isso, a dívida foi **declarada** em vez de fechada; algumas horas depois, fechada.
 
-### 25. `auditoria` — 21 ataques ao próprio código
+### 26. `auditoria` — 21 ataques ao próprio código
 
 > ⚠️ **O número é medido, e o medidor já leu errado uma vez** (06/08/2026): quando a auditoria
 > tem achado, ela imprime *"20 checagem(ns) sem achado · 1 ACHADO(S)"*, e o fato lia o **20** — o
@@ -388,7 +397,7 @@ real), e camada de tela.
 ⚠️ **Relatório sem achado é declarado SUSPEITO pelo próprio script**, com o motivo estrutural: quem
 auditou escreveu o código.
 
-### 26. `regras-mestras` — tooltip em todo botão
+### 27. `regras-mestras` — tooltip em todo botão
 **População:** 66 botões medidos.
 **Também mede:** clicáveis fora de `<button>` (div/span com `onClick` e sem papel declarado) — hoje 0
 — e aspas duplas dentro do atributo, que quebram o HTML em silêncio.
@@ -520,15 +529,43 @@ um conjunto que soma reprovações faria alguém desligar o auditor inteiro.
 **Provado nas duas pontas:** árvore no ar → 0 divergências; com `--autoteste` → 5 divergências,
 nomeando a pessoa e a coluna exata.
 
-### 27. `ensaio` — o cenário que ORIGINOU o projeto, ponta a ponta
+### 28. `ensaio` — o cenário que ORIGINOU o projeto, ponta a ponta
 Alguém sai do elenco, outro entra com as cinco restrições, e a escala se refaz a partir de um corte.
 **11 promessas medidas**, entre elas *"o passado antes do corte fica byte a byte idêntico"*.
 
-### 28. `tempo` — a geração não regrediu de desempenho
+### 29. `tempo` — a geração não regrediu de desempenho
 
-### 29. `build` — compila e gera em `docs/`
+### 30. `build` — compila e gera em `docs/`
 
-### 30. `imagem` — o único passo que RENDERIZA O PIXEL
+### 31. `build:generico` — o segundo build, mesma fonte, base diferente
+Roda `vite build --mode generico`: mesmo código de `src/`, `base: '/escala-porteiros/generico/'`,
+lendo `public-generico/` em vez de `public/`. Gera em `docs/generico/`, dentro da MESMA árvore que o
+`publicar.yml` já sobe inteira — sem workflow novo, sem repositório novo (S-059/S-060, 18/08/2026).
+**Por quê depois de `build` (30) e não junto:** os dois builds escrevem em subpastas disjuntas de
+`docs/` (`docs/assets` e `docs/generico/`); rodar em sequência, não em paralelo, é o que permite ao
+`prebuild`-equivalente (`rmSync('docs/generico/assets', …)`) limpar sem risco de apagar o build de
+produção que acabou de sair do passo anterior.
+**Fora de escopo, declarado:** este passo só CONSTRÓI. A verificação de que o conteúdo é genérico é
+o passo seguinte.
+
+### 32. `generico:dados` — a trilha genérica não carrega texto de cliente
+**População:** `public-generico/` (a fonte, sempre existe) **e** `docs/generico/` (o build, existe
+depois do passo 31) — `.json`, `.html`, `.js`, `.css`.
+**Critério:** os MESMOS termos do portão `generico` (passo 13) — `Congregação Cristã` · `Jardim São
+Luiz` · `CCB` · `Irmão/Irmãos`. Se um `config.json` de produção for copiado por engano para a fonte
+genérica ("só para testar depressa"), a demonstração que existe para provar que o produto não
+depende deste cliente nasceria mostrando exatamente o cliente que ela existe para não mostrar.
+**Por que é portão separado, e não o mesmo `generico`:** aquele varre CÓDIGO (`src/`, `index.html`);
+este varre DADO (`public-generico/`, `docs/generico/`) — populações disjuntas, e o `generico` não
+tem por que aprender a olhar para uma segunda árvore de dados que só existe a partir de hoje.
+**Autoteste (`generico:dados:autoteste`, passo 16):** 6 casos — 3 infratores (config de produção
+copiado, `CCB` solto no build, vocabulário `Irmãos` vazado) + 3 limpos (config genérico de verdade,
+build ainda não rodado, termo do cliente num `.md` fora dos alvos deste portão).
+**Provado nas duas pontas**, como todo portão deste projeto: infrator plantado → EXIT=1 nomeando
+arquivo e termo; árvore limpa (inclusive antes do primeiro `build:generico`, quando `docs/generico/`
+nem existe) → EXIT=0.
+
+### 33. `imagem` — o único passo que RENDERIZA O PIXEL
 Gera a imagem pelo botão de verdade e **mede o DOM que virou o PNG**, no instante anterior à
 rasterização: texto cortado pela própria caixa, rótulo duplicado na mesma pílula, rodapé coerente.
 **Por quê:** três defeitos da imagem escaparam de todos os outros portões em 05/08/2026 e só
@@ -537,7 +574,7 @@ tarde, e a pílula da Santa Ceia imprimindo o rótulo duas vezes. Ler o PNG a ol
 ⚠️ A medição usa um `MutationObserver` instalado **antes** do clique: `gerarImagem.ts` monta um palco,
 rasteriza e chama `palco.remove()`, então medir depois acha uma página vazia.
 
-### 31. `vivo:tudo` — TODAS as validações de navegador rodam
+### 34. `vivo:tudo` — TODAS as validações de navegador rodam
 **População:** as 15 validações do grupo **LOCAL**, lidas do `package.json` — nunca de uma lista à
 mão. Validação nova entra sozinha. **242 segundos** no total, medidos em 18/08/2026.
 
@@ -568,14 +605,14 @@ este mesmo script com outra bandeira — ele entrou na lista como se fosse uma v
 dentro do grupo errado. Excluir por nome é lista à mão com outra roupa: **o que identifica um
 disparador não é como ele se chama, é o fato de chamar este arquivo.**
 
-### 32. `refazer` — a escala NO AR pode ser refeita
+### 35. `refazer` — a escala NO AR pode ser refeita
 Pega o que o bloco publicado registra (período, elenco, malha, piso, semente), refaz a escala e
 compara turno a turno. É a promessa do `ALGORITMO.md` — *"conferir daqui a um ano"* — medida contra o
 **dado publicado**, não contra entrada de teste. Bloco `importado` é isento, declarado e contado.
 ⚠️ Fica vermelho no dia em que o algoritmo mudar de propósito. É o ponto: nesse dia a promessa se
 quebra para o que já está no ar, e alguém tem de decidir — aceitar e declarar, ou republicar.
 
-### 33. `selo:gravar` — o verde acima é DESTA árvore
+### 36. `selo:gravar` — o verde acima é DESTA árvore
 Guarda a impressão digital de todo arquivo versionado. `npm run selo:conferir`, antes de commitar,
 compara. **Por quê:** em 05/08/2026 um `git add -A` capturou o mutante de um auditor e o commit
 entrou na história afirmando `EXIT_GATE=0` — o gate tinha sido verde minutos antes, sobre outra

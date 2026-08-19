@@ -1,0 +1,25 @@
+{
+  "versao": 1,
+  "capacidadePadrao": 1,
+  "malhaPadrao": {
+    "regras": [
+      { "diaSemana": 0, "turnos": ["NOITE"] },
+      { "diaSemana": 1, "turnos": ["NOITE"] },
+      { "diaSemana": 2, "turnos": ["NOITE"] },
+      { "diaSemana": 3, "turnos": ["NOITE"] },
+      { "diaSemana": 4, "turnos": ["NOITE"] },
+      { "diaSemana": 5, "turnos": ["NOITE"] },
+      { "diaSemana": 6, "turnos": ["NOITE"] }
+    ]
+  },
+  "santaCeia": [],
+  "identidade": {
+    "titulo": "Escala de plantões",
+    "subtitulo": "Demonstração — portaria de prédio",
+    "logo": "",
+    "pessoa": {
+      "singular": "Plantonista",
+      "plural": "plantonistas"
+    }
+  }
+}

@@ -7,7 +7,7 @@
 > **Este arquivo é o ROTEADOR do projeto.** Ordem de leitura, e ela importa:
 >
 > **1.** este arquivo (como se trabalha) → **2.** [`ESTADO.md`](ESTADO.md) (onde estamos) →
-> **3.** [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-18-b.md) (o que aconteceu e por quê) →
+> **3.** [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-18-c.md) (o que aconteceu e por quê) →
 > **4.** [`BACKLOG.md`](BACKLOG.md) (o que fazer a seguir)
 >
 > Só depois, e só o trecho de que precisar, os índices:
@@ -169,7 +169,7 @@ npm run dev
 **O GATE — nenhuma mudança significativa passa sem:**
 
 ```bash
-npm run gate      # 33 passos: typecheck · testes (2 fusos) · denominação · fontes · contagem · cadeia · genérico + autoteste · catálogo gerado · comandos citados · arquitetura · auditoria · regras mestras · build
+npm run gate      # 36 passos: typecheck · testes (2 fusos) · denominação · fontes · contagem · cadeia · genérico + autoteste · catálogo gerado · comandos citados · arquitetura · auditoria · regras mestras · build · build genérico
 ```
 
 O que ele encadeia, e por que cada um existe:
@@ -217,7 +217,7 @@ que `C:`. Clone numa pasta em `C:` para trabalhar, e traga de volta por `git pul
 
 ## 6.1 Capacidades locais — nada de script órfão
 
-Os 60 scripts de `scripts/` (portões, validações ao vivo, ferramentas de dados) estão catalogados
+Os 62 scripts de `scripts/` (portões, validações ao vivo, ferramentas de dados) estão catalogados
 em [`docs/capacidades.json`](docs/capacidades.json), cada um com ramo, gatilho, propósito e o
 portão que prova que funciona — padrão de
 `D:\Antigravity\_padroes-globais\ARVORE_DE_CAPACIDADES.md`. Ao criar um script novo em `scripts/`,
@@ -238,6 +238,7 @@ aqui. Escrito para quem **não participou de nada** — inclusive outra intelig�
 | As 17 regras — ⚙️ **gerado do código** | [`docs/CATALOGO_DE_REGRAS.md`](docs/CATALOGO_DE_REGRAS.md) |
 | Como a escala é montada, e o que o algoritmo **não** garante | [`docs/ALGORITMO.md`](docs/ALGORITMO.md) |
 | As camadas, medidas no grafo de importações | [`docs/ARQUITETURA.md`](docs/ARQUITETURA.md) |
+| A trilha GENÉRICA (build de demonstração, sem cliente) | [`docs/ARQUITETURA.md`](docs/ARQUITETURA.md) § "A segunda trilha" |
 | Como usar, conferir, e o que fazer quando dá errado | [`docs/OPERACAO.md`](docs/OPERACAO.md) |
 | Instalar do zero, e publicar para **outro cliente** | [`docs/INSTALAR.md`](docs/INSTALAR.md) |
 | **Para quem este produto é, e quando** — as três fases | [`docs/FINALIDADE_E_FASES.md`](docs/FINALIDADE_E_FASES.md) |
@@ -248,7 +249,7 @@ aqui. Escrito para quem **não participou de nada** — inclusive outra intelig�
 | Vou mexer em… | Leia antes |
 |---|---|
 | Estado atual | [`ESTADO.md`](ESTADO.md) |
-| O que aconteceu na última sessão, e por quê | [`docs/handoff/HANDOFF_2026-08-18-b.md`](docs/handoff/HANDOFF_2026-08-18-b.md) · [índice](docs/handoff/INDICE.md) |
+| O que aconteceu na última sessão, e por quê | [`docs/handoff/HANDOFF_2026-08-18-c.md`](docs/handoff/HANDOFF_2026-08-18-c.md) · [índice](docs/handoff/INDICE.md) |
 | O que falta | [`BACKLOG.md`](BACKLOG.md) |
 | Regras da escala, modelo de dados, motor | [`o desenho`](docs/superpowers/specs/2026-08-04-area-administrativa-escala-design.md) |
 | **Por que** uma decisão foi tomada, e como revertê-la | [`DIARIO_DE_BORDO.md`](DIARIO_DE_BORDO.md) |

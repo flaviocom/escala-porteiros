@@ -1,0 +1,8 @@
+{
+  "versao": 1,
+  "pessoas": [
+    { "id": "demo_1", "nome": "Plantonista 1", "ativo": true, "restricoes": {} },
+    { "id": "demo_2", "nome": "Plantonista 2", "ativo": true, "restricoes": {} },
+    { "id": "demo_3", "nome": "Plantonista 3", "ativo": true, "restricoes": {} }
+  ]
+}

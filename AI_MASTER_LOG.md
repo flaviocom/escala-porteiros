@@ -4,7 +4,7 @@
 > O **porquê** de cada decisão vive no [`DIARIO_DE_BORDO.md`](DIARIO_DE_BORDO.md); aqui fica o
 > registro do que foi feito, passo a passo.
 >
-> **Cadeia de navegação:** [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-18-b.md) → [`BACKLOG.md`](BACKLOG.md)
+> **Cadeia de navegação:** [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-18-c.md) → [`BACKLOG.md`](BACKLOG.md)
 > **Roteador:** [`AGENTS.md`](AGENTS.md) ·
 > **Solicitações:** [`docs/solicitacoes/INDICE_DE_SOLICITACOES.md`](docs/solicitacoes/INDICE_DE_SOLICITACOES.md) ·
 > **Fatias arquivadas:** [`docs/historico/INDICE.md`](docs/historico/INDICE.md)
@@ -979,3 +979,29 @@ padrão-ouro em si. `docs/capacidades.json` cataloga os 60 scripts de `scripts/`
 caminho: `conferir-citacoes.mjs` é mais rigoroso (confere símbolo) que o `portao-citacoes.mjs`
 ligado ao gate, e estava órfão — virou P8.1 do BACKLOG, decisão do dono. `npm run gate`: 33
 passos, `EXIT_GATE=0`, selo `eb2cc89056dc`. **Solicitação:** S-058.
+
+---
+
+## 18/08/2026 — S-059: o número do lembrete escolhido, e a chave que já funcionava
+
+Flavio fechou a rota B (Charmway) sem mais debate sobre banimento e liberou acesso de leitura à VPS
+para eu verificar o estado real. SSH com `charmway_deploy` (10/08) funciona — o passo 1 do runbook
+já estava resolvido e não registrado; a chave perdida (`claude-escala-lembrete`, 08/08) ficou como
+histórico. `fetchInstances`+`fetchAllGroups`: nenhum dos 6 números já conectados está em grupo de
+porteiros. Decisão dele: número dedicado `551194950100`, a conectar por ele mesmo em Ritmo &
+Números. `LEMBRETE_WHATSAPP.md` atualizado nas duas pontas. **Solicitação:** S-059.
+
+---
+
+## 18/08/2026 — S-060: a trilha GENÉRICA — segundo build, mesmo repositório
+
+Flavio perguntou se dava para testar uma versão "só Escala" sem repositório novo. Resposta medida:
+sim — `npm run generico` já provava `src/` limpo de texto de cliente; faltava só um segundo `fetch`.
+Construído: `vite.config.ts` alterna `base`/`publicDir`/`outDir` por `mode` do Vite (zero linha de
+`src/` muda); `public-generico/dados/` com identidade neutra e bloco de exemplo de 1 semana;
+`scripts/conferir-generico-dados.mjs` + autoteste (6 casos) — achou e corrigiu uma guarda
+"módulo principal" que falhava em silêncio no Windows. Gate: 33 → **36 passos**
+(`generico:dados:autoteste` 16º; `build:generico`+`generico:dados` 31º/32º).
+`docs/PORTOES.md`/`OPERACAO.md` renumerados. Verificado num navegador real (Playwright) em
+`/escala-porteiros/generico/` antes de declarar pronto. `ARQUITETURA.md` §"A segunda trilha" e
+`FASE2.md` §P4.w2 escritos. `npm run gate`: 36 passos, `EXIT_GATE=0`. **Solicitação:** S-060.

@@ -556,6 +556,24 @@
       "portao": "nenhum hoje — mantido como registro do raciocínio da prova original, não como ferramenta de regressão; também referencia um caminho de build (C:/Users/oflav/AppData/Local/Temp/build-escala-porteiros) que não existe mais"
     },
     {
+      "id": "conferir-generico-dados",
+      "tipo": "ferramenta",
+      "caminho": "scripts/conferir-generico-dados.mjs",
+      "ramo": "metodo",
+      "gatilho": "npm run generico:dados (32º passo do gate)",
+      "proposito": "a trilha GENÉRICA (public-generico/ e docs/generico/) não carrega texto de cliente — mesmos termos do portao-generico, varrendo DADO em vez de código",
+      "portao": "npm run gate — exit 0; autoteste próprio prova as duas pontas"
+    },
+    {
+      "id": "autoteste-conferir-generico-dados",
+      "tipo": "ferramenta",
+      "caminho": "scripts/autoteste-conferir-generico-dados.mjs",
+      "ramo": "metodo",
+      "gatilho": "npm run generico:dados:autoteste (16º passo do gate)",
+      "proposito": "prova que conferir-generico-dados.mjs morde: 3 infratores plantados reprovam, 3 casos limpos passam",
+      "portao": "npm run gate — exit 0"
+    },
+    {
       "id": "vps-lembrete_escala",
       "tipo": "ferramenta",
       "caminho": "scripts/vps/lembrete_escala.py",

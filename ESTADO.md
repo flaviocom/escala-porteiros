@@ -5,7 +5,7 @@
 > **Última atualização:** 18/08/2026 · **Fuso:** America/São_Paulo
 >
 > **Cadeia de navegação, nesta ordem:**
-> **`ESTADO.md` (você está aqui)** → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-18-b.md) → [`BACKLOG.md`](BACKLOG.md)
+> **`ESTADO.md` (você está aqui)** → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-18-c.md) → [`BACKLOG.md`](BACKLOG.md)
 > *onde estamos · o que aconteceu na última sessão e por quê · o que fazer a seguir*
 >
 > **Reconstruir do zero (portabilidade entre IAs):** [`docs/RECONSTRUIR.md`](docs/RECONSTRUIR.md)
@@ -44,7 +44,26 @@ agente/harness ou trabalho paralelo em arquivos disjuntos.
 e conferida, o nome do cliente fora do código. **P0 e P1 estão sem item aberto** — a única
 credencial em aberto é a chave do motor, **opcional**; nada trava sem ela.
 
-## O mais recente: 3 defeitos achados sem pedido, numa sessão que começou como "resume" (18/08)
+## O mais recente: a trilha GENÉRICA nasceu — segundo build, mesmo repositório (S-059/S-060, 18/08)
+
+O Flavio recuperou o brainstorm de 07/08 sobre o lembrete de WhatsApp (rota B pela ponte Charmway,
+S-050/S-051) e perguntou dois próximos passos. **1) O número de disparo:** ele escolheu
+`551194950100` (dedicado, ainda não conectado — os 6 números já ativos na instância foram
+descartados por levantamento ao vivo: nenhum está em grupo de porteiros). Corrigido no caminho: a
+chave SSH `charmway_deploy` (10/08) já resolve o acesso — a `claude-escala-lembrete` perdida (08/08)
+era a única marcada como bloqueio no runbook. **2) Uma versão "só Escala", sem cliente, para testar
+sem risco:** ele perguntou se precisava de repositório novo. Resposta medida: não — `npm run
+generico` já provava que `src/` não tem texto de cliente, então bastava um segundo build
+(`vite build --mode generico`) publicado pela mesma esteira. Construído: `docs/generico/` (base
+`/escala-porteiros/generico/`), `public-generico/dados/` com identidade neutra ("Plantonista",
+"portaria de prédio" — o próprio exemplo que `tipos.ts` já citava), portão dedicado
+(`generico:dados`, autoteste `generico:dados:autoteste`) garantindo que a trilha nunca carregue o
+cliente de produção. Verificado num navegador de verdade antes de declarar pronto. Gate: **36
+passos**, dois novos portões + duas novas seções de doc (`ARQUITETURA.md` §"A segunda trilha",
+`FASE2.md` §P4.w2). Detalhe: [`HANDOFF_2026-08-18-c.md`](docs/handoff/HANDOFF_2026-08-18-c.md) ·
+[DB-055, DB-056](DIARIO_DE_BORDO.md).
+
+## O anterior: 3 defeitos achados sem pedido, numa sessão que começou como "resume" (18/08)
 
 10 dias sem sessão. A cópia local tinha ficado 6 commits atrás do `origin/main` — reconciliada
 (`git reset --hard`) antes de qualquer dado errado ser empurrado. Com a cópia certa, `vivo:no-ar`
@@ -66,6 +85,7 @@ perdido; é o mesmo texto, movido por assunto.
 |---|---|
 | Site | **https://flaviocom.github.io/escala-porteiros/** |
 | Área administrativa | **https://flaviocom.github.io/escala-porteiros/#/admin** |
+| Trilha GENÉRICA (demonstração, sem cliente) | **https://flaviocom.github.io/escala-porteiros/generico/** |
 | Repositório | [`flaviocom/escala-porteiros`](https://github.com/flaviocom/escala-porteiros) — público |
 | Publicação | GitHub Pages, modo branch, `main` + `/docs` |
 | Usuários | 16 irmãos porteiros + 1 administrador |

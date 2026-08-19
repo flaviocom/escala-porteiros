@@ -181,3 +181,49 @@ mentira, e a resposta diz o que **já** foi gravado quando falha no meio.
 | **Estilos em linha na imagem** | Para o CSS do site não vazar para o documento que vai ao WhatsApp |
 | **Duas pastas de dado** | `public/` é a origem, `docs/` é o que o Pages serve. É assim que o Pages funciona |
 | **O domínio não importa nada** | É o que permite testar e rodar por script sem navegador |
+
+---
+
+## A segunda trilha — build GENÉRICO, mesmo repositório (S-059/S-060, 18/08/2026)
+
+O Flavio pediu uma versão "só Escala", sem nome de cliente, para testar e evoluir separada da
+produção — e perguntou se um repositório novo seria necessário. A resposta, medida no código antes
+de decidida: **não.** Dois fatos já garantiam isso:
+
+1. `npm run generico` (§0, passo 13 do gate) já prova que `src/` e `index.html` **não têm** texto de
+   cliente cravado — o cliente vive inteiro em `public/dados/*.json`. O bundle já era genérico por
+   dentro; faltava só um segundo conjunto de dados e um segundo caminho para o `fetch` encontrá-lo.
+2. `publicar.yml` sobe a pasta `docs/` **inteira** como artefato do GitHub Pages — não um arquivo. Um
+   segundo build numa subpasta de `docs/` ganha URL própria sem workflow novo.
+
+### Como funciona
+
+`vite.config.ts` lê o `mode` do Vite (`vite build --mode generico`, script `npm run
+build:generico`) e alterna três coisas — nada mais:
+
+| | Produção (`npm run build`) | Genérico (`npm run build:generico`) |
+|---|---|---|
+| `base` | `/escala-porteiros/` | `/escala-porteiros/generico/` |
+| `publicDir` (fonte do `fetch`) | `public/` | `public-generico/` |
+| `outDir` | `docs/` | `docs/generico/` |
+
+`src/dados/carregar.ts` busca em `${import.meta.env.BASE_URL}dados/…` — o `base` diferente já basta
+para o MESMO bundle carregar um dado diferente. **Nenhuma linha de `src/` muda entre os dois
+builds.** `public-generico/dados/` traz uma identidade neutra de demonstração (vocabulário
+"Plantonista", sem Santa Ceia, sem nome de congregação) — o exemplo que o próprio `tipos.ts` já
+citava (*"uma portaria de prédio"*) antes de este build existir.
+
+### O que garante que a trilha genérica não "vaza" o cliente
+
+`npm run generico:dados` (passo 32 do gate, autoteste no passo 16) varre `public-generico/` e
+`docs/generico/` pelos MESMOS termos do portão `generico` — porque copiar um `config.json` de
+produção para lá "só para testar depressa" é o erro óbvio, e ele vira exatamente o que a
+demonstração existe para provar que não acontece.
+
+### Onde isso NÃO serve — e o que serviria
+
+Esta trilha é para **testar e demonstrar** o motor sem o cliente de hoje — nada mais. Não é
+multi-tenant (dois clientes reais, dois bancos, dois logins): isso é a fase 2 comercial já desenhada
+em [`FASE2.md`](FASE2.md) §P4.y, com backend e conta própria. Ver [`FASE2.md`](FASE2.md) §P4.w2
+para o que essa trilha destrava (uma malha de exemplo editável sem tocar produção) e o que ainda
+falta (tela de edição da malha, evento avulso — P4.w).

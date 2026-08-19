@@ -4,7 +4,7 @@
 > como reverter.** Documento **append-only**, fatiado por período ao estourar o teto. **Nada é
 > excluído, nunca.**
 >
-> **Cadeia de navegação:** [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-18-b.md) → [`BACKLOG.md`](BACKLOG.md)
+> **Cadeia de navegação:** [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-18-c.md) → [`BACKLOG.md`](BACKLOG.md)
 > **Roteador:** [`AGENTS.md`](AGENTS.md) ·
 > **Solicitações:** [`docs/solicitacoes/INDICE_DE_SOLICITACOES.md`](docs/solicitacoes/INDICE_DE_SOLICITACOES.md) ·
 > **Histórico:** [`docs/historico/INDICE.md`](docs/historico/INDICE.md)
@@ -1630,3 +1630,86 @@ reprodutibilidade que não existe.
 `AGENTS.md` e a seção "Handoff ativo" do `ESTADO.md` somem, P8.1 sai do BACKLOG. Produto: nada
 muda — nenhuma linha de `src/` tocada. `_padroes-globais` não tem nada deste projeto para reverter,
 porque nada foi commitado lá.
+
+---
+
+## DB-055 · 18/08/2026 — o número do lembrete, e a chave que já funcionava sem ninguém notar
+
+**O pedido (S-059):** o Flavio corrigiu o registro sobre banimento — *"eu já tinha explicado isso
+porque a lista é de interesse das próprias pessoas (…) esqueça isso"* — e fechou a rota: **B, pela
+VPS do Charmway**, com acesso de leitura liberado para eu verificar o estado real antes de qualquer
+próximo passo. Pediu também confirmação de que eu tinha as informações sobre tornar o sistema
+genérico para "qualquer tipo de escala".
+
+**Verificação ao vivo, não suposição:** SSH com a chave `charmway_deploy` (autorizada 10/08,
+presente nesta máquina) — funciona: `whoami`, `docker ps`, `crm_evolution` respondendo. A chave
+`claude-escala-lembrete` (07/08) perdeu o par em 08/08 e o runbook (`LEMBRETE_WHATSAPP.md`) ainda
+tratava isso como bloqueio atual — **não era mais**: o passo 1 do runbook já estava resolvido, só
+não registrado. `fetchInstances` + `fetchAllGroups` por instância (6 números conectados) confirmou
+que nenhum está em grupo de porteiros/igreja — todos são do ecossistema comercial Charmway.
+
+**A decisão dele:** não usar nenhum dos 6 — número dedicado **`551194950100`**, a ser conectado por
+ele mesmo em Ritmo & Números (painel de campanhas). Registrado no runbook como passo 2, ainda
+pendente (conectar é login, fora do meu alcance).
+
+**A segunda pergunta** (malha parametrizável para "qualquer escala") já estava registrada desde
+07/08 em `FASE2.md` §P4.w (S-048) — confirmado e citado de volta a ele com o que já existe no motor
+(`RegraMalha`: dia da semana, repetição no mesmo dia, N-ésima ocorrência, capacidade por regra) e o
+que falta (horário real início/fim, tela de editar a malha, evento avulso, vocabulário neutro).
+
+**Como reverter.** Só documentação (`LEMBRETE_WHATSAPP.md`) — nada em `src/`, nada em produto.
+`git revert` do commit desta entrada restaura o texto anterior do runbook.
+
+---
+
+## DB-056 · 18/08/2026 — a trilha GENÉRICA: um segundo build, não um segundo repositório
+
+**O pedido (S-060):** *"talvez seja necessário criarmos um novo GitHub, uma nova pasta (…) a partir
+daí fazemos as implementações e testes, e mesclaríamos com produção somente o que escolhêssemos.
+Dá pra fazer assim?"* — pergunta exploratória, respondida com recomendação antes de construir.
+
+**A recomendação, com o porquê medido:** não bifurcar. `npm run generico` (portão do §0) já provava
+que `src/` e `index.html` não têm texto de cliente cravado — o bundle já era genérico por dentro. O
+que faltava não era código novo, era um segundo caminho para o `fetch` de `carregar.ts` encontrar um
+segundo conjunto de dados. Confirmado antes de prometer: `publicar.yml` sobe a pasta `docs/`
+**inteira** (não um arquivo), e `carregar.ts` busca em `${BASE_URL}dados/…` — então `base` diferente
+já bastava.
+
+**O Flavio perguntou duas coisas antes de autorizar:** que URL ele usaria para aprovar, e se um
+segundo config dentro do mesmo repositório não seria conflitante nem confuso para outra IA (padrão
+de portabilidade). Respondido com o mecanismo exato (`vite build --mode generico`, `docs/generico/`,
+mesma esteira de publicação) e a correção de uma imprecisão minha ("sem pasta nova" estava errado —
+nascem pastas, não repositório).
+
+**Autorização:** *"Ótimo, deixe tudo documentado (…) e vamos seguir com a implantação no padrão
+ouro."*
+
+**Construído:**
+
+1. `vite.config.ts` — `defineConfig(({mode}) => …)`: `base`, `publicDir` e `outDir` alternam por
+   `mode === 'generico'`. **Zero linha de `src/` muda entre os dois builds.**
+2. `public-generico/dados/{config,pessoas,blocos}.json` — identidade neutra ("Plantonista",
+   "Demonstração — portaria de prédio", sem Santa Ceia), 3 pessoas fictícias, um bloco de exemplo de
+   1 semana (7 turnos) para a demonstração não abrir vazia.
+3. `scripts/conferir-generico-dados.mjs` (+ autoteste, 6 casos) — portão dedicado: os MESMOS termos
+   do `portao-generico.mjs`, varrendo `public-generico/` e `docs/generico/` (dado, não código).
+   🔴 **Achado no caminho:** a guarda `import.meta.url === file://${process.argv[1]}` que copiei de
+   um padrão genérico **falhava em silêncio no Windows** (barra invertida em `argv[1]` contra barra
+   normal em `import.meta.url` — 0 achados sempre, mesmo com infrator plantado). Removida; os outros
+   portões deste projeto (`portao-generico.mjs`) nunca tiveram essa guarda, e é por isso que nunca
+   pegaram esse defeito.
+4. Gate: 33 → **36 passos** — `generico:dados:autoteste` (16º, ao lado dos outros autotestes de
+   escopo) e `build:generico` + `generico:dados` (31º/32º, depois de `build`). `docs/PORTOES.md` e
+   `docs/OPERACAO.md` renumerados e com seção própria para os 3 passos novos.
+5. **Verificado num navegador de verdade** (Playwright), não só por portão: `vite preview --mode
+   generico` serve exatamente em `/escala-porteiros/generico/` — o mesmo caminho da URL real —, e a
+   tela mostrou "ESCALA DE PLANTÕES · Demonstração — portaria de prédio", "Plantonista 1/2/3" nos
+   sete dias do bloco de exemplo. Vocabulário neutro provado ponta a ponta, não só por regex.
+
+**Gate final:** 36 passos, `EXIT_GATE=0` (medido antes desta entrada; selo gravado no commit).
+
+**Como reverter.** `git revert` do commit desta entrada: `docs/generico/` some do site publicado no
+próximo deploy (o build não é regenerado sozinho — reverter aqui só tira do próximo push), os 2
+scripts novos e os 3 arquivos de `public-generico/` somem, `package.json`/`vite.config.ts` voltam à
+forma anterior, e os 3 passos saem do gate (33 de volta). Produção: **nenhuma linha de `src/` foi
+tocada** — zero risco ao site que os irmãos usam.

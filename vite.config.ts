@@ -2,17 +2,34 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-// ⚠️ `base` NÃO é detalhe: o GitHub Pages serve este projeto sob /escala-porteiros/.
-// Sem isto, todo caminho de asset funciona no localhost e quebra no ar.
-export default defineConfig({
-  base: '/escala-porteiros/',
+/**
+ * 🔵 SEGUNDA TRILHA — build GENÉRICO, mesma fonte, mesmo repositório (S-059/S-060, 18/08/2026).
+ *
+ * `vite build --mode generico` produz um segundo site, em `docs/generico/`, publicado pelo MESMO
+ * `publicar.yml` (ele já sobe a árvore inteira de `docs/`) — sem repositório novo, sem workflow
+ * novo. A prova de que isto é seguro já existia antes de este modo nascer: `npm run generico`
+ * garante que `src/` não tem texto de cliente cravado, então o MESMO bundle já era genérico por
+ * dentro — o que faltava era um segundo conjunto de dados (`public-generico/`) e um segundo
+ * caminho base para o `fetch` de `src/dados/carregar.ts` encontrá-lo.
+ *
+ * Ver `docs/ARQUITETURA.md` § "A segunda trilha" e `docs/FASE2.md` §P4.w2.
+ */
+
+// ⚠️ `base` NÃO é detalhe: o GitHub Pages serve este projeto sob /escala-porteiros/ (ou
+// /escala-porteiros/generico/ na trilha genérica). Sem isto, todo caminho de asset funciona no
+// localhost e quebra no ar.
+export default defineConfig(({ mode }) => {
+  const GENERICO = mode === 'generico'
+  return {
+  base: GENERICO ? '/escala-porteiros/generico/' : '/escala-porteiros/',
+  publicDir: GENERICO ? 'public-generico' : 'public',
   plugins: [react()],
   server: {
     host: '127.0.0.1',
     port: 5173,
   },
   build: {
-    outDir: 'docs',
+    outDir: GENERICO ? 'docs/generico' : 'docs',
     /**
      * 🔴 `emptyOutDir: false` NÃO é preferência — é a correção de um defeito real.
      *
@@ -26,7 +43,9 @@ export default defineConfig({
      * depois, com 19 links quebrados.
      *
      * Aqui o build convive com a documentação. Em troca, `assets/` é limpo à mão antes de gerar
-     * (script `prebuild`), senão sobra arquivo antigo a cada build.
+     * (scripts `prebuild`/`build:generico`), senão sobra arquivo antigo a cada build. A trilha
+     * genérica usa a mesma proteção pelo mesmo motivo: `docs/generico/` também é servido por baixo
+     * de `docs/`.
      */
     emptyOutDir: false,
     sourcemap: false,
@@ -46,4 +65,5 @@ export default defineConfig({
     */
     include: ['src/**/*.test.{ts,tsx}'],
   },
+  }
 })
