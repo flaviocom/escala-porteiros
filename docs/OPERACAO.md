@@ -144,7 +144,7 @@ está errada** — e é melhor descobrir antes da congregação descobrir.
 npm run gate
 ```
 
-36 passos, **nesta ordem** — lida do `package.json`, não de memória:
+37 passos, **nesta ordem** — lida do `package.json`, não de memória:
 
 | # | Passo | O que prova |
 |---|---|---|
@@ -163,27 +163,28 @@ npm run gate
 | 13 | `generico` | nenhum nome de cliente cravado (§0) |
 | 14 | `generico:autoteste` | prova que o de cima **morde** — e que a autodefesa dele morde |
 | 15 | `guarda-vivo:autoteste` | prova que a guarda do disparador ao vivo **morde** — 6 nomes limpos aprovados, 10 hostis barrados (`; rm -rf /`, backtick-whoami, `$(whoami)`, `&&`, aspas, string vazia) |
-| 16 | `generico:dados:autoteste` | prova que o portão da trilha genérica (32) **morde** — 3 infratores plantados reprovam, 3 limpos passam. Roda cedo, como os outros autotestes de 13-15, antes do build genérico existir |
-| 17 | `generico:docs` | 📄 **o nome do cliente na documentação é inventário fechado** — 12 citações em 7 arquivos, cada uma com motivo. Não proibido (o README diz "esta instalação atende…"): reprova citação a mais, arquivo novo fora do inventário, e citação a MENOS |
-| 18 | `citacoes` | 🔗 **`arquivo:linha` que envelheceu sozinho** — o arquivo existe e tem aquela linha. O próprio BACKLOG registrou o problema duas vezes e não tinha como impedir a terceira. NÃO confere se o conteúdo da linha ainda é o descrito |
-| 19 | `doc:regras:conferir` | o catálogo de regras documentado bate com o código |
-| 20 | `doc:comandos` | todo comando citado na documentação existe de verdade |
-| 21 | `arquitetura` | o domínio continua sendo ilha; a 2ª régua não virou espelho |
-| 22 | `fatos:conferir` | nenhum documento vivo desmente um número **medido** |
-| 23 | `datas` | `toISOString()` não decide dia nem mês em lugar nenhum |
-| 24 | `crescimento` | o dado publicado ainda cabe onde vai ser servido |
-| 25 | `tamanho-docs` | nenhum documento passou do teto do regime dele (raiz 400 · subpasta 800 · append-only 2.000) |
-| 26 | `auditoria` | 21 ataques ao próprio código, com infrator injetado |
-| 27 | `regras-mestras` | tooltip em todo botão |
-| 28 | `ensaio` | 🔴 o cenário que ORIGINOU o projeto, ponta a ponta: alguém sai do elenco, outro entra com as 5 restrições, a escala se refaz a partir de um corte |
-| 29 | `tempo` | a geração não regrediu de desempenho |
-| 30 | `build` | compila e gera em `docs/` |
-| 31 | `build:generico` | 🔵 **a trilha GENÉRICA** (S-059/S-060, 18/08/2026) — mesma fonte, `vite build --mode generico`, `base` e `publicDir` diferentes. Gera `docs/generico/`, dentro da mesma árvore que o `publicar.yml` já publica inteira: sem repositório novo, sem workflow novo |
-| 32 | `generico:dados` | 🔵 **a trilha genérica não carrega texto de cliente** — mesmos termos do passo 13, agora varrendo `public-generico/` e `docs/generico/` (dado, não código). Existe porque copiar um `config.json` de produção "só para testar depressa" transformaria a demonstração de genericidade na prova do contrário |
-| 33 | `imagem` | 🔴 o único passo que **renderiza o pixel**: gera a imagem pelo botão de verdade e mede o DOM que virou o PNG — texto cortado, rótulo duplicado, rodapé coerente. Três defeitos da imagem escaparam de todos os outros portões e só apareceram ao ABRIR o arquivo |
-| 34 | `vivo:tudo` | 🌐 **as 15 validações de navegador do grupo LOCAL**, lidas do `package.json` — 242 s (medido em 18/08/2026). De dezesseis `vivo:*`, o gate rodava **uma**; o `vivo:gerar` estava vermelho havia dias. As 5 do grupo NO AR rodam DEPOIS do push (`npm run vivo:no-ar`) — no gate ficariam estruturalmente vermelhas |
-| 35 | `refazer` | 🔁 **a escala NO AR pode ser refeita** a partir do que ela mesma registra — período, elenco, malha, piso e semente. É a promessa do `ALGORITMO.md` medida contra o dado publicado, não contra entrada de teste |
-| 36 | `selo:gravar` | 🔒 guarda a impressão digital da árvore. `npm run selo:conferir`, antes de commitar, prova que o verde acima é **desta** árvore |
+| 16 | `generico:dados:autoteste` | prova que o portão da trilha genérica (33) **morde** — 3 infratores plantados reprovam, 3 limpos passam. Roda cedo, como os outros autotestes de 13-15, antes do build genérico existir |
+| 17 | `selo:autoteste` | 🔒 prova que o selo (37) **morde** — 6 casos: acusa mutação real, acusa arquivo novo, acusa sumiço, recusa sem selo gravado, e (o achado de 19/08/2026) **não acusa** quando o mesmo conteúdo só troca de staged/unstaged entre gravar e conferir |
+| 18 | `generico:docs` | 📄 **o nome do cliente na documentação é inventário fechado** — 12 citações em 7 arquivos, cada uma com motivo. Não proibido (o README diz "esta instalação atende…"): reprova citação a mais, arquivo novo fora do inventário, e citação a MENOS |
+| 19 | `citacoes` | 🔗 **`arquivo:linha` que envelheceu sozinho** — o arquivo existe e tem aquela linha. O próprio BACKLOG registrou o problema duas vezes e não tinha como impedir a terceira. NÃO confere se o conteúdo da linha ainda é o descrito |
+| 20 | `doc:regras:conferir` | o catálogo de regras documentado bate com o código |
+| 21 | `doc:comandos` | todo comando citado na documentação existe de verdade |
+| 22 | `arquitetura` | o domínio continua sendo ilha; a 2ª régua não virou espelho |
+| 23 | `fatos:conferir` | nenhum documento vivo desmente um número **medido** |
+| 24 | `datas` | `toISOString()` não decide dia nem mês em lugar nenhum |
+| 25 | `crescimento` | o dado publicado ainda cabe onde vai ser servido |
+| 26 | `tamanho-docs` | nenhum documento passou do teto do regime dele (raiz 400 · subpasta 800 · append-only 2.000) |
+| 27 | `auditoria` | 21 ataques ao próprio código, com infrator injetado |
+| 28 | `regras-mestras` | tooltip em todo botão |
+| 29 | `ensaio` | 🔴 o cenário que ORIGINOU o projeto, ponta a ponta: alguém sai do elenco, outro entra com as 5 restrições, a escala se refaz a partir de um corte |
+| 30 | `tempo` | a geração não regrediu de desempenho |
+| 31 | `build` | compila e gera em `docs/` |
+| 32 | `build:generico` | 🔵 **a trilha GENÉRICA** (S-059/S-060, 18/08/2026) — mesma fonte, `vite build --mode generico`, `base` e `publicDir` diferentes. Gera `docs/generico/`, dentro da mesma árvore que o `publicar.yml` já publica inteira: sem repositório novo, sem workflow novo |
+| 33 | `generico:dados` | 🔵 **a trilha genérica não carrega texto de cliente** — mesmos termos do passo 13, agora varrendo `public-generico/` e `docs/generico/` (dado, não código). Existe porque copiar um `config.json` de produção "só para testar depressa" transformaria a demonstração de genericidade na prova do contrário |
+| 34 | `imagem` | 🔴 o único passo que **renderiza o pixel**: gera a imagem pelo botão de verdade e mede o DOM que virou o PNG — texto cortado, rótulo duplicado, rodapé coerente. Três defeitos da imagem escaparam de todos os outros portões e só apareceram ao ABRIR o arquivo |
+| 35 | `vivo:tudo` | 🌐 **as 15 validações de navegador do grupo LOCAL**, lidas do `package.json` — 242 s (medido em 18/08/2026). De dezesseis `vivo:*`, o gate rodava **uma**; o `vivo:gerar` estava vermelho havia dias. As 5 do grupo NO AR rodam DEPOIS do push (`npm run vivo:no-ar`) — no gate ficariam estruturalmente vermelhas |
+| 36 | `refazer` | 🔁 **a escala NO AR pode ser refeita** a partir do que ela mesma registra — período, elenco, malha, piso e semente. É a promessa do `ALGORITMO.md` medida contra o dado publicado, não contra entrada de teste |
+| 37 | `selo:gravar` | 🔒 guarda a impressão digital da árvore. `npm run selo:conferir`, antes de commitar, prova que o verde acima é **desta** árvore. 🔴 **19/08/2026:** a impressão digital misturava blob-do-índice (LF-normalizado) com bytes-do-disco (CRLF) para o mesmo tipo de arquivo em momentos diferentes — corrigido para ler sempre o disco, nunca o índice do git |
 
 ---
 

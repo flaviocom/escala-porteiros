@@ -4,7 +4,7 @@
 > como reverter.** Documento **append-only**, fatiado por período ao estourar o teto. **Nada é
 > excluído, nunca.**
 >
-> **Cadeia de navegação:** [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-18-c.md) → [`BACKLOG.md`](BACKLOG.md)
+> **Cadeia de navegação:** [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-19.md) → [`BACKLOG.md`](BACKLOG.md)
 > **Roteador:** [`AGENTS.md`](AGENTS.md) ·
 > **Solicitações:** [`docs/solicitacoes/INDICE_DE_SOLICITACOES.md`](docs/solicitacoes/INDICE_DE_SOLICITACOES.md) ·
 > **Histórico:** [`docs/historico/INDICE.md`](docs/historico/INDICE.md)
@@ -1737,3 +1737,67 @@ Reforçado em `ESTADO.md` §"Como retomar", como segunda porta de entrada.
 
 **Como reverter.** Remover as duas seções acrescentadas (`AGENTS.md` topo, `ESTADO.md` "Como
 retomar") — nenhum código, nenhum dado, nenhum comportamento de produto muda.
+
+---
+
+## DB-058 · 19/08/2026 — o selo mentia sobre a própria árvore, e nunca tinha autoteste
+
+**O pedido (S-062):** `retomaescala`, seguida da instrução padrão de retomada autônoma — *"Siga de
+onde parou (…) ou resolva os problemas encontrados, você TOTALMENTE AUTONOMO, workflow completo (…)
+Template Gauntlet Loop."*
+
+**A varredura de retomada, ponto a ponto:**
+
+1. `git status`/`git log` locais batendo com `origin/main` (`aba29ae`) — nada perdido entre
+   sessões. Uma branch remota nova (`claude/sessao-perdida-atualizacao-s6195l`) apareceu, de outra
+   sessão em outro VS Code — sem divergência de conteúdo (mesmo commit), nada a reconciliar.
+2. VPS conferida de novo: número `551194950100` **ainda não conectado**, nenhum dos 6 números da
+   instância está em grupo de porteiros. Nada mudou desde ontem — segue esperando a ação dele.
+3. `pre-voo.mjs` (global): 2 itens 🔴, ambos **conhecidos e já declarados** (`.env.local` ausente —
+   P0.2, opcional; autor git global errado — contornado por `--author` em cada commit, correção do
+   config global exigiria pedido explícito dele). Nada novo.
+4. `npm run selo:conferir`, por hábito, antes de qualquer coisa: **acusou "árvore mudou" com `git
+   status` inteiramente limpo.** Essa combinação não devia ser possível — o selo existe para dizer
+   "é esta árvore", e "esta árvore" bate consigo mesma por definição quando nada foi tocado.
+
+**A investigação, não a suposição.** Hipótese 1 (contaminação por barra-invertida no `execFileSync`
+do git) — descartada, `git ls-files -s` saiu limpo, sem CRLF. Hipótese 2, confirmada por reprodução
+direta: `git ls-files -s BACKLOG.md` devolve o MESMO hash de blob antes e depois de editar o
+arquivo **sem** `git add` — porque lê o ÍNDICE, não o disco. O selo então parecia proteger contra
+isso via `git status --porcelain -uall` (que lista modificados, não só novos) — e de fato protege,
+**só que hashando o arquivo de duas formas diferentes** conforme o momento: bytes crus do disco
+(CRLF, com `core.autocrlf=true`) quando o arquivo está só modificado; blob do índice (LF,
+normalizado pelo git) quando já está staged/commitado. **O fluxo padrão deste projeto** — `npm run
+gate` (que termina em `selo:gravar`) ANTES de `git add` — garante que praticamente todo commit passa
+por essa transição: arquivo editado (hash CRLS no `--gravar`) → `git add` + `git commit` (agora
+staged, hash LF no `--conferir` seguinte). **Zero bytes mudaram de verdade.**
+
+**Por que ninguém tinha achado isto antes:** `selar-arvore.mjs` nasceu em 05/08/2026 e **nunca teve
+autoteste** — a única trava deste projeto nessa condição, contra a própria regra do método (*"toda
+trava nova nasce com autoteste, no mesmo commit"*). Sem prova das duas pontas, o falso positivo
+(acusar sem mudança real) não tinha como ser pego — e como o remédio prescrito pela própria
+mensagem de erro é "rode o gate de novo", o sintoma se disfarçava de disciplina normal.
+
+**O conserto:** `impressao()` reescrita para ler **sempre o disco** — `git ls-files` só para listar
+os CAMINHOS rastreados, depois `readFileSync` de cada um (rastreado ou presente no `status`), nunca
+mais `git ls-files -s` (blob do índice). Arquivo rastreado que sumiu do disco vira `AUSENTE`
+explícito, não é silenciosamente pulado.
+
+**`autoteste-selar-arvore.mjs` (novo, 6 casos)** — monta um repositório git de mentira a cada
+rodada: (A) limpo após gravar → OK; (B) mutação real → ACUSA; **(C) o próprio defeito reproduzido**
+— mesmo conteúdo, só staged depois de gravar → NÃO acusa; (D) arquivo novo → ACUSA; (E) arquivo
+apagado → ACUSA; (F) sem selo gravado → recusa com a mensagem certa. Achado no caminho da PRIMEIRA
+versão do teste: sem `.gitignore` no repositório de mentira, o próprio arquivo do selo
+(`node_modules/.selo-do-gate`) virava "não rastreado" e contaminava a PRÓPRIA medição seguinte —
+corrigido acrescentando `.gitignore` ao repositório de teste, igual ao projeto real.
+
+**Gate:** 36 → **37 passos** — `selo:autoteste` entrou como 17º (ao lado dos outros autotestes de
+escopo). `docs/PORTOES.md` e `docs/OPERACAO.md` renumerados, com o defeito documentado por dentro no
+passo 37 (`selo:gravar`).
+
+**Gate final:** 37 passos, `EXIT_GATE=0` (medido antes desta entrada; selo gravado no commit).
+
+**Como reverter.** `git revert` do commit desta entrada: `selar-arvore.mjs` volta a misturar
+blob-do-índice com bytes-do-disco (o defeito volta), `autoteste-selar-arvore.mjs` some, o gate volta
+a 36 passos. Produto: **nenhuma linha de `src/` tocada** — o selo é infraestrutura do método, não do
+produto; reverter não muda nada que os irmãos veem.

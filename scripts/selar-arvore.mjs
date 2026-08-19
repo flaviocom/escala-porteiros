@@ -22,7 +22,25 @@
  * Não é paranoia com agente paralelo: vale para qualquer edição feita entre o gate e o commit —
  * inclusive as minhas, que é o caso comum. **Um veredito só vale para o estado que ele mediu.**
  *
- * Uso: node scripts/selar-arvore.mjs --gravar | --conferir
+ * 🔴 SEGUNDO DEFEITO, achado em 19/08/2026 (retomada de sessão, `retomaescala`): a primeira versão
+ * misturava DUAS representações do mesmo arquivo. Para o que estava no ÍNDICE (staged/committed),
+ * usava o hash de BLOB do git (`ls-files -s`) — que o `core.autocrlf=true` normaliza para LF antes
+ * de gravar. Para o que estava só MODIFICADO no disco (unstaged), lia os bytes CRUS do arquivo
+ * (CRLF, no Windows) e tirava sha256 direto. Fluxo comum deste projeto — `npm run gate` (termina em
+ * `selo:gravar`) ANTES de `git add` — passa o mesmo arquivo pelas DUAS representações em sequência:
+ * hash-de-bytes-crus no `--gravar` (arquivo ainda modificado), hash-de-blob-LF no `--conferir`
+ * seguinte (arquivo já commitado). **Zero bytes mudaram de verdade, e o selo gritava "árvore
+ * mudou"** — provado ao reproduzir: `git ls-files -s` devolve o MESMO hash antes e depois de editar
+ * um arquivo sem dar `git add` (a leitura é do índice, não do disco), mas o hash final do selo
+ * mudava mesmo assim, porque a metade "modificado" do cálculo pega o disco, não o índice.
+ *
+ * **O conserto:** parar de misturar as duas fontes. Toda a impressão digital agora lê o mesmo lugar
+ * — o CONTEÚDO ATUAL NO DISCO de cada arquivo rastreado ou presente no `status`, sempre por
+ * `readFileSync` — porque é isso, e só isso, que o gate de fato testou (`vitest`/`vite build` leem
+ * do disco, nunca do índice do git). Um arquivo rastreado que sumiu do disco entra como `AUSENTE`,
+ * em vez de ser silenciosamente pulado.
+ *
+ * Uso: node scripts/selar-arvore.mjs --gravar | --conferir [--raiz <caminho>]
  */
 import { createHash } from 'node:crypto'
 import { execFileSync } from 'node:child_process'
@@ -30,36 +48,42 @@ import { existsSync, readFileSync, statSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..')
+const argRaiz = process.argv.indexOf('--raiz')
+const RAIZ = argRaiz >= 0 ? process.argv[argRaiz + 1] : join(dirname(fileURLToPath(import.meta.url)), '..')
 const SELO = join(RAIZ, 'node_modules', '.selo-do-gate')
 
-/** A impressão digital do conteúdo versionado, na visão do próprio git. */
-function impressao() {
-  // `ls-files -s` lista o hash de cada arquivo do ÍNDICE; `status --porcelain` traz o que difere do
-  // disco. Os dois juntos descrevem a árvore de trabalho sem ler 40 MB de arquivo à mão.
-  const indice = execFileSync('git', ['ls-files', '-s'], { cwd: RAIZ, encoding: 'utf8' })
+/**
+ * A impressão digital do conteúdo em disco de todo arquivo rastreado ou presente no `status` —
+ * NUNCA do índice do git. Ver o comentário no topo do arquivo: misturar blob-do-índice com
+ * bytes-do-disco foi o segundo defeito deste script.
+ */
+function impressao(raiz = RAIZ) {
+  const rastreados = execFileSync('git', ['ls-files'], { cwd: raiz, encoding: 'utf8' })
+    .split(String.fromCharCode(10))
+    .filter((l) => l.trim())
+
   /*
     🔴 `-uall` NÃO É ENFEITE — 06/08/2026.
 
-    Sem ele, o git resume uma pasta inteira não rastreada numa linha só: `?? .github/`. O selo então
-    tentava `readFileSync` numa PASTA e morria com `EISDIR`, derrubando o último passo do gate — foi
-    o que aconteceu ao criar `.github/workflows/`.
-
-    E o defeito era pior do que o estouro: enquanto a pasta existisse resumida, **o conteúdo dela não
-    entrava na impressão digital**. Um arquivo novo dentro de uma pasta nova ficaria fora do selo, em
-    silêncio, e o selo existe justamente para dizer "é esta árvore, exatamente esta".
-
-    `-uall` lista arquivo por arquivo. O `filter` de diretório abaixo fica como cinto de segurança.
+    Sem ele, o git resume uma pasta inteira não rastreada numa linha só: `?? .github/`. Listar
+    arquivo por arquivo é o que permite tratar cada um individualmente abaixo — inclusive um
+    arquivo novo dentro de uma pasta nova, que uma linha resumida esconderia em silêncio.
   */
-  const sujo = execFileSync('git', ['status', '--porcelain', '-uall'], { cwd: RAIZ, encoding: 'utf8' })
-  const naoVersionados = sujo
+  const sujo = execFileSync('git', ['status', '--porcelain', '-uall'], { cwd: raiz, encoding: 'utf8' })
     .split(String.fromCharCode(10))
     .filter((l) => l.trim())
     .map((l) => l.slice(3).trim())
-    .filter((f) => existsSync(join(RAIZ, f)) && !statSync(join(RAIZ, f)).isDirectory())
-    .map((f) => `${f}:${createHash('sha256').update(readFileSync(join(RAIZ, f))).digest('hex')}`)
-    .join(String.fromCharCode(10))
-  return createHash('sha256').update(indice + naoVersionados).digest('hex')
+
+  const candidatos = [...new Set([...rastreados, ...sujo])].sort()
+
+  const partes = candidatos.map((f) => {
+    const caminho = join(raiz, f)
+    if (!existsSync(caminho)) return `${f}:AUSENTE`
+    if (statSync(caminho).isDirectory()) return null // não deveria sobrar depois do `-uall`; cinto de segurança
+    return `${f}:${createHash('sha256').update(readFileSync(caminho)).digest('hex')}`
+  }).filter(Boolean)
+
+  return createHash('sha256').update(partes.join(String.fromCharCode(10))).digest('hex')
 }
 
 const agora = impressao()

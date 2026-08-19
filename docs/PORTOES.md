@@ -40,7 +40,7 @@ alguma tiver caractere de controle.
 
 ---
 
-## Os 36 passos do `npm run gate`
+## Os 37 passos do `npm run gate`
 
 ### 1. `segredos` — nenhum segredo em arquivo versionado
 **População:** todo arquivo que `git ls-files` lista (148 hoje) · **5 formas** procuradas · 4 isentos
@@ -274,7 +274,19 @@ genérica, `CCB` solto no build, vocabulário `Irmãos` vazado) reprovam; 3 limp
 verdade, pasta de build ainda ausente, termo do cliente num `.md` fora do escopo deste portão)
 passam.
 
-### 17. `generico:docs` — o nome do cliente na DOCUMENTAÇÃO é inventário fechado
+### 17. `selo:autoteste` — prova que o selo morde, nas duas pontas
+**6 casos**, num repositório git de mentira criado a cada rodada: (A) árvore limpa após gravar →
+OK; (B) mutação real de um arquivo depois de gravar → ACUSA; (C) 🔴 **o defeito de 19/08/2026** —
+mesmo conteúdo, só troca de staged para unstaged entre gravar e conferir → NÃO pode acusar (era
+exatamente aqui que o selo antigo dava falso positivo); (D) arquivo novo não rastreado → ACUSA;
+(E) arquivo rastreado apagado do disco → ACUSA; (F) nunca gravou selo → recusa com a mensagem
+certa, não finge "tudo bem".
+
+O caso C é o que faltava desde que este portão nasceu (05/08/2026, sem autoteste nenhum): ele prova
+a ponta que o selo NÃO deve acusar, e foi exatamente a ausência dessa prova que deixou o segundo
+defeito sobreviver sem ninguém notar. Ver o passo 37 (`selo:gravar`) para o defeito por dentro.
+
+### 18. `generico:docs` — o nome do cliente na DOCUMENTAÇÃO é inventário fechado
 **População:** todo `.md` vivo do repositório · **isentos declarados:** os append-only
 (`AI_MASTER_LOG`, `DIARIO_DE_BORDO`, `docs/handoff/`, `docs/historico/`, `docs/solicitacoes/`) e as
 especificações em `docs/superpowers/` — registram o que era verdade então.
@@ -300,7 +312,7 @@ INSTALAÇÃO (legítimo) ou descreve o PRODUTO (e aí o nome não devia estar l�
 **Provado nas três pontas, cada uma pelo motivo certo**, mais a árvore limpa → EXIT=0. E ele nasceu
 achando: quatro citações legítimas que um `grep` à mão tinha deixado passar.
 
-### 18. `citacoes` — `arquivo:linha` que envelheceu sozinho
+### 19. `citacoes` — `arquivo:linha` que envelheceu sozinho
 **População:** todo `.md` vivo · **isentos:** os append-only (registram o que era verdade **então**;
 citação velha ali é o registro funcionando). Hoje 6 citações conferidas.
 **Confere:** o arquivo citado existe · o arquivo tem pelo menos aquela linha.
@@ -321,17 +333,17 @@ não finge pegar o resto.
 **Provado nas duas pontas:** linha além do fim do arquivo e arquivo inexistente → EXIT=1, cada um com
 o motivo certo; árvore limpa → EXIT=0.
 
-### 19. `doc:regras:conferir` — o catálogo documentado bate com o código
+### 20. `doc:regras:conferir` — o catálogo documentado bate com o código
 `docs/CATALOGO_DE_REGRAS.md` é **gerado**. Este passo regenera em memória e compara **byte a byte**
 (ignorando fim de linha, porque o Windows reescreve CRLF). Muda o `titulo` ou a `explicacao` de uma
 regra sem regenerar → vermelho.
 
-### 20. `doc:comandos` — todo comando citado existe
+### 21. `doc:comandos` — todo comando citado existe
 **População:** os 23 documentos vivos · isentos os append-only.
 **Critério:** todo `npm run <nome>` está no `package.json`; todo `node scripts/<arquivo>` existe em
 disco. **Achou defeito na primeira execução:** `npm run tempo`, citado na documentação, não existia.
 
-### 21. `arquitetura` — as três invariantes que a documentação afirma
+### 22. `arquitetura` — as três invariantes que a documentação afirma
 1. `src/dominio/` **não importa nada de fora** (nem `../`, nem pacote externo).
 2. `conferencia-independente.ts` **não importa** `regras`, `validacao` nem `gerador`.
 3. **`docs/.nojekyll` existe.**
@@ -347,14 +359,14 @@ publicada · o site mostra a escala nova em cerca de um minuto"*. Ninguém no pa
 por tempo indeterminado. Um arquivo de 0 byte elimina a classe, e ele já sumiu uma vez sem ninguém
 ver: é o argumento inteiro para portão em vez de disciplina.
 
-### 22. `fatos:conferir` — nenhum documento desmente um número medido
+### 23. `fatos:conferir` — nenhum documento desmente um número medido
 **16 fatos**, todos de fonte executável: passos do gate (do `package.json`), casos do autoteste (da
 saída dele), checagens da auditoria, arquivos e termos do portão genérico, documentos vivos, piso do
 bloco publicado, turnos congelados, fontes declaradas, regras do catálogo, regras duras.
 **Nenhum é digitado.** Achou 4 contradições na primeira execução, e depois **pegou a própria
 mudança**: ao entrar no gate, virou o 16º passo e reprovou os documentos que diziam 15.
 
-### 23. `datas` — `toISOString()` não decide dia nem mês
+### 24. `datas` — `toISOString()` não decide dia nem mês
 **População:** 89 arquivos de `src/` e `scripts/` · isento `datas.test.ts`, que **cita** o
 antipadrão para provar que ele erra.
 **Critério, em dois níveis:**
@@ -367,14 +379,14 @@ antipadrão para provar que ele erra.
 `datas.ts`, no `RECONSTRUIR.md`, no `AGENTS.md` e em três comentários de teste. **E não havia nada
 que a cobrasse.** Quando alguém foi olhar, havia 4 usos e o `BACKLOG.md` declarava 1.
 
-### 24. `crescimento` — o dado ainda cabe onde é servido
+### 25. `crescimento` — o dado ainda cabe onde é servido
 **Critério:** nenhum arquivo de `dados/` passa de **60%** do teto de 1 MB da Contents API do GitHub,
 que é a que a área administrativa usa para publicar.
 **Também mede o ritmo**, do próprio dado: bytes por turno × turnos por ano → anos de folga.
 **Por que 60% e não 90%:** sobra ano suficiente para arquivar sem pressa. Alarme que grita cedo
 demais é alarme que alguém desliga.
 
-### 25. `tamanho-docs` — nenhum documento passou do teto do próprio regime
+### 26. `tamanho-docs` — nenhum documento passou do teto do próprio regime
 **De onde vêm os tetos:** de `docs/regimes-documentos.json`, a declaração do PROJETO — não de um
 número escrito no script. O regime vem do **caminho**: raiz = **vivo** (400 linhas / 40 KB,
 carregado toda sessão) · subpasta = **referência** (800 / 100, lido sob demanda) · a lista
@@ -385,7 +397,7 @@ isenta**, porque medir o passado imutável não faz sentido.
 *"no pré-voo **e no GATE**"* — e o GATE não tinha o passo. Quando a auditoria externa mostrou
 isso, a dívida foi **declarada** em vez de fechada; algumas horas depois, fechada.
 
-### 26. `auditoria` — 21 ataques ao próprio código
+### 27. `auditoria` — 21 ataques ao próprio código
 
 > ⚠️ **O número é medido, e o medidor já leu errado uma vez** (06/08/2026): quando a auditoria
 > tem achado, ela imprime *"20 checagem(ns) sem achado · 1 ACHADO(S)"*, e o fato lia o **20** — o
@@ -397,7 +409,7 @@ real), e camada de tela.
 ⚠️ **Relatório sem achado é declarado SUSPEITO pelo próprio script**, com o motivo estrutural: quem
 auditou escreveu o código.
 
-### 27. `regras-mestras` — tooltip em todo botão
+### 28. `regras-mestras` — tooltip em todo botão
 **População:** 66 botões medidos.
 **Também mede:** clicáveis fora de `<button>` (div/span com `onClick` e sem papel declarado) — hoje 0
 — e aspas duplas dentro do atributo, que quebram o HTML em silêncio.
@@ -529,15 +541,15 @@ um conjunto que soma reprovações faria alguém desligar o auditor inteiro.
 **Provado nas duas pontas:** árvore no ar → 0 divergências; com `--autoteste` → 5 divergências,
 nomeando a pessoa e a coluna exata.
 
-### 28. `ensaio` — o cenário que ORIGINOU o projeto, ponta a ponta
+### 29. `ensaio` — o cenário que ORIGINOU o projeto, ponta a ponta
 Alguém sai do elenco, outro entra com as cinco restrições, e a escala se refaz a partir de um corte.
 **11 promessas medidas**, entre elas *"o passado antes do corte fica byte a byte idêntico"*.
 
-### 29. `tempo` — a geração não regrediu de desempenho
+### 30. `tempo` — a geração não regrediu de desempenho
 
-### 30. `build` — compila e gera em `docs/`
+### 31. `build` — compila e gera em `docs/`
 
-### 31. `build:generico` — o segundo build, mesma fonte, base diferente
+### 32. `build:generico` — o segundo build, mesma fonte, base diferente
 Roda `vite build --mode generico`: mesmo código de `src/`, `base: '/escala-porteiros/generico/'`,
 lendo `public-generico/` em vez de `public/`. Gera em `docs/generico/`, dentro da MESMA árvore que o
 `publicar.yml` já sobe inteira — sem workflow novo, sem repositório novo (S-059/S-060, 18/08/2026).
@@ -548,7 +560,7 @@ produção que acabou de sair do passo anterior.
 **Fora de escopo, declarado:** este passo só CONSTRÓI. A verificação de que o conteúdo é genérico é
 o passo seguinte.
 
-### 32. `generico:dados` — a trilha genérica não carrega texto de cliente
+### 33. `generico:dados` — a trilha genérica não carrega texto de cliente
 **População:** `public-generico/` (a fonte, sempre existe) **e** `docs/generico/` (o build, existe
 depois do passo 31) — `.json`, `.html`, `.js`, `.css`.
 **Critério:** os MESMOS termos do portão `generico` (passo 13) — `Congregação Cristã` · `Jardim São
@@ -565,7 +577,7 @@ build ainda não rodado, termo do cliente num `.md` fora dos alvos deste portão
 arquivo e termo; árvore limpa (inclusive antes do primeiro `build:generico`, quando `docs/generico/`
 nem existe) → EXIT=0.
 
-### 33. `imagem` — o único passo que RENDERIZA O PIXEL
+### 34. `imagem` — o único passo que RENDERIZA O PIXEL
 Gera a imagem pelo botão de verdade e **mede o DOM que virou o PNG**, no instante anterior à
 rasterização: texto cortado pela própria caixa, rótulo duplicado na mesma pílula, rodapé coerente.
 **Por quê:** três defeitos da imagem escaparam de todos os outros portões em 05/08/2026 e só
@@ -574,7 +586,7 @@ tarde, e a pílula da Santa Ceia imprimindo o rótulo duas vezes. Ler o PNG a ol
 ⚠️ A medição usa um `MutationObserver` instalado **antes** do clique: `gerarImagem.ts` monta um palco,
 rasteriza e chama `palco.remove()`, então medir depois acha uma página vazia.
 
-### 34. `vivo:tudo` — TODAS as validações de navegador rodam
+### 35. `vivo:tudo` — TODAS as validações de navegador rodam
 **População:** as 15 validações do grupo **LOCAL**, lidas do `package.json` — nunca de uma lista à
 mão. Validação nova entra sozinha. **242 segundos** no total, medidos em 18/08/2026.
 
@@ -605,18 +617,40 @@ este mesmo script com outra bandeira — ele entrou na lista como se fosse uma v
 dentro do grupo errado. Excluir por nome é lista à mão com outra roupa: **o que identifica um
 disparador não é como ele se chama, é o fato de chamar este arquivo.**
 
-### 35. `refazer` — a escala NO AR pode ser refeita
+### 36. `refazer` — a escala NO AR pode ser refeita
 Pega o que o bloco publicado registra (período, elenco, malha, piso, semente), refaz a escala e
 compara turno a turno. É a promessa do `ALGORITMO.md` — *"conferir daqui a um ano"* — medida contra o
 **dado publicado**, não contra entrada de teste. Bloco `importado` é isento, declarado e contado.
 ⚠️ Fica vermelho no dia em que o algoritmo mudar de propósito. É o ponto: nesse dia a promessa se
 quebra para o que já está no ar, e alguém tem de decidir — aceitar e declarar, ou republicar.
 
-### 36. `selo:gravar` — o verde acima é DESTA árvore
+### 37. `selo:gravar` — o verde acima é DESTA árvore
 Guarda a impressão digital de todo arquivo versionado. `npm run selo:conferir`, antes de commitar,
 compara. **Por quê:** em 05/08/2026 um `git add -A` capturou o mutante de um auditor e o commit
 entrou na história afirmando `EXIT_GATE=0` — o gate tinha sido verde minutos antes, sobre outra
 árvore. Um veredito só vale para o estado que ele mediu.
+
+> 🔴 **Segundo defeito, achado em 19/08/2026** (retomada de sessão, palavra `retomaescala`): a
+> impressão digital misturava duas representações do MESMO arquivo. Para o que estava no ÍNDICE do
+> git (staged ou já commitado), usava o hash de BLOB — que `core.autocrlf=true` normaliza para LF
+> antes de gravar. Para o que estava só MODIFICADO no disco (unstaged), lia os bytes CRUS do
+> arquivo (CRLF, no Windows) e tirava sha256 direto.
+>
+> O fluxo deste próprio projeto — `npm run gate` (termina em `selo:gravar`) **antes** de `git add` —
+> passa o mesmo arquivo pelas DUAS representações em sequência: hash-de-bytes-crus no `--gravar`
+> (arquivo ainda modificado), hash-de-blob-LF no `--conferir` seguinte (arquivo já commitado). **Zero
+> bytes mudaram de verdade, e o selo gritava "árvore mudou"** — reproduzido com `git ls-files -s`
+> devolvendo o MESMO hash antes e depois de editar um arquivo sem `git add` (a leitura é do índice,
+> não do disco), enquanto o hash final do selo mudava mesmo assim.
+>
+> **Conserto:** parar de misturar as duas fontes. A impressão digital agora lê sempre o CONTEÚDO NO
+> DISCO — de todo arquivo rastreado (`git ls-files`) e de todo arquivo presente no `status
+> --porcelain -uall`, por `readFileSync`, nunca pelo índice do git. É isso, e só isso, que o gate
+> de fato testou: `vitest`/`vite build` leem do disco, nunca do índice. Um arquivo rastreado que
+> sumiu do disco entra como `AUSENTE`, em vez de ser silenciosamente pulado.
+>
+> Ver o passo 17 (`selo:autoteste`) — o selo nunca tinha autoteste, e foi exatamente por faltar um
+> que este defeito sobreviveu sem ninguém notar.
 
 ## Fora do GATE, de propósito
 

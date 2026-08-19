@@ -255,8 +255,17 @@
       "caminho": "scripts/selar-arvore.mjs",
       "ramo": "metodo",
       "gatilho": "npm run selo:gravar (fim do gate) / npm run selo:conferir (antes de commitar)",
-      "proposito": "grava e confere a impressão digital da árvore — prova que o verde do gate é DESTA árvore, não de outra",
+      "proposito": "grava e confere a impressão digital da árvore, lendo sempre o conteúdo em DISCO (nunca o índice do git) — prova que o verde do gate é DESTA árvore, não de outra",
       "portao": "npm run selo:conferir — exit 0 obrigatório antes de qualquer commit"
+    },
+    {
+      "id": "autoteste-selar-arvore",
+      "tipo": "ferramenta",
+      "caminho": "scripts/autoteste-selar-arvore.mjs",
+      "ramo": "metodo",
+      "gatilho": "npm run selo:autoteste (17º passo do gate)",
+      "proposito": "prova que o selo morde: mutação real acusa, transição staged/unstaged do mesmo conteúdo NÃO acusa (achado de 19/08/2026)",
+      "portao": "npm run gate — exit 0; nasceu no mesmo commit da correção que ele prova"
     },
     {
       "id": "refazer-o-publicado",

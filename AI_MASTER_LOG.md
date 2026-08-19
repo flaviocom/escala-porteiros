@@ -4,7 +4,7 @@
 > O **porquê** de cada decisão vive no [`DIARIO_DE_BORDO.md`](DIARIO_DE_BORDO.md); aqui fica o
 > registro do que foi feito, passo a passo.
 >
-> **Cadeia de navegação:** [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-18-c.md) → [`BACKLOG.md`](BACKLOG.md)
+> **Cadeia de navegação:** [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-19.md) → [`BACKLOG.md`](BACKLOG.md)
 > **Roteador:** [`AGENTS.md`](AGENTS.md) ·
 > **Solicitações:** [`docs/solicitacoes/INDICE_DE_SOLICITACOES.md`](docs/solicitacoes/INDICE_DE_SOLICITACOES.md) ·
 > **Fatias arquivadas:** [`docs/historico/INDICE.md`](docs/historico/INDICE.md)
@@ -1016,3 +1016,18 @@ como a PRIMEIRA seção do `AGENTS.md` (antes de tudo o mais) com o protocolo: l
 `ESTADO.md` → handoff mais recente → `BACKLOG.md`, e responder com o próximo passo, sem perguntar.
 Reforçado em `ESTADO.md` §"Como retomar". Só documentação — nenhum código tocado.
 **Solicitação:** S-061.
+
+---
+
+## 19/08/2026 — S-062: o selo mentia sobre a própria árvore — achado numa varredura autônoma
+
+`retomaescala` + instrução padrão de retomada autônoma. Varredura de rotina achou `npm run
+selo:conferir` acusando "árvore mudou" com `git status` limpo. Reproduzido: `git ls-files -s` lê o
+ÍNDICE (blob LF-normalizado), mas o selo também hashava bytes CRUS do disco (CRLF) para arquivo só
+modificado — o fluxo `npm run gate` (termina em `selo:gravar`) ANTES de `git add` troca o mesmo
+arquivo de representação entre gravar e conferir, sem nenhuma mudança real de conteúdo. Corrigido:
+`impressao()` lê sempre o disco, nunca o índice. `selar-arvore.mjs` nunca tinha autoteste — criado
+`autoteste-selar-arvore.mjs` (6 casos, reproduz o defeito exato + 5 casos de sanidade). Gate: 36 →
+**37 passos** (`selo:autoteste` 17º). `docs/PORTOES.md`/`OPERACAO.md` renumerados. VPS reconferida:
+número `551194950100` ainda não conectado, nada mudou. `npm run gate`: 37 passos, `EXIT_GATE=0`.
+**Solicitação:** S-062.

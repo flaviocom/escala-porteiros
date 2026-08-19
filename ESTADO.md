@@ -2,10 +2,10 @@
 
 > **Onde o projeto está agora.** Documento **vivo**: sobrescrito, não acumulado.
 >
-> **Última atualização:** 18/08/2026 · **Fuso:** America/São_Paulo
+> **Última atualização:** 19/08/2026 · **Fuso:** America/São_Paulo
 >
 > **Cadeia de navegação, nesta ordem:**
-> **`ESTADO.md` (você está aqui)** → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-18-c.md) → [`BACKLOG.md`](BACKLOG.md)
+> **`ESTADO.md` (você está aqui)** → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-19.md) → [`BACKLOG.md`](BACKLOG.md)
 > *onde estamos · o que aconteceu na última sessão e por quê · o que fazer a seguir*
 >
 > **Reconstruir do zero (portabilidade entre IAs):** [`docs/RECONSTRUIR.md`](docs/RECONSTRUIR.md)
@@ -44,7 +44,22 @@ agente/harness ou trabalho paralelo em arquivos disjuntos.
 e conferida, o nome do cliente fora do código. **P0 e P1 estão sem item aberto** — a única
 credencial em aberto é a chave do motor, **opcional**; nada trava sem ela.
 
-## O mais recente: a trilha GENÉRICA nasceu — segundo build, mesmo repositório (S-059/S-060, 18/08)
+## O mais recente: `retomaescala` funcionou, e a varredura achou o selo mentindo (S-062, 19/08)
+
+Primeira retomada de sessão usando a palavra `retomaescala` — funcionou, sem o dono reexplicar
+nada. A varredura de rotina (VPS reconferida: número `551194950100` ainda não conectado; nada
+novo) esbarrou em `npm run selo:conferir` acusando "árvore mudou" com `git status` **totalmente
+limpo**. Investigado, não ignorado: `selar-arvore.mjs` hashava o mesmo arquivo de duas formas
+diferentes — blob do índice do git (LF-normalizado por `core.autocrlf`) para o que já estava
+staged/commitado, bytes crus do disco (CRLF) para o que estava só modificado. O fluxo padrão deste
+projeto (`npm run gate`, que termina em `selo:gravar`, ANTES de `git add`) trocava quase todo
+arquivo de representação entre o `--gravar` e o `--conferir` seguinte — **zero mudança real, selo
+gritando mesmo assim**. Corrigido: a impressão digital agora lê sempre o disco, nunca o índice.
+`selar-arvore.mjs` nunca tinha autoteste (a única trava do projeto nessa condição) — criado
+`autoteste-selar-arvore.mjs`, 6 casos, reproduzindo o defeito exato. Gate: 36 → **37 passos**.
+Detalhe: [`HANDOFF_2026-08-19.md`](docs/handoff/HANDOFF_2026-08-19.md) · [DB-058](DIARIO_DE_BORDO.md).
+
+## O anterior: a trilha GENÉRICA nasceu — segundo build, mesmo repositório (S-059/S-060, 18/08)
 
 O Flavio recuperou o brainstorm de 07/08 sobre o lembrete de WhatsApp (rota B pela ponte Charmway,
 S-050/S-051) e perguntou dois próximos passos. **1) O número de disparo:** ele escolheu
@@ -60,7 +75,7 @@ generico` já provava que `src/` não tem texto de cliente, então bastava um se
 (`generico:dados`, autoteste `generico:dados:autoteste`) garantindo que a trilha nunca carregue o
 cliente de produção. Verificado num navegador de verdade antes de declarar pronto. Gate: **36
 passos**, dois novos portões + duas novas seções de doc (`ARQUITETURA.md` §"A segunda trilha",
-`FASE2.md` §P4.w2). Detalhe: [`HANDOFF_2026-08-18-c.md`](docs/handoff/HANDOFF_2026-08-18-c.md) ·
+`FASE2.md` §P4.w2). Detalhe: [`HANDOFF_2026-08-19.md`](docs/handoff/HANDOFF_2026-08-19.md) ·
 [DB-055, DB-056](DIARIO_DE_BORDO.md).
 
 ## O anterior: 3 defeitos achados sem pedido, numa sessão que começou como "resume" (18/08)
