@@ -1005,3 +1005,14 @@ Construído: `vite.config.ts` alterna `base`/`publicDir`/`outDir` por `mode` do 
 `docs/PORTOES.md`/`OPERACAO.md` renumerados. Verificado num navegador real (Playwright) em
 `/escala-porteiros/generico/` antes de declarar pronto. `ARQUITETURA.md` §"A segunda trilha" e
 `FASE2.md` §P4.w2 escritos. `npm run gate`: 36 passos, `EXIT_GATE=0`. **Solicitação:** S-060.
+
+---
+
+## 18/08/2026 — S-061: o gatilho de retomada, numa palavra — `retomaescala`
+
+Flavio trabalha com vários VS Code abertos, um por projeto — pediu uma palavra única para dizer
+"retome este projeto de onde paramos", sem repetir contexto. Criada `retomaescala`, documentada
+como a PRIMEIRA seção do `AGENTS.md` (antes de tudo o mais) com o protocolo: ler `AGENTS.md` →
+`ESTADO.md` → handoff mais recente → `BACKLOG.md`, e responder com o próximo passo, sem perguntar.
+Reforçado em `ESTADO.md` §"Como retomar". Só documentação — nenhum código tocado.
+**Solicitação:** S-061.

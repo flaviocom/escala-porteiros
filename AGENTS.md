@@ -1,5 +1,22 @@
 # AGENTS.md — escala-porteiros
 
+> ## 🔑 GATILHO DE RETOMADA — a palavra é `retomaescala`
+>
+> O Flavio trabalha com **vários VS Code/terminais abertos ao mesmo tempo, um por projeto**. Quando
+> ele digitar **`retomaescala`** (sozinha, em qualquer mensagem, neste repositório), isso significa
+> **"retome este projeto exatamente de onde paramos"** — sem ele reexplicar nada. Ao ver a palavra:
+>
+> 1. Leia **este arquivo** inteiro (como se trabalha aqui).
+> 2. Leia **[`ESTADO.md`](ESTADO.md)** ("Em uma frase" + "O mais recente" + "Como retomar").
+> 3. Leia o **[handoff mais recente](docs/handoff/HANDOFF_2026-08-18-c.md)** (o que aconteceu e por quê).
+> 4. Leia **[`BACKLOG.md`](BACKLOG.md)** (o que falta, e o que é 👤 decisão dele).
+> 5. Responda com um resumo curto de onde as coisas estão e **o que você vai fazer a seguir** — não
+>    pergunte "o que você quer que eu faça?": o `BACKLOG.md` já responde isso.
+>
+> Não é preciso ele dizer mais nada além da palavra — nenhum "continua o projeto X", nenhum caminho
+> de pasta. Ele já está na pasta certa quando digita; a palavra é só para você **confirmar** que
+> entendeu o pedido e seguir o roteiro acima, sem perguntas.
+
 > **Você está assumindo este projeto.** Este arquivo é o padrão aberto lido por Codex, Cursor,
 > Gemini CLI, Copilot e outros assistentes. Ele é autossuficiente: **você não precisa perguntar ao
 > Flavio onde paramos, o que fazer ou o que faltava.**

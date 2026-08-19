@@ -1713,3 +1713,27 @@ próximo deploy (o build não é regenerado sozinho — reverter aqui só tira d
 scripts novos e os 3 arquivos de `public-generico/` somem, `package.json`/`vite.config.ts` voltam à
 forma anterior, e os 3 passos saem do gate (33 de volta). Produção: **nenhuma linha de `src/` foi
 tocada** — zero risco ao site que os irmãos usam.
+
+---
+
+## DB-057 · 18/08/2026 — a palavra que retoma o projeto: `retomaescala`
+
+**O pedido (S-061):** *"eu estou com vários VS Code abertos, cada um executando uma tarefa. Eu
+preciso de apenas uma palavra para que você saiba que eu quero iniciar, reiniciar esse projeto a
+partir de onde nós paramos."*
+
+**O problema que a palavra resolve:** o gatilho global do método ("go", "segue", "continua") não
+diferencia QUAL projeto — com várias sessões abertas ao mesmo tempo, uma delas em cada janela,
+"continua" é ambíguo. A cadeia de documentos (`AGENTS.md` → `ESTADO.md` → handoff → `BACKLOG.md`)
+já respondia "onde paramos" desde o começo do projeto; faltava só o comando de um clique que
+dispara essa leitura sem ele ter de digitar mais nada.
+
+**Escolhida a palavra `retomaescala`** — um só termo, sem espaço (para funcionar como palavra única
+em qualquer app), derivado do nome do projeto, com risco baixo de aparecer por acaso numa frase
+comum. Escrita como a PRIMEIRA seção do `AGENTS.md` — antes de qualquer outra coisa, porque
+`AGENTS.md` é o primeiro arquivo que qualquer IA lê ao assumir o projeto — com o protocolo explícito
+(ler os 4 documentos da cadeia, responder com o próximo passo, não perguntar "o que você quer?").
+Reforçado em `ESTADO.md` §"Como retomar", como segunda porta de entrada.
+
+**Como reverter.** Remover as duas seções acrescentadas (`AGENTS.md` topo, `ESTADO.md` "Como
+retomar") — nenhum código, nenhum dado, nenhum comportamento de produto muda.

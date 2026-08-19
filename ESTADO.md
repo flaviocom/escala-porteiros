@@ -174,6 +174,10 @@ a explicação ao lado, em vez de 🔴 sem contexto — e a checagem continua ac
 
 ## Como retomar
 
+🔑 **Uma palavra basta: `retomaescala`.** Ele trabalha com vários VS Code abertos, um por projeto —
+digitar essa palavra neste repositório significa "retome exatamente de onde paramos", sem
+reexplicar nada. Protocolo completo em [`AGENTS.md`](AGENTS.md), logo no topo.
+
 1. Leia [`AGENTS.md`](AGENTS.md).
 2. Leia este arquivo e o [`BACKLOG.md`](BACKLOG.md).
 3. Rode o pré-voo: `node D:/Antigravity/_padroes-globais/scripts/pre-voo.mjs .`
