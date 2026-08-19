@@ -22,8 +22,18 @@ entre os dois — convenção da casa, porque a VPS recebe cada arquivo por cóp
 Cron sugerido (São Paulo):
   diário, 18h  (véspera, mesmo horário do lembrete de grupo):
     0 21 * * *  /usr/bin/python3 /root/escala_lembrete/lembrete_individual.py --modo diario >> /root/escala_lembrete/lembrete_individual.log 2>&1
-  semanal, domingo 8h (início da semana):
-    0 11 * * 0  /usr/bin/python3 /root/escala_lembrete/lembrete_individual.py --modo semanal >> /root/escala_lembrete/lembrete_individual.log 2>&1
+  semanal, SEGUNDA-feira 8h:
+    0 11 * * 1  /usr/bin/python3 /root/escala_lembrete/lembrete_individual.py --modo semanal >> /root/escala_lembrete/lembrete_individual.log 2>&1
+
+  🔴 Por que SEGUNDA e não domingo (mudou em 19/08/2026, dois agentes de pesquisa independentes,
+  S-065): não existe padrão de mercado único aqui — os líderes do setor de escala de turno
+  (7shifts, Deputy, Sling) disparam no momento em que o GESTOR publica, não num dia fixo de
+  calendário; e a norma técnica brasileira (ABNT NBR 5892:2019) e a ISO 8601 divergem entre si
+  (domingo vs. segunda). Decisão registrada como CONVENÇÃO DE CASA, não como "padrão de mercado":
+  segunda de manhã é quando o destinatário já está pensando em termos de "minha semana de
+  compromissos que começa agora" — o cálculo da semana continua ancorado domingo-a-domingo por
+  dentro (`domingo_da_semana`, sem mudança), só o DIA DO DISPARO mudou. Relatório completo:
+  `docs/LEMBRETE_WHATSAPP.md` §"A pesquisa, e o que ela mudou".
 
 ── COMO FUNCIONA, passo a passo ──────────────────────────────────────────────────────────────────
 1. Baixa o dado PUBLICADO (a mesma URL que os porteiros veem) — pessoas e blocos.
@@ -112,31 +122,50 @@ def chave_evolution():
     raise SystemExit(f"AUTHENTICATION_API_KEY não encontrada em {ENV_EVOLUTION}")
 
 
-def primeiro_nome(nome_completo):
-    return (nome_completo or "").strip().split(" ")[0] or nome_completo
+"""
+🔴 REDAÇÃO E FORMATAÇÃO — pesquisadas, não inventadas (19/08/2026, S-065, dois agentes de pesquisa
+independentes; relatórios completos citados em `docs/LEMBRETE_WHATSAPP.md`).
+
+Sintaxe confirmada contra a página oficial do WhatsApp Help Center (faq.whatsapp.com): negrito é
+UM asterisco de cada lado (`*texto*`) — o que já se usava estava certo. Lista com marcador via API
+de terceiro (`- item`) NÃO tem confirmação de que renderiza como marcador de verdade em todo
+cliente — por isso as duas mensagens continuam usando o caractere "•" digitado à mão (Unicode
+comum, garantido em qualquer app), não a sintaxe de lista do WhatsApp.
+
+Estrutura em 3 blocos (Nielsen Norman Group + práticas de mensagem transacional): (1)
+IDENTIFICAÇÃO — quem manda, na primeira linha, negrito só no nome — resolve o erro mais comum
+apontado pela pesquisa: mensagem automática sem remetente claro é lida como possível spam; (2)
+CORPO — o fato central, rótulo em negrito + valor simples, sem enterrar a informação num parágrafo;
+(3) FECHAMENTO — cordial, sem negrito extra (negrito em tudo equivale a negrito em nada). Emoji:
+2 por mensagem, cada um com função de sinalização (🔔/📅 = tipo de aviso, 🙏 = fechamento), dentro
+da faixa de 1 a 3 que a pesquisa aponta como profissional-porém-cordial.
+"""
 
 
-def montar_mensagem_diaria(pessoa, data_iso, turnos_da_pessoa):
+def montar_mensagem_diaria(pessoa, data_iso, turnos_da_pessoa, titulo):
     saudacao = pessoa.get("nomeCompleto") or pessoa["nome"]
     dia = DIAS[dia_da_semana(data_iso)]
     rotulos = ", ".join(t.get("rotulo") or ROTULO_TURNO.get(t["tipo"], t["tipo"]) for t in turnos_da_pessoa)
     return "\n".join([
-        f"🔔 Olá, {saudacao}!",
+        f"🔔 *{titulo}* — lembrete de escala",
         "",
-        f"Passando para lembrar: *amanhã, {dia}, {data_br(data_iso)}*, é sua vez na portaria — turno da *{rotulos}*.",
+        f"Olá, {saudacao}! Passando para lembrar:",
+        "",
+        f"*Data:* amanhã, {dia}, {data_br(data_iso)}",
+        f"*Turno:* {rotulos}",
         "",
         "Que Deus abençoe o seu serviço! 🙏",
         SITE,
     ])
 
 
-def montar_mensagem_semanal(pessoa, inicio_iso, turnos_da_pessoa):
+def montar_mensagem_semanal(pessoa, inicio_iso, turnos_da_pessoa, titulo):
     saudacao = pessoa.get("nomeCompleto") or pessoa["nome"]
     fim_iso = somar_dias(inicio_iso, 7)
     linhas = [
-        f"📅 Olá, {saudacao}!",
+        f"📅 *{titulo}* — sua escala da semana",
         "",
-        f"Sua escala desta semana ({data_br(inicio_iso)} a {data_br(fim_iso)}):",
+        f"Olá, {saudacao}! De {data_br(inicio_iso)} a {data_br(fim_iso)}, você está assim:",
         "",
     ]
     for t in sorted(turnos_da_pessoa, key=lambda t: t["data"]):
@@ -189,10 +218,10 @@ def selecionar_semanal(alvo, pessoas, blocos):
     return inicio, resultado
 
 
-def rodar_diario(alvo, pessoas, blocos, dry):
+def rodar_diario(alvo, pessoas, blocos, titulo, dry):
     selecionados = selecionar_diario(alvo, pessoas, blocos)
     for p, turnos_da_pessoa in selecionados:
-        msg = montar_mensagem_diaria(p, alvo, turnos_da_pessoa)
+        msg = montar_mensagem_diaria(p, alvo, turnos_da_pessoa, titulo)
         print(f"--- {p['nome']} ({p['telefone']}) — {alvo} ---")
         print(msg)
         if dry:
@@ -204,10 +233,10 @@ def rodar_diario(alvo, pessoas, blocos, dry):
         print(f"{alvo}: ninguém com telefone cadastrado está escalado amanhã — nada a enviar.")
 
 
-def rodar_semanal(alvo, pessoas, blocos, dry):
+def rodar_semanal(alvo, pessoas, blocos, titulo, dry):
     inicio, selecionados = selecionar_semanal(alvo, pessoas, blocos)
     for p, turnos_da_pessoa in selecionados:
-        msg = montar_mensagem_semanal(p, inicio, turnos_da_pessoa)
+        msg = montar_mensagem_semanal(p, inicio, turnos_da_pessoa, titulo)
         print(f"--- {p['nome']} ({p['telefone']}) — semana de {inicio} ---")
         print(msg)
         if dry:
@@ -238,11 +267,15 @@ def main():
 
     pessoas = baixar("dados/pessoas.json")
     blocos = baixar("dados/blocos.json")
+    # `config.identidade.titulo` é DADO configurável (nunca cravado — regra máxima de escopo, §0 do
+    # AGENTS.md), e é o que a mensagem usa para se IDENTIFICAR na primeira linha — achado da
+    # pesquisa: mensagem automática sem remetente claro é lida como possível spam.
+    titulo = baixar("dados/config.json")["identidade"]["titulo"]
 
     if modo == "diario":
-        rodar_diario(alvo, pessoas, blocos, dry)
+        rodar_diario(alvo, pessoas, blocos, titulo, dry)
     else:
-        rodar_semanal(alvo, pessoas, blocos, dry)
+        rodar_semanal(alvo, pessoas, blocos, titulo, dry)
 
 
 if __name__ == "__main__":

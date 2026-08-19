@@ -8,7 +8,7 @@
 >
 > 1. Leia **este arquivo** inteiro (como se trabalha aqui).
 > 2. Leia **[`ESTADO.md`](ESTADO.md)** ("Em uma frase" + "O mais recente" + "Como retomar").
-> 3. Leia o **[handoff mais recente](docs/handoff/HANDOFF_2026-08-19-c.md)** (o que aconteceu e por quê).
+> 3. Leia o **[handoff mais recente](docs/handoff/HANDOFF_2026-08-19-d.md)** (o que aconteceu e por quê).
 > 4. Leia **[`BACKLOG.md`](BACKLOG.md)** (o que falta, e o que é 👤 decisão dele).
 > 5. Responda com um resumo curto de onde as coisas estão e **o que você vai fazer a seguir** — não
 >    pergunte "o que você quer que eu faça?": o `BACKLOG.md` já responde isso.
@@ -24,7 +24,7 @@
 > **Este arquivo é o ROTEADOR do projeto.** Ordem de leitura, e ela importa:
 >
 > **1.** este arquivo (como se trabalha) → **2.** [`ESTADO.md`](ESTADO.md) (onde estamos) →
-> **3.** [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-19-c.md) (o que aconteceu e por quê) →
+> **3.** [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-19-d.md) (o que aconteceu e por quê) →
 > **4.** [`BACKLOG.md`](BACKLOG.md) (o que fazer a seguir)
 >
 > Só depois, e só o trecho de que precisar, os índices:
@@ -266,7 +266,7 @@ aqui. Escrito para quem **não participou de nada** — inclusive outra intelig�
 | Vou mexer em… | Leia antes |
 |---|---|
 | Estado atual | [`ESTADO.md`](ESTADO.md) |
-| O que aconteceu na última sessão, e por quê | [`docs/handoff/HANDOFF_2026-08-19-c.md`](docs/handoff/HANDOFF_2026-08-19-c.md) · [índice](docs/handoff/INDICE.md) |
+| O que aconteceu na última sessão, e por quê | [`docs/handoff/HANDOFF_2026-08-19-d.md`](docs/handoff/HANDOFF_2026-08-19-d.md) · [índice](docs/handoff/INDICE.md) |
 | O que falta | [`BACKLOG.md`](BACKLOG.md) |
 | Regras da escala, modelo de dados, motor | [`o desenho`](docs/superpowers/specs/2026-08-04-area-administrativa-escala-design.md) |
 | **Por que** uma decisão foi tomada, e como revertê-la | [`DIARIO_DE_BORDO.md`](DIARIO_DE_BORDO.md) |

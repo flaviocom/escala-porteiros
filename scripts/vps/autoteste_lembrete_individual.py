@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 AUTOTESTE — `lembrete_individual.py` seleciona e escreve certo, sem tocar rede nem WhatsApp
-(S-064, 19/08/2026).
+(S-064, 19/08/2026 · redação/formatação atualizada e testada em S-065, mesmo dia).
 
 Mesma regra do método que criou `autoteste-selar-arvore.mjs`: *"toda trava nova nasce com
 autoteste, no mesmo commit"*. Aqui não há uma trava (não é um portão que bloqueia o gate) — é a
@@ -89,17 +89,24 @@ _, sel_semana_vazia = m.selecionar_semanal("2026-09-01", PESSOAS, BLOCOS)
 caso('semanal: sem ninguém escalado naquela semana → seleção vazia', sel_semana_vazia == [])
 
 # ---- montar_mensagem_diaria — conteúdo da mensagem ------------------------------------------------
+TITULO = "Escala de Teste"
 pessoa_com_fone = PESSOAS["pessoas"][0]
 turnos_20 = [t for t in BLOCOS["blocos"][0]["turnos"] if t["data"] == "2026-08-20"]
-msg_diaria = m.montar_mensagem_diaria(pessoa_com_fone, "2026-08-20", turnos_20)
+msg_diaria = m.montar_mensagem_diaria(pessoa_com_fone, "2026-08-20", turnos_20, TITULO)
 caso('mensagem diária saúda pelo NOME COMPLETO, não pelo nome curto', "Carlos Henrique" in msg_diaria)
 caso('mensagem diária cita o DIA DA SEMANA certo (20/08/2026 é quinta-feira)', "quinta-feira" in msg_diaria)
 caso('mensagem diária cita a DATA em formato BR', "20/08/2026" in msg_diaria)
 caso('mensagem diária cita o TURNO', "noite" in msg_diaria.lower())
 caso('mensagem diária traz o link do site', m.SITE in msg_diaria)
+caso(
+    '🔴 mensagem diária se IDENTIFICA na primeira linha (achado da pesquisa: sem remetente, parece spam)',
+    msg_diaria.startswith(f"🔔 *{TITULO}*"),
+    f"primeira linha: {msg_diaria.splitlines()[0]!r}",
+)
+caso('mensagem diária usa negrito nos RÓTULOS (Data/Turno), não na frase inteira', "*Data:*" in msg_diaria and "*Turno:*" in msg_diaria)
 
 pessoa_sem_nome_completo = {"id": "x", "nome": "Zeca"}
-msg_sem_nome_completo = m.montar_mensagem_diaria(pessoa_sem_nome_completo, "2026-08-20", turnos_20)
+msg_sem_nome_completo = m.montar_mensagem_diaria(pessoa_sem_nome_completo, "2026-08-20", turnos_20, TITULO)
 caso('sem nomeCompleto cadastrado, a mensagem cai para o `nome` curto', "Zeca" in msg_sem_nome_completo)
 
 # ---- montar_mensagem_semanal — lista ORDENADA por data, mesmo se os turnos chegarem fora de ordem
@@ -107,7 +114,7 @@ turnos_fora_de_ordem = [
     {"data": "2026-08-22", "tipo": "NOITE", "pessoas": ["com_fone"]},
     {"data": "2026-08-16", "tipo": "MANHA", "pessoas": ["com_fone"], "rotulo": "Culto de oração"},
 ]
-msg_semanal = m.montar_mensagem_semanal(pessoa_com_fone, "2026-08-16", turnos_fora_de_ordem)
+msg_semanal = m.montar_mensagem_semanal(pessoa_com_fone, "2026-08-16", turnos_fora_de_ordem, TITULO)
 pos_16 = msg_semanal.find("16/08")
 pos_22 = msg_semanal.find("22/08")
 caso(
@@ -117,8 +124,17 @@ caso(
 )
 caso('mensagem semanal usa o rótulo do turno quando existe ("Culto de oração")', "Culto de oração" in msg_semanal)
 caso('mensagem semanal informa o intervalo completo (16/08 a 23/08)', "16/08/2026 a 23/08/2026" in msg_semanal)
+caso(
+    '🔴 mensagem semanal também se IDENTIFICA na primeira linha',
+    msg_semanal.startswith(f"📅 *{TITULO}*"),
+    f"primeira linha: {msg_semanal.splitlines()[0]!r}",
+)
+caso(
+    'nenhuma das duas mensagens usa sintaxe de lista do WhatsApp ("- item") — só "•" à mão, o único formato confirmado pela pesquisa',
+    "\n- " not in msg_diaria and "\n- " not in msg_semanal,
+)
 
-total = 19
+total = 22
 print(f"\n  {'🔴' if falhas else '✅'} {total - falhas} de {total} casos corretos")
 if falhas:
     print("  A seleção ou a composição da mensagem NÃO fazem o que dizem fazer.")

@@ -813,6 +813,8 @@ const AbaElenco: React.FC<{ pessoas: Pessoa[]; aoMudar: (p: Pessoa[]) => void }>
       >
         <div className="flex gap-2 mb-5">
           <input
+            id="novo-nome"
+            name="novo-nome"
             value={novoNome}
             onChange={(e) => setNovoNome(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && acrescentar()}

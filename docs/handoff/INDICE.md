@@ -9,6 +9,7 @@
 
 | Data | Handoff | O que aconteceu |
 |---|---|---|
+| 19/08/2026 | [`HANDOFF_2026-08-19-d.md`](HANDOFF_2026-08-19-d.md) | **Parte 4 — a pesquisa antes do código.** O Flavio pediu o texto das mensagens e questionou o dia do disparo semanal (domingo × segunda), com instrução explícita: agentes de pesquisa independentes ANTES de codar. Dois agentes: cadência (sem padrão de mercado único; domingo×segunda é empate documentado; recomendação — segunda de manhã, convenção de casa declarada; estrutura resumo+véspera já é o padrão de maior eficácia da literatura) e formatação (sintaxe confirmada contra o WhatsApp Help Center; achado real — mensagens sem identificação, corrigido). Cron mudou para segunda-feira, mensagens reescritas em 3 blocos, autoteste 19→22 casos. |
 | 19/08/2026 | [`HANDOFF_2026-08-19-c.md`](HANDOFF_2026-08-19-c.md) | **Parte 3 — o lembrete individual: telefone cadastrado, duas mensagens.** O Flavio pediu URL da versão nova e como cadastrar nome/telefone; perguntei se era para somar ao lembrete de grupo ou trocar — resposta: somar, com mensagem semanal (domingo a domingo) e diária (véspera), sem controle de LGPD (decisão dele). Construído: `Pessoa.nomeCompleto`/`telefone`, `src/utils/telefone.ts` (formato confirmado contra código real na VPS), tela no Elenco, `scripts/vps/lembrete_individual.py` (2 modos) + autoteste (19 casos). Dois defeitos achados testando ao vivo: aspas quebrando o JSX, telefone inválido sumindo em silêncio — os dois corrigidos. Ativação real segue bloqueada pelo número não conectado. |
 | 19/08/2026 | [`HANDOFF_2026-08-19-b.md`](HANDOFF_2026-08-19-b.md) | **Parte 2 — a pergunta certa achou o que faltava.** O Flavio perguntou se o fechamento do S-062 tinha verificação visual e auditoria de verdade — resposta honesta: não. Fechadas as duas: navegador real nas duas trilhas (achou 2 campos sem `id`/`name` em `DateSearch.tsx`, pré-existente, corrigido) e um agente auditor independente mandado a REFUTAR o conserto do selo, que achou um terceiro problema de parsing (renomeação staged virava candidato fantasma). Julgamento próprio corrigiu a interpretação da auditoria: renomear MUDA o caminho de verdade, então o selo deve continuar acusando — só a higiene do parsing precisava de conserto. Caso G novo no autoteste (6→7), gate 37 passos verde. |
 | 19/08/2026 | [`HANDOFF_2026-08-19.md`](HANDOFF_2026-08-19.md) | **`retomaescala` funcionou pela primeira vez, e a varredura de rotina achou um defeito real.** `npm run selo:conferir` acusava "árvore mudou" com `git status` limpo — o selo hashava o mesmo tipo de arquivo de duas formas (blob do índice LF-normalizado vs bytes crus do disco CRLF), e o fluxo `gate → git add` do próprio projeto disparava isso toda vez, sem mudança real. Corrigido: a impressão digital lê sempre o disco. `selar-arvore.mjs` nunca tinha autoteste — criado, 6 casos, reproduzindo o defeito exato. Gate 36→37 passos. VPS reconferida: número do lembrete ainda não conectado. |
@@ -38,7 +39,7 @@
 
 ---
 
-**Handoff mais recente:** [`HANDOFF_2026-08-19-c.md`](HANDOFF_2026-08-19-c.md)
+**Handoff mais recente:** [`HANDOFF_2026-08-19-d.md`](HANDOFF_2026-08-19-d.md)
 
 Ligações: [`../solicitacoes/INDICE_DE_SOLICITACOES.md`](../solicitacoes/INDICE_DE_SOLICITACOES.md) ·
 [`../historico/INDICE.md`](../historico/INDICE.md) ·

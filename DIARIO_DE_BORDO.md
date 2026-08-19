@@ -4,7 +4,7 @@
 > como reverter.** Documento **append-only**, fatiado por período ao estourar o teto. **Nada é
 > excluído, nunca.**
 >
-> **Cadeia de navegação:** [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-19-c.md) → [`BACKLOG.md`](BACKLOG.md)
+> **Cadeia de navegação:** [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-19-d.md) → [`BACKLOG.md`](BACKLOG.md)
 > **Roteador:** [`AGENTS.md`](AGENTS.md) ·
 > **Solicitações:** [`docs/solicitacoes/INDICE_DE_SOLICITACOES.md`](docs/solicitacoes/INDICE_DE_SOLICITACOES.md) ·
 > **Histórico:** [`docs/historico/INDICE.md`](docs/historico/INDICE.md)
@@ -1919,3 +1919,49 @@ volta a não ter `nomeCompleto`/`telefone` (pessoas.json publicado não muda —
 opcionais, e nada os cravou), os dois scripts de VPS e o autoteste somem. Produto visível aos
 porteiros: nenhuma mudança — o Elenco é tela administrativa, e o lembrete individual não está
 ligado a nenhum cron ainda.
+
+## DB-061 · 19/08/2026 — a pesquisa antes do código: cadência e formatação do lembrete individual
+
+**O pedido (S-065):** depois do S-064 fechado, o Flavio perguntou onde estava o texto das
+mensagens, se o resumo semanal deveria disparar segunda-feira (em vez do domingo que eu escolhi
+sozinho) e pediu formatação "padrão WhatsApp" — negrito, itálico, quebra de linha. Instrução
+explícita: *"coloque os agentes de pesquisa antes de você codar ou tomar qualquer decisão."*
+
+**Cumprido ao pé da letra.** Dois agentes de pesquisa independentes, em paralelo, ANTES de tocar em
+qualquer arquivo de código — um sobre cadência/timing de lembretes de escala, outro sobre
+sintaxe/redação de WhatsApp. Só depois de ler os dois relatórios completos é que decidi e codei.
+
+**Achado 1 — cadência.** Não existe padrão de mercado único: os líderes do setor de escala de
+turno (7shifts, Deputy, Sling, Homebase) não fixam o resumo a um dia de calendário, disparam ao
+gestor PUBLICAR — arquitetura que não precisa responder "domingo ou segunda". Domingo×segunda é
+empate documentado: a ABNT NBR 5892:2019 fixa domingo como primeiro dia da semana no Brasil, a ISO
+8601 fixa segunda, e o hábito prático brasileiro trata segunda como início da semana de trabalho.
+**Decisão: segunda-feira de manhã, registrada como convenção de casa DECLARADA, não como "padrão de
+mercado"** — porque não há um. Achado mais forte da pesquisa: um ensaio clínico randomizado
+(Steiner et al., *Am J Manag Care* 2018, 54.066 pacientes) mediu 4,4% de falta com DOIS lembretes
+espaçados (dias antes + véspera) contra 5,3–5,8% com um só, sem sinal de fadiga de notificação
+nesse volume — a estrutura que o S-064 já tinha desenhado (resumo semanal + véspera) replica
+exatamente esse padrão vencedor. Não fiz terceiro lembrete: a pesquisa não indicou necessidade.
+
+**Achado 2 — formatação.** Confirmado contra a página oficial do WhatsApp Help Center: negrito
+`*texto*` já estava certo; monoespaçado são TRÊS crases, não uma (eu não sabia); listas com
+marcador via API de terceiro (`- item`) não têm confirmação de que renderizam como lista de
+verdade — mantido o "•" digitado à mão, que é garantido em qualquer cliente. **Achado mais
+consequente: nenhuma das duas mensagens se identificava** — não dizia de quem vinha. A pesquisa
+citou isso como o erro mais comum que faz mensagem automática parecer spam. Corrigido: as duas
+mensagens agora abrem com `config.identidade.titulo` (dado configurável, nunca cravado — §0).
+
+**Construído, depois da pesquisa:** `scripts/vps/lembrete_individual.py` reescrito — cron mudou de
+domingo para segunda-feira 8h (documentado no cabeçalho, com a razão); `montar_mensagem_diaria`/
+`montar_mensagem_semanal` reestruturadas em 3 blocos (identificação → corpo com rótulos em negrito
+→ fechamento cordial); `main()` passou a baixar `config.json` para ler o título. Removida
+`primeiro_nome()`, função morta nunca chamada, achada ao mexer no arquivo. Autoteste: 19 → **22
+casos** (identificação, rótulos em negrito, ausência de sintaxe de lista não confirmada).
+`docs/LEMBRETE_WHATSAPP.md` ganhou a seção "A pesquisa, e o que ela mudou", com as duas decisões
+justificadas e citadas.
+
+**Gate:** 37 passos, `EXIT_GATE=0`.
+
+**Como reverter.** `git revert` do commit desta entrada: o cron volta à sugestão de domingo, as
+mensagens voltam ao texto sem identificação do S-064, o autoteste volta a 19 casos. Produto visível
+aos porteiros: nenhuma mudança — o lembrete individual ainda não está ligado a nenhum cron.

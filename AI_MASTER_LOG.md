@@ -4,7 +4,7 @@
 > O **porquê** de cada decisão vive no [`DIARIO_DE_BORDO.md`](DIARIO_DE_BORDO.md); aqui fica o
 > registro do que foi feito, passo a passo.
 >
-> **Cadeia de navegação:** [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-19-c.md) → [`BACKLOG.md`](BACKLOG.md)
+> **Cadeia de navegação:** [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-19-d.md) → [`BACKLOG.md`](BACKLOG.md)
 > **Roteador:** [`AGENTS.md`](AGENTS.md) ·
 > **Solicitações:** [`docs/solicitacoes/INDICE_DE_SOLICITACOES.md`](docs/solicitacoes/INDICE_DE_SOLICITACOES.md) ·
 > **Fatias arquivadas:** [`docs/historico/INDICE.md`](docs/historico/INDICE.md)
@@ -1067,3 +1067,21 @@ e telefone inválido sendo apagado em silêncio ao perder o foco (agora fica vis
 Ativação real segue bloqueada — número `551194950100` ainda não conectado. Gate: 37 passos,
 `EXIT_GATE=0`.
 **Solicitação:** S-064.
+
+---
+
+## 19/08/2026 — S-065: pesquisa antes do código — cadência e formatação do lembrete individual
+
+Instrução explícita: agentes de pesquisa independentes ANTES de codar ou decidir. Dois agentes em
+paralelo. (1) Cadência: sem padrão de mercado único (líderes do setor disparam ao publicar, não em
+dia fixo); domingo×segunda é empate documentado (ABNT NBR 5892 vs. ISO 8601) — decisão: segunda de
+manhã, convenção de casa declarada. Estrutura resumo+véspera já replica o padrão de maior eficácia
+da literatura (Steiner et al. 2018, AJMC: 4,4% de falta com 2 lembretes vs. 5,3–5,8% com 1) — sem
+necessidade de terceiro lembrete. (2) Formatação: confirmado contra WhatsApp Help Center oficial
+(negrito certo, monoespaçado é 3 crases não 1, listas via API sem confirmação de renderização);
+achado real: mensagens não se identificavam (erro nº1 apontado pela pesquisa) — corrigido com
+`config.identidade.titulo`. Construído: `lembrete_individual.py` reescrito (cron domingo→segunda
+8h, 3 blocos: identificação/corpo/fechamento, `main()` lê `config.json`), `primeiro_nome()` morta
+removida, autoteste 19→22 casos. `docs/LEMBRETE_WHATSAPP.md` documenta as duas decisões, citadas.
+Gate: 37 passos, `EXIT_GATE=0`.
+**Solicitação:** S-065.

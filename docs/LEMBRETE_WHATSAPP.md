@@ -86,11 +86,62 @@ duplicado — "a lista fica aberta, não é para apagar".
 
 | Modo | Quando | O que diz |
 |---|---|---|
-| `semanal` | domingo, início da semana | todos os turnos DELA na semana — domingo a domingo, incluindo o domingo seguinte (mesma regra do filtro "Esta Semana" da tela, `src/App.tsx`) |
+| `semanal` | **segunda-feira de manhã** | todos os turnos DELA na semana — o cálculo interno continua domingo a domingo (mesma regra do filtro "Esta Semana" da tela, `src/App.tsx`); só o DIA DO DISPARO é segunda |
 | `diario` | véspera (mesmo horário do lembrete de grupo) | só se ela estiver escalada amanhã |
 
 Quem não tem turno no período **não recebe mensagem** — silêncio, igual ao lembrete de grupo. Quem
 não tem telefone cadastrado nunca entra na seleção — sem erro, sem tentativa de envio.
+
+## A pesquisa, e o que ela mudou (S-065, 19/08/2026)
+
+O dia do disparo semanal e o texto das duas mensagens tinham sido escolhidos por mim, sem pesquisa,
+só por analogia com o filtro "Esta Semana" da tela — o dono perguntou (S-065) se não deveria ser
+SEGUNDA-FEIRA em vez de domingo, e pediu pesquisa **antes** de qualquer decisão ou código. Dois
+agentes de pesquisa independentes rodaram em paralelo; nenhum decidiu por mim — as decisões abaixo
+foram tomadas depois de ler os dois relatórios completos.
+
+**Cadência (dia do disparo semanal, e "1 lembrete ou mais?"):**
+- **Não existe padrão de mercado único.** Os líderes do setor de escala de turno (7shifts, Deputy,
+  Sling, Homebase) não fixam o resumo semanal a um dia de calendário — disparam quando o GESTOR
+  publica a escala, não em recorrência automática. O único achado de "dia fixo automático" veio do
+  Clockify (timesheet, não escala de turno), que usa o "início de semana" configurado pelo
+  workspace — ou seja, terceiriza a decisão em vez de resolvê-la.
+- **Domingo vs. segunda é empate documentado, não erro de pesquisa**: a norma técnica brasileira
+  (ABNT NBR 5892:2019) fixa domingo; a ISO 8601 fixa segunda; o hábito prático brasileiro trata
+  segunda como "início da semana de trabalho". **Decisão: segunda-feira de manhã, como convenção
+  de casa DECLARADA — não como "padrão de mercado"** (não existe um), porque é quando o conteúdo do
+  resumo (a semana de compromissos) corresponde à unidade mental de quem recebe, e evita competir
+  por atenção com o próprio culto de domingo.
+- **A estrutura "resumo semanal + lembrete de véspera" já é o padrão de maior eficácia encontrado**:
+  um ensaio clínico randomizado (Steiner et al., *Am J Manag Care* 2018;24(8):377-384 — 54.066
+  pacientes) mediu taxa de falta de 4,4% com dois lembretes espaçados (alguns dias antes + véspera)
+  contra 5,3–5,8% com um só. O par que este sistema já tinha desenhado replica exatamente esse
+  padrão vencedor — **não há indicação de que seja necessário um terceiro lembrete**, e não há
+  evidência de fadiga de notificação nesse volume (2 toques por evento).
+- Relatório completo: `pesquisa-cadencia-lembretes.md` (agente de pesquisa, 19/08/2026 — fontes:
+  7shifts, Deputy, Sling, Homebase, Clockify, ABNT NBR 5892:2019, ISO 8601, Steiner et al. 2018).
+
+**Formatação e redação:**
+- **Sintaxe confirmada contra a página oficial do WhatsApp Help Center** (faq.whatsapp.com):
+  negrito é `*texto*` (o que já se usava estava certo); monoespaçado são TRÊS crases, não uma;
+  listas/citação existem oficialmente desde fev/2024, mas **sem confirmação de que renderizam como
+  lista de verdade quando a mensagem chega pronta via API de terceiro** (em vez de digitada no
+  app) — por isso as mensagens continuam usando o caractere "•" à mão, o único formato garantido em
+  qualquer cliente.
+- **Estrutura em 3 blocos** (Nielsen Norman Group + práticas de mensagem transacional):
+  identificação (quem manda, 1ª linha, negrito só no nome — o remetente ausente é o erro mais
+  citado que faz mensagem automática parecer spam) → corpo (rótulo em negrito + valor, sem
+  parágrafo corrido) → fechamento cordial, sem negrito extra. 2 emojis por mensagem, cada um com
+  função de sinalização, dentro da faixa de 1–3 apontada como profissional-porém-cordial.
+- **O texto das duas mensagens agora se identifica** com `config.identidade.titulo` (dado
+  configurável, nunca cravado — §0 do `AGENTS.md`) na primeira linha — gap real que a pesquisa
+  encontrou e que a versão anterior não tinha.
+- Relatório completo: `pesquisa-formatacao-whatsapp.md` (agente de pesquisa, 19/08/2026 — fonte
+  primária: WhatsApp Help Center; UX writing: Nielsen Norman Group).
+
+> Os dois relatórios completos foram salvos no scratchpad da sessão que os produziu, não neste
+> repositório — as conclusões e citações relevantes estão resumidas acima e nos comentários do
+> próprio `scripts/vps/lembrete_individual.py`.
 
 **Onde vive:** [`scripts/vps/lembrete_individual.py`](../scripts/vps/lembrete_individual.py) — espelho
 versionado, mesma pasta e mesmo `STOP` do `lembrete_escala.py` (kill-switch compartilhado), mesma
@@ -99,10 +150,10 @@ real na própria VPS** (skill `int-evolution-api`, 19/08/2026): dígitos com DDI
 `@s.whatsapp.net` — diferente do envio a grupo, que usa `@g.us`.
 
 **Autoteste** (não entra no `npm run gate` — Python não é parte da esteira JS deste projeto, mesma
-fronteira do `lembrete_escala.py`, que também nunca entrou): 19 casos, dado fabricado, sem rede —
+fronteira do `lembrete_escala.py`, que também nunca entrou): 22 casos, dado fabricado, sem rede —
 seleção (quem recebe o quê, nas duas pontas: com/sem telefone, com/sem turno, Santa Ceia sempre
-fora) e composição da mensagem (saudação, data, ordenação). `python3
-scripts/vps/autoteste_lembrete_individual.py`.
+fora) e composição da mensagem (saudação, identificação, rótulos em negrito, ordenação, ausência de
+sintaxe de lista não confirmada). `python3 scripts/vps/autoteste_lembrete_individual.py`.
 
 **O que falta para ligar de verdade:** o mesmo bloqueio de sempre — o número `551194950100` ainda
 não está conectado (§2 acima). Instalar o script na VPS e configurar o cron é o mesmo passo 3

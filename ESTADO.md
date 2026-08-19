@@ -5,7 +5,7 @@
 > **Última atualização:** 19/08/2026 · **Fuso:** America/São_Paulo
 >
 > **Cadeia de navegação, nesta ordem:**
-> **`ESTADO.md` (você está aqui)** → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-19-c.md) → [`BACKLOG.md`](BACKLOG.md)
+> **`ESTADO.md` (você está aqui)** → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-19-d.md) → [`BACKLOG.md`](BACKLOG.md)
 > *onde estamos · o que aconteceu na última sessão e por quê · o que fazer a seguir*
 >
 > **Reconstruir do zero (portabilidade entre IAs):** [`docs/RECONSTRUIR.md`](docs/RECONSTRUIR.md)
@@ -44,7 +44,25 @@ agente/harness ou trabalho paralelo em arquivos disjuntos.
 e conferida, o nome do cliente fora do código. **P0 e P1 estão sem item aberto** — a única
 credencial em aberto é a chave do motor, **opcional**; nada trava sem ela.
 
-## O mais recente: lembrete individual no WhatsApp — telefone cadastrado, duas mensagens (S-064, 19/08)
+## O mais recente: pesquisa ANTES do código — cadência e formatação do lembrete (S-065, 19/08)
+
+Depois do S-064, o Flavio perguntou o texto das mensagens e se o resumo semanal deveria disparar
+segunda em vez de domingo, com instrução explícita: *"coloque os agentes de pesquisa antes de você
+codar ou tomar qualquer decisão."* Cumprido: dois agentes de pesquisa independentes, em paralelo,
+relatórios lidos por inteiro, só então código. **Cadência:** não há padrão de mercado único (líderes
+do setor disparam ao publicar, não em dia fixo); domingo×segunda é empate documentado (ABNT NBR
+5892 vs. ISO 8601) — decisão: **segunda-feira de manhã**, convenção de casa DECLARADA, não "padrão
+de mercado". A estrutura já desenhada (resumo semanal + véspera) replica o padrão de maior eficácia
+achado na literatura (Steiner et al. 2018, AJMC: 4,4% de falta com 2 lembretes vs. 5,3–5,8% com 1)
+— sem necessidade de terceiro lembrete. **Formatação:** confirmado contra o WhatsApp Help Center
+oficial (negrito já certo; monoespaçado é 3 crases, não 1; listas via API sem confirmação de
+renderização, mantido "•" manual); achado real — as mensagens não se identificavam (erro nº1
+apontado pela pesquisa), corrigido com `config.identidade.titulo`. Construído: `lembrete_individual.py`
+reescrito (cron→segunda, 3 blocos, `main()` lê `config.json`), `primeiro_nome()` morta removida,
+autoteste 19→**22 casos**. Gate: **37 passos**, verde. Detalhe:
+[`HANDOFF_2026-08-19-d.md`](docs/handoff/HANDOFF_2026-08-19-d.md) · [DB-061](DIARIO_DE_BORDO.md).
+
+## O anterior: lembrete individual no WhatsApp — telefone cadastrado, duas mensagens (S-064, 19/08)
 
 O Flavio perguntou a URL da versão nova e como cadastrar nome/telefone para o lembrete. Perguntei se
 era para trocar o lembrete de GRUPO (S-051, sem telefone de ninguém, de propósito) por individual,
