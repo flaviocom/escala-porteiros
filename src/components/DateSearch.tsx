@@ -139,6 +139,8 @@ export const DateSearch: React.FC<DateSearchProps> = ({ value, onChange, onDateR
         </div>
 
         <input
+          id="busca-texto"
+          name="busca-texto"
           type="text"
           value={value}
           onChange={handleTextChange}
@@ -178,6 +180,8 @@ export const DateSearch: React.FC<DateSearchProps> = ({ value, onChange, onDateR
           */}
           <div className="relative flex items-center h-full">
             <input
+              id="busca-data"
+              name="busca-data"
               ref={campoDeData}
               type="date"
               tabIndex={-1}

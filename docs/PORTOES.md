@@ -275,16 +275,27 @@ verdade, pasta de build ainda ausente, termo do cliente num `.md` fora do escopo
 passam.
 
 ### 17. `selo:autoteste` — prova que o selo morde, nas duas pontas
-**6 casos**, num repositório git de mentira criado a cada rodada: (A) árvore limpa após gravar →
+**7 casos**, num repositório git de mentira criado a cada rodada: (A) árvore limpa após gravar →
 OK; (B) mutação real de um arquivo depois de gravar → ACUSA; (C) 🔴 **o defeito de 19/08/2026** —
 mesmo conteúdo, só troca de staged para unstaged entre gravar e conferir → NÃO pode acusar (era
 exatamente aqui que o selo antigo dava falso positivo); (D) arquivo novo não rastreado → ACUSA;
 (E) arquivo rastreado apagado do disco → ACUSA; (F) nunca gravou selo → recusa com a mensagem
-certa, não finge "tudo bem".
+certa, não finge "tudo bem"; (G) arquivo renomeado e staged → ACUSA (o caminho mudou de verdade —
+ver nota abaixo sobre por que este NÃO é o mesmo defeito do caso C).
 
 O caso C é o que faltava desde que este portão nasceu (05/08/2026, sem autoteste nenhum): ele prova
 a ponta que o selo NÃO deve acusar, e foi exatamente a ausência dessa prova que deixou o segundo
 defeito sobreviver sem ninguém notar. Ver o passo 37 (`selo:gravar`) para o defeito por dentro.
+
+**Caso G, achado pela auditoria cega do conserto acima (mesmo dia):** `l.slice(3).trim()` tratava a
+linha `R  antigo.txt -> novo.txt` do `git status --porcelain` como se fosse UM nome de arquivo —
+um caminho fantasma, que não existe em disco. A auditoria descreveu isto como "a mesma classe" do
+caso C; **não é** — no caso C nada muda de verdade (mesmo arquivo, mesmo caminho, mesmos bytes, só
+a representação da medição difere), enquanto numa renomeação o CAMINHO muda de verdade
+(`antigo.txt` some, `novo.txt` aparece), e isso é uma edição real da árvore, coerente com a regra
+deste portão ("vale para qualquer edição entre o gate e o commit"). O selo **continua acusando**
+depois de uma renomeação, antes e depois do conserto — o que mudou foi trocar o candidato fantasma
+pelo caminho real, para o diagnóstico apontar para algo que existe.
 
 ### 18. `generico:docs` — o nome do cliente na DOCUMENTAÇÃO é inventário fechado
 **População:** todo `.md` vivo do repositório · **isentos declarados:** os append-only
@@ -651,6 +662,12 @@ entrou na história afirmando `EXIT_GATE=0` — o gate tinha sido verde minutos 
 >
 > Ver o passo 17 (`selo:autoteste`) — o selo nunca tinha autoteste, e foi exatamente por faltar um
 > que este defeito sobreviveu sem ninguém notar.
+
+> 🟡 **Terceiro achado, da auditoria cega do conserto acima** (mesmo dia): renomear um arquivo
+> staged fazia o parser tratar a linha `R  antigo.txt -> novo.txt` do `status --porcelain` como um
+> nome de arquivo fantasma. Diferente do segundo defeito: aqui o CAMINHO muda de verdade, então o
+> selo **deve** continuar acusando — e continua, antes e depois do conserto. O que mudou foi o
+> candidato virar o caminho real (`novo.txt`) em vez de lixo. Ver caso G do autoteste (passo 17).
 
 ## Fora do GATE, de propósito
 

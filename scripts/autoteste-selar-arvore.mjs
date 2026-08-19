@@ -11,10 +11,18 @@
  * zero bytes de diferença real. Regra do método: *toda trava nova nasce com autoteste, no mesmo
  * commit que a prova*.
  *
+ * 🔴 CASO G ACRESCENTADO NO MESMO DIA, pela auditoria cega independente do conserto acima: ela achou
+ * que renomear um arquivo staged fazia `l.slice(3).trim()` tratar a linha inteira do `git status`
+ * (`"antigo.txt -> novo.txt"`) como nome de arquivo — um caminho fantasma que não existe no disco.
+ * Isso é higiene de parsing, NÃO o mesmo defeito dos casos A-F: uma renomeação MUDA o caminho de
+ * verdade (`antigo.txt` some, `novo.txt` aparece), então o selo deve continuar acusando — e o caso G
+ * prova exatamente isso, com o candidato real no lugar do fantasma. Ver o comentário em
+ * `selar-arvore.mjs` sobre por que isto não é "a mesma classe" do defeito de staged/unstaged.
+ *
  * Uso: node scripts/autoteste-selar-arvore.mjs
  */
 import { execFileSync } from 'node:child_process'
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, renameSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -162,7 +170,28 @@ const caso = (nome, ok, detalhe) => {
   }
 }
 
-const total = 6
+// ---- G: renomear um arquivo staged → TEM de acusar (o caminho mudou de verdade), mas com o
+//         candidato real (novo.txt), não com o texto fantasma "antigo -> novo" que o parser antigo
+//         produzia (achado pela auditoria cega, 19/08/2026) --------------------------------------
+{
+  const raiz = repoTemporario()
+  try {
+    commitar(raiz, { 'antigo.txt': 'conteúdo estável, nunca muda\r\n' })
+    gravar(raiz)
+    renameSync(join(raiz, 'antigo.txt'), join(raiz, 'novo.txt')) // mv, sem `git add` ainda
+    execFileSync('git', ['add', '-A'], { cwd: raiz }) // git detecta a renomeação: "R  antigo.txt -> novo.txt"
+    const ok = conferir(raiz)
+    caso(
+      'arquivo renomeado e staged → ACUSA (o caminho mudou; não é o defeito de staged/unstaged)',
+      !ok,
+      ok ? 'renomeação passou despercebida — o selo deveria pedir novo gate' : undefined,
+    )
+  } finally {
+    rmSync(raiz, { recursive: true, force: true })
+  }
+}
+
+const total = 7
 console.log(`\n  ${falhas ? '🔴' : '✅'} ${total - falhas} de ${total} casos corretos`)
 if (falhas) console.log('  O selo NÃO está medindo o que diz medir.')
 process.exit(falhas ? 1 : 0)

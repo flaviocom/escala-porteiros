@@ -264,7 +264,7 @@
       "caminho": "scripts/autoteste-selar-arvore.mjs",
       "ramo": "metodo",
       "gatilho": "npm run selo:autoteste (17º passo do gate)",
-      "proposito": "prova que o selo morde: mutação real acusa, transição staged/unstaged do mesmo conteúdo NÃO acusa (achado de 19/08/2026)",
+      "proposito": "prova que o selo morde: mutação real acusa, transição staged/unstaged do mesmo conteúdo NÃO acusa (achado de 19/08/2026), renomeação staged ACUSA com o caminho real (achado da auditoria cega, mesmo dia)",
       "portao": "npm run gate — exit 0; nasceu no mesmo commit da correção que ele prova"
     },
     {

@@ -4,7 +4,7 @@
 > como reverter.** Documento **append-only**, fatiado por período ao estourar o teto. **Nada é
 > excluído, nunca.**
 >
-> **Cadeia de navegação:** [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-19.md) → [`BACKLOG.md`](BACKLOG.md)
+> **Cadeia de navegação:** [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-19-b.md) → [`BACKLOG.md`](BACKLOG.md)
 > **Roteador:** [`AGENTS.md`](AGENTS.md) ·
 > **Solicitações:** [`docs/solicitacoes/INDICE_DE_SOLICITACOES.md`](docs/solicitacoes/INDICE_DE_SOLICITACOES.md) ·
 > **Histórico:** [`docs/historico/INDICE.md`](docs/historico/INDICE.md)
@@ -1801,3 +1801,61 @@ passo 37 (`selo:gravar`).
 blob-do-índice com bytes-do-disco (o defeito volta), `autoteste-selar-arvore.mjs` some, o gate volta
 a 36 passos. Produto: **nenhuma linha de `src/` tocada** — o selo é infraestrutura do método, não do
 produto; reverter não muda nada que os irmãos veem.
+
+## DB-059 · 19/08/2026 — a pergunta certa achou duas lacunas: sem olho no navegador, sem auditor de verdade
+
+**O pedido (S-063):** o Flavio perguntou, direto, sobre o fechamento do S-062 — *"Fez verificação
+visual autônoma e completa e detalhada? os erros/folgas foram investigados, corrigidos, verificados,
+auditados e resolvidos autonomamente. Ficou alguma pendencia da tarefa anterior nas entrelinhas?
+Seja sincero!"*
+
+**A resposta honesta foi não, em dois pontos.** O fechamento do S-062 tinha rodado `curl` nas duas
+URLs (200 OK) e chamado isso de "verificado" — mas `curl` prova que o servidor responde, não que a
+tela renderiza certo. E tinha feito CONSTRÓI, VALIDA e "AUDITA" com o mesmo agente, sem nenhuma
+segunda frente mandada a REFUTAR — autoverificação, não auditoria, contra o próprio método (papel
+AUDITA precisa ser independente, cego, adversarial).
+
+**1) Verificação visual, ao vivo, num navegador de verdade.** Produção: Escala, Estatísticas (17
+irmãos, totais batendo) e Validação (17/17 regras aprovadas) renderizam certo, sem erro novo no
+console. Trilha genérica: vocabulário neutro confirmado na tela ("Plantonista", sem nome nem logo do
+cliente), dados de demonstração corretos. Achado no caminho — real, mas **pré-existente**, não
+introduzido pelo S-062: dois campos de formulário em `src/components/DateSearch.tsx` (a busca de
+texto e o campo de data invisível por cima do botão) sem `id`/`name`, disparando o aviso de
+acessibilidade do Chrome nas DUAS trilhas. Corrigido: `id="busca-texto"`/`id="busca-data"` (e
+`name` correspondente) nos dois.
+
+**2) Auditoria independente, cega, mandada a refutar.** Um agente separado escreveu sua própria
+especificação de padrão-ouro para "impressão digital de árvore git sem falso positivo/negativo"
+ANTES de olhar o código, comparou propriedade a propriedade, e tentou ativamente quebrar o conserto
+do S-062 — inclusive reproduzindo cenários ao vivo, não só lendo código. Achou um ponto real:
+renomear um arquivo staged (`mv` + `git add`) faz `git status --porcelain` devolver
+`R  antigo.txt -> novo.txt`, e `l.slice(3).trim())` — presente desde a primeira versão do arquivo —
+tratava a linha INTEIRA como um nome de arquivo. Esse "arquivo" fantasma nunca bate com nada em
+disco, e suja a impressão digital com lixo em vez do caminho real.
+
+**O julgamento não aceitou a conclusão da auditoria de olhos fechados.** Ela descreveu isto como "a
+mesma classe" do defeito do S-062 (falso positivo que não deveria acusar) — mas reproduzindo o
+cenário à mão, ficou claro que **não é a mesma classe**: no S-062, nada mudava de verdade (mesmo
+arquivo, mesmo caminho, mesmos bytes — só a REPRESENTAÇÃO da medição diferia). Numa renomeação, o
+CAMINHO muda de verdade (`antigo.txt` some, `novo.txt` aparece) — e isso é uma edição real da
+árvore, coberta pela própria regra deste selo ("vale para qualquer edição feita entre o gate e o
+commit"). **O selo deve continuar acusando depois de uma renomeação — e continua, antes e depois do
+conserto**, testado nos dois sentidos. O que precisava de conserto era só a higiene do parsing: o
+candidato vira o caminho real (`novo.txt`, extraído do separador literal ` -> `) em vez de um texto
+que não é caminho nenhum.
+
+**Autoteste corrigido nas duas pontas:** caso G novo (renomear e conferir → **ACUSA**, com o
+candidato real) — a primeira versão do caso tinha a expectativa INVERTIDA (esperava NÃO acusar,
+copiando a leitura da auditoria sem questionar), corrigida antes de entrar no gate. `selo:autoteste`:
+6 → **7 casos**, todos verdes.
+
+**Gate:** 37 passos, `EXIT_GATE=0`, rodado depois de todas as mudanças (a11y + parsing de rename +
+autoteste + documentação). `docs/PORTOES.md`, `docs/OPERACAO.md` e `docs/capacidades.json`
+atualizados com o terceiro achado.
+
+**Como reverter.** `git revert` do commit desta entrada: `DateSearch.tsx` perde os `id`/`name` (o
+aviso de acessibilidade volta, sem quebrar nada funcionalmente), `selar-arvore.mjs` volta a produzir
+o candidato fantasma numa renomeação staged (o selo continua acusando renomeação de qualquer forma,
+só que com uma mensagem menos clara), o caso G do autoteste some (6 casos). Produto: a mudança em
+`DateSearch.tsx` é a única que toca `src/` — cosmética/acessibilidade, sem mudança de comportamento
+visível para os irmãos.

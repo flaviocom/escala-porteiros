@@ -5,7 +5,7 @@
 > **Última atualização:** 19/08/2026 · **Fuso:** America/São_Paulo
 >
 > **Cadeia de navegação, nesta ordem:**
-> **`ESTADO.md` (você está aqui)** → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-19.md) → [`BACKLOG.md`](BACKLOG.md)
+> **`ESTADO.md` (você está aqui)** → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-19-b.md) → [`BACKLOG.md`](BACKLOG.md)
 > *onde estamos · o que aconteceu na última sessão e por quê · o que fazer a seguir*
 >
 > **Reconstruir do zero (portabilidade entre IAs):** [`docs/RECONSTRUIR.md`](docs/RECONSTRUIR.md)
@@ -44,7 +44,26 @@ agente/harness ou trabalho paralelo em arquivos disjuntos.
 e conferida, o nome do cliente fora do código. **P0 e P1 estão sem item aberto** — a única
 credencial em aberto é a chave do motor, **opcional**; nada trava sem ela.
 
-## O mais recente: `retomaescala` funcionou, e a varredura achou o selo mentindo (S-062, 19/08)
+## O mais recente: a pergunta certa achou o que o fechamento anterior não tinha feito (S-063, 19/08)
+
+O Flavio perguntou, direto, se o fechamento do S-062 tinha verificação visual e auditoria de
+verdade — *"Seja sincero!"*. A resposta honesta era **não**, em dois pontos: só `curl` (prova que o
+servidor responde, não que a tela renderiza certo) e nenhuma auditoria independente (CONSTRÓI,
+VALIDA e "AUDITA" com o mesmo agente é autoverificação, não auditoria). Fechadas as duas,
+autonomamente. **(1) Navegador de verdade** nas duas trilhas: produção e genérica renderizam certo,
+Estatísticas e Validação (17/17 regras) conferidas, vocabulário neutro confirmado na tela. Achado
+real e **pré-existente** (não do S-062): 2 campos sem `id`/`name` em `DateSearch.tsx` — corrigido.
+**(2) Agente auditor independente**, mandado a REFUTAR o conserto do selo com comparação cega —
+achou um **terceiro** problema de parsing: renomear arquivo staged produzia `R  antigo -> novo` no
+`git status --porcelain`, tratado como um único "arquivo" fantasma. Julgamento próprio sobre o
+achado: a auditoria chamou isso de "mesma classe" do defeito do S-062, mas **não é** — renomear
+MUDA o caminho de verdade, então o selo deve continuar acusando (e continua, antes e depois do
+conserto); só a higiene do parsing precisava de conserto. Caso G novo no autoteste (6→7 casos), com
+a expectativa corrigida (a primeira versão copiou a leitura errada da auditoria). Gate: **37
+passos**, verde. Detalhe: [`HANDOFF_2026-08-19-b.md`](docs/handoff/HANDOFF_2026-08-19-b.md) ·
+[DB-059](DIARIO_DE_BORDO.md).
+
+## O anterior: `retomaescala` funcionou, e a varredura achou o selo mentindo (S-062, 19/08)
 
 Primeira retomada de sessão usando a palavra `retomaescala` — funcionou, sem o dono reexplicar
 nada. A varredura de rotina (VPS reconferida: número `551194950100` ainda não conectado; nada

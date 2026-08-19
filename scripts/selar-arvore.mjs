@@ -22,6 +22,24 @@
  * Não é paranoia com agente paralelo: vale para qualquer edição feita entre o gate e o commit —
  * inclusive as minhas, que é o caso comum. **Um veredito só vale para o estado que ele mediu.**
  *
+ * 🔴 TERCEIRO ACHADO, da auditoria cega independente do conserto acima (mesmo dia, mesma sessão) —
+ * higiene de parsing, NÃO um falso positivo: renomear um arquivo staged (`git add` depois de `mv`)
+ * faz o `git status --porcelain` devolver uma linha `R  antigo.txt -> novo.txt`, e `l.slice(3).trim()`
+ * — que existia desde a primeira versão deste arquivo — tratava a linha INTEIRA
+ * (`"antigo.txt -> novo.txt"`) como se fosse um nome de arquivo. Esse "arquivo" fantasma nunca bate
+ * com nada em disco, vira `:AUSENTE` no cálculo, e suja a impressão digital com lixo em vez do
+ * caminho real.
+ *
+ * A auditoria descreveu isto como "a mesma classe do segundo defeito" — mas NÃO é: no segundo
+ * defeito, nada mudava de verdade (mesmo arquivo, mesmo caminho, mesmos bytes, só a REPRESENTAÇÃO da
+ * medição diferia). Numa renomeação, o CAMINHO em si muda — `antigo.txt` deixa de existir,
+ * `novo.txt` passa a existir — e isto é uma mudança real na árvore, coerente com a regra deste
+ * arquivo ("vale para qualquer edição feita entre o gate e o commit"). **O selo tem de continuar
+ * acusando depois de uma renomeação — e continua, antes e depois deste conserto.** O que o conserto
+ * faz é trocar o candidato fantasma pelo caminho real (`novo.txt`, extraído do separador literal
+ * ` -> `), então o diagnóstico aponta para um arquivo que existe, em vez de um texto que não é
+ * caminho nenhum. Ver caso G do autoteste — que prova ACUSA, não o contrário.
+ *
  * 🔴 SEGUNDO DEFEITO, achado em 19/08/2026 (retomada de sessão, `retomaescala`): a primeira versão
  * misturava DUAS representações do mesmo arquivo. Para o que estava no ÍNDICE (staged/committed),
  * usava o hash de BLOB do git (`ls-files -s`) — que o `core.autocrlf=true` normaliza para LF antes
@@ -69,10 +87,20 @@ function impressao(raiz = RAIZ) {
     arquivo por arquivo é o que permite tratar cada um individualmente abaixo — inclusive um
     arquivo novo dentro de uma pasta nova, que uma linha resumida esconderia em silêncio.
   */
+  /*
+    🔴 RENOMEAÇÃO NÃO É UM NOME DE ARQUIVO — terceiro defeito, ver comentário no topo do arquivo.
+    `git status --porcelain` reporta rename como `XY antigo -> novo`. O separador é o literal
+    ` -> ` (espaço, seta, espaço); sem tratar isso, a linha inteira vira um "arquivo" que não existe
+    em lugar nenhum do disco.
+  */
   const sujo = execFileSync('git', ['status', '--porcelain', '-uall'], { cwd: raiz, encoding: 'utf8' })
     .split(String.fromCharCode(10))
     .filter((l) => l.trim())
     .map((l) => l.slice(3).trim())
+    .map((caminho) => {
+      const seta = caminho.indexOf(' -> ')
+      return seta >= 0 ? caminho.slice(seta + 4).trim() : caminho
+    })
 
   const candidatos = [...new Set([...rastreados, ...sujo])].sort()
 

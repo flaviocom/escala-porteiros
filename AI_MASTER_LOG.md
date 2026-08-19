@@ -4,7 +4,7 @@
 > O **porquê** de cada decisão vive no [`DIARIO_DE_BORDO.md`](DIARIO_DE_BORDO.md); aqui fica o
 > registro do que foi feito, passo a passo.
 >
-> **Cadeia de navegação:** [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-19.md) → [`BACKLOG.md`](BACKLOG.md)
+> **Cadeia de navegação:** [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-19-b.md) → [`BACKLOG.md`](BACKLOG.md)
 > **Roteador:** [`AGENTS.md`](AGENTS.md) ·
 > **Solicitações:** [`docs/solicitacoes/INDICE_DE_SOLICITACOES.md`](docs/solicitacoes/INDICE_DE_SOLICITACOES.md) ·
 > **Fatias arquivadas:** [`docs/historico/INDICE.md`](docs/historico/INDICE.md)
@@ -1031,3 +1031,21 @@ arquivo de representação entre gravar e conferir, sem nenhuma mudança real de
 **37 passos** (`selo:autoteste` 17º). `docs/PORTOES.md`/`OPERACAO.md` renumerados. VPS reconferida:
 número `551194950100` ainda não conectado, nada mudou. `npm run gate`: 37 passos, `EXIT_GATE=0`.
 **Solicitação:** S-062.
+
+---
+
+## 19/08/2026 — S-063: a pergunta direta do dono achou duas lacunas no fechamento do S-062
+
+Ele perguntou se a verificação visual e a auditoria do S-062 tinham sido feitas de verdade —
+resposta honesta: não. (1) Verificação visual ao vivo (chrome-devtools MCP): produção e trilha
+genérica renderizam certo, Estatísticas e Validação (17/17 regras) conferidas, sem erro novo no
+console. Achado real e pré-existente (não do S-062): `DateSearch.tsx`, 2 campos sem `id`/`name` —
+corrigido. (2) Agente auditor independente mandado a REFUTAR o conserto do selo, comparação cega —
+achou um terceiro problema de parsing: renomear arquivo staged produz `R  antigo -> novo` no `git
+status --porcelain`, e o parser tratava a linha inteira como nome de arquivo (candidato fantasma).
+Julgamento próprio sobre o achado da auditoria: ela chamou isto de "mesma classe" do defeito do
+S-062, mas não é — renomear MUDA o caminho de verdade, então o selo deve continuar acusando (e
+continua, antes e depois do conserto); só a higiene do parsing precisava de conserto (caminho real
+no lugar do fantasma). Caso G novo no autoteste (6→7), com a expectativa corrigida (a primeira
+versão copiou a leitura errada da auditoria). Gate: 37 passos, `EXIT_GATE=0`.
+**Solicitação:** S-063.
