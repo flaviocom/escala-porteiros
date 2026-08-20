@@ -744,3 +744,15 @@ correções desta rodada.
 
 **Como reverter.** Nada a reverter aqui. No `escala-geral`, `git revert` dos commits desta entrada
 volta o cofre/rascunho a colidir entre repositórios (não recomendado) e remove o upload de logo.
+
+**Fechamento, três rodadas de auditoria — nenhuma se satisfez com "parece corrigido":** a 2ª
+auditoria independente não confiou na 1ª e achou uma SEGUNDA colisão da mesma classe —
+`App.tsx` gravava `myBrotherId`/`showMyShiftsOnly` sem namespace, no mesmo arquivo que tinha
+acabado de ser tocado para o logo, e um teste (`cofre.test.ts`) tinha virado vazio (checava a
+chave antiga, sempre passava sobre string vazia). Corrigido: namespace movido para DENTRO das três
+funções de preferência (não em cada chamada, para nenhum uso futuro esquecer), teste corrigido com
+guarda explícita contra passar vazio de novo. A 3ª auditoria, pedida para não confiar nas duas
+primeiras, varreu o repositório inteiro por qualquer forma de estado por origem
+(`localStorage`/`sessionStorage`/cookies/IndexedDB/service worker) e **fechou de verdade**: só 4
+arquivos usam `localStorage`, todos corretos; nenhuma outra superfície. 421/421 testes, build
+limpo, três vezes.
