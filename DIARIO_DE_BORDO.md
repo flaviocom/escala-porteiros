@@ -694,3 +694,53 @@ sentido dentro do repositório de produção com as duas trilhas coexistindo).
 `git revert` dos commits desta sessão apaga as duas telas e volta ao estado copiado — ou, mais
 simples, o repositório inteiro pode ser apagado sem afetar produção, já que nada aponta para ele
 de dentro do `escala-porteiros`.
+
+## DB-066 · 20/08/2026 — o Flavio testou ao vivo e achou o que a auditoria de agente não achou: dados de um repositório vazando para outro
+
+**O pedido:** o Flavio abriu `escala-geral` no próprio navegador (mesma conta, mesma máquina do
+`escala-porteiros`) e viu nomes reais dos 16 porteiros e "Escala Porteiros · Jd. São Luiz" — numa
+escala que devia estar zerada. Junto, apontou: o botão de tirar pessoa da escala (um X solto)
+confunde com fechar o cartão; faltou a tela de logotipo (estava no desenho original, P4.w-5, e eu
+não construí); e perguntou, direto, se o motor foi validado com "diferentes tipos e nomes de
+escalas completas" ou se eu "não validei nada" — e pediu, explicitamente, que o motor fosse "muito
+mais parrudo" e "exaustivamente testado" que o do `escala-porteiros`.
+
+**A causa raiz do vazamento, achada e corrigida em `escala-geral` (não neste repositório):**
+`localStorage` do navegador é isolado por ORIGEM (`https://flaviocom.github.io`), não por caminho.
+`escala-porteiros` e `escala-geral` vivem na MESMA origem — só o caminho muda (`/escala-porteiros/`
+vs `/escala-geral/`). O cofre (`cofre.ts`) e o rascunho (`rascunho.ts`) do `escala-geral` usavam
+chave CRAVADA como `'escala-porteiros:cofre'` e `'escala-porteiros:rascunho:v1'` (copiada tal e
+qual na cópia inicial do codebase) — então o navegador do Flavio, que já tinha um rascunho salvo do
+`escala-porteiros`, entregava ESSE rascunho para o `escala-geral` também. Corrigido: a chave agora
+nasce de `import.meta.env.BASE_URL` (o `base` do próprio build, já obrigatório para o Pages
+funcionar) — cada repositório-cliente ganha isolamento automático, sem precisar editar a constante
+a cada clone do template. `escala-porteiros` não foi tocado: como só a chave NOVA mudou, a colisão
+desaparece dos dois lados sem mexer em produção.
+
+**Achado real e honesto — a auditoria de agente cego (DB-065) não pegou isso.** Ela auditou o
+código NOVO (as duas telas) linha a linha, mas não pensou em testar a interação ENTRE os dois
+repositórios no mesmo navegador — é um defeito de escopo da auditoria, não uma mentira dela. Fica
+registrado como aprendizado: auditoria de código sozinha não substitui testar o cenário real de
+uso (o dono abrindo os dois sites na mesma sessão de navegador), que só apareceu porque o Flavio
+testou ao vivo, exatamente como o método pede.
+
+**Também corrigido, no `escala-geral`:** upload de logotipo pela tela (pesquisa real antes de
+construir — uploadcare.com, saasui.design — preview antes de confirmar, remoção de um clique, erro
+que diz o que houve; guardado como `data:image/...;base64` direto em `config.identidade.logo`,
+publica junto do resto do `config.json`, sem commit binário separado); botão "Tirar da escala"
+trocado de X solto para ícone+texto, removendo a ambiguidade com "fechar"; varredura de malha
+sintética subiu de 200 para 2000 cenários (elenco até 60, era 26) mais 6 casos-limite explícitos
+(malha máxima, elenco de 1, elenco vazio, período plurianual, capacidade 1, malha de 1 dia só).
+
+**Resposta honesta à pergunta "validou diferentes tipos de escala ou não validou nada":** validei a
+FORMA da malha exaustivamente (2000 cenários + casos-limite), sempre com nomes genéricos
+incrementais. NÃO validei ainda perfis de identidade distintos (hospital, segurança, delivery)
+gerando e publicando escalas completas ponta a ponta, cada um. Registrado como pendência real em
+`escala-geral/BACKLOG.md` P2.4 — não escondido.
+
+**Gate:** não rodado aqui — nenhuma linha do `escala-porteiros` mudou. No `escala-geral`: 421/421
+testes (era 411), typecheck limpo, build limpo, segunda auditoria independente disparada sobre as
+correções desta rodada.
+
+**Como reverter.** Nada a reverter aqui. No `escala-geral`, `git revert` dos commits desta entrada
+volta o cofre/rascunho a colidir entre repositórios (não recomendado) e remove o upload de logo.
