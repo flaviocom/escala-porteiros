@@ -533,3 +533,164 @@ no próprio instrumento de medição. Corrigido: contagem automática (`total` i
 a mais do que busca (defeito real reintroduzido), o telefone inválido volta a sumir em silêncio, os
 12 campos do painel voltam a ficar sem `id`/`name`, e os dois autotestes voltam ao contador manual.
 Produto visível aos porteiros: nenhuma mudança — nada disto está ligado a cron nenhum ainda.
+
+## DB-063 · 20/08/2026 — a cópia em `D:` estava 5 dias parada, e não era esquecimento
+
+**O pedido (S-067):** retomar os trabalhos com um check-in completo (o que falta, o que foi
+definido, próximos passos, aprendizados, documentação) — e, no meio da pergunta, uma dúvida direta
+e legítima do Flavio: *"por que este projeto não está em D? [...] qual deles é o atualizado? Se for
+possível, você colocá-lo em D?"* — motivada pelo medo real de perder o projeto se precisar
+reinstalar o Windows.
+
+**Apurado, não presumido.** `D:\Antigravity\Meus-Projetos\escala-porteiros` tinha HEAD em `5e47d54`
+(14/08/2026) — **5 dias atrás** de `C:\Users\oflav\build\escala-porteiros`, que estava em `0ac858b`
+(S-066, 19/08). Não é descuido: é exatamente a isenção já medida e declarada em
+`docs/pre-voo.json` em 04/08 — escrever em `D:` é **~1.775× mais lento** que em `C:` neste
+computador (79,8 s contra 45 ms para 100 arquivos pequenos), então o trabalho corre em `C:` e o
+GitHub é a ponte. `D:` estava limpo (sem edição local perdida), só desatualizado.
+
+**A ação:** `git pull origin main` na cópia de `D:` — puramente git, sem `npm install`, então o
+disco lento pesa bem menos (~90 arquivos alterados/novos, não os ~30 mil de uma instalação).
+Levou minutos (o `fetch` isolado já tinha estourado 2 min antes), mas terminou limpo: `D:` agora
+está **idêntico a `C:`**, `0ac858b`, `git status` sem nenhuma pendência.
+
+**A resposta à pergunta dele, sem meia-verdade:** o projeto **já estava seguro** antes desta sessão
+— é um repositório público no GitHub, e todo commit de `C:` já ia para lá (inclusive o do S-066,
+19/08). O risco de "perder tudo reinstalando o Windows" não existia para o *código*; existia (e
+continua existindo, em menor grau) para qualquer edição feita e ainda não commitada — o que hoje é
+zero, `C:` está limpo. Sincronizar `D:` resolve o desconforto de ter uma cópia local visivelmente
+velha, mas **não muda onde o trabalho deve continuar acontecendo**: mover o desenvolvimento para
+`D:` reintroduziria a mesma lentidão de 1.775× que motivou a cópia em `C:` originalmente — proposta
+de mudar essa arquitetura não foi feita, porque não foi pedida, e o próprio Flavio é quem decide se
+vale a pena investigar o antivírus/disco (P2.11, aberto, dele).
+
+**Levantamento do backlog para o check-in.** Revisados `BACKLOG.md`, `ESTADO.md` inteiros: P0–P8
+não têm nenhum item aberto que dependa de trabalho autônomo do assistente agora — os que restam
+abertos esperam decisão do dono: P0.2 (chave do motor, opcional), P2.11 (investigar o disco/
+antivírus, dele), FASE 2 inteira (`docs/FASE2.md`, nada começa sem decisão dele), P5.2 (política de
+publicação concorrente entre duas pessoas — relê e reaplica, ou outra regra?), P5.6 (ligar CI,
+consome minutos da conta dele), P8.1 (dois portões de citação fazendo o mesmo trabalho — religar o
+mais forte ou fundir no que já está ligado?), e o número `551194950100` do lembrete individual
+ainda não conectado na VPS (ação externa, fora do código).
+
+**Gate:** não rodado nesta entrada — nenhuma mudança de código, só sincronização de repositório e
+levantamento de documentação.
+
+**Como reverter.** Não há o que reverter no código; a sincronização de `D:` é um `git pull`
+estritamente fast-forward (sem merge, sem commit novo) — reverter significaria voltar `D:` a ficar
+desatualizado, o que não protege nada.
+
+## DB-064 · 20/08/2026 — a recusa da busca local (07/08) tinha prazo de validade, e venceu
+
+**O pedido (S-068):** o Flavio revelou o propósito real do projeto — vender esta escala como produto
+genérico, "padrão internacional", para qualquer tipo de escala, não só esta congregação. Perguntado
+o que ele quis dizer com "padrão internacional de interpolação de dados", a resposta dele foi:
+recuperar a pesquisa que já determina o padrão de geração da escala, e — se não achar coerente —
+pesquisar mais fundo. Achei as duas pesquisas (`PESQUISA_2026-08-05-gerar-n-versoes.md`,
+`PESQUISA_2026-08-07-metodos-rostering.md`): coerentes, e já auto-auditadas (erro real achado no
+relatório de origem — teto de 3/mês aplicado a todos quando só 1 pessoa tem teto —, fontes fracas
+descartadas). O que a pesquisa de 07/08 tinha era um **limite explícito**: a recusa da busca local
+pós-GRASP foi medida só contra os 14 pessoas/87 turnos REAIS, com o aviso *"se o elenco ou a malha
+mudarem de FORMA, re-rodar o experimento antes de reabrir a decisão"*. Vender para qualquer cliente é
+exatamente essa mudança de forma. Ele pediu o experimento real, no padrão-ouro.
+
+**O experimento.** `scripts/experimento-busca-local-em-escala.mjs` — NÃO reimplementa a busca local;
+importa e reusa o motor de produção (`gerarVariasVersoes`, `podeAssumir`) e a MESMA régua de
+aceitação lexicográfica do experimento original (`experimento-busca-local.mjs`, 07/08), só variando
+elenco e malha. Duas dimensões: **escala** (14, 25, 45 pessoas, mesma malha da igreja, período
+esticado para manter turnos/pessoa perto do caso real) e **forma** (malha predial 24h — cobertura
+diária, 2 turnos/dia — o caso de uma empresa de segurança/portaria, elenco de 25).
+
+**Resultado medido, não presumido:**
+
+| Cenário | Turnos | Piso | Jain | Trocas |
+|---|---|---|---|---|
+| 14p, malha igreja, 5m | 93 | 4 | 0,9948 | **0** |
+| 25p, malha igreja, 9m | 165 | 11 | 0,9996 | **1** |
+| 45p, malha igreja, 9m | 165 | 22 | 1,0000 | **0** |
+| 25p, malha predial 24h, 1m | 62 | 5 | 0,9952 | **0** |
+
+**3 de 4 cenários deram zero — mas o de 25 pessoas achou 1 troca melhoradora.** Isso é suficiente
+para derrubar a prova de "sempre zero" que sustentava a recusa: a conclusão de 07/08 vale para ESTE
+elenco de 14 pessoas, não para "qualquer escala parecida". Não é um resultado grande (1 troca em
+milhares de atribuições possíveis, e o cenário de 45 pessoas voltou a zero — Jain bateu 1,0000
+exato, sem folga para melhorar), mas é honesto: o script não foi ajustado depois de ver o resultado
+para "dar certo".
+
+**Recomendação, registrada como recomendação, não como decisão automática:** não mudar o motor de
+produção para ESTE cliente (a igreja) — aqui, 0 trocas em 14 pessoas, sem ganho a capturar, e mudar
+o motor exigiria versionar o `refazer` por um ganho que não existe para este caso. Mas para o
+produto GENÉRICO (o que está sendo vendido), a busca local deveria ficar disponível como
+pós-otimização **opcional**, porque o "ganho zero" que justificava não pagar a complexidade não é
+mais universal — em alguns tamanhos/formas de cliente, ela encontra e captura equidade que o GRASP
+sozinho deixa na mesa. Decisão de QUANDO ligar isso (sempre / acima de N pessoas / opt-in por
+cliente) é do dono.
+
+**Sub-perguntas do mesmo pedido, respondidas sem código novo:**
+- **Vender para múltiplos clientes:** GitHub Template Repository é o mecanismo — cada cliente ganha
+  repositório próprio (gerado do template via API ou "Use this template"), com Pages e `#/admin`
+  PRÓPRIOS automaticamente (mesmo código, rota client-side), dado isolado por repositório, token
+  próprio por cliente. Zero backend novo — o desenho atual (admin fala direto com a API do GitHub)
+  já é multi-tenant por construção, só falta o processo de onboarding.
+- **Onde está a tela para mensagem/dias/formatação:** não existe. Mensagem do WhatsApp e formatação
+  vivem em Python na VPS (`scripts/vps/lembrete_individual.py:145,162`), fora do admin. Dias/horários
+  da malha vivem em código (`src/dominio/malha.ts`), fora do admin. As duas são exatamente o escopo
+  do P4.w em `docs/FASE2.md`, já registrado, nunca construído — e agora é pré-requisito de vender
+  (onboarding de cliente novo não pode exigir editar código Python/TypeScript a cada vez).
+
+**Gate:** não rodado — nenhuma mudança em `src/`; o experimento é um script novo em `scripts/`,
+registrado em `package.json` (`experimento:busca-local:escala`), fora do gate por ser medição, não
+produto (mesma categoria do `experimento-busca-local.mjs` original).
+
+**Como reverter.** Remover o script e a linha do `package.json` não apaga o achado — ele fica
+registrado aqui e em S-068. Reverter o CÓDIGO não reverte a CONCLUSÃO: a recusa de 07/08 segue sem
+prova de generalização até que um experimento novo a recupere.
+
+## DB-065 · 20/08/2026 — nasceu o `escala-geral`, e a auditoria cega achou o defeito da própria função que existe para evitar defeitos
+
+**O pedido (S-069):** depois do experimento (DB-064) confirmar que a recusa da busca local não
+generaliza, o Flavio aprovou construir a prova completa: um repositório novo, separado, com escala
+zerada, onde as duas telas que faltavam (malha e mensagem configuráveis) existissem de verdade —
+sem tocar no `escala-porteiros` de produção. Autorização-guarda-chuva explícita: *"Todos os itens
+até o final no padrão ouro em loop. Go!"*
+
+**Construído, em [`flaviocom/escala-geral`](https://github.com/flaviocom/escala-geral)** (público,
+Template Repository, Pages ligado):
+- Codebase copiado da trilha `/generico/` já provada sem texto de cliente — 407 testes
+  reaproveitados, verdes desde o primeiro build.
+- `AbaMalha.tsx`: dias, turnos, horário (informativo — não decide o encaixe, ver nota em
+  `RegraMalha`), recorrência (semanal / a cada N dias / N-ésima ocorrência do mês), rótulo, vagas.
+  Edita `config.malhaPadrao.regras` — nada cravado em código.
+- `AbaMensagem.tsx`: dois modelos de lembrete (resumo semanal, véspera), barra de formatação
+  (negrito/itálico/riscado + emojis respeitosos) e pré-visualização que renderiza a sintaxe oficial
+  do WhatsApp de verdade — não só mostra o texto cru.
+- `malha.varredura.test.ts`: 200 malhas sintéticas semeadas (dias esparsos, 1-3 turnos por dia, as
+  três formas de recorrência, elencos de 6 a 26 pessoas) — **zero falhas** nas duas réguas
+  (catálogo duro + conferência independente), respondendo à exigência de "zero margem de erro"
+  para qualquer forma de escala, não só a da igreja.
+
+**A auditoria independente (agente cego, mandado a refutar) fez o trabalho.** Achou 1 defeito real
+antes de publicar: `completarConfig()` (`src/dados/carregar.ts`) — a MESMA função criada em
+05/08/2026 para impedir que campo ausente virasse "undefined" mudo na tela — montava o retorno
+campo a campo e **não incluía `mensagens`**, o campo novo desta rodada. Efeito: editar a mensagem
+pela tela, publicar com sucesso, e ela sumir em silêncio no próximo carregamento — voltava ao
+modelo de fábrica, sem erro, sem aviso. Os 409 testes da rodada anterior passavam porque nenhum
+deles tocava esse campo. Corrigido (1 linha) + 2 testes de regressão. 411/411, típecheck limpo.
+
+**Comparação lado a lado da mensagem, produção × novo**, com texto real dos dois lados (não
+maquete): publicada como artefato, mostrando que a mesma mudança que hoje exige editar Python na
+VPS do `escala-porteiros` vira clicar numa aba no `escala-geral`.
+
+**Documentação de portabilidade própria** (`AGENTS.md`/`ESTADO.md`/`BACKLOG.md`) criada no
+`escala-geral` desde o nascimento, não depois — registra o que foi feito, o que fica pendente
+(P0 do dono: onboarding sem credencial, ver `FASE2.md` P4.y) e o que ficou fora de escopo por
+decisão (horário real decidindo o encaixe é mudança de motor, não desta rodada).
+
+**Gate:** não rodado no `escala-porteiros` — nenhuma linha deste projeto mudou. O `escala-geral`
+tem seu próprio `npm run gate`, adaptado (sem os passos de comparação entre trilhas, que só faziam
+sentido dentro do repositório de produção com as duas trilhas coexistindo).
+
+**Como reverter.** No `escala-porteiros`: nada a reverter, nenhuma linha mudou. No `escala-geral`:
+`git revert` dos commits desta sessão apaga as duas telas e volta ao estado copiado — ou, mais
+simples, o repositório inteiro pode ser apagado sem afetar produção, já que nada aponta para ele
+de dentro do `escala-porteiros`.

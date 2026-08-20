@@ -137,4 +137,23 @@ Desenho da fase 2, quando a comercialização for decidida:
 ⚠️ Nada disso começa sem decisão explícita do dono — é a regra §0 do `AGENTS.md` aplicada: genérico
 no motor primeiro (malha, identidade, vocabulário — já feito), infraestrutura por último.
 
+**Retomado em 20/08/2026 (S-068/S-069), com a mesma pergunta em palavras novas:** *"você vai dar um
+jeito de buscar a credencial neste repositório que já existe (...) e não vai nem solicitar que o
+usuário imagine alguma coisa sobre GitHub"* — comprador não pode nem SABER que existe GitHub por
+trás. Registrado como **item PENDENTE**, sem construção ainda — a pergunta é se dá para resolver por
+dentro do modelo atual (site estático + token) ou se exige mesmo o backend do item acima:
+
+- Um token único do FLAVIO (não do comprador) mediando TODOS os repositórios dos clientes não
+  funciona por construção: um PAT do GitHub autoriza contas/repositórios específicos, escritos no
+  próprio token — não existe "um token que abre qualquer repositório de qualquer cliente" sem que
+  esse token literalmente tenha permissão de escrita em cada um deles, o que faria do Flavio, e não
+  do backend, o único ponto de confiança (segurança contrária à venda a terceiros).
+- O caminho que resolve de verdade é exatamente o já desenhado acima: **backend + banco
+  multi-tenant**, o Flavio (ou o backend em nome dele) fala com o GitHub — ou nem precisa mais falar
+  com o GitHub, o banco vira a fonte — e o comprador só vê e-mail/senha, nunca token.
+- **Decisão de continuar pendente:** este item pede pesquisa própria (como sistemas comerciais
+  fazem onboarding self-service sem o cliente tocar em infraestrutura — Vercel/Supabase/Stripe
+  Connect são o padrão de mercado para "provisionar recurso isolado por cliente automaticamente")
+  antes de qualquer código. Não iniciar sem essa pesquisa e sem decisão explícita do dono.
+
 ---
