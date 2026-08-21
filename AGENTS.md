@@ -8,7 +8,7 @@
 >
 > 1. Leia **este arquivo** inteiro (como se trabalha aqui).
 > 2. Leia **[`ESTADO.md`](ESTADO.md)** ("Em uma frase" + "O mais recente" + "Como retomar").
-> 3. Leia o **[handoff mais recente](docs/handoff/HANDOFF_2026-08-19-e.md)** (o que aconteceu e por quê).
+> 3. Leia o **[handoff mais recente](docs/handoff/HANDOFF_2026-08-20.md)** (o que aconteceu e por quê).
 > 4. Leia **[`BACKLOG.md`](BACKLOG.md)** (o que falta, e o que é 👤 decisão dele).
 > 5. Responda com um resumo curto de onde as coisas estão e **o que você vai fazer a seguir** — não
 >    pergunte "o que você quer que eu faça?": o `BACKLOG.md` já responde isso.
@@ -24,7 +24,7 @@
 > **Este arquivo é o ROTEADOR do projeto.** Ordem de leitura, e ela importa:
 >
 > **1.** este arquivo (como se trabalha) → **2.** [`ESTADO.md`](ESTADO.md) (onde estamos) →
-> **3.** [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-19-e.md) (o que aconteceu e por quê) →
+> **3.** [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-20.md) (o que aconteceu e por quê) →
 > **4.** [`BACKLOG.md`](BACKLOG.md) (o que fazer a seguir)
 >
 > Só depois, e só o trecho de que precisar, os índices:
@@ -266,12 +266,13 @@ aqui. Escrito para quem **não participou de nada** — inclusive outra intelig�
 | Vou mexer em… | Leia antes |
 |---|---|
 | Estado atual | [`ESTADO.md`](ESTADO.md) |
-| O que aconteceu na última sessão, e por quê | [`docs/handoff/HANDOFF_2026-08-19-e.md`](docs/handoff/HANDOFF_2026-08-19-e.md) · [índice](docs/handoff/INDICE.md) |
+| O que aconteceu na última sessão, e por quê | [`docs/handoff/HANDOFF_2026-08-20.md`](docs/handoff/HANDOFF_2026-08-20.md) · [índice](docs/handoff/INDICE.md) |
 | O que falta | [`BACKLOG.md`](BACKLOG.md) |
 | Regras da escala, modelo de dados, motor | [`o desenho`](docs/superpowers/specs/2026-08-04-area-administrativa-escala-design.md) |
 | **Por que** uma decisão foi tomada, e como revertê-la | [`DIARIO_DE_BORDO.md`](DIARIO_DE_BORDO.md) |
 | O que já foi feito, passo a passo | [`AI_MASTER_LOG.md`](AI_MASTER_LOG.md) |
-| **O que o Flavio pediu**, e onde cada pedido foi parar | [`docs/solicitacoes/INDICE_DE_SOLICITACOES.md`](docs/solicitacoes/INDICE_DE_SOLICITACOES.md) |
+| **O que o Flavio pediu**, e onde cada pedido foi parar (índice S-0XX) | [`docs/solicitacoes/INDICE_DE_SOLICITACOES.md`](docs/solicitacoes/INDICE_DE_SOLICITACOES.md) |
+| **Cada solicitação, no calor da hora**, com horário de São Paulo (skill `/historico`) | [`docs/historico/SOLICITACOES/INDICE.md`](docs/historico/SOLICITACOES/INDICE.md) |
 | Comunicar com os irmãos porteiros (modelo de WhatsApp, versículos ARC) | [`docs/COMUNICACOES.md`](docs/COMUNICACOES.md) |
 | Requisitos e sugestões da FASE 2 (malha parametrizável, logo, lembretes) | [`docs/FASE2.md`](docs/FASE2.md) |
 | Lembrete de véspera no WhatsApp (ponte Charmway, VPS, passos do dono) | [`docs/LEMBRETE_WHATSAPP.md`](docs/LEMBRETE_WHATSAPP.md) |

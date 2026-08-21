@@ -4,9 +4,10 @@
 > como reverter.** Documento **append-only**, fatiado por período ao estourar o teto. **Nada é
 > excluído, nunca.**
 >
-> **Cadeia de navegação:** [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-19-e.md) → [`BACKLOG.md`](BACKLOG.md)
+> **Cadeia de navegação:** [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-20.md) → [`BACKLOG.md`](BACKLOG.md)
 > **Roteador:** [`AGENTS.md`](AGENTS.md) ·
-> **Solicitações:** [`docs/solicitacoes/INDICE_DE_SOLICITACOES.md`](docs/solicitacoes/INDICE_DE_SOLICITACOES.md) ·
+> **Solicitações (S-0XX):** [`docs/solicitacoes/INDICE_DE_SOLICITACOES.md`](docs/solicitacoes/INDICE_DE_SOLICITACOES.md) ·
+> **Diário de solicitações (granular):** [`docs/historico/SOLICITACOES/INDICE.md`](docs/historico/SOLICITACOES/INDICE.md) ·
 > **Histórico:** [`docs/historico/INDICE.md`](docs/historico/INDICE.md)
 
 ---
@@ -925,3 +926,53 @@ aba) vai aparecer — um clique em "Descartar e usar o publicado" resolve.
 
 **Gate:** não rodado aqui — nenhuma linha do `escala-porteiros` mudou. No `escala-geral`:
 typecheck/testes(435)/`generico`/build limpos antes e depois.
+
+---
+
+## DB-070 · 21/08/2026 — o diário contínuo de solicitações, já existia sob outro nome
+
+**Pedido (S-073):** o Flavio pediu, com uma especificação detalhada e numerada, para implantar e
+manter um "diário contínuo de solicitações" neste projeto e em padrões globais — descoberta de
+convenção antes de agir, apresentação da última interação com evidência ao retomar sessão, formato
+de entrada por horário de São Paulo (`Pedido`/`Feito`/`Status`/`Aprendizado`/`Cuidado`), disciplina
+append-only, rotação automática a 700 linhas/90 KB, e a distinção `ESTADO.md`/`BACKLOG.md` (vivos)
+× diário (histórico imutável) × handoff (síntese de fechamento).
+
+**O que a investigação achou, antes de construir qualquer coisa:** o mecanismo inteiro que ele
+descreveu **já existe**, formalizado no **mesmo dia** (`_padroes-globais/ROTACAO_DE_DOCUMENTOS.md`
+§"Regime B-especial — diário gerado por comando"), originado de uma sessão no projeto ThetaLens
+V3 — e há uma skill global, `/historico`, que já implementa o passo a passo exato. Invoquei a
+skill em vez de reinventar a especificação por conta própria; o texto dela bate, quase
+literalmente, com o que o Flavio tinha acabado de me escrever.
+
+**Decisão de convenção:** este projeto já tinha `AGENTS.md`/`ESTADO.md`/`BACKLOG.md` — a skill
+manda usar `docs/historico/SOLICITACOES/AAAA-MM-DD.md` + `INDICE.md`, criados agora
+([`2026-08-21.md`](docs/historico/SOLICITACOES/2026-08-21.md),
+[`INDICE.md`](docs/historico/SOLICITACOES/INDICE.md)). **Isto não substitui nem compete com este
+arquivo** (`DIARIO_DE_BORDO.md`) — a própria skill já previa a divisão: o diário de solicitações é
+o registro granular no calor da hora, este arquivo é o "porquê" mais profundo, com como reverter,
+para os achados grandes o bastante para merecer os dois registros. Este é um deles.
+
+**Defeito de infraestrutura achado no caminho, corrigido:**
+`docs/solicitacoes/INDICE_DE_SOLICITACOES.md` é um documento HISTÓRICO por natureza (uma entrada
+por solicitação, S-0XX, nunca reescrita) mas não estava na lista `historico` de
+`docs/regimes-documentos.json` — o portão `checar-tamanho-docs.mjs` o mediria pelo regime errado
+(*referência*, 800 linhas/100 KB, "dividir por assunto") em vez do certo (*histórico*, "fatiar por
+período"). Hoje eram só 121 linhas/61 KB, longe do teto — mas o regime errado ficaria sem
+sintoma até o dia em que crescesse, e aí sugeriria a ação errada. Corrigido:
+`docs/solicitacoes/INDICE_DE_SOLICITACOES.md` acrescentado à lista `historico` de
+`docs/regimes-documentos.json`.
+
+**Como reverter:** `git revert` no commit desta entrada remove as duas pastas novas
+(`docs/historico/SOLICITACOES/`) e desfaz a linha acrescentada em `docs/regimes-documentos.json`.
+Nenhum documento existente foi reescrito — só criado ou linkado.
+
+**Também achado, corrigido no mesmo passo:** o cabeçalho deste próprio arquivo (linha 7) ainda
+chamava a parte 5 de 19/08 de "handoff mais recente" — ficou parado quando o handoff de ontem
+(20/08) foi criado. Corrigido, junto com o mesmo atraso em `AGENTS.md` (2 ocorrências),
+`AI_MASTER_LOG.md` e `BACKLOG.md` — achado rodando `npm run cadeia` depois desta própria entrada.
+
+**Gate:** `npm run tamanho-docs` limpo depois da mudança em `docs/regimes-documentos.json` — os
+dois arquivos novos em `docs/historico/SOLICITACOES/` são isentos por caminho (fatia sob
+`docs/historico/`), como qualquer outra fatia deste projeto.
+**Solicitação:** S-073.

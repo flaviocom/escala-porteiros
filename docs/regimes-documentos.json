@@ -4,7 +4,8 @@
   "_nota_historico": "Liste aqui apenas os documentos APPEND-ONLY — os que registram o passado e crescem por natureza. Eles são FATIADOS por período. Um documento estruturado por assunto NÃO entra aqui, mesmo que esteja grande: ele é dividido por assunto, não fatiado por data.",
   "historico": [
     "AI_MASTER_LOG.md",
-    "DIARIO_DE_BORDO.md"
+    "DIARIO_DE_BORDO.md",
+    "docs/solicitacoes/INDICE_DE_SOLICITACOES.md"
   ],
 
   "_nota_isento": "Use com parcimônia. Isenção sem motivo escrito é o começo do apodrecimento da regra.",

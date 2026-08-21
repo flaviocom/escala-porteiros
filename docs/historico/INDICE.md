@@ -4,23 +4,28 @@
 > existe para quem procura.
 >
 > **Cadeia de navegação:** [`ESTADO.md`](../../ESTADO.md) → [`handoff mais recente`](../handoff/INDICE.md) → [`BACKLOG.md`](../../BACKLOG.md)
-> **Roteador do projeto:** [`AGENTS.md`](../../AGENTS.md) · **Índice de solicitações:** [`../solicitacoes/INDICE_DE_SOLICITACOES.md`](../solicitacoes/INDICE_DE_SOLICITACOES.md)
+> **Roteador do projeto:** [`AGENTS.md`](../../AGENTS.md) · **Índice de solicitações (S-0XX):** [`../solicitacoes/INDICE_DE_SOLICITACOES.md`](../solicitacoes/INDICE_DE_SOLICITACOES.md)
+> **Diário de solicitações (granular, por horário):** [`SOLICITACOES/INDICE.md`](SOLICITACOES/INDICE.md)
 
 ---
 
 ## Como funciona
 
-Dois documentos deste projeto são **append-only** e crescem por natureza — declarados em
-[`../regimes-documentos.json`](../regimes-documentos.json):
+Três documentos deste projeto são **append-only** e crescem por natureza — os dois primeiros
+declarados em [`../regimes-documentos.json`](../regimes-documentos.json), o terceiro sob
+Regime B-especial (subpasta, teto próprio):
 
 | Documento | Papel |
 |---|---|
 | [`../../AI_MASTER_LOG.md`](../../AI_MASTER_LOG.md) | **o que** foi feito, passo a passo |
 | [`../../DIARIO_DE_BORDO.md`](../../DIARIO_DE_BORDO.md) | **por que** cada decisão foi tomada, e como revertê-la |
+| [`SOLICITACOES/`](SOLICITACOES/INDICE.md) | **cada solicitação**, no calor da hora, com horário de São Paulo — nasceu 21/08/2026 (skill `/historico`) |
 
-Ao estourar o teto (2.000 linhas **ou** virada de mês), eles são **fatiados por período** para
-`historico/<DOCUMENTO>/AAAA-MM.md`. O arquivo da raiz passa a conter **duas coisas e só elas**: o
-índice das fatias e a fatia corrente.
+Ao estourar o teto, eles são **fatiados por período**: `AI_MASTER_LOG.md`/`DIARIO_DE_BORDO.md` para
+`historico/<DOCUMENTO>/AAAA-MM.md` (2.000 linhas **ou** virada de mês); `SOLICITACOES/` já nasce
+dentro de `docs/historico/` e fatia por **sessão/dia** (700 linhas **ou** 90 KB — Regime
+B-especial, teto mais apertado porque o período natural é mais fino). O arquivo da raiz de cada um
+passa a conter **duas coisas e só elas**: o índice das fatias e a fatia corrente.
 
 **Nada é excluído, nunca.**
 

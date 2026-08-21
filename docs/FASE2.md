@@ -121,7 +121,7 @@ para quem faz a gestão (…) ou deixamos assim e ajeitamos numa próxima fase?"
 **Decisão registrada: fica assim na fase 1, e a fase 2 já tem o desenho.** O modelo atual
 (site estático + Publicar = commit via token fine-grained) é o CERTO para uso interno com um
 administrador: custo zero de operação, histórico do git de graça, publicação real em ~1 minuto —
-e o [`ARQUITETURA.md` §"Por que estático"](docs/ARQUITETURA.md) declara o custo desde o começo.
+e o [`ARQUITETURA.md` §"Por que estático"](ARQUITETURA.md) declara o custo desde o começo.
 
 O que ele NÃO serve, declarado: **cliente leigo**. Comercializar exige que "publicar" não dependa
 de conta GitHub nem de token — a pesquisa de rostering (§2) mostra que todos os sistemas comerciais
