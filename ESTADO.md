@@ -2,10 +2,10 @@
 
 > **Onde o projeto está agora.** Documento **vivo**: sobrescrito, não acumulado.
 >
-> **Última atualização:** 19/08/2026 · **Fuso:** America/São_Paulo
+> **Última atualização:** 20/08/2026 · **Fuso:** America/São_Paulo
 >
 > **Cadeia de navegação, nesta ordem:**
-> **`ESTADO.md` (você está aqui)** → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-19-e.md) → [`BACKLOG.md`](BACKLOG.md)
+> **`ESTADO.md` (você está aqui)** → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-20.md) → [`BACKLOG.md`](BACKLOG.md)
 > *onde estamos · o que aconteceu na última sessão e por quê · o que fazer a seguir*
 >
 > **Reconstruir do zero (portabilidade entre IAs):** [`docs/RECONSTRUIR.md`](docs/RECONSTRUIR.md)
@@ -42,9 +42,30 @@ agente/harness ou trabalho paralelo em arquivos disjuntos.
 **O produto está no ar, divulgado e em uso: os irmãos consultam a própria escala pelo site**
 (palavras do dono, 08/08 — S-054). Auditado por fora CINCO vezes, escala de 06/08 a 31/12 publicada
 e conferida, o nome do cliente fora do código. **P0 e P1 estão sem item aberto** — a única
-credencial em aberto é a chave do motor, **opcional**; nada trava sem ela.
+credencial em aberto é a chave do motor, **opcional**; nada trava sem ela. **20/08:** o produto
+virou dois — nasceu [`escala-geral`](https://github.com/flaviocom/escala-geral), motor genérico
+para vender, sem tocar neste repositório de produção. Detalhe completo do dia inteiro:
+[`HANDOFF_2026-08-20.md`](docs/handoff/HANDOFF_2026-08-20.md).
 
-## O mais recente: a pergunta certa achou um bug real na mensagem semanal (S-066, 19/08)
+## O mais recente: nasceu o `escala-geral`, e horário real virou regra máxima (S-067 a S-072, 20/08)
+
+**O pivô do dia:** o dono decidiu vender o motor como produto genérico. Nasceu
+[`flaviocom/escala-geral`](https://github.com/flaviocom/escala-geral) (Template Repository, público,
+codebase copiado da trilha genérica já provada) — **este repositório de produção não foi tocado**,
+os 9 commits daqui hoje são só documentação e um experimento de medição (busca local pós-GRASP não
+generaliza fora de 14 pessoas, S-068). No `escala-geral`: telas de malha e mensagem configuráveis
+pela tela; um vazamento de dado entre repositórios (mesma origem `flaviocom.github.io`) achado ao
+vivo pelo dono e fechado em 3 rodadas de auditoria; e a **regra máxima do dia** — *"eu não quero um
+horário fixo ou período fixo... controle horas mesmo, com data e hora de Brasília, sempre"* — que
+atravessou **6 rodadas de auditoria independente** (a 4ª achou 4 defeitos, a 5ª achou uma regressão
+da própria correção da 4ª, a 6ª fechou sem defeito). Depois, dado real de demonstração carregado
+(16 pessoas, malha e 183 turnos reais) e um "rascunho fantasma" — bug que escondia dado publicado
+desde a primeira visita de qualquer pessoa, em qualquer aba — achado ao vivo pelo dono e corrigido
+na raiz. Detalhe completo, com os 7 recortes pedidos (feito/aprendido/ajustado/solicitado/não
+atendido/não decidido/pendências):
+[`HANDOFF_2026-08-20.md`](docs/handoff/HANDOFF_2026-08-20.md) · [DB-063 a DB-069](DIARIO_DE_BORDO.md).
+
+## O anterior: a pergunta certa achou um bug real na mensagem semanal (S-066, 19/08)
 
 Mesma pergunta de auditoria de sempre, depois do S-065 — resposta honesta: faltava verificação
 visual (achado: telefone inválido ainda sumia em silêncio) e auditoria de verdade. Agente auditor

@@ -9,6 +9,8 @@
 
 | Data | Handoff | O que aconteceu |
 |---|---|---|
+| 20/08/2026 | [`HANDOFF_2026-08-20.md`](HANDOFF_2026-08-20.md) | **O dia do pivô — nasceu o `escala-geral`, e horário real virou regra máxima.** Produto virou dois: `escala-porteiros` (produção, intocada) e `escala-geral` (motor genérico para vender, nasceu hoje). Dentro dele: malha/mensagem configuráveis pela tela, vazamento de dado entre repositórios (3 rodadas de auditoria até fechar), horário real sempre Brasília como regra máxima do dono (6 rodadas de auditoria, 2 delas com achado real — uma inclusive regressão da correção anterior), dado real de demonstração carregado, e um "rascunho fantasma" que escondia dado publicado desde a primeira visita, achado ao vivo e corrigido na raiz. 26 commits no `escala-geral`, 9 de documentação no `escala-porteiros`, zero mudança no motor de produção. |
+|---|---|---|
 | 19/08/2026 | [`HANDOFF_2026-08-19-e.md`](HANDOFF_2026-08-19-e.md) | **Parte 5 — a pergunta certa achou um bug real na mensagem semanal.** A mesma pergunta de auditoria voltou depois do S-065; agente auditor independente confirmou o conserto do "turno já passado" mas achou um segundo defeito real e sistemático: a mensagem semanal calculava o fim da janela de forma diferente do filtro que buscava os turnos, divergindo em toda mensagem enviada às segundas-feiras (a cadência real). Corrigido — `fim` sai de um só lugar. Sweep completo do painel administrativo (12 campos sem id/name). Achado lateral: o contador do próprio autoteste era escrito à mão e tinha desatualizado — trocado por contagem automática. Autoteste 26→32 casos. |
 | 19/08/2026 | [`HANDOFF_2026-08-19-d.md`](HANDOFF_2026-08-19-d.md) | **Parte 4 — a pesquisa antes do código.** O Flavio pediu o texto das mensagens e questionou o dia do disparo semanal (domingo × segunda), com instrução explícita: agentes de pesquisa independentes ANTES de codar. Dois agentes: cadência (sem padrão de mercado único; domingo×segunda é empate documentado; recomendação — segunda de manhã, convenção de casa declarada; estrutura resumo+véspera já é o padrão de maior eficácia da literatura) e formatação (sintaxe confirmada contra o WhatsApp Help Center; achado real — mensagens sem identificação, corrigido). Cron mudou para segunda-feira, mensagens reescritas em 3 blocos, autoteste 19→22 casos. |
 | 19/08/2026 | [`HANDOFF_2026-08-19-c.md`](HANDOFF_2026-08-19-c.md) | **Parte 3 — o lembrete individual: telefone cadastrado, duas mensagens.** O Flavio pediu URL da versão nova e como cadastrar nome/telefone; perguntei se era para somar ao lembrete de grupo ou trocar — resposta: somar, com mensagem semanal (domingo a domingo) e diária (véspera), sem controle de LGPD (decisão dele). Construído: `Pessoa.nomeCompleto`/`telefone`, `src/utils/telefone.ts` (formato confirmado contra código real na VPS), tela no Elenco, `scripts/vps/lembrete_individual.py` (2 modos) + autoteste (19 casos). Dois defeitos achados testando ao vivo: aspas quebrando o JSX, telefone inválido sumindo em silêncio — os dois corrigidos. Ativação real segue bloqueada pelo número não conectado. |
@@ -40,7 +42,7 @@
 
 ---
 
-**Handoff mais recente:** [`HANDOFF_2026-08-19-e.md`](HANDOFF_2026-08-19-e.md)
+**Handoff mais recente:** [`HANDOFF_2026-08-20.md`](HANDOFF_2026-08-20.md)
 
 Ligações: [`../solicitacoes/INDICE_DE_SOLICITACOES.md`](../solicitacoes/INDICE_DE_SOLICITACOES.md) ·
 [`../historico/INDICE.md`](../historico/INDICE.md) ·
