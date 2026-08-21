@@ -12,9 +12,15 @@
     "opcionais": ["GITHUB_PAT_ESCALA_PORTEIROS", "ANTHROPIC_API_KEY_ESCALA"]
   },
 
+  "_nota_autor": "Corrigido 21/08/2026 — declarava 'Flavio Oliveira <brflaviooliveira@gmail.com>' (valor de template, nunca verdadeiro neste projeto) enquanto o git config real sempre foi o e-mail noreply do GitHub. Conferido: os commits aparecem corretamente atribuídos à conta flaviocom no GitHub (author.login=flaviocom) — o noreply é o padrão recomendado do próprio GitHub, não um erro. A declaração agora bate com a realidade.",
   "git": {
     "remoto": true,
-    "autor": "Flavio Oliveira <brflaviooliveira@gmail.com>"
+    "autor": "flaviocom <flaviocom@users.noreply.github.com>"
+  },
+
+  "_nota_diario_solicitacoes": "Endurecido 21/08/2026, decisão do dono: diário de solicitações (regra global #10) implantado e em dia — travar garante que nunca fica velho em silêncio, como aconteceu 9 dias no CHARMway antes desta regra existir. checar-cofre.mjs NÃO foi endurecido (fica de fora de propósito): o Cofre é um vault compartilhado entre todos os projetos do Flavio, e travar o pré-voo por uma edição concorrente de OUTRO projeto pararia este por um motivo que não é dele — medido ao vivo em 21/08/2026, com uma sessão do ThetaLens-V3 editando o mesmo arquivo.",
+  "diario_solicitacoes": {
+    "bloqueia": true
   },
 
   "_nota_deps": "A ausência de node_modules AQUI é PROPOSITAL, não esquecimento. Medido em 04/08/2026 com o disco em repouso: escrever 100 arquivos pequenos leva 79.844 ms em D: contra 45 ms em C: (~1.775x). Um npm install (~30 mil arquivos) levaria HORAS nesta pasta; na cópia em C: levou 14 segundos. Por isso o build e os testes rodam em C:\\Users\\oflav\\build\\escala-porteiros, e o GitHub é a ponte. Sem esta isenção o pré-voo cravaria vermelho em TODA tarefa — e portão cronicamente vermelho é portão que alguém aprende a ignorar, que foi como dois crons parados passaram meses escondidos sob um alarme de disco que soava todo dia. A isenção NÃO desliga a checagem: instalação PARCIAL continua sendo acusada, e o item continua aparecendo no relatório com este motivo ao lado. Para reverter, apague o bloco `deps` — o padrão volta a bloquear. Provado por _padroes-globais/scripts/autoteste-pre-voo-deps.mjs (8 casos; contra a versão anterior do pré-voo, reprova 4).",
