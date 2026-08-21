@@ -881,3 +881,47 @@ token só é necessário para publicar de verdade).
 **Gate:** não rodado aqui — nenhuma linha do `escala-porteiros` mudou; a cópia é unidirecional
 (porteiros → geral), o repositório de produção não foi lido nem alterado por escrita nenhuma. No
 `escala-geral`: typecheck/testes(435)/`generico`/build limpos antes e depois da carga de dado.
+
+## DB-069 · 20/08/2026 — "rascunho fantasma": a primeira visita já escondia o dado publicado
+
+**O pedido (S-072), tom de quem já tinha pedido antes:** *"essa escala continua sem ter o upload de
+imagem ou logotipo e sem nem ajustar o cabeçalho (…) no Elenco não tem as pessoas que pedi pra você
+subir (…) já te solicitei essa questão do logotipo e cabeçalho umas dez vezes."*
+
+**Não era engano do Flavio, nem alucinação de relatório anterior.** Confirmei, ANTES de responder,
+lendo direto do GitHub Pages publicado: o `pessoas.json` tinha as 16 pessoas reais, o JS publicado
+continha literalmente o texto "Identidade da escala — título, cabeçalho, vocabulário e logotipo".
+O dado e a tela estavam lá. O problema era outro, e real: `escala-geral/src/admin/Admin.tsx` grava
+um "rascunho" (o que a pessoa deixou em andamento, para sobreviver a um F5) a cada mudança de
+`config`/`pessoas`/datas — mas o `useEffect` que faz isso rodava também na PRIMEIRA renderização,
+antes de qualquer edição. Resultado: a simples ação de abrir a área administrativa pela primeira vez
+— sem tocar em nada — já gravava um retrato congelado daquele instante como se fosse "trabalho em
+andamento". Toda visita seguinte lia esse retrato e escondia o que estava publicado depois, em
+QUALQUER aba. E o aviso que existia para isso ("você deixou algo em andamento, quer descartar?")
+só aparecia dentro da aba "Gerar escala" — quem abre Elenco primeiro (a maioria) nunca via aviso
+nenhum explicando o motivo. Isso me enganou também, minutos antes, testando a própria carga do dado
+real — achei que fosse coincidência; era o mesmo defeito.
+
+**Corrigido na raiz, não só a visibilidade:** o efeito de gravação agora só grava depois de uma
+mudança de verdade — comparando os valores atuais contra os capturados na montagem (`useRef`), não
+contando quantas vezes o efeito já rodou. Essa distinção importa: um contador ingênuo ("pula só a
+primeira chamada") quebra sob o `StrictMode` que o projeto já usa (`main.tsx`) — em desenvolvimento,
+o React roda todo efeito de montagem DUAS vezes de propósito, e um contador trataria a segunda
+chamada como uma edição real, reintroduzindo o mesmo bug de um jeito que só apareceria em `npm run
+dev`, nunca no build de produção que de fato vai para o ar — quase caí nessa armadilha eu mesmo, ao
+testar. O aviso de rascunho subiu para acima de toda aba, no cabeçalho fixo — não fica mais preso
+numa aba que a pessoa pode nunca abrir.
+
+**Confirmado ao vivo, no cenário mais difícil (`StrictMode` ligado, o que expõe exatamente o tipo de
+bug que um contador ingênuo teria):** navegador limpo, primeira visita não grava rascunho nenhum;
+uma edição real (acrescentar uma pessoa de teste) grava; recarregar mostra o aviso imediatamente na
+PRIMEIRA aba (Elenco), não só em "Gerar escala"; "Descartar e usar o publicado" limpa e volta às 16
+pessoas reais. 435/435 testes, typecheck/gate/build limpos.
+
+**Aviso prático para o navegador do Flavio:** o rascunho fantasma dele já existia ANTES desta
+correção — a correção impede que NOVAS visitas criem um, mas não apaga o que já está gravado no
+navegador dele. Na próxima vez que abrir a área administrativa, o aviso (agora visível em qualquer
+aba) vai aparecer — um clique em "Descartar e usar o publicado" resolve.
+
+**Gate:** não rodado aqui — nenhuma linha do `escala-porteiros` mudou. No `escala-geral`:
+typecheck/testes(435)/`generico`/build limpos antes e depois.
