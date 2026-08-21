@@ -835,6 +835,13 @@ indicador nenhum de abrir/fechar. Na primeira tentativa a correção saiu invert
 vez de completar o Elenco — e foi corrigida assim que ele apontou o engano. `CartaoPessoa`
 (`escala-geral/src/admin/Admin.tsx`) ganhou o mesmo rótulo textual da Malha; nada mudou na Malha.
 
+**Achado ao vivo pela SEGUNDA vez: onde fica o logotipo e o cabeçalho.** O editor de
+título/cabeçalho/vocabulário/logotipo (`config.identidade`) existia desde a rodada anterior, mas
+atrás de um rótulo genérico que nunca dizia "logotipo" nem "cabeçalho" ("Nome da escala e como
+chamar quem é escalado"), e no fundo da aba "Gerar escala", depois de três outras seções — por isso
+o Flavio precisou perguntar de novo. Corrigido: renomeado para "Identidade da escala — título,
+cabeçalho, vocabulário e logotipo" e movido para o topo da aba, primeira coisa visível.
+
 **Gate:** não rodado aqui — nenhuma linha do `escala-porteiros` mudou. Nada a reverter neste
 repositório; no `escala-geral`, `git revert` dos commits desta rodada volta os defeitos e a correção
 de UX acima.
