@@ -845,3 +845,39 @@ cabeçalho, vocabulário e logotipo" e movido para o topo da aba, primeira coisa
 **Gate:** não rodado aqui — nenhuma linha do `escala-porteiros` mudou. Nada a reverter neste
 repositório; no `escala-geral`, `git revert` dos commits desta rodada volta os defeitos e a correção
 de UX acima.
+
+## DB-068 · 20/08/2026 — dado real de demonstração no `escala-geral`, para uma pessoa testar
+
+**O pedido (S-071):** *"está finalizado agora o site geral? Traga novamente o link (…) Eu gostaria
+que você colocasse nesse site escala geral os mesmos dados da escala de porteiros. Por quê? Porque
+eu quero passar para uma pessoa testar e a pessoa tem que partir de alguma coisa para entender como
+é o funcionamento. Então, ela altera o que tiver que ser alterado."*
+
+**Antes de copiar, uma pergunta.** O `escala-geral` é um repositório PÚBLICO que vai para as mãos de
+um estranho à congregação — mesmo os nomes já sendo públicos hoje no site do `escala-porteiros`
+(nenhum telefone cadastrado), copiar para um segundo lugar e entregar a um terceiro é uma decisão
+que cabe a ele, não a mim. Perguntei: dado real ou uma escala fictícia com a mesma forma (mesma
+malha, mesma quantidade de pessoas, restrições variadas)? **Ele escolheu real.**
+
+**Copiado para `escala-geral/public/dados/`** (produção não tocada, só leitura daqui):
+- `pessoas.json` — as 16 pessoas reais (nome, ativo/fora, restrições), cópia exata.
+- `config.json` — a malha real (dom manhã+noite · qua noite · sáb noite · 1º sáb tarde ENSAIO),
+  `capacidadePadrao: 3` real, o evento "Santa Ceia" de 16/08 convertido do formato antigo
+  (`santaCeia: [data]`) para o novo `EventoSemEscala`. **Identidade mantida GENÉRICA de propósito**
+  ("Escala de plantões"/"Plantonista", não "Escala Porteiros"/"Irmão") — a demonstração prova que o
+  motor roda dado real de igreja sob marca qualquer, não que o repositório é uma cópia da igreja.
+- `blocos.json` — os 2 blocos reais publicados (histórico importado + gerado pelo motor), 183
+  turnos, 01/03 a 31/12/2026 — quem for testar já vê uma escala completa e populada, sem precisar
+  gerar nada primeiro para entender o que a tela mostra.
+
+**Confirmado ao vivo, não por suposição:** lido direto do GitHub Pages publicado depois do deploy —
+`pessoas.json` e `blocos.json` servindo os dados reais, o site público mostrando os turnos reais com
+os nomes reais, exatamente como no `escala-porteiros`.
+
+**Link entregue de novo, como pedido:** site https://flaviocom.github.io/escala-geral/ · admin
+https://flaviocom.github.io/escala-geral/#/admin (sem senha nem token para testar/gerar/ajustar —
+token só é necessário para publicar de verdade).
+
+**Gate:** não rodado aqui — nenhuma linha do `escala-porteiros` mudou; a cópia é unidirecional
+(porteiros → geral), o repositório de produção não foi lido nem alterado por escrita nenhuma. No
+`escala-geral`: typecheck/testes(435)/`generico`/build limpos antes e depois da carga de dado.
