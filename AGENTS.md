@@ -272,7 +272,7 @@ aqui. Escrito para quem **não participou de nada** — inclusive outra intelig�
 | **Por que** uma decisão foi tomada, e como revertê-la | [`DIARIO_DE_BORDO.md`](DIARIO_DE_BORDO.md) |
 | O que já foi feito, passo a passo | [`AI_MASTER_LOG.md`](AI_MASTER_LOG.md) |
 | **O que o Flavio pediu**, e onde cada pedido foi parar (índice S-0XX) | [`docs/solicitacoes/INDICE_DE_SOLICITACOES.md`](docs/solicitacoes/INDICE_DE_SOLICITACOES.md) |
-| **Cada solicitação, no calor da hora**, com horário de São Paulo (skill `/historico`) | [`docs/historico/SOLICITACOES/INDICE.md`](docs/historico/SOLICITACOES/INDICE.md) |
+| **Cada solicitação, no calor da hora**, com horário de São Paulo — diário vivo, desde 21/08/2026 (regra global #10) | [`docs/historico/SOLICITACOES/INDICE.md`](docs/historico/SOLICITACOES/INDICE.md) |
 | Comunicar com os irmãos porteiros (modelo de WhatsApp, versículos ARC) | [`docs/COMUNICACOES.md`](docs/COMUNICACOES.md) |
 | Requisitos e sugestões da FASE 2 (malha parametrizável, logo, lembretes) | [`docs/FASE2.md`](docs/FASE2.md) |
 | Lembrete de véspera no WhatsApp (ponte Charmway, VPS, passos do dono) | [`docs/LEMBRETE_WHATSAPP.md`](docs/LEMBRETE_WHATSAPP.md) |

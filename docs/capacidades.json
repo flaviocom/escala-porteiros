@@ -529,6 +529,15 @@
       "portao": "roda sob demanda para revalidar a decisão registrada em PESQUISA_2026-08-07-metodos-rostering.md"
     },
     {
+      "id": "experimento-busca-local-em-escala",
+      "tipo": "ferramenta",
+      "caminho": "scripts/experimento-busca-local-em-escala.mjs",
+      "ramo": "dados-e-algoritmo",
+      "gatilho": "npm run experimento:busca-local:escala",
+      "proposito": "reabre a mesma decisão (busca local pós-GRASP) sobre dado SINTÉTICO em várias escalas (14/25/45 pessoas, malha igreja e malha predial 24h) — a recusa de 07/08 valia só para os 87 turnos/14 pessoas reais publicados; o produto genérico (S-067/S-068) precisa saber se generaliza",
+      "portao": "roda sob demanda; achou que a recusa NÃO generaliza acima de 14 pessoas (1 de 4 cenários com troca melhoradora) — decisão de ligar como pós-otimização opcional segue aberta em BACKLOG.md P8.2"
+    },
+    {
       "id": "carga-inicial",
       "tipo": "ferramenta",
       "caminho": "scripts/carga-inicial.mjs",
