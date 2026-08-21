@@ -813,8 +813,13 @@ na régua independente. **Corrigidos os dois — desta vez na ORIGEM, não na po
 `segmentosDoIntervalo` (`malha.ts`) agora trata início-igual-a-fim como intervalo vazio, sem
 depender de qual formulário o dado atravessou; `AbaMalha.tsx` ganhou `type="time"` e aviso inline,
 como defesa em profundidade, não como única trava. 435/435 testes (era 432), typecheck/gate/build
-limpos. **6ª auditoria** (verificação cética desta correção) disparada — resultado ainda pendente
-no momento deste registro.
+limpos.
+
+**A 6ª auditoria (verificação cética da correção acima) fechou sem achar defeito real** — atacou
+todo chamador de `segmentosDoIntervalo`, todo caminho de entrada fora da tela (script de carga,
+config editada à mão) e casos de borda novos (fronteira exata tocando, `00:00` explícito vs. campo
+vazio), rodou o gate inteiro por conta própria. Único achado: um comentário desatualizado, corrigido
+sem mudar código. **Seis rodadas de auditoria depois, o loop fechou de verdade.**
 
 **Aprendizado, o mesmo de sempre, de novo — e desta vez com uma volta extra:** cada rodada de
 auditoria cega achou algo real que a rodada anterior (incluindo os próprios testes escritos na
@@ -822,7 +827,14 @@ hora) não cobriu, e na 5ª rodada isso incluiu a PRÓPRIA correção anterior i
 de defeito por outra porta. Não é sinal de trabalho malfeito — é o método funcionando como
 desenhado: nenhuma correção de defeito silencioso, provada ao vivo pelo próprio Flavio ou por um
 agente cego, foi aceita como fechada sem prova, nem quando a prova aponta para a correção anterior
-mesma. Ver `escala-geral/BACKLOG.md` P1.14/P1.15 para o detalhe completo com `arquivo:linha`.
+mesma. Ver `escala-geral/BACKLOG.md` P1.14/P1.15/P1.16 para o detalhe completo com `arquivo:linha`.
+
+**Correção de UX à parte, também ao vivo:** o Flavio comparou o cartão de pessoa do Elenco com o
+cartão de evento da Malha (que já mostra "editar"/"fechar") e apontou que o Elenco não tinha
+indicador nenhum de abrir/fechar. Na primeira tentativa a correção saiu invertida — mexi na Malha em
+vez de completar o Elenco — e foi corrigida assim que ele apontou o engano. `CartaoPessoa`
+(`escala-geral/src/admin/Admin.tsx`) ganhou o mesmo rótulo textual da Malha; nada mudou na Malha.
 
 **Gate:** não rodado aqui — nenhuma linha do `escala-porteiros` mudou. Nada a reverter neste
-repositório; no `escala-geral`, `git revert` dos commits desta rodada volta os defeitos acima.
+repositório; no `escala-geral`, `git revert` dos commits desta rodada volta os defeitos e a correção
+de UX acima.
