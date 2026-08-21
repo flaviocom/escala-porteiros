@@ -756,3 +756,56 @@ primeiras, varreu o repositório inteiro por qualquer forma de estado por origem
 (`localStorage`/`sessionStorage`/cookies/IndexedDB/service worker) e **fechou de verdade**: só 4
 arquivos usam `localStorage`, todos corretos; nenhuma outra superfície. 421/421 testes, build
 limpo, três vezes.
+
+## DB-067 · 20/08/2026 — "regra máxima": horário fixo não bastava, e a 4ª auditoria achou o preço de ter feito a mudança rápido demais
+
+**O pedido (regra máxima, palavras textuais dele):** *"eu não quero um horário fixo ou período
+fixo. Eu quero que você controle horas mesmo, com data e hora de Brasília, Brasil, sempre. Entenda
+isso. Isso é uma regra máxima."* — e, depois de eu apresentar o desenho e pedir confirmação (ele
+tinha pedido explicitamente: *"confirma isso antes... pra eu verificar se você tá com a ideia
+correta"*): *"se eu colocar um período (manhã, tarde ou noite), é o período. Se eu colocar hora,
+você tem que conseguir controlar a hora exata, exibir na escala e assim por diante."*
+
+**O que foi construído, só no `escala-geral` (produção não tocada):** `EventoSemEscala`
+generalizou "Santa Ceia" (nome cravado) para nome editável + data editável + escolha DIA TODO ou
+HORÁRIO ESPECÍFICO; `RegraMalha.horaInicio/horaFim` deixaram de ser informativos e passaram a
+decidir o encaixe de verdade, propagando para cada `Turno` gerado. Decisão de arquitetura
+deliberada: `HH:mm` como texto puro, nunca `Date` — elimina o defeito clássico de fuso horário por
+construção, não por configuração que alguém possa errar. As duas formas (período × hora real)
+COEXISTEM, como ele confirmou. Dois bugs achados pelo teste NOVO escrito para provar a mudança
+(`evento-sem-escala.test.ts`), antes de qualquer auditoria externa: semântica de sobreposição
+errada ("turno começa dentro" em vez de "turno se sobrepõe"), e a regra D9 com falso positivo num
+dia de horário específico.
+
+**A 4ª auditoria independente (agente cego, mandado a refutar) achou 4 defeitos reais** que a
+disciplina de teste da própria sessão não tinha coberto — todos provados ao vivo pelo auditor antes
+de reportar, nenhum hipotético:
+
+1. 🔴 CRÍTICO — vira-a-noite (23:00–01:00, plantão comum em operação 24h) colapsava a janela de
+   bloqueio em silêncio: a comparação de sobreposição em minutos assumia `fim > ini`, e quando o
+   horário atravessa meia-noite isso vira falso sem exceção nem aviso.
+2. 🔴 CRÍTICO — a tela (`Admin.tsx`) aceitava a entrada que causava o item 1, sem validar a relação
+   entre início e fim.
+3. 🟡 MÉDIO — a régua "independente" (`conferencia-independente.ts`) usava um critério mais frouxo
+   (`.some()`) que a regra D9 principal (`.every()`) para decidir se um dia estava coberto pelo
+   evento — ponto cego que a régua cuja função é achar pontos cegos da outra não deveria ter.
+4. 🟡 MÉDIO — um rótulo "SANTA CEIA" cravado sobrou numa tela (`AbaAjustar.tsx`) fora da lista que a
+   rodada anterior tinha corrigido.
+
+**Corrigidos, com teste de regressão reproduzindo o cenário exato de cada achado** (não só
+"parece corrigido"): partição do intervalo horário em pedaços que não cruzam meia-noite
+(`segmentosDoIntervalo`, `malha.ts`); validação na tela que aceita vira-a-noite de propósito
+(matematicamente correto agora) mas rejeita início-igual-a-fim (sem leitura sensata), com mensagem
+visível; mesmo critério `.every()` nas duas réguas; rótulo trocado para o nome editável do evento.
+432/432 testes (era 428), typecheck/gate/build limpos. **5ª auditoria** (verificação cética das 4
+correções, ela mesma mandada a tentar refutar) disparada — resultado ainda pendente no momento
+deste registro.
+
+**Aprendizado, o mesmo de sempre, de novo:** cada rodada de auditoria cega achou algo real que a
+rodada anterior (incluindo os próprios testes escritos na hora) não cobriu. Não é sinal de trabalho
+malfeito — é o método funcionando como desenhado: nenhuma correção de defeito silencioso, provado
+ao vivo pelo próprio Flavio ou por um agente cego, foi aceita como fechada sem prova. Ver
+`escala-geral/BACKLOG.md` P1.14 para o detalhe completo com `arquivo:linha`.
+
+**Gate:** não rodado aqui — nenhuma linha do `escala-porteiros` mudou. Nada a reverter neste
+repositório; no `escala-geral`, `git revert` do commit desta rodada volta os 4 defeitos acima.
