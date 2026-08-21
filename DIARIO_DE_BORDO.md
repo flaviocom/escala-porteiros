@@ -797,15 +797,32 @@ de reportar, nenhum hipotético:
 (`segmentosDoIntervalo`, `malha.ts`); validação na tela que aceita vira-a-noite de propósito
 (matematicamente correto agora) mas rejeita início-igual-a-fim (sem leitura sensata), com mensagem
 visível; mesmo critério `.every()` nas duas réguas; rótulo trocado para o nome editável do evento.
-432/432 testes (era 428), typecheck/gate/build limpos. **5ª auditoria** (verificação cética das 4
-correções, ela mesma mandada a tentar refutar) disparada — resultado ainda pendente no momento
-deste registro.
+432/432 testes (era 428), typecheck/gate/build limpos.
 
-**Aprendizado, o mesmo de sempre, de novo:** cada rodada de auditoria cega achou algo real que a
-rodada anterior (incluindo os próprios testes escritos na hora) não cobriu. Não é sinal de trabalho
-malfeito — é o método funcionando como desenhado: nenhuma correção de defeito silencioso, provado
-ao vivo pelo próprio Flavio ou por um agente cego, foi aceita como fechada sem prova. Ver
-`escala-geral/BACKLOG.md` P1.14 para o detalhe completo com `arquivo:linha`.
+**A 5ª auditoria (mandada a refutar as 4 correções acima) achou uma REGRESSÃO na própria correção
+do item 1.** O comentário da correção do vira-a-noite assumia que `horaInicio === horaFim` nunca
+chegaria à função, porque a tela impedia — verdade só para metade dos dois formulários que
+alimentam a mesma função: `Admin.tsx` (evento) valida de verdade; `AbaMalha.tsx` (regra da malha)
+era campo de texto livre, sem validação nenhuma. Provado ao vivo: uma regra de malha com início
+igual a fim bloqueava (zerava a capacidade de) um turno por causa de um evento em QUALQUER outra
+hora do dia, sem relação nenhuma — a mesma classe de defeito silencioso que a correção anterior
+existia para eliminar, só que pela outra porta. Achado um segundo item, menor: a paridade
+D9×conferência independente só tinha sido fechada numa direção; a direção contrária (dia marcado no
+bloco que não consta mais do calendário — evento removido da config depois de gerar) nunca existiu
+na régua independente. **Corrigidos os dois — desta vez na ORIGEM, não na porta de entrada:**
+`segmentosDoIntervalo` (`malha.ts`) agora trata início-igual-a-fim como intervalo vazio, sem
+depender de qual formulário o dado atravessou; `AbaMalha.tsx` ganhou `type="time"` e aviso inline,
+como defesa em profundidade, não como única trava. 435/435 testes (era 432), typecheck/gate/build
+limpos. **6ª auditoria** (verificação cética desta correção) disparada — resultado ainda pendente
+no momento deste registro.
+
+**Aprendizado, o mesmo de sempre, de novo — e desta vez com uma volta extra:** cada rodada de
+auditoria cega achou algo real que a rodada anterior (incluindo os próprios testes escritos na
+hora) não cobriu, e na 5ª rodada isso incluiu a PRÓPRIA correção anterior introduzindo o mesmo tipo
+de defeito por outra porta. Não é sinal de trabalho malfeito — é o método funcionando como
+desenhado: nenhuma correção de defeito silencioso, provada ao vivo pelo próprio Flavio ou por um
+agente cego, foi aceita como fechada sem prova, nem quando a prova aponta para a correção anterior
+mesma. Ver `escala-geral/BACKLOG.md` P1.14/P1.15 para o detalhe completo com `arquivo:linha`.
 
 **Gate:** não rodado aqui — nenhuma linha do `escala-porteiros` mudou. Nada a reverter neste
-repositório; no `escala-geral`, `git revert` do commit desta rodada volta os 4 defeitos acima.
+repositório; no `escala-geral`, `git revert` dos commits desta rodada volta os defeitos acima.
