@@ -166,8 +166,9 @@ tela (usava o guloso; a tela compara 8 versões) e gravava em **uma pasta só**.
 [`RECONSTRUIR.md`](RECONSTRUIR.md): modelo de dados, catálogo de regras (⚙️ **gerado do
 código**, com portão que reprova se divergir), algoritmo, arquitetura (grafo de importações
 **medido**), operação e instalação do zero. O portão `contagem` foi **invertido**: tinha lista fixa
-de 5 documentos e deixava 4 invisíveis; agora descobre e mede **23 documentos** (medido em
-18/08/2026 — o número cresce quando um documento vivo novo entra; ver `docs/PORTOES.md`).
+de 5 documentos e deixava 4 invisíveis; agora descobre e mede — o número cresce quando um documento
+vivo novo entra (23 em 18/08/2026; **24 em 21/08/2026**, quando `docs/historico/SOLICITACOES/
+INDICE.md` nasceu — ver `docs/PORTOES.md`).
 
 **7. A finalidade ficou escrita, em três fases** (decisão dele, S-029). **Hoje o produto atende UMA
 congregação, e só ela** — os porteiros da comum do Jd. São Luiz. Outras comuns e a venda são planos

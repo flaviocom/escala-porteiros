@@ -62,10 +62,29 @@ const MALHA_PREDIAL = {
 }
 
 const diasEntreDatas = (a, b) => Math.round((Date.parse(b + 'T00:00:00Z') - Date.parse(a + 'T00:00:00Z')) / 86400000)
+
+/**
+ * 🔴 `Date.UTC()` + `toISOString()` é o antipadrão que `portao-datas.mjs` proíbe — achado pelo
+ * próprio gate ao rodar pela primeira vez desde que este arquivo nasceu (20/08/2026). Mesmo com as
+ * duas pontas em UTC (não misturava com hora local), a convenção do projeto é mais estrita: não
+ * usar `Date` nenhum para aritmética de calendário, só inteiro puro — é como
+ * `ultimoDiaDoMes`/`somarDias` (`src/dominio/datas.ts`) já funcionam, e é o que elimina a classe
+ * inteira de bug, não só este caso. Reescrito sem `Date`, com o mesmo comportamento de "grudar no
+ * fim do mês" quando o dia de origem não existe no mês de destino (ex.: 31/01 + 1 mês → 28 ou 29/02).
+ */
+function ehBissexto(ano) {
+  return (ano % 4 === 0 && ano % 100 !== 0) || ano % 400 === 0
+}
+function diasNoMes(ano, mes) {
+  return [31, ehBissexto(ano) ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][mes - 1]
+}
 function somarMeses(iso, n) {
   const [a, m, d] = iso.split('-').map(Number)
-  const dt = new Date(Date.UTC(a, m - 1 + n, d))
-  return dt.toISOString().slice(0, 10)
+  const totalMeses = a * 12 + (m - 1) + n
+  const anoNovo = Math.floor(totalMeses / 12)
+  const mesNovo = (totalMeses % 12) + 1
+  const diaNovo = Math.min(d, diasNoMes(anoNovo, mesNovo))
+  return `${String(anoNovo).padStart(4, '0')}-${String(mesNovo).padStart(2, '0')}-${String(diaNovo).padStart(2, '0')}`
 }
 
 /** Piso global, quantas pessoas estão nele, e o índice de Jain — a mesma régua do experimento original. */
