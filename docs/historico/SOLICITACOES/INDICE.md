@@ -16,7 +16,8 @@ com `FECHADA em HH:MM SP — continua em <próximo arquivo>` e abre o próximo (
 | Data | Arquivo | O que aconteceu |
 |---|---|---|
 | 21/08/2026 | [`2026-08-21.md`](2026-08-21.md) | Implantação do próprio método — o Flavio pediu um diário contínuo de solicitações; achado que a skill global `/historico` (Regime B-especial) já existia, nascida hoje no ThetaLens V3; corrigido um defeito de infraestrutura achado no caminho (`docs/solicitacoes/INDICE_DE_SOLICITACOES.md` não estava declarado como documento histórico em `docs/regimes-documentos.json`). |
+| 22/08/2026 | [`2026-08-22.md`](2026-08-22.md) | Diagnóstico com pesquisa externa de 6 peças do método multi-projeto (Super Prompt, portões, rotinas), implementado globalmente: digest cronológico cross-projeto (`cofre/Diario/`), fechamento noturno atualizado ao vivo, prova de execução real via `RemoteTrigger`, fix de ratchet gate em `charmway-erp` com prova de mordida. |
 
 ---
 
-**Arquivo do dia mais recente:** [`2026-08-21.md`](2026-08-21.md)
+**Arquivo do dia mais recente:** [`2026-08-22.md`](2026-08-22.md)
