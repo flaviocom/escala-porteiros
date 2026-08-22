@@ -37,9 +37,18 @@
   ],
 
   "_metadata_projeto": {
-    "_comentario": "Informativo — pre-voo.mjs NÃO lê estas chaves (só cli/env/git/arquivos/docs/deps; scripts/pre-voo.mjs:82-99). Ficam para o humano ou a IA que abrir o manifesto ter contexto rápido, sem virar portão silencioso.",
+    "_comentario": "Informativo — pre-voo.mjs NÃO lê estas chaves (só cli/env/git/arquivos/docs/deps/saas/credenciais_exigidas/diario_solicitacoes; scripts/pre-voo.mjs:82-99). Ficam para o humano ou a IA que abrir o manifesto ter contexto rápido, sem virar portão silencioso.",
     "site": "https://flaviocom.github.io/escala-porteiros/ — AGENTS.md:38, ESTADO.md:49",
-    "repositorio_github": "https://github.com/flaviocom/escala-porteiros — público, Pages via branch main + /docs. Sem .github/workflows (sem Actions/CI): publicação é por commit direto, não por pipeline.",
-    "hospedagem": "GitHub Pages — branch main + /docs"
-  }
+    "repositorio_github": "https://github.com/flaviocom/escala-porteiros — público, Pages via branch main + /docs. CORRIGIDO 22/08/2026: a nota anterior dizia 'Sem .github/workflows (sem Actions/CI)' — falso, medido agora. Existe `.github/workflows/publicar.yml` (on: push main + workflow_dispatch) e ele RODA de verdade: `gh run list --repo flaviocom/escala-porteiros` mostra runs reais, a mais recente concluída com sucesso.",
+    "hospedagem": "GitHub Pages — branch main + /docs, publicado pelo workflow `publicar.yml` (Pages Environment `github-pages`, não `Production`)"
+  },
+
+  "_nota_saas": "Acrescentado 22/08/2026 — auditoria do método (mesmo padrão aplicado ao charmway-erp). `github_repo` liga a checagem viva de que o último `publicar.yml` concluiu com sucesso (medido: sim). `site` liga a checagem de HTTP 200 no GitHub Pages. `deploy_github_repo` foi DELIBERADAMENTE deixado de fora: esse item do pré-voo filtra deployments com `environment=Production` (scripts/pre-voo.mjs:567), mas este projeto publica em Pages sob `environment:\"github-pages\"` (medido via `gh api .../deployments`) — ligar aqui daria sempre 'ok' sem medir nada real.",
+  "saas": {
+    "github_repo": "flaviocom/escala-porteiros",
+    "site": "https://flaviocom.github.io/escala-porteiros/"
+  },
+
+  "_nota_credenciais_exigidas": "Acrescentado 22/08/2026. Vazio de propósito: este projeto não tem `.env.example`, não mexe em banco de dados nem em pagamento, e as duas únicas credenciais (GITHUB_PAT_ESCALA_PORTEIROS, ANTHROPIC_API_KEY_ESCALA — já listadas em `env.opcionais` acima) são explicitamente opcionais por desenho: sua ausência degrada uma função (publicar / explicar a proposta) mas não quebra o projeto. `credenciais_exigidas` sempre marca `bloqueia:true` no pré-voo (scripts/pre-voo.mjs:381) — listá-las aqui converteria degradação graciosa deliberada em trava vermelha permanente.",
+  "credenciais_exigidas": []
 }
