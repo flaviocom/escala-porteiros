@@ -50,5 +50,10 @@
   },
 
   "_nota_credenciais_exigidas": "Acrescentado 22/08/2026. Vazio de propósito: este projeto não tem `.env.example`, não mexe em banco de dados nem em pagamento, e as duas únicas credenciais (GITHUB_PAT_ESCALA_PORTEIROS, ANTHROPIC_API_KEY_ESCALA — já listadas em `env.opcionais` acima) são explicitamente opcionais por desenho: sua ausência degrada uma função (publicar / explicar a proposta) mas não quebra o projeto. `credenciais_exigidas` sempre marca `bloqueia:true` no pré-voo (scripts/pre-voo.mjs:381) — listá-las aqui converteria degradação graciosa deliberada em trava vermelha permanente.",
-  "credenciais_exigidas": []
+  "credenciais_exigidas": [],
+
+  "_nota_portoes_amarrados": "Ligado 22/08/2026 — conferido AGORA (checar-portoes-amarrados.mjs): nenhuma promessa de automação sem gancho.",
+  "portoes_amarrados": {
+    "bloqueia": true
+  }
 }
