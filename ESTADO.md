@@ -2,7 +2,7 @@
 
 > **Onde o projeto está agora.** Documento **vivo**: sobrescrito, não acumulado.
 >
-> **Última atualização:** 20/08/2026 · **Fuso:** America/São_Paulo
+> **Última atualização:** 21/08/2026 · **Fuso:** America/São_Paulo
 >
 > **Cadeia de navegação, nesta ordem:**
 > **`ESTADO.md` (você está aqui)** → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-20.md) → [`BACKLOG.md`](BACKLOG.md)
@@ -46,6 +46,21 @@ credencial em aberto é a chave do motor, **opcional**; nada trava sem ela. **20
 virou dois — nasceu [`escala-geral`](https://github.com/flaviocom/escala-geral), motor genérico
 para vender, sem tocar neste repositório de produção. Detalhe completo do dia inteiro:
 [`HANDOFF_2026-08-20.md`](docs/handoff/HANDOFF_2026-08-20.md).
+
+## 21/08: endurecimento do método (Diário + Cofre), sem mudança de produto
+
+**Fechamento automático do dia (23h SP):** cinco commits, todos de documentação/método, nenhum de
+código de produto. Diário contínuo de solicitações implantado (S-073,
+[`docs/historico/SOLICITACOES/2026-08-21.md`](docs/historico/SOLICITACOES/2026-08-21.md)) e o
+Cofre de Conhecimento compartilhado (`_padroes-globais/cofre/`) passou a ser destino obrigatório
+de todo trabalho consequente no mesmo passo (regra global #11). Rodando o `npm run gate` completo
+pela primeira vez no dia, dois defeitos reais apareceram e foram corrigidos: contagem de
+"documentos vivos" desatualizada (23→24) e `scripts/experimento-busca-local-em-escala.mjs` usando
+`Date.UTC()+toISOString()` — antipadrão que o portão `npm run datas` proíbe — reescrito com
+aritmética pura de inteiro. Autor git declarado em `docs/pre-voo.json` corrigido para bater com a
+realidade (`flaviocom@users.noreply.github.com`), e `diario_solicitacoes.bloqueia` ligado (o
+diário agora trava se ficar desatualizado). Detalhe completo nos commits de 21/08 e em
+[`docs/historico/SOLICITACOES/2026-08-21.md`](docs/historico/SOLICITACOES/2026-08-21.md).
 
 ## O mais recente: nasceu o `escala-geral`, e horário real virou regra máxima (S-067 a S-072, 20/08)
 
