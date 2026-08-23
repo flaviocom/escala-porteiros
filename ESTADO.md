@@ -2,7 +2,7 @@
 
 > **Onde o projeto está agora.** Documento **vivo**: sobrescrito, não acumulado.
 >
-> **Última atualização:** 21/08/2026 · **Fuso:** America/São_Paulo
+> **Última atualização:** 22/08/2026 · **Fuso:** America/São_Paulo
 >
 > **Cadeia de navegação, nesta ordem:**
 > **`ESTADO.md` (você está aqui)** → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-20.md) → [`BACKLOG.md`](BACKLOG.md)
@@ -46,6 +46,17 @@ credencial em aberto é a chave do motor, **opcional**; nada trava sem ela. **20
 virou dois — nasceu [`escala-geral`](https://github.com/flaviocom/escala-geral), motor genérico
 para vender, sem tocar neste repositório de produção. Detalhe completo do dia inteiro:
 [`HANDOFF_2026-08-20.md`](docs/handoff/HANDOFF_2026-08-20.md).
+
+## 22/08: diagnóstico e correções globais do método padrão-ouro, sem mudança de produto
+
+**Fechamento automático do dia (23h SP):** quatro commits, todos de documentação/método
+(`docs/pre-voo.json` ganhou `portoes_amarrados.bloqueia` e `saas`/`credenciais_exigidas`; merge de
+`main`), nenhum de código de produto. A sessão da tarde diagnosticou (pesquisa real, 5 agentes) e
+corrigiu globalmente (nos 5 projetos do dono) falhas do próprio método: `checar-portoes-amarrados.mjs`
+(meta-portão novo, achou regras de automação sem gancho real) + hook `portao-pos-commit-metodo.mjs`
+(roda `portao_metodo.mjs` depois de todo `git commit`) + digest cronológico cross-projeto
+(`_padroes-globais/cofre/Diario/`) + dead man's switch do fechamento noturno (Healthchecks.io).
+Detalhe completo em [`docs/historico/SOLICITACOES/2026-08-22.md`](docs/historico/SOLICITACOES/2026-08-22.md).
 
 ## 21/08: endurecimento do método (Diário + Cofre), sem mudança de produto
 

@@ -1104,3 +1104,26 @@ Achado lateral: o contador de casos do próprio autoteste era escrito à mão e 
 (26 exibido, 32 rodando) — trocado por contagem automática, nos dois autotestes que tinham esse
 padrão. Autoteste: 26→**32 casos**. Gate: 37 passos, `EXIT_GATE=0`.
 **Solicitação:** S-066.
+
+---
+
+## 22/08/2026 — diagnóstico e correções globais do método padrão-ouro (S-074)
+
+Nenhuma mudança de produto. O dono pediu diagnóstico e pesquisa sobre por que peças do método
+padrão-ouro (Diário, `pre-voo.json`, `portao_metodo.mjs`, skill `metodo-gauntlet`, Cofre de
+Conhecimento, fechamento noturno) "não funcionam por completo", e depois autorizou correção global
+— em código, nos 5 projetos do dono, não só relato. Pesquisa real (`Workflow`, 5 agentes paralelos,
+38 buscas web, fontes citadas: Healthchecks.io, Google SRE Workbook, dead man's switch, ratchet
+gates/mutation testing, configuration drift). Implementado com prova ao vivo:
+`_padroes-globais/scripts/checar-portoes-amarrados.mjs` (meta-portão novo, achou 2 promessas de
+automação sem gancho real neste e nos projetos irmãos) + `hooks/portao-pos-commit-metodo.mjs`
+(roda `portao_metodo.mjs` depois de todo `git commit`) + digest cronológico cross-projeto
+(`_padroes-globais/cofre/Diario/`) + dead man's switch do fechamento noturno via Healthchecks.io.
+Neste repositório: `docs/pre-voo.json` ganhou `saas`/`credenciais_exigidas` e
+`portoes_amarrados.bloqueia:true`, reconferidos limpos antes de ligar o freio. Achado real no
+caminho: um clone abandonado deste repositório (`D:\...\escala-porteiros`, 16+ commits atrás)
+tinha sido investigado por engano por um sub-agente da auditoria — revertido, marcado com
+`LEIA-ISTO-CLONE-ABANDONADO.md`, e a entrada de diário que herdara a conclusão errada foi
+corrigida. Detalhe linha a linha:
+[`docs/historico/SOLICITACOES/2026-08-22.md`](docs/historico/SOLICITACOES/2026-08-22.md).
+**Solicitação:** S-074.
