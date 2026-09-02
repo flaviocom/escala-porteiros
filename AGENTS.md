@@ -280,6 +280,7 @@ aqui. Escrito para quem **não participou de nada** — inclusive outra intelig�
 | **De onde vem cada dado**, a que custo, e se dá para pagar menos | [`docs/INVENTARIO_DE_FONTES.md`](docs/INVENTARIO_DE_FONTES.md) |
 | Comparação de conformidade com o projeto-irmão `charmway-erp` | [`docs/TABELA_CONFORMIDADE_PROJETOS_IRMAOS.md`](docs/TABELA_CONFORMIDADE_PROJETOS_IRMAOS.md) |
 | Método de trabalho | `D:\Antigravity\_padroes-globais\` |
+| Conhecimento reutilizável, decisões e erros de todos os projetos | **Antes de planejar, pesquisar ou construir, consulte o Cofre de Conhecimento em** `D:\Antigravity\_padroes-globais\cofre\INDICE.md` — fonte única, sem copiar o vault |
 
 ## 8. Como se trabalha
 

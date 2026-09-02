@@ -36,6 +36,9 @@
     "BACKLOG.md"
   ],
 
+  "_nota_cofre_portabilidade": "Ligado em 01/09/2026 após auditoria externa: a fonte única de conhecimento só é útil se uma sessão que começa neste projeto souber onde abri-la. O pré-voo exige a rota e a ordem de consulta no AGENTS.md.",
+  "cofre_portabilidade": { "bloqueia": true },
+
   "_metadata_projeto": {
     "_comentario": "Informativo — pre-voo.mjs NÃO lê estas chaves (só cli/env/git/arquivos/docs/deps/saas/credenciais_exigidas/diario_solicitacoes; scripts/pre-voo.mjs:82-99). Ficam para o humano ou a IA que abrir o manifesto ter contexto rápido, sem virar portão silencioso.",
     "site": "https://flaviocom.github.io/escala-porteiros/ — AGENTS.md:38, ESTADO.md:49",
