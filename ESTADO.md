@@ -2,7 +2,7 @@
 
 > **Onde o projeto está agora.** Documento **vivo**: sobrescrito, não acumulado.
 >
-> **Última atualização:** 22/08/2026 · **Fuso:** America/São_Paulo
+> **Última atualização:** 02/09/2026 · **Fuso:** America/São_Paulo
 >
 > **Cadeia de navegação, nesta ordem:**
 > **`ESTADO.md` (você está aqui)** → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-20.md) → [`BACKLOG.md`](BACKLOG.md)
@@ -57,6 +57,13 @@ corrigiu globalmente (nos 5 projetos do dono) falhas do próprio método: `checa
 (roda `portao_metodo.mjs` depois de todo `git commit`) + digest cronológico cross-projeto
 (`_padroes-globais/cofre/Diario/`) + dead man's switch do fechamento noturno (Healthchecks.io).
 Detalhe completo em [`docs/historico/SOLICITACOES/2026-08-22.md`](docs/historico/SOLICITACOES/2026-08-22.md).
+
+## 02/09: fechamento automático do dia, sem mudança de produto
+
+**Fechamento automático do dia (23h SP):** um commit, de documentação/método — `AGENTS.md` e
+`docs/pre-voo.json` ligados ao Cofre de Conhecimento compartilhado (`_padroes-globais/cofre/`).
+Nenhum código de produto tocado. Detalhe em
+[`docs/historico/SOLICITACOES/2026-09-02.md`](docs/historico/SOLICITACOES/2026-09-02.md).
 
 ## 21/08: endurecimento do método (Diário + Cofre), sem mudança de produto
 

@@ -1127,3 +1127,12 @@ tinha sido investigado por engano por um sub-agente da auditoria — revertido, 
 corrigida. Detalhe linha a linha:
 [`docs/historico/SOLICITACOES/2026-08-22.md`](docs/historico/SOLICITACOES/2026-08-22.md).
 **Solicitação:** S-074.
+
+---
+
+## 02/09/2026 — fechamento automático noturno, sem mudança de produto
+
+Um commit no dia (`aca0fd5`, 20:38 SP): `AGENTS.md` e `docs/pre-voo.json` ligados ao Cofre de
+Conhecimento compartilhado (`_padroes-globais/cofre/`). Nenhum código de produto tocado. Diário e
+`ESTADO.md` fechados pela rotina noturna — detalhe em
+[`docs/historico/SOLICITACOES/2026-09-02.md`](docs/historico/SOLICITACOES/2026-09-02.md).
