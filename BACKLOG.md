@@ -35,9 +35,12 @@ O que já está decidido e **vale para este projeto sem nova conversa**:
 - **Números próprios**, dedicados a este projeto. **Um chip = uma carteira**; chip sem dono declarado
   **não aparece em painel nenhum e não dispara**.
 - 🔑 **Onde o número aparece não define de quem ele é**, e **quem conecta também não**. Conectar depende
-  de posse física do aparelho e tem de ser possível para **qualquer usuário ativo**; declarar a carteira
-  é decisão de produto, e vai como **campo obrigatório no ato do cadastro** — para nenhum número nascer
-  órfão e ninguém virar gargalo. A pergunta que decide é *"a serviço de que produto ele fala com quem?"*.
+  de posse física do aparelho e é aberto a qualquer usuário ativo; **destinar a carteira é ato
+  reservado ao administrador dos projetos** — quem trabalha num projeto **não** manda chip para outro.
+  A pergunta que decide é *"a serviço de que produto ele fala com quem?"*.
+- **Chip recém-conectado nasce em `aguardando destinação`:** não dispara, mas **aparece na fila de quem
+  destina** (com quem conectou, quando e qual número). *Invisível para operar ≠ invisível para
+  administrar* — pedido que some em silêncio é defeito, não proteção.
 - **Chama o MOTOR na VPS**, nunca o charmway.net. Reaproveita ritmo, rodízio, anti-banimento,
   conferência pós-envio e leitura de mídia; constrói aqui só a tela, os contatos e o texto.
 - **Envio particular nunca passa por dormência, blacklist ou alto desconto** — em nenhum projeto.
