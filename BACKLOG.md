@@ -19,6 +19,32 @@
 
 ## P0 — Decisões do dono 👤
 
+### P0.0 🆕 ABERTO 04/09/2026 — campanhas de WhatsApp aqui seguem o modelo de CARTEIRA DE ENVIO
+
+**Nada a construir agora.** Esta entrada existe para que, no dia em que este projeto for fazer
+publicidade por WhatsApp, **ninguém redecida nem repesquise** o que foi fechado em 04/09/2026.
+
+**Doc-mestre** (vive no CHARMway, dono da VPS):
+`D:\Antigravity\Meus-Projetos\charmway-erp\docs\CARTEIRAS_DE_ENVIO.md`
+**Cofre:** `capacidades-reutilizaveis/Carteira-de-Envio-Numeros-Dedicados.md` ·
+`erros/Numero-Sem-Dono-Aparece-em-Todo-Painel.md`
+**Endereçável pela fala:** `node <padroes>/scripts/o-mesmo.mjs "a mesma carteira de envio do CHARMway"`.
+
+O que já está decidido e **vale para este projeto sem nova conversa**:
+
+- **Números próprios**, dedicados a este projeto. **Um chip = uma carteira**; chip sem dono declarado
+  **não aparece em painel nenhum e não dispara**.
+- 🔑 **Onde o número aparece não define de quem ele é** — todos aparecem no CHARMchat porque ele pareia
+  cada um como aparelho adicional, e quem pareia é o dono com o celular na mão. A pergunta que decide é
+  *"a serviço de que produto ele fala com quem?"*.
+- **Chama o MOTOR na VPS**, nunca o charmway.net. Reaproveita ritmo, rodízio, anti-banimento,
+  conferência pós-envio e leitura de mídia; constrói aqui só a tela, os contatos e o texto.
+- **Envio particular nunca passa por dormência, blacklist ou alto desconto** — em nenhum projeto.
+- **Cadência por PESSOA**, somando todas as carteiras.
+- **Atendimento mora no projeto dono do número.**
+- **Motor de texto próprio** — porteiros e síndicos não são o público de cosméticos nem o de mercado
+  financeiro. ⚠️ Criar motor de IA é **pare-e-pergunte**.
+
 ### P0.1 ✅ FECHADO 08/08/2026 — aprovado pelo fato
 O desenho ([`a spec`](docs/superpowers/specs/2026-08-04-area-administrativa-escala-design.md))
 pedia aprovação antes de construir. A construção foi dirigida por ele solicitação a solicitação
