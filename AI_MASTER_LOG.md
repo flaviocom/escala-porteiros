@@ -1136,3 +1136,12 @@ Um commit no dia (`aca0fd5`, 20:38 SP): `AGENTS.md` e `docs/pre-voo.json` ligado
 Conhecimento compartilhado (`_padroes-globais/cofre/`). Nenhum código de produto tocado. Diário e
 `ESTADO.md` fechados pela rotina noturna — detalhe em
 [`docs/historico/SOLICITACOES/2026-09-02.md`](docs/historico/SOLICITACOES/2026-09-02.md).
+
+## 04/09/2026 — fechamento automático noturno, sem mudança de produto
+
+Três commits no dia, todos em `BACKLOG.md`: registrada a entrada **§P0.0** — campanhas de WhatsApp
+deste projeto seguirão o desenho de **Carteira de Envio** fechado hoje em conversa cross-projeto com
+o dono no CHARMway-ERP (números próprios dedicados a este projeto; um chip = uma carteira; "onde o
+número aparece não define de quem ele é"). Nada a construir agora — a entrada existe só para que
+ninguém redecida. Nenhum código de produto tocado. Diário fechado pela rotina noturna — detalhe em
+[`docs/historico/SOLICITACOES/2026-09-04.md`](docs/historico/SOLICITACOES/2026-09-04.md).

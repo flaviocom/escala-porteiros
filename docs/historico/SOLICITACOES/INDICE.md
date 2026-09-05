@@ -18,7 +18,8 @@ com `FECHADA em HH:MM SP — continua em <próximo arquivo>` e abre o próximo (
 | 21/08/2026 | [`2026-08-21.md`](2026-08-21.md) | Implantação do próprio método — o Flavio pediu um diário contínuo de solicitações; achado que a skill global `/historico` (Regime B-especial) já existia, nascida hoje no ThetaLens V3; corrigido um defeito de infraestrutura achado no caminho (`docs/solicitacoes/INDICE_DE_SOLICITACOES.md` não estava declarado como documento histórico em `docs/regimes-documentos.json`). |
 | 22/08/2026 | [`2026-08-22.md`](2026-08-22.md) | Diagnóstico com pesquisa externa de 6 peças do método multi-projeto (Super Prompt, portões, rotinas), implementado globalmente: digest cronológico cross-projeto (`cofre/Diario/`), fechamento noturno atualizado ao vivo, prova de execução real via `RemoteTrigger`, fix de ratchet gate em `charmway-erp` com prova de mordida. |
 | 02/09/2026 | [`2026-09-02.md`](2026-09-02.md) | Fechamento automático noturno — 1 commit do dia (liga o repositório ao Cofre de Conhecimento compartilhado), sem solicitação interativa registrada. |
+| 04/09/2026 | [`2026-09-04.md`](2026-09-04.md) | Fechamento automático noturno — 3 commits do dia (`BACKLOG.md` §P0.0: campanhas de WhatsApp aqui seguem o desenho de Carteira de Envio fechado hoje no CHARMway-ERP), sem solicitação interativa registrada. |
 
 ---
 
-**Arquivo do dia mais recente:** [`2026-09-02.md`](2026-09-02.md)
+**Arquivo do dia mais recente:** [`2026-09-04.md`](2026-09-04.md)

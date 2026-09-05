@@ -2,7 +2,7 @@
 
 > **Onde o projeto está agora.** Documento **vivo**: sobrescrito, não acumulado.
 >
-> **Última atualização:** 02/09/2026 · **Fuso:** America/São_Paulo
+> **Última atualização:** 04/09/2026 · **Fuso:** America/São_Paulo
 >
 > **Cadeia de navegação, nesta ordem:**
 > **`ESTADO.md` (você está aqui)** → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-20.md) → [`BACKLOG.md`](BACKLOG.md)
@@ -57,6 +57,15 @@ corrigiu globalmente (nos 5 projetos do dono) falhas do próprio método: `checa
 (roda `portao_metodo.mjs` depois de todo `git commit`) + digest cronológico cross-projeto
 (`_padroes-globais/cofre/Diario/`) + dead man's switch do fechamento noturno (Healthchecks.io).
 Detalhe completo em [`docs/historico/SOLICITACOES/2026-08-22.md`](docs/historico/SOLICITACOES/2026-08-22.md).
+
+## 04/09: fechamento automático do dia, sem mudança de produto
+
+**Fechamento automático do dia (23h SP):** três commits, todos em `BACKLOG.md` — nova entrada
+**§P0.0**: campanhas de WhatsApp deste projeto seguirão o desenho de **Carteira de Envio** fechado
+hoje em conversa cross-projeto com o dono no CHARMway-ERP (números próprios dedicados; um chip = uma
+carteira; "onde o número aparece não define de quem ele é"). Nada a construir agora. Nenhum código
+de produto tocado. Detalhe em
+[`docs/historico/SOLICITACOES/2026-09-04.md`](docs/historico/SOLICITACOES/2026-09-04.md).
 
 ## 02/09: fechamento automático do dia, sem mudança de produto
 
