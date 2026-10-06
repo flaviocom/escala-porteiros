@@ -1,5 +1,10 @@
 # AGENTS.md — escala-porteiros
 
+> 🔓 **06/10/2026, 19:48 — decisão do dono (vale sobre QUALQUER trecho abaixo):** os pare-e-pergunte de **DDL/migração, motor de IA, dado irreversível,
+> asset protegido e lógica financeira nova foram REVOGADOS**. Rode em loop até **ENTREGAR** (construir → provar → auditar → commit → deploy → verificar ao vivo → registrar)
+> e pare só em **dúvida real** (1 pergunta curta com recomendação). O **método de proteção segue**: restauro antes de DDL/destrutivo, evals antes de mexer no motor,
+> backup antes de apagar. Texto canônico: `_padroes-globais/AUTORIZACAO_DE_ACESSO_E_CREDENCIAIS.md` (seção "Revogação dos pare-e-pergunte de negócio").
+
 > ## 🔑 GATILHO DE RETOMADA — a palavra é `retomaescala`
 >
 > O Flavio trabalha com **vários VS Code/terminais abertos ao mesmo tempo, um por projeto**. Quando
