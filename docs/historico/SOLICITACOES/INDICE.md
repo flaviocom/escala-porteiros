@@ -19,7 +19,8 @@ com `FECHADA em HH:MM SP — continua em <próximo arquivo>` e abre o próximo (
 | 22/08/2026 | [`2026-08-22.md`](2026-08-22.md) | Diagnóstico com pesquisa externa de 6 peças do método multi-projeto (Super Prompt, portões, rotinas), implementado globalmente: digest cronológico cross-projeto (`cofre/Diario/`), fechamento noturno atualizado ao vivo, prova de execução real via `RemoteTrigger`, fix de ratchet gate em `charmway-erp` com prova de mordida. |
 | 02/09/2026 | [`2026-09-02.md`](2026-09-02.md) | Fechamento automático noturno — 1 commit do dia (liga o repositório ao Cofre de Conhecimento compartilhado), sem solicitação interativa registrada. |
 | 04/09/2026 | [`2026-09-04.md`](2026-09-04.md) | Fechamento automático noturno — 3 commits do dia (`BACKLOG.md` §P0.0: campanhas de WhatsApp aqui seguem o desenho de Carteira de Envio fechado hoje no CHARMway-ERP), sem solicitação interativa registrada. |
+| 06/10/2026 | [`2026-10-06.md`](2026-10-06.md) | Fechamento automático noturno — 1 commit do dia (aviso no `AGENTS.md` sobre a revogação dos pare-e-pergunte de negócio, decisão do dono propagada de `_padroes-globais`), sem solicitação interativa registrada. |
 
 ---
 
-**Arquivo do dia mais recente:** [`2026-09-04.md`](2026-09-04.md)
+**Arquivo do dia mais recente:** [`2026-10-06.md`](2026-10-06.md)
