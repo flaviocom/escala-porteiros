@@ -93,3 +93,23 @@ provado com mutante nas duas pontas:
 Jain 0,9965 é o máximo aritmético). A prova é re-rodável: `npm run experimento:busca-local`
 (`scripts/experimento-busca-local.mjs`) — se o elenco/malha mudarem de forma e ele achar troca, a
 recusa perde a prova e a decisão reabre.
+
+## P3.1 a P3.13 — rotacionados em 22/10/2026 (todos ✅ em 04/08/2026)
+
+Saíram do `BACKLOG.md` porque o documento vivo estourou o teto de 40 KB. Conteúdo intacto:
+
+| # | Item | Estado |
+|---|---|---|
+| P3.1 | Modelo de dados: `pessoas.json`, `blocos.json`, `config.json` | ✅ 04/08 |
+| P3.2 | Catálogo de regras executável — **12 duras + 5 de qualidade**, cada uma com teste das duas pontas | ✅ 04/08 — 55 testes |
+| P3.3 | Carga inicial: congelar 01/03 → 04/08, **contando as duas pontas** (ERRO 23) | ✅ 04/08 — 184/549/549 |
+| P3.4 | Algoritmo com piso **descoberto** por busca | ✅ 04/08 — piso 6, tentou 9/8/7 |
+| P3.5 | Site público lendo os JSON | ✅ 04/08 — validado ao vivo |
+| P3.6 | Engrenagem discreta + login que **descriptografa** | ✅ 04/08 — cifragem provada no navegador |
+| P3.7 | Telas administrativas: elenco, gerar, conferir | ✅ 04/08 |
+| P3.8 | Publicação por commit via API do GitHub + baixar JSON | ✅ 04/08 — código pronto; **falta o Flavio colar o token** |
+| P3.9 | **Motor**: proposta, placar, explicação, arbitragem e auditoria | ✅ 04/08 — portão entre a proposta e a publicação |
+| P3.10 | Histórico de publicações com reversão pela tela | ✅ 04/08 — e ligou `historicoPublicacoes()`, que estava sem consumidor |
+| P3.11 | Primeira geração real 05/08 → 30/12, com Santa Ceia em 16/08 | ✅ 04/08 — publicada |
+| P3.12 | **Ajuste manual** turno a turno, com o motivo antes do clique | ✅ 04/08 |
+| P3.13 | Mês lido em UTC (3 pontos) | ✅ 04/08 — portão de fuso provado nas duas pontas |

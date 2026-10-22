@@ -220,7 +220,7 @@ pulada na contagem, com o motivo escrito no código.
 anúncio apagada — e aprova a árvore limpa.
 
 ### 13. `generico` — nenhum nome de cliente cravado (§0)
-**População:** 32 arquivos (`src/` + `index.html` + `package.json` + `README.md`) · **25 testes pulados**, contados
+**População:** 32 arquivos (`src/` + `index.html` + `package.json` + `README.md`) · **26 testes pulados**, contados
 e impressos.
 **Os 8 termos:** `JD. São Luiz` · `Congregação Cristã` · `CCB` (com borda por classe de caracteres,
 sem barra invertida) · `Escala (de) Porteiros` · o prompt do motor cravado · `porteiro(s)` como
@@ -326,7 +326,7 @@ achando: quatro citações legítimas que um `grep` à mão tinha deixado passar
 ### 19. `citacoes` — `arquivo:linha` que envelheceu sozinho
 **População:** todo `.md` vivo · **isentos:** os append-only (registram o que era verdade **então**;
 citação velha ali é o registro funcionando). Hoje 6 citações conferidas.
-**Confere:** o arquivo citado existe · o arquivo tem pelo menos aquela linha.
+**Confere:** o arquivo citado existe · o arquivo tem pelo menos aquela linha · e, se a citação traz um **símbolo** entre crases logo depois (a citação seguida do nome da função entre crases), o símbolo está a até 12 linhas da citada — é o que pega a citação que só *deslizou* (fundido em 22/10/2026 a partir do órfão `conferir-citacoes.mjs`, BACKLOG P8.1).
 
 > 🔴 **O próprio BACKLOG pediu este portão, e ninguém ouviu.** O item P4.8 trazia esta frase,
 > escrita à mão por quem viu o problema e não tinha como impedir que voltasse:
@@ -337,12 +337,12 @@ citação velha ali é o registro funcionando). Hoje 6 citações conferidas.
 para ela ficar errada — basta alguém acrescentar dez linhas no arquivo citado. E apodrece em
 silêncio, porque continua *parecendo* precisa.
 
-**Fora de escopo, declarado:** se o *conteúdo* daquela linha ainda é o que a citação descreve — isso
-exigiria entender a frase. Ele pega o apodrecimento grosseiro, que foi o que aconteceu duas vezes, e
+**Fora de escopo, declarado:** se o *conteúdo* daquela linha ainda é o que a citação descreve **quando não há símbolo junto** — isso
+exigiria entender a frase. Cite o símbolo e a citação passa a ser verificável. Ele pega o apodrecimento grosseiro, que foi o que aconteceu duas vezes, e
 não finge pegar o resto.
 
-**Provado nas duas pontas:** linha além do fim do arquivo e arquivo inexistente → EXIT=1, cada um com
-o motivo certo; árvore limpa → EXIT=0.
+**Provado nas duas pontas** (`src/utils/portao-citacoes.test.ts`, 5 testes, roda no `npm test`): linha além do fim do arquivo, arquivo inexistente e símbolo fora da janela → EXIT=1, cada um com
+o motivo certo; árvore limpa, com e sem símbolo → EXIT=0.
 
 ### 20. `doc:regras:conferir` — o catálogo documentado bate com o código
 `docs/CATALOGO_DE_REGRAS.md` é **gerado**. Este passo regenera em memória e compara **byte a byte**

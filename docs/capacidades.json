@@ -156,17 +156,8 @@
       "caminho": "scripts/portao-citacoes.mjs",
       "ramo": "metodo",
       "gatilho": "npm run citacoes",
-      "proposito": "toda citação `arquivo:linha` em documento vivo aponta para arquivo e linha que existem",
-      "portao": "npm run gate — exit 0"
-    },
-    {
-      "id": "conferir-citacoes",
-      "tipo": "ferramenta",
-      "caminho": "scripts/conferir-citacoes.mjs",
-      "ramo": "metodo",
-      "gatilho": "manual — node scripts/conferir-citacoes.mjs (NÃO ligado a nenhum npm run nem ao gate hoje)",
-      "proposito": "origem do portão de citações (BACKLOG P6.10, 05/08/2026) — mais rigoroso que o wired hoje: também confere o SÍMBOLO citado junto da linha, não só se a linha existe",
-      "portao": "nenhum — achado desta rodada: capacidade órfã, registrada no BACKLOG para decisão (consolidar com portao-citacoes.mjs ou religar)"
+      "proposito": "toda citação `arquivo:linha` em documento vivo aponta para arquivo e linha que existem — e, quando traz um símbolo entre crases, o símbolo está a até 12 linhas da citada (fundido de `conferir-citacoes.mjs`, P8.1)",
+      "portao": "npm run gate — exit 0 · src/utils/portao-citacoes.test.ts (5 testes, duas pontas)"
     },
     {
       "id": "gerar-catalogo-de-regras",
