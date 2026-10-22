@@ -20,7 +20,8 @@ com `FECHADA em HH:MM SP — continua em <próximo arquivo>` e abre o próximo (
 | 02/09/2026 | [`2026-09-02.md`](2026-09-02.md) | Fechamento automático noturno — 1 commit do dia (liga o repositório ao Cofre de Conhecimento compartilhado), sem solicitação interativa registrada. |
 | 04/09/2026 | [`2026-09-04.md`](2026-09-04.md) | Fechamento automático noturno — 3 commits do dia (`BACKLOG.md` §P0.0: campanhas de WhatsApp aqui seguem o desenho de Carteira de Envio fechado hoje no CHARMway-ERP), sem solicitação interativa registrada. |
 | 06/10/2026 | [`2026-10-06.md`](2026-10-06.md) | Fechamento automático noturno — 1 commit do dia (aviso no `AGENTS.md` sobre a revogação dos pare-e-pergunte de negócio, decisão do dono propagada de `_padroes-globais`), sem solicitação interativa registrada. |
+| 22/10/2026 | [`2026-10-22.md`](2026-10-22.md) | S-075 — P8.1: dois portões de citação fundidos em um (símbolo a 12 linhas), órfão removido, 5 testes |
 
 ---
 
-**Arquivo do dia mais recente:** [`2026-10-06.md`](2026-10-06.md)
+**Arquivo do dia mais recente:** [`2026-10-22.md`](2026-10-22.md)

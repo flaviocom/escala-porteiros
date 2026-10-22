@@ -9,6 +9,7 @@
 
 | Data | Handoff | O que aconteceu |
 |---|---|---|
+| 22/10/2026 | [`HANDOFF_2026-10-22.md`](HANDOFF_2026-10-22.md) | **P8.1 fechado (S-075)** — os dois portões de citação viraram um só: o cheque de símbolo do órfão `conferir-citacoes.mjs` foi fundido no `portao-citacoes.mjs` do gate, com 5 testes nas duas pontas. Sem mudança de produto. |
 | 20/08/2026 | [`HANDOFF_2026-08-20.md`](HANDOFF_2026-08-20.md) | **O dia do pivô — nasceu o `escala-geral`, e horário real virou regra máxima.** Produto virou dois: `escala-porteiros` (produção, intocada) e `escala-geral` (motor genérico para vender, nasceu hoje). Dentro dele: malha/mensagem configuráveis pela tela, vazamento de dado entre repositórios (3 rodadas de auditoria até fechar), horário real sempre Brasília como regra máxima do dono (6 rodadas de auditoria, 2 delas com achado real — uma inclusive regressão da correção anterior), dado real de demonstração carregado, e um "rascunho fantasma" que escondia dado publicado desde a primeira visita, achado ao vivo e corrigido na raiz. 26 commits no `escala-geral`, 9 de documentação no `escala-porteiros`, zero mudança no motor de produção. |
 |---|---|---|
 | 19/08/2026 | [`HANDOFF_2026-08-19-e.md`](HANDOFF_2026-08-19-e.md) | **Parte 5 — a pergunta certa achou um bug real na mensagem semanal.** A mesma pergunta de auditoria voltou depois do S-065; agente auditor independente confirmou o conserto do "turno já passado" mas achou um segundo defeito real e sistemático: a mensagem semanal calculava o fim da janela de forma diferente do filtro que buscava os turnos, divergindo em toda mensagem enviada às segundas-feiras (a cadência real). Corrigido — `fim` sai de um só lugar. Sweep completo do painel administrativo (12 campos sem id/name). Achado lateral: o contador do próprio autoteste era escrito à mão e tinha desatualizado — trocado por contagem automática. Autoteste 26→32 casos. |
@@ -42,7 +43,7 @@
 
 ---
 
-**Handoff mais recente:** [`HANDOFF_2026-08-20.md`](HANDOFF_2026-08-20.md)
+**Handoff mais recente:** [`HANDOFF_2026-10-22.md`](HANDOFF_2026-10-22.md)
 
 Ligações: [`../solicitacoes/INDICE_DE_SOLICITACOES.md`](../solicitacoes/INDICE_DE_SOLICITACOES.md) ·
 [`../historico/INDICE.md`](../historico/INDICE.md) ·

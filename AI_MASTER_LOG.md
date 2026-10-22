@@ -4,7 +4,7 @@
 > O **porquê** de cada decisão vive no [`DIARIO_DE_BORDO.md`](DIARIO_DE_BORDO.md); aqui fica o
 > registro do que foi feito, passo a passo.
 >
-> **Cadeia de navegação:** [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-20.md) → [`BACKLOG.md`](BACKLOG.md)
+> **Cadeia de navegação:** [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-10-22.md) → [`BACKLOG.md`](BACKLOG.md)
 > **Roteador:** [`AGENTS.md`](AGENTS.md) ·
 > **Solicitações:** [`docs/solicitacoes/INDICE_DE_SOLICITACOES.md`](docs/solicitacoes/INDICE_DE_SOLICITACOES.md) ·
 > **Fatias arquivadas:** [`docs/historico/INDICE.md`](docs/historico/INDICE.md)
@@ -1145,3 +1145,10 @@ o dono no CHARMway-ERP (números próprios dedicados a este projeto; um chip = u
 número aparece não define de quem ele é"). Nada a construir agora — a entrada existe só para que
 ninguém redecida. Nenhum código de produto tocado. Diário fechado pela rotina noturna — detalhe em
 [`docs/historico/SOLICITACOES/2026-09-04.md`](docs/historico/SOLICITACOES/2026-09-04.md).
+
+## 22/10/2026 — P8.1: portões de citação fundidos (S-075)
+
+1. **Solicitação:** escolher o próximo item do backlog sem dependência do dono e entregar em PR.
+2. **Ações:** `scripts/portao-citacoes.mjs` (+ símbolo, `--raiz`), `scripts/conferir-citacoes.mjs` removido, `src/utils/portao-citacoes.test.ts` (novo), `docs/capacidades.json`, `docs/PORTOES.md`, `BACKLOG.md`, `ESTADO.md`, `AGENTS.md`, handoff/índices.
+3. **Regras aprendidas:** nenhum item aberto estava livre de decisão 👤; escolheu-se o interno e reversível. Teste de script mora em `src/` porque o vitest só inclui `src/**`.
+4. **Próximos passos:** o dono decide P5.2, P5.6 (CI do gate) e P8.2.

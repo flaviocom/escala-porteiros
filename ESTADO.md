@@ -2,10 +2,10 @@
 
 > **Onde o projeto está agora.** Documento **vivo**: sobrescrito, não acumulado.
 >
-> **Última atualização:** 04/09/2026 · **Fuso:** America/São_Paulo
+> **Última atualização:** 22/10/2026 · **Fuso:** America/São_Paulo
 >
 > **Cadeia de navegação, nesta ordem:**
-> **`ESTADO.md` (você está aqui)** → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-20.md) → [`BACKLOG.md`](BACKLOG.md)
+> **`ESTADO.md` (você está aqui)** → [`handoff mais recente`](docs/handoff/HANDOFF_2026-10-22.md) → [`BACKLOG.md`](BACKLOG.md)
 > *onde estamos · o que aconteceu na última sessão e por quê · o que fazer a seguir*
 >
 > **Reconstruir do zero (portabilidade entre IAs):** [`docs/RECONSTRUIR.md`](docs/RECONSTRUIR.md)
@@ -46,6 +46,16 @@ credencial em aberto é a chave do motor, **opcional**; nada trava sem ela. **20
 virou dois — nasceu [`escala-geral`](https://github.com/flaviocom/escala-geral), motor genérico
 para vender, sem tocar neste repositório de produção. Detalhe completo do dia inteiro:
 [`HANDOFF_2026-08-20.md`](docs/handoff/HANDOFF_2026-08-20.md).
+
+## 22/10: portão de citações fundido (P8.1 / S-075), sem mudança de produto
+
+O primeiro item aberto do `BACKLOG.md` que cabia sem credencial, deploy ou migração. Os dois portões
+de citação `arquivo:linha` viraram **um só**: o cheque do SÍMBOLO citado junto da linha (janela de 12
+linhas), que vivia no órfão `scripts/conferir-citacoes.mjs`, passou para `scripts/portao-citacoes.mjs`
+— o que roda no gate. O órfão saiu e a folha saiu de `docs/capacidades.json`. Provado nas duas
+pontas em `src/utils/portao-citacoes.test.ts` (5 testes). Nenhum código de produto tocado. ⚠️ O item
+estava marcado 👤; a escolha é reversível (um `git revert`) e está declarada no
+[handoff](docs/handoff/HANDOFF_2026-10-22.md) para o dono vetar.
 
 ## 22/08: diagnóstico e correções globais do método padrão-ouro, sem mudança de produto
 

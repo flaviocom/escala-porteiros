@@ -4,7 +4,7 @@
 > como reverter.** Documento **append-only**, fatiado por período ao estourar o teto. **Nada é
 > excluído, nunca.**
 >
-> **Cadeia de navegação:** [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-20.md) → [`BACKLOG.md`](BACKLOG.md)
+> **Cadeia de navegação:** [`ESTADO.md`](ESTADO.md) → [`handoff mais recente`](docs/handoff/HANDOFF_2026-10-22.md) → [`BACKLOG.md`](BACKLOG.md)
 > **Roteador:** [`AGENTS.md`](AGENTS.md) ·
 > **Solicitações (S-0XX):** [`docs/solicitacoes/INDICE_DE_SOLICITACOES.md`](docs/solicitacoes/INDICE_DE_SOLICITACOES.md) ·
 > **Diário de solicitações (granular):** [`docs/historico/SOLICITACOES/INDICE.md`](docs/historico/SOLICITACOES/INDICE.md) ·
