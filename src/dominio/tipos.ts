@@ -186,6 +186,16 @@ export interface ArquivoBlocos {
 export interface Configuracao {
   versao: 1
   capacidadePadrao: number
+  /**
+   * Menor distância, em dias, que se aceita entre duas escalas da mesma pessoa. Ausente = 1, o
+   * comportamento de sempre: o gerador desce o piso até caber.
+   *
+   * Pedido do Flavio em 03/11/2026, depois de gerar várias vezes e ver escalas a 1 dia de distância:
+   * *"1 dia de distância é muito pouco (…) como que eu faço para ajustar o piso para 2 dias?"*. Com
+   * ele em 2, o gerador continua buscando o maior piso possível, mas para em 2 — e, se não couber,
+   * **declara que não foi possível** em vez de aceitar 1 em silêncio (regra 5 do `AGENTS.md`).
+   */
+  pisoMinimo?: number
   malhaPadrao: Malha
   /**
    * Datas de Santa Ceia. **Uma por ano**, decidida no início do ano, e pode estar vazia enquanto

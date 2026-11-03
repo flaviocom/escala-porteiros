@@ -64,6 +64,8 @@ export function completarConfig(lido: ConfigLida | null | undefined): Configurac
   return {
     versao: c.versao ?? CONFIG_PADRAO.versao,
     capacidadePadrao: c.capacidadePadrao ?? CONFIG_PADRAO.capacidadePadrao,
+    // Opcional: ausente continua ausente, e o gerador usa 1 — o comportamento de antes do campo.
+    ...(c.pisoMinimo != null ? { pisoMinimo: c.pisoMinimo } : {}),
     malhaPadrao: c.malhaPadrao ?? CONFIG_PADRAO.malhaPadrao,
     santaCeia: c.santaCeia ?? CONFIG_PADRAO.santaCeia,
     identidade: {

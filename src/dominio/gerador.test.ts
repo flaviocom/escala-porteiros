@@ -373,3 +373,50 @@ describe('🔴 gerar várias versões sem quebrar a conferência', () => {
     expect(indiceDeJain([])).toBe(1)
   })
 })
+
+/*
+  🔴 DISTÂNCIA MÍNIMA CONFIGURÁVEL — pedido do Flavio em 03/11/2026: *"como que eu faço para ajustar o
+  piso para 2 dias?"*. As duas metades da prova: a trava RECUSA o que só fecharia abaixo do mínimo
+  (e diz que não deu), e APROVA o que cabe dentro dele.
+*/
+describe('distância mínima (pisoMinimo)', () => {
+  // Sábado e domingo à noite, 3 vagas cada, 3 pessoas: só fecha com todo mundo a 1 dia.
+  const MALHA_FDS = { regras: [{ diaSemana: 6, turnos: ['NOITE' as const] }, { diaSemana: 0, turnos: ['NOITE' as const] }] }
+  const apertado = (pisoMinimo?: number) => gerar({
+    inicio: '2026-09-05', fim: '2026-09-06',
+    grade: construirGrade({ inicio: '2026-09-05', fim: '2026-09-06', malha: MALHA_FDS, capacidadePadrao: 3 }),
+    pessoas: pessoas(3), elenco: pessoas(3).map((p) => p.id), malha: MALHA_FDS,
+    ...(pisoMinimo != null ? { pisoMinimo } : {}),
+  })
+
+  it('sem mínimo, desce até 1 — o comportamento de sempre', () => {
+    const r = apertado()
+    if (!r.ok) throw new Error(r.motivo)
+    expect(r.pisoAlcancado).toBe(1)
+  })
+
+  it('🔴 INFRATOR: com mínimo 2, recusa a escala que só fecharia a 1 dia — e diz por quê', () => {
+    const r = apertado(2)
+    expect(r.ok).toBe(false)
+    if (r.ok) return
+    expect(r.motivo).toContain('distância mínima de 2 dias')
+    expect(r.pisosTentados).not.toContain(1)
+  })
+
+  it('✅ CONTROLE: com elenco folgado e mínimo 2, gera — e ninguém fica abaixo de 2', () => {
+    const lista = pessoas(16)
+    const r = gerar({ ...SET_DEZ, grade: gradePadrao(), pessoas: lista, elenco: lista.map((p) => p.id), malha: MALHA_ATUAL, pisoMinimo: 2 })
+    if (!r.ok) throw new Error(r.motivo)
+    expect(r.pisoAlcancado).toBeGreaterThanOrEqual(2)
+    const ctx = { bloco: r.bloco, pessoas: lista, ultimaEscalaAnterior: {}, config: CONFIG }
+    const medidos = lista.map((p) => menorIntervalo(ctx, p.id)).filter((m) => m != null)
+    expect(medidos).toHaveLength(16)
+    expect(medidos.every((m) => m! >= 2)).toBe(true)
+  })
+
+  it('mínimo acima do teto teórico ainda é tentado, não ignorado', () => {
+    const lista = pessoas(16)
+    const r = gerar({ ...SET_DEZ, grade: gradePadrao(), pessoas: lista, elenco: lista.map((p) => p.id), malha: MALHA_ATUAL, pisoMaximo: 3, pisoMinimo: 5 })
+    expect(r.pisosTentados[0]).toBe(5)
+  })
+})

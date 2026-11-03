@@ -52,7 +52,7 @@ declarados, cada um com o motivo.
 **Vem primeiro no gate**, e é o único passo com essa propriedade: os outros se consertam commitando
 de novo; um segredo commitado fica exposto no mesmo instante, e a correção é **revogar na origem**.
 **Nunca imprime o valor** — só o prefixo e o comprimento. Portão que vaza o segredo no log é pior que
-o segredo no arquivo, porque o log vai para o terminal, para o CI e para o histórico da sessão.
+o segredo no arquivo, porque o log vai para o terminal, para o CI (a integração contínua, que roda os testes a cada envio) e para o histórico da sessão.
 **Provado nas duas pontas:** token de forma válida (valor inventado) injetado em `datas.ts` → EXIT=1
 sem vazar o valor; `.env` forçado para dentro do índice → EXIT=1; árvore limpa → EXIT=0.
 
@@ -350,7 +350,7 @@ o motivo certo; árvore limpa → EXIT=0.
 regra sem regenerar → vermelho.
 
 ### 21. `doc:comandos` — todo comando citado existe
-**População:** os 24 documentos vivos · isentos os append-only.
+**População:** os 26 documentos vivos · isentos os append-only.
 **Critério:** todo `npm run <nome>` está no `package.json`; todo `node scripts/<arquivo>` existe em
 disco. **Achou defeito na primeira execução:** `npm run tempo`, citado na documentação, não existia.
 

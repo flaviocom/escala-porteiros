@@ -66,6 +66,11 @@ export interface OpcoesGeracao {
   /** Teto de piso a tentar. Ausente = calculado a partir da folga da escala. */
   pisoMaximo?: number
   /**
+   * Piso abaixo do qual a busca NÃO desce. Ausente = 1. Se nem com ele couber, a geração falha e diz
+   * onde travou — ver `Configuracao.pisoMinimo`.
+   */
+  pisoMinimo?: number
+  /**
    * Tamanho da lista restrita de candidatos (GRASP). Ausente ou 1 = guloso puro, como sempre foi.
    * Ver `docs/superpowers/specs/PESQUISA_2026-08-05-gerar-n-versoes.md`.
    */
@@ -325,11 +330,14 @@ export function gerar(op: OpcoesGeracao): Resultado {
     }
   }
 
-  const teto = op.pisoMaximo ?? pisoTeorico(op.grade, op.elenco.length, op.inicio, op.fim)
+  const minimo = Math.max(1, Math.floor(op.pisoMinimo ?? 1))
+  // O teto teórico é uma estimativa pela média; se o mínimo pedido passar dele, tenta-se o mínimo
+  // mesmo assim — a média não prova que ele é impossível.
+  const teto = Math.max(minimo, op.pisoMaximo ?? pisoTeorico(op.grade, op.elenco.length, op.inicio, op.fim))
   const tentados: number[] = []
   let ultimaFalha: Extract<ReturnType<typeof tentarComPiso>, { ok: false }> | null = null
 
-  for (let piso = teto; piso >= 1; piso--) {
+  for (let piso = teto; piso >= minimo; piso--) {
     tentados.push(piso)
     const r = tentarComPiso(op, piso)
     if (r.ok) {
@@ -358,13 +366,15 @@ export function gerar(op: OpcoesGeracao): Resultado {
     ultimaFalha = r
   }
 
-  // Nem com piso 1. Aqui a resposta honesta é dizer que não deu — e onde travou.
+  // Nem com o piso mínimo. Aqui a resposta honesta é dizer que não deu — e onde travou.
   const t = ultimaFalha?.turno
   return {
     ok: false,
-    motivo:
-      'Não foi possível gerar a escala: mesmo sem exigir nenhum espaçamento, um turno ficaria sem gente suficiente. ' +
-      'Para resolver, é preciso acrescentar pessoas ao elenco, afrouxar alguma restrição, ou reduzir a capacidade do turno.',
+    motivo: minimo > 1
+      ? `Não foi possível gerar a escala com distância mínima de ${minimo} dias entre as escalas de cada pessoa: um turno ficaria sem gente suficiente. ` +
+        'Para resolver, é preciso diminuir a distância mínima, acrescentar pessoas ao elenco, afrouxar alguma restrição, ou reduzir a capacidade do turno.'
+      : 'Não foi possível gerar a escala: mesmo sem exigir nenhum espaçamento, um turno ficaria sem gente suficiente. ' +
+        'Para resolver, é preciso acrescentar pessoas ao elenco, afrouxar alguma restrição, ou reduzir a capacidade do turno.',
     ...(t ? { turnoQueTravou: { data: t.data, tipo: ROTULO_TURNO[t.tipo], faltaram: ultimaFalha!.faltaram } } : {}),
     candidatosBarrados: ultimaFalha?.barrados ?? [],
     pisosTentados: tentados,

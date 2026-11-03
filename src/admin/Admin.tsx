@@ -1594,6 +1594,7 @@ const AbaGerar: React.FC<{
         {
           inicio: deAgora, fim: ate, grade, pessoas, elenco, malha: config.malhaPadrao,
           ultimaEscalaAnterior: fronteiraEm(deAgora),
+          pisoMinimo: config.pisoMinimo,
           // A cota do mês também atravessa a fronteira — ver `cotaMensalJaPublicada`.
           escalasPorMesAnterior: cotaMensalJaPublicada(dados.blocos, deAgora),
         },
@@ -1803,6 +1804,32 @@ const AbaGerar: React.FC<{
           />
           <span className="text-xs text-gray-500">
             vale na próxima geração · hoje a escala no ar usa {dados.config.capacidadePadrao}
+          </span>
+        </label>
+
+        {/*
+          🔴 DISTÂNCIA MÍNIMA — pedido do Flavio em 03/11/2026: *"1 dia de distância é muito pouco
+          (…) como que eu faço para ajustar o piso para 2 dias?"*. O gerador continua buscando o
+          maior espaçamento; este número é só o chão. Se não couber, a tela diz que não deu.
+        */}
+        <label className="mt-4 flex flex-wrap items-center gap-2 text-sm text-gray-700">
+          <span className="font-semibold">Distância mínima entre escalas:</span>
+          <input
+            id="piso-minimo"
+            name="piso-minimo"
+            type="number"
+            min={1}
+            max={30}
+            value={config.pisoMinimo ?? 1}
+            title="Menor número de dias aceito entre duas escalas da mesma pessoa. A escala busca sempre o maior possível; se não couber com este mínimo, ela avisa que não foi possível"
+            onChange={(e) => {
+              const n = Number(e.target.value)
+              if (Number.isInteger(n) && n >= 1 && n <= 30) aoMudarConfig({ ...config, pisoMinimo: n })
+            }}
+            className="w-20 rounded-xl border border-gray-300 px-3 py-2 text-sm"
+          />
+          <span className="text-xs text-gray-500">
+            dia(s) · vale na próxima geração · se não couber, a tela avisa em vez de aproximar as escalas
           </span>
         </label>
 

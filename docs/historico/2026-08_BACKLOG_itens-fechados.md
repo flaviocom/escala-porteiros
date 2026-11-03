@@ -93,3 +93,35 @@ provado com mutante nas duas pontas:
 Jain 0,9965 é o máximo aritmético). A prova é re-rodável: `npm run experimento:busca-local`
 (`scripts/experimento-busca-local.mjs`) — se o elenco/malha mudarem de forma e ele achar troca, a
 recusa perde a prova e a decisão reabre.
+
+
+---
+
+## Quinta e sexta auditorias
+
+> Rotacionado de `BACKLOG.md` em 03/11/2026 (o arquivo vivo passou de 40 KB). Texto original, sem edição além dos caminhos relativos.
+
+### Sexta auditoria externa — 05/08/2026, **25 achados, 0 abertos**
+
+Três frentes disjuntas: o código que nasceu hoje · o dado publicado até o pixel · os portões medem o
+que dizem. Detalhe em [`HANDOFF_2026-08-06.md`](../handoff/HANDOFF_2026-08-06.md) e no
+`DIARIO_DE_BORDO.md` (DB-022 a DB-025). Ficam aqui os que alguém precisa saber que existiram:
+
+| # | Item | Estado |
+|---|---|---|
+| P6.1 | 🔒 **O gate foi verde sobre OUTRA árvore.** Um `git add -A` capturou o mutante de um auditor; `3f8e366` está na história com `mesDe` devolvendo o ano, e a mensagem afirma `EXIT_GATE=0` | ✅ **FECHADO** — produção nunca recebeu (o commit não tocou `docs/assets/`). O commit **não é reescrito**; o 24º passo do gate é o selo da árvore, provado nas duas pontas |
+| P6.2 | 🔴 **Reverter e publicar em seguida DESFAZIA a reversão** — a correção da manhã mexeu no retrato, e o que sobe no arquivo é outro estado. Com `config.json`, a publicação seguinte republicava a configuração antiga **ativamente** | ✅ **FECHADO** — `aoReverter` sincroniza o estado editável, e é separado de `aoGravar` de propósito (falha parcial não pode apagar edição não publicada) |
+| P6.3 | 🔴 **O gate não executava uma linha de `Admin.tsx`.** Desligar a trava de data retroativa ou o guarda dos 73 turnos passava nos 20 passos | ✅ **FECHADO** — as duas decisões desceram para o domínio, com 9 testes. ⚠️ Declarado aberto: outras decisões seguem na tela, mas nenhuma decide o que vai ao ar |
+| P6.4 | 🔴 **Oito fronteiras de portão** — nenhum contava errado; todos mediam menos do que a frase prometia | ✅ **FECHADO** — e os dois padrões novos ganharam a régua que separa **afirmação de narrativa** (artigo definido; número entre aspas é citação) |
+
+### Quinta auditoria externa — 05/08/2026, **21 achados, 0 abertos**
+
+Detalhe e medição em [`HANDOFF_2026-08-06.md`](../handoff/HANDOFF_2026-08-06.md) e no
+`DIARIO_DE_BORDO.md` (DB-018 a DB-021). Ficam aqui os três vermelhos, porque são os que alguém
+precisa saber que existiram para não recriá-los:
+
+| # | Item | Onde | Estado |
+|---|---|---|---|
+| P5.8 | 🔴 **Publicar 2× na mesma sessão apagava a 1ª publicação.** O retrato dos dados era congelado no closure; a 2ª montagem usava o de antes da 1ª. **55 turnos medidos.** E o guarda do passado aprovava, porque recebia o mesmo argumento envelhecido | `src/dados/carregar.ts` (`retratoPublicado`), `src/admin/Admin.tsx` (`setDados`) | ✅ **FECHADO 05/08** — provado no dado real, antes e depois. ⚠️ recarregar da rede foi RECUSADO: o Pages leva 1 min e traria o dado antigo de volta |
+| P5.9 | 🔴 **`capacidade: 0` gerava 110 turnos com zero pessoas, e as DUAS réguas aprovavam.** D1 conta `0===0` como completo; D11 compara a grade com ela mesma; Q2 vê amplitude zero | `src/dominio/regras.ts` (`D12`), `conferencia-independente.ts` (promessa 0) | ✅ **FECHADO 05/08** — nasceu **D12**. ⚠️ ela nasceu com o defeito que existe para fechar (`slice` nos turnos, não nas violações); pego pela medição no dado real |
+| P5.10 | 🔴 **A ponte dado→tela não tinha um único teste.** 4 mutantes que apagam a escala de todos os irmãos passavam em 232/232 | `src/dados/ponte-para-a-tela.test.ts` | ✅ **FECHADO 05/08** — 20 testes novos, um campo por vez, com valor absoluto |
