@@ -27,10 +27,10 @@ import { distribuir } from '../dominio/estatisticas'
 import { validar, resumir } from '../dominio/validacao'
 import { CATALOGO, menorIntervalo } from '../dominio/regras'
 import { conferirPorFora } from '../dominio/conferencia-independente'
-import { conferirBuracoNaEscala, conferirPassadoPreservado, conferirReversao, cotaMensalJaPublicada, montarBlocosParaPublicar, publicacaoImpedida, travaDeDataRetroativa } from '../dominio/blocos'
+import { conferirBuracoNaEscala, conferirPassadoPreservado, conferirReversao, cotaMensalJaPublicada, montarBlocosParaPublicar, proximaEscalaPublicada, cotaMensalPublicadaDepois, publicacaoImpedida, inicioGeravel } from '../dominio/blocos'
 import { diaDaSemana, diferencaEmDias, ehDataValida, formatarBR, sugerirFim, hojeSaoPaulo, NOMES_DIA, NOMES_DIA_CURTO, ROTULO_MES, somarDias } from '../dominio/datas'
 import { AbaAjustar } from './AbaAjustar'
-import { lerRascunho, gravarRascunho, limparRascunho, type Rascunho } from './rascunho'
+import { lerRascunho, gravarRascunho, limparRascunho, rascunhoDescartado, type Rascunho } from './rascunho'
 import { arbitrar, auditar, medir, pedirProposta, type Placar, type ProgressoMotor } from './motor'
 import { Sparkles } from 'lucide-react'
 
@@ -503,7 +503,11 @@ export const Admin: React.FC<{ dados: DadosPublicados }> = ({ dados: dadosInicia
    * mão, no repositório. Para uma congregação com um administrador técnico ao lado, passava; para
    * um produto vendido, é um recurso que não existe.
    */
-  const [config, setConfig] = useState<Configuracao>(() => ({ ...(rascunhoInicial?.config ?? dados.config) }))
+  // A malha (dias e turnos de culto) não tem campo na tela, então vem SEMPRE do publicado: um
+  // rascunho não pode trocá-la sem que ninguém veja — foi o que travou a geração em 03/11/2026.
+  const [config, setConfig] = useState<Configuracao>(() =>
+    rascunhoInicial ? { ...rascunhoInicial.config, malhaPadrao: dados.config.malhaPadrao } : { ...dados.config },
+  )
   const [blocoNovo, setBlocoNovo] = useState<Bloco | null>(null)
   /** O bloco como o gerador o entregou — a referência para o "desfazer tudo" do ajuste manual. */
   const [blocoOriginal, setBlocoOriginal] = useState<Bloco | null>(null)
@@ -782,6 +786,7 @@ export const Admin: React.FC<{ dados: DadosPublicados }> = ({ dados: dadosInicia
             blocoOriginal={blocoOriginal}
             pessoas={pessoas}
             fronteira={fronteira}
+            proxima={proximaEscalaPublicada(dados.blocos, blocoNovo.fim)}
             aoAlterar={setBlocoNovo}
             config={config}
           />
@@ -792,7 +797,8 @@ export const Admin: React.FC<{ dados: DadosPublicados }> = ({ dados: dadosInicia
             pessoas={pessoas}
             config={config}
             fronteira={fronteira}
-            cotaAnterior={cotaMensalJaPublicada(dados.blocos, blocoNovo.inicio)}
+            cotaAnterior={cotaMensalJaPublicada(dados.blocos, blocoNovo.inicio, blocoNovo.fim)}
+            proxima={proximaEscalaPublicada(dados.blocos, blocoNovo.fim)}
           />
         )}
         {aba === 'publicar' && (
@@ -1274,14 +1280,16 @@ const AbaConferirPorFora: React.FC<{
   fronteira: Record<string, string>
   /** A cota mensal já publicada — as DUAS réguas precisam dela, ou as duas erram junto. */
   cotaAnterior: Record<string, Record<string, number>>
-}> = ({ bloco, pessoas, config, fronteira, cotaAnterior }) => {
+  /** A próxima escala já publicada depois do fim — a fronteira da frente, nas DUAS réguas. */
+  proxima: Record<string, string>
+}> = ({ bloco, pessoas, config, fronteira, cotaAnterior, proxima }) => {
   const porFora = useMemo(
-    () => conferirPorFora(bloco, pessoas, config, fronteira, cotaAnterior),
-    [bloco, pessoas, config, fronteira, cotaAnterior],
+    () => conferirPorFora(bloco, pessoas, config, fronteira, cotaAnterior, proxima),
+    [bloco, pessoas, config, fronteira, cotaAnterior, proxima],
   )
   const oficial = useMemo(
-    () => validar({ bloco, pessoas, ultimaEscalaAnterior: fronteira, config, escalasPorMesAnterior: cotaAnterior }),
-    [bloco, pessoas, fronteira, config, cotaAnterior],
+    () => validar({ bloco, pessoas, ultimaEscalaAnterior: fronteira, config, escalasPorMesAnterior: cotaAnterior, proximaEscalaPosterior: proxima }),
+    [bloco, pessoas, fronteira, config, cotaAnterior, proxima],
   )
 
   const foraAcusa = porFora.comFuro.length > 0
@@ -1456,6 +1464,17 @@ const AbaGerar: React.FC<{
   }
   /** A fronteira do que está DIGITADO — é o que a tela mostra e o que a validação usa. */
   const fronteira = useMemo(() => fronteiraEm(de), [dados, de])
+  // O rascunho vencido só merece aviso se trazia mudança DE VERDADE em relação ao publicado: a tela o
+  // grava só de abrir, e um aviso que aparece toda manhã é um aviso que ninguém lê.
+  const descartadoComMudanca = useMemo(() => {
+    const r = rascunhoDescartado()
+    if (!r) return null
+    const semMalha = (c: Configuracao | undefined) => (c ? { ...c, malhaPadrao: undefined } : null)
+    const mudou =
+      JSON.stringify(r.pessoas ?? dados.pessoas) !== JSON.stringify(dados.pessoas) ||
+      JSON.stringify(semMalha(r.config ?? dados.config)) !== JSON.stringify(semMalha(dados.config))
+    return mudou ? r : null
+  }, [dados])
 
   /**
    * 🔴 A SEMENTE VEM POR ARGUMENTO — quinta auditoria externa, 05/08/2026.
@@ -1516,21 +1535,30 @@ const AbaGerar: React.FC<{
       return
     }
     /**
-     * 🔴 A TRAVA DE VERDADE — o `min` do campo de data é DICA, não garantia.
+     * 🔴 O PASSADO NÃO ENTRA NA GERAÇÃO — e agora isso AJUSTA em vez de recusar (03/11/2026).
      *
-     * Ele some com um toque no inspetor, e some sozinho em navegador que não o implemente. Gerar
-     * com data retroativa REESCREVE turno já divulgado, que é a primeira regra inviolável deste
-     * projeto. Uma trava que só existe no atributo é uma trava que não existe.
+     * O `min` do campo de data é dica, não garantia; a regra vive no domínio, com teste. Antes, um
+     * início até hoje era recusado. O dono pediu o contrário: *"mesmo que eu gerar do 1/11/2026,
+     * você não pode mexer no domingo. Você tem que mexer do próximo dia em diante"*. Então o início
+     * vai para amanhã, o campo "De" passa a mostrar isso, e a tela diz o que ficou preservado.
      */
-    // A regra vive no domínio, onde há teste: desligá-la aqui passava nos 20 passos do gate.
-    if (travaDeDataRetroativa(deAgora, hojeSaoPaulo())) {
+    const ajuste = inicioGeravel(deAgora, hojeSaoPaulo())
+    const avisoInicio = ajuste.ajustado
+      ? `Os dias até ${formatarBR(hojeSaoPaulo())} ficaram exatamente como estavam publicados; ` +
+        `a escala nova começa em ${formatarBR(ajuste.inicio)}.` + String.fromCharCode(10, 10)
+      : ''
+    // O período inteiro já passou (ou é hoje): não há o que gerar — dizer isso, sem mexer no campo.
+    if (ajuste.ajustado && ehDataValida(ate) && diferencaEmDias(ate, ajuste.inicio) > 0) {
       setFalha(
-        `A data inicial (${formatarBR(deAgora)}) é anterior a hoje (${formatarBR(hojeSaoPaulo())}).` +
+        `O período de ${formatarBR(deAgora)} a ${formatarBR(ate)} termina até hoje, e o que já passou não se reescreve.` +
           String.fromCharCode(10, 10) +
-          `Gerar para trás reescreveria turnos que ${config.identidade.pessoa.plural} já viram — e o passado ` +
-          'divulgado não se reescreve. Escolha hoje ou uma data à frente.'
+          `Escolha uma data final a partir de ${formatarBR(ajuste.inicio)}.`,
       )
       return
+    }
+    if (ajuste.ajustado) {
+      deAgora = ajuste.inicio
+      aoMudarDe(ajuste.inicio)
     }
 
     /*
@@ -1630,8 +1658,12 @@ const AbaGerar: React.FC<{
           inicio: deAgora, fim: ate, grade, pessoas, elenco, malha: config.malhaPadrao,
           ultimaEscalaAnterior: fronteiraEm(deAgora),
           pisoMinimo: config.pisoMinimo,
-          // A cota do mês também atravessa a fronteira — ver `cotaMensalJaPublicada`.
+          // A cota do mês também atravessa a fronteira — ver `cotaMensalJaPublicada`. Desde 03/11/2026
+          // as duas: o que vem antes do início E o que continua publicado depois do fim.
           escalasPorMesAnterior: cotaMensalJaPublicada(dados.blocos, deAgora),
+          escalasPorMesPosterior: cotaMensalPublicadaDepois(dados.blocos, ate),
+          // Período que termina antes do publicado encosta no que continua no ar: o piso vale lá também.
+          proximaEscalaPosterior: proximaEscalaPublicada(dados.blocos, ate),
         },
         8, 3, semente, recusada,
       )
@@ -1663,7 +1695,7 @@ const AbaGerar: React.FC<{
           .map(([nome, motivos]) => `   · ${nome} — ${[...motivos].join('; ')}`)
           .join(String.fromCharCode(10))
         setFalha(
-          `${r.motivo}\n\n` +
+          avisoInicio + `${r.motivo}\n\n` +
             (r.turnoQueTravou ? `Travou em ${formatarBR(r.turnoQueTravou.data)}, turno da ${r.turnoQueTravou.tipo}: faltaram ${r.turnoQueTravou.faltaram} pessoa(s).\n` : '') +
             (barrados ? `${String.fromCharCode(10)}Quem estava disponível nesse dia e não pôde entrar:${String.fromCharCode(10)}${barrados}${String.fromCharCode(10)}` : '') +
             `Pisos de distanciamento tentados: ${r.pisosTentados.join(', ')}.`,
@@ -1685,7 +1717,7 @@ const AbaGerar: React.FC<{
         diferente da que ele recusou. Nos dados reais de hoje, ele não aparece mais.
       */
       setRepetiu(blocoNovo != null && JSON.stringify(r.bloco.turnos) === JSON.stringify(blocoNovo.turnos))
-      aoGerar(r.bloco, r.relato, validas, recusada != null)
+      aoGerar(r.bloco, avisoInicio + r.relato, validas, recusada != null)
       } catch (e) {
         setOcupado(false)
         setFalha(
@@ -1702,7 +1734,9 @@ const AbaGerar: React.FC<{
       blocoNovo
         ? validar({
             bloco: blocoNovo, pessoas, ultimaEscalaAnterior: fronteira, config,
-            escalasPorMesAnterior: cotaMensalJaPublicada(dados.blocos, blocoNovo.inicio),
+            // As duas fronteiras: o mês dividido com o que continua no ar, e a escala publicada depois.
+            escalasPorMesAnterior: cotaMensalJaPublicada(dados.blocos, blocoNovo.inicio, blocoNovo.fim),
+            proximaEscalaPosterior: proximaEscalaPublicada(dados.blocos, blocoNovo.fim),
           })
         : null,
     [blocoNovo, pessoas, fronteira, config, dados.blocos],
@@ -1759,6 +1793,15 @@ const AbaGerar: React.FC<{
             </button>
           </div>
         )}
+        {/* Rascunho de outro dia é descartado (03/11/2026) — mas nunca em silêncio. */}
+        {!rascunhoInicial && descartadoComMudanca && (
+          <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
+            Havia um rascunho de outro dia
+            {descartadoComMudanca.dia && <> (<strong>{formatarBR(descartadoComMudanca.dia)}</strong>)</>} neste
+            aparelho, e ele foi descartado: a tela começa pelo que está <strong>publicado</strong>. Mudanças daquele
+            dia que não foram publicadas — no elenco ou aqui — precisam ser feitas de novo.
+          </div>
+        )}
         <div className="flex flex-wrap gap-4 items-end">
           <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
             De
@@ -1769,7 +1812,7 @@ const AbaGerar: React.FC<{
             
             Gerar com data retroativa REESCREVE turno que já foi divulgado — e a primeira regra
             inviolável deste projeto é que o passado não se reescreve, porque isso faz o site
-            desmentir o que os irmãos já viram. O navegador agora nem deixa escolher.
+            desmentir o que os irmãos já viram. O navegador esmaece os dias passados; uma data digitada à mão no passado é empurrada para amanhã por `inicioGeravel` (03/11/2026).
           */}
           <input id="gerar-de" name="gerar-de" type="date" min={hojeSaoPaulo()} value={de} onChange={(e) => aoMudarDe(e.target.value)} className="block mt-1 px-3 py-2 border border-gray-300 rounded-xl text-sm" />
           </label>
@@ -2181,7 +2224,7 @@ const AbaGerar: React.FC<{
         sozinho. Não voltava: está do lado esquerdo justamente por ter saído. O aviso inventou um
         defeito que não existia e me fez caçar fantasma.
 
-        O que PROTEGE o passado continua de pé, e é outro mecanismo: `travaDeDataRetroativa`.
+        O que PROTEGE o passado continua de pé, e é outro mecanismo: `inicioGeravel` (o início nunca é antes de amanhã).
       */}
 
       {blocoNovo && relatorio && (
@@ -2611,7 +2654,8 @@ const AbaPublicar: React.FC<{
     }
     return validar({
       bloco: blocoNovo, pessoas, ultimaEscalaAnterior: f, config,
-      escalasPorMesAnterior: cotaMensalJaPublicada(dados.blocos, blocoNovo.inicio),
+      escalasPorMesAnterior: cotaMensalJaPublicada(dados.blocos, blocoNovo.inicio, blocoNovo.fim),
+      proximaEscalaPosterior: proximaEscalaPublicada(dados.blocos, blocoNovo.fim),
     })
   }, [blocoNovo, dados.blocos, pessoas, config])
 

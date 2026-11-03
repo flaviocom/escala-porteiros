@@ -29,15 +29,17 @@ interface Props {
   blocoOriginal: Bloco
   /** O calendário e a malha vigentes — D9 e D11 conferem o bloco CONTRA ela, não contra si mesmo. */
   config: Configuracao
+  /** A próxima escala já publicada depois do fim do bloco — a fronteira da frente (03/11/2026). */
+  proxima?: Record<string, string>
 }
 
-export const AbaAjustar: React.FC<Props> = ({ bloco, pessoas, fronteira, aoAlterar, blocoOriginal, config }) => {
+export const AbaAjustar: React.FC<Props> = ({ bloco, pessoas, fronteira, aoAlterar, blocoOriginal, config, proxima }) => {
   const [selecionado, setSelecionado] = useState<{ turno: number; pessoa: string } | null>(null)
   const [filtro, setFiltro] = useState('')
 
   const relatorio = useMemo(
-    () => validar({ bloco, pessoas, ultimaEscalaAnterior: fronteira, config }),
-    [bloco, pessoas, fronteira, config],
+    () => validar({ bloco, pessoas, ultimaEscalaAnterior: fronteira, config, proximaEscalaPosterior: proxima }),
+    [bloco, pessoas, fronteira, config, proxima],
   )
 
   const alterados = useMemo(() => {
@@ -83,6 +85,8 @@ export const AbaAjustar: React.FC<Props> = ({ bloco, pessoas, fronteira, aoAlter
           .filter((t) => t.pessoas.includes(p.id) && t.data !== turno.data)
           .map((t) => t.data)
         if (fronteira[p.id]) datas.push(fronteira[p.id])
+        // E a escala publicada DEPOIS do fim do bloco — a mesma fronteira da frente de D10.
+        if (proxima?.[p.id]) datas.push(proxima[p.id])
         const perto = datas
           .map((d) => Math.abs(diferencaEmDias(d, turno.data)))
           .sort((a, b) => a - b)[0]

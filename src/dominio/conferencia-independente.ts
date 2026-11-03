@@ -77,6 +77,8 @@ export function conferirPorFora(
   ultimaEscalaAnterior: Record<string, DataISO> = {},
   /** Quantas escalas cada pessoa já tem em cada mês, nos blocos anteriores. Ver a promessa 6. */
   escalasPorMesAnterior: Record<string, Record<string, number>> = {},
+  /** A próxima escala já publicada de cada pessoa, depois do fim do bloco (03/11/2026). */
+  proximaEscalaPosterior: Record<string, DataISO> = {},
 ): RelatorioIndependente {
   const achados: AchadoIndependente[] = []
   const registrar = (promessa: string, furos: string[], veredito: string) =>
@@ -296,7 +298,11 @@ export function conferirPorFora(
     /** Todos os que EMPATAM no mínimo — o empate é a regra aqui, não a exceção. */
     let noMinimo: string[] = []
     for (const l of ativas) {
-      const datas = [...new Set([...(ultimaEscalaAnterior[l.pessoa.id] ? [ultimaEscalaAnterior[l.pessoa.id]] : []), ...l.datas])].sort()
+      const datas = [...new Set([
+        ...(ultimaEscalaAnterior[l.pessoa.id] ? [ultimaEscalaAnterior[l.pessoa.id]] : []),
+        ...l.datas,
+        ...(proximaEscalaPosterior[l.pessoa.id] ? [proximaEscalaPosterior[l.pessoa.id]] : []),
+      ])].sort()
       for (let i = 1; i < datas.length; i++) {
         const d = diferencaEmDias(datas[i - 1], datas[i])
         if (d <= 0) continue

@@ -47,6 +47,17 @@ virou dois — nasceu [`escala-geral`](https://github.com/flaviocom/escala-geral
 para vender, sem tocar neste repositório de produção. Detalhe completo do dia inteiro:
 [`HANDOFF_2026-08-20.md`](docs/handoff/HANDOFF_2026-08-20.md).
 
+## 03/11 (noite): gerar QUALQUER período — sobrepõe, cria, ou os dois
+
+Pedido do dono: o período gerado substitui o que já foi publicado nele e cria o que não existe, o
+passado (até hoje) nunca é tocado, e o rascunho do navegador não pode mudar o resultado em silêncio.
+**Entregue:** início até hoje vai para amanhã (`inicioGeravel`); **fronteira da frente** — a escala
+nova respeita o piso também contra a escala que continua publicada depois do fim (furo medido: 3
+dias; agora ≥ 6), no gerador, na D10, na conferência independente e na aba Ajustar; cota do mês
+dividido; cauda/cabeça marcadas `recortado`; fronteiras gravadas no bloco para o `refazer`;
+rascunho só vale no mesmo dia, malha sempre do publicado. Duas rodadas de auditoria, sem 🔴. Detalhe:
+[`docs/historico/SOLICITACOES/2026-11-03.md`](docs/historico/SOLICITACOES/2026-11-03.md).
+
 ## 03/11: distância mínima entre escalas virou campo da tela (no ar)
 
 O dono viu escalas a 1 dia de distância e pediu para ajustar o piso para 2. **Medido por fora**

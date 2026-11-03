@@ -1156,3 +1156,16 @@ campo "Distância mínima entre escalas" (`src/dominio/gerador.ts`, `src/dominio
 `36de893`, `8ad8370`; auditoria independente em seguida. Skills acionadas: padrao-ouro, ponytail
 (mudança mínima), verificação ao vivo. Detalhe:
 [`docs/historico/SOLICITACOES/2026-11-03.md`](docs/historico/SOLICITACOES/2026-11-03.md).
+
+## 03/11/2026 (noite) — gerar qualquer período: sobrepor, criar, ou os dois
+
+Pedido do dono depois de a geração 03/11→31/12/2027 falhar na tela dele: o período substitui o
+publicado nele e cria o resto, o passado nunca é tocado, o rascunho do navegador não interfere.
+Causa da falha: rascunho de 25/10 com malha diferente da publicada. Entregue: `inicioGeravel`
+(início até hoje → amanhã), fronteira da frente (`proximaEscalaPublicada`, `proximaEscalaPosterior`
+no gerador, D10, conferência independente e Ajustar), cota do mês dividido
+(`cotaMensalPublicadaDepois`), emenda com `recortado` e cauda declarando o piso que a emenda garante,
+fronteiras gravadas no bloco (`fronteiraDaFrente`, `fronteiraDeTras`) para o `refazer`, rascunho só
+no mesmo dia e malha sempre do publicado. Duas rodadas de auditoria independente, sem 🔴; mordida
+medida nas travas novas. Detalhe:
+[`docs/historico/SOLICITACOES/2026-11-03.md`](docs/historico/SOLICITACOES/2026-11-03.md).

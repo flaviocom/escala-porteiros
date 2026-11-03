@@ -12,6 +12,7 @@ import { describe, expect, it } from 'vitest'
 import { gerar, gerarVariasVersoes, indiceDeJain, normalizarPisoMinimo, pisoTeorico } from './gerador'
 import { conferirPorFora } from './conferencia-independente'
 import { construirGrade, MALHA_ATUAL } from './malha'
+import { diferencaEmDias } from './datas'
 import { validar } from './validacao'
 import { menorIntervalo } from './regras'
 import type { Configuracao, Pessoa } from './tipos'
@@ -475,5 +476,89 @@ describe('distância mínima — achados da auditoria', () => {
     expect(rel.falhasDuras.map((f) => f.id)).not.toContain('D10')
     const fora = conferirPorFora(r.bloco, tres, CFG_FDS, {}, {})
     expect(fora.comFuro.flatMap((a) => a.furos).join(' | ')).not.toContain('distância mínima')
+  })
+})
+
+/*
+  🔴 A FRONTEIRA DA FRENTE — 03/11/2026. O dono gera qualquer período; se ele termina antes do que
+  está publicado, a escala nova encosta na que continua no ar. Medido nos dados reais: Donizete em
+  29/11 com 02/12 já publicado, 3 dias, abaixo do piso 4 do resto.
+*/
+describe('fronteira da frente (proximaEscalaPosterior)', () => {
+  const lista = pessoas(16)
+  const base = { ...SET_DEZ, grade: gradePadrao(), pessoas: lista, elenco: lista.map((p) => p.id), malha: MALHA_ATUAL }
+  // Todo mundo tem escala publicada no dia seguinte ao fim do período: quem cair perto do fim fica perto dela.
+  const amanhaDoFim = '2026-12-31'
+  const todosDepois = Object.fromEntries(lista.map((p) => [p.id, amanhaDoFim]))
+  const pertoDoFim = (r: ReturnType<typeof gerar>, piso: number) => {
+    if (!r.ok) throw new Error(r.motivo)
+    return r.bloco.turnos.flatMap((t) => t.pessoas.map((id) => ({ id, d: t.data })))
+      .filter((x) => diferencaEmDias(x.d, amanhaDoFim) < piso)
+  }
+
+  it('🔴 INFRATOR: sem a fronteira da frente, alguém fica colado na escala publicada depois', () => {
+    const r = gerar(base)
+    if (!r.ok) throw new Error(r.motivo)
+    expect(pertoDoFim(r, r.pisoAlcancado).length).toBeGreaterThan(0)
+  })
+
+  it('✅ CONTROLE: com ela, ninguém fica abaixo do piso — nem do lado de lá do fim', () => {
+    const r = gerar({ ...base, proximaEscalaPosterior: todosDepois })
+    if (!r.ok) throw new Error(r.motivo)
+    expect(pertoDoFim(r, r.pisoAlcancado)).toEqual([])
+  })
+})
+
+describe('fronteira da frente — validação e gravação (auditoria de 03/11/2026)', () => {
+  const MALHA_FDS = { regras: [{ diaSemana: 6, turnos: ['NOITE' as const] }, { diaSemana: 0, turnos: ['NOITE' as const] }] }
+  const tres = pessoas(3)
+  const CFG = { ...CONFIG, malhaPadrao: MALHA_FDS }
+  const r = gerar({
+    inicio: '2026-09-05', fim: '2026-09-05',
+    grade: construirGrade({ inicio: '2026-09-05', fim: '2026-09-05', malha: MALHA_FDS, capacidadePadrao: 3 }),
+    pessoas: tres, elenco: tres.map((p) => p.id), malha: MALHA_FDS,
+  })
+  if (!r.ok) throw new Error(r.motivo)
+  // Bloco de 1 dia, declara piso 1: o que decide é a escala publicada DEPOIS dele.
+  const bloco = { ...r.bloco, pisoAlcancado: 3 }
+
+  it('🔴 A1 INFRATOR: escala publicada no dia seguinte reprova D10 e a conferência independente', () => {
+    const colada = Object.fromEntries(tres.map((p) => [p.id, '2026-09-06']))
+    const rel = validar({ bloco, pessoas: tres, ultimaEscalaAnterior: {}, config: CFG, proximaEscalaPosterior: colada })
+    expect(rel.falhasDuras.map((f) => f.id)).toContain('D10')
+    expect(conferirPorFora(bloco, tres, CFG, {}, {}, colada).comFuro.length).toBeGreaterThan(0)
+  })
+
+  it('✅ A1 CONTROLE: escala publicada longe passa nas duas', () => {
+    const longe = Object.fromEntries(tres.map((p) => [p.id, '2026-09-20']))
+    const rel = validar({ bloco, pessoas: tres, ultimaEscalaAnterior: {}, config: CFG, proximaEscalaPosterior: longe })
+    expect(rel.falhasDuras.map((f) => f.id)).not.toContain('D10')
+  })
+
+  it('A4: a fronteira da frente usada fica gravada no bloco; sem ela, nada é gravado', () => {
+    const proxima = { p1: '2026-09-30' }
+    const porMes = { p1: { '2026-09': 1 } }
+    const com = gerar({
+      inicio: '2026-09-05', fim: '2026-09-06',
+      grade: construirGrade({ inicio: '2026-09-05', fim: '2026-09-06', malha: MALHA_FDS, capacidadePadrao: 1 }),
+      pessoas: tres, elenco: tres.map((p) => p.id), malha: MALHA_FDS,
+      proximaEscalaPosterior: proxima, escalasPorMesPosterior: porMes,
+    })
+    if (!com.ok) throw new Error(com.motivo)
+    expect(com.bloco.fronteiraDaFrente).toEqual({ proxima, porMes })
+    expect(r.bloco.fronteiraDaFrente).toBeUndefined()
+  })
+})
+
+describe('fronteira de trás gravada (2ª auditoria de 03/11/2026)', () => {
+  it('o bloco grava a fronteira de trás que recebeu — e não grava nada sem ela', () => {
+    const lista = pessoas(16)
+    const base = { ...SET_DEZ, grade: gradePadrao(), pessoas: lista, elenco: lista.map((p) => p.id), malha: MALHA_ATUAL }
+    const com = gerar({ ...base, ultimaEscalaAnterior: { p1: '2026-08-30' }, escalasPorMesAnterior: { p1: { '2026-08': 2 } } })
+    if (!com.ok) throw new Error(com.motivo)
+    expect(com.bloco.fronteiraDeTras).toEqual({ ultima: { p1: '2026-08-30' }, porMes: { p1: { '2026-08': 2 } } })
+    const sem = gerar(base)
+    if (!sem.ok) throw new Error(sem.motivo)
+    expect(sem.bloco.fronteiraDeTras).toBeUndefined()
   })
 })

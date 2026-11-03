@@ -47,12 +47,15 @@ esbuild.buildSync({ entryPoints: [entrada], outfile: saidaJs, format: 'esm', pla
 
 const dominio = await import(pathToFileURL(saidaJs).href)
 const { construirGrade, gerarVariasVersoes, validar, resumir, menorIntervalo, formatarBR, diferencaEmDias,
-  montarBlocosParaPublicar, conferirPassadoPreservado } = dominio
+  montarBlocosParaPublicar, conferirPassadoPreservado, cotaMensalJaPublicada, cotaMensalPublicadaDepois, proximaEscalaPublicada, inicioGeravel, hojeSaoPaulo } = dominio
 
 // ---------------------------------------------------------------------------
 const args = process.argv.slice(2)
 const arg = (n, padrao) => { const i = args.indexOf(n); return i >= 0 ? args[i + 1] : padrao }
-const DE = arg('--de', '2026-08-05')
+// A mesma regra da tela (03/11/2026): o passado não entra na geração — início até hoje vai para amanhã.
+const DE_PEDIDO = arg('--de', '2026-08-05')
+const DE = inicioGeravel(DE_PEDIDO, hojeSaoPaulo()).inicio
+if (DE !== DE_PEDIDO) console.log(`⚠️ --de ${DE_PEDIDO} não é gerável (o passado e hoje ficam como estão): começa em ${DE}.\n`)
 const ATE = arg('--ate', '2026-12-30')
 const ESCREVER = args.includes('--escrever')
 
@@ -167,6 +170,10 @@ const escolha = gerarVariasVersoes({
   ultimaEscalaAnterior: fronteira,
   // A mesma distância mínima da tela — sem isto o script gerava abaixo dela (auditoria de 03/11/2026).
   pisoMinimo: config.pisoMinimo,
+  // As fronteiras do lado de FORA do período, como a tela: cota do mês e a escala publicada depois do fim.
+  escalasPorMesAnterior: cotaMensalJaPublicada(blocosArq.blocos, DE),
+  escalasPorMesPosterior: cotaMensalPublicadaDepois(blocosArq.blocos, ATE),
+  proximaEscalaPosterior: proximaEscalaPublicada(blocosArq.blocos, ATE),
 })
 const r = escolha.melhor
 

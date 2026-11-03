@@ -15,7 +15,7 @@
  * A regra, uma só: **o bloco novo manda no período dele, e só nele.**
  */
 import { describe, expect, it } from 'vitest'
-import { conferirBuracoNaEscala, conferirEscalaJaDivulgada, conferirPassadoPreservado, conferirReversao, cotaMensalJaPublicada, montarBlocosParaPublicar, publicacaoImpedida, travaDeDataRetroativa, pisoEntregue } from './blocos'
+import { conferirBuracoNaEscala, conferirEscalaJaDivulgada, conferirPassadoPreservado, conferirReversao, cotaMensalJaPublicada, montarBlocosParaPublicar, proximaEscalaPublicada, publicacaoImpedida, inicioGeravel, pisoEntregue } from './blocos'
 import { validar } from './validacao'
 import type { Configuracao, Pessoa } from './tipos'
 
@@ -235,20 +235,21 @@ describe('conferirReversao — o guarda que faltava no botão Voltar', () => {
  * domínio para que estes testes existam. E `conferirPassadoPreservado.ok` ganhou aqui a prova da
  * segunda metade — `depois.length >= antes.length` —, que também passava com mutante.
  */
-describe('travaDeDataRetroativa', () => {
-  it('🔴 data ANTERIOR a hoje é recusada, com o motivo', () => {
-    const m = travaDeDataRetroativa('2026-08-04', '2026-08-05')
-    expect(m).not.toBeNull()
-    expect(m).toContain('não se')
+describe('inicioGeravel — o passado nunca entra na geração (03/11/2026)', () => {
+  it('🔴 início no passado é empurrado para AMANHÃ, e diz que ajustou', () => {
+    expect(inicioGeravel('2026-11-01', '2026-11-03')).toEqual({ inicio: '2026-11-04', ajustado: true })
   })
-  it('hoje é permitido — é a borda, e ela vale', () => {
-    expect(travaDeDataRetroativa('2026-08-05', '2026-08-05')).toBeNull()
+  it('🔴 HOJE também não se gera — a borda do lado errado', () => {
+    expect(inicioGeravel('2026-11-03', '2026-11-03')).toEqual({ inicio: '2026-11-04', ajustado: true })
   })
-  it('amanhã é permitido', () => {
-    expect(travaDeDataRetroativa('2026-08-06', '2026-08-05')).toBeNull()
+  it('amanhã fica como está', () => {
+    expect(inicioGeravel('2026-11-04', '2026-11-03')).toEqual({ inicio: '2026-11-04', ajustado: false })
   })
-  it('🔴 véspera por UM dia também é recusada — a borda do lado errado', () => {
-    expect(travaDeDataRetroativa('2026-12-31', '2027-01-01')).not.toBeNull()
+  it('qualquer data à frente fica como está', () => {
+    expect(inicioGeravel('2027-01-10', '2026-11-03')).toEqual({ inicio: '2027-01-10', ajustado: false })
+  })
+  it('virada de ano', () => {
+    expect(inicioGeravel('2026-12-01', '2026-12-31')).toEqual({ inicio: '2027-01-01', ajustado: true })
   })
 })
 
@@ -578,5 +579,54 @@ describe('pisoEntregue — o menor intervalo que a escala DE FATO tem', () => {
     const igual = pisoEntregue([t('2026-01-01', ['a']), t('2026-01-06', ['a'])])!
     expect(melhor).toBeGreaterThan(exigencia)
     expect(igual).toBe(exigencia)
+  })
+})
+
+describe('fronteiras do lado de fora do período (03/11/2026)', () => {
+  const bloco = (turnos: { data: string; pessoas: string[] }[]): Bloco => ({
+    id: 'b', inicio: '2026-11-01', fim: '2026-12-31', geradoEm: '2026-08-06', origem: 'algoritmo',
+    pisoAlcancado: 4, elenco: ['a', 'b'], malha: { regras: [] },
+    turnos: turnos.map((t) => ({ ...t, tipo: 'NOITE' as const, capacidade: 1 })),
+  } as Bloco)
+  const pub = [bloco([{ data: '2026-11-01', pessoas: ['a'] }, { data: '2026-11-20', pessoas: ['b'] }, { data: '2026-12-02', pessoas: ['a'] }, { data: '2026-12-05', pessoas: ['a', 'b'] }])]
+
+  it('próxima escala publicada DEPOIS do fim, a mais próxima de cada um', () => {
+    expect(proximaEscalaPublicada(pub, '2026-11-30')).toEqual({ a: '2026-12-02', b: '2026-12-05' })
+  })
+  it('o que cai DENTRO do período não é fronteira — vai ser reescrito', () => {
+    expect(proximaEscalaPublicada(pub, '2026-12-02')).toEqual({ a: '2026-12-05', b: '2026-12-05' })
+  })
+  it('a cota conta antes do início E depois do fim, nunca o que fica dentro', () => {
+    expect(cotaMensalJaPublicada(pub, '2026-11-10', '2026-12-03')).toEqual({ a: { '2026-11': 1, '2026-12': 1 }, b: { '2026-12': 1 } })
+  })
+  it('sem o fim, só o que vem antes — como sempre foi', () => {
+    expect(cotaMensalJaPublicada(pub, '2026-11-10')).toEqual({ a: { '2026-11': 1 } })
+  })
+})
+
+describe('emenda com período qualquer (auditoria de 03/11/2026)', () => {
+  const b = (id: string, inicio: string, fim: string, datas: string[], piso = 6): Bloco => ({
+    id, inicio, fim, geradoEm: '2026-08-06', origem: 'algoritmo', pisoAlcancado: piso, elenco: ['a'], malha: { regras: [] },
+    turnos: datas.map((data) => ({ data, tipo: 'NOITE' as const, capacidade: 1, pessoas: ['a'] })),
+  } as Bloco)
+  const A = b('A', '2026-08-06', '2026-12-31', ['2026-08-10', '2026-11-10', '2026-12-20'])
+  const B = b('B', '2027-01-01', '2027-03-31', ['2027-01-10'])
+  const novo = b('N', '2026-11-04', '2026-11-30', ['2026-11-15'], 4)
+
+  it('🔴 A6: bloco que não encosta no período passa INTACTO, sem virar "-cauda"', () => {
+    const m = montarBlocosParaPublicar([A, B], novo)
+    expect(m.find((x) => x.id.startsWith('B'))).toBe(B)
+  })
+  it('🔴 A3: a cauda declara o piso que a emenda garante (o menor), e é marcada como recorte', () => {
+    const cauda = montarBlocosParaPublicar([A, B], novo).find((x) => x.id === 'A-cauda')!
+    expect(cauda.pisoAlcancado).toBe(4)
+    expect(cauda.recortado).toBe(true)
+    expect(cauda.turnos.map((t) => t.data)).toEqual(['2026-12-20'])
+  })
+  it('a cabeça mantém os turnos de antes e é marcada como recorte', () => {
+    const cabeca = montarBlocosParaPublicar([A, B], novo).find((x) => x.id === 'A')!
+    expect(cabeca.turnos.map((t) => t.data)).toEqual(['2026-08-10'])
+    expect(cabeca.recortado).toBe(true)
+    expect(cabeca.fim).toBe('2026-11-03')
   })
 })

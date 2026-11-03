@@ -25,8 +25,28 @@
  * data do rascunho e oferece descartá-lo.
  */
 import type { Configuracao, Pessoa } from '../dominio/tipos'
+import { hojeSaoPaulo } from '../dominio/datas'
 
 const CHAVE = 'escala-porteiros:rascunho:v1'
+
+let descartado: (Partial<Rascunho> & { dia: string }) | null = null
+/**
+ * O rascunho vencido que a última leitura descartou — com o dia —, para a tela decidir se avisa.
+ * A tela grava o rascunho só de abrir; por isso quem chama compara com o publicado e só avisa quando
+ * havia mudança de verdade (2ª auditoria de 03/11/2026: sem isso, o aviso aparecia toda manhã).
+ */
+export function rascunhoDescartado(): (Partial<Rascunho> & { dia: string }) | null {
+  return descartado
+}
+
+/** O dia, em São Paulo, de um instante ISO — `Intl` com fuso explícito, nunca a data da máquina. */
+function diaEmSaoPaulo(instante: string): string {
+  try {
+    return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Sao_Paulo' }).format(new Date(instante))
+  } catch {
+    return ''
+  }
+}
 
 export interface Rascunho {
   de: string
@@ -54,6 +74,18 @@ export function lerRascunho(): Rascunho | null {
     const r = JSON.parse(cru) as Partial<Rascunho>
     // Rascunho de uma versão anterior, ou corrompido, não derruba a tela: é ignorado.
     if (!r || typeof r.de !== 'string' || typeof r.ate !== 'string' || !r.config || !Array.isArray(r.pessoas)) {
+      return null
+    }
+    /*
+      🔴 RASCUNHO SÓ VALE NO DIA EM QUE FOI FEITO — pedido do dono em 03/11/2026: *"tem escala no
+      cache, no navegador (…) eu quero entrar e ter acesso a gerar a escala e pronto."* Um rascunho
+      de 25/10 carregava mudanças antigas que ele não via e fazia a geração de hoje falhar. Interromper
+      e voltar no mesmo dia continua preservado (o pedido de 06/08); em outro dia, vale o publicado.
+    */
+    if (typeof r.em !== 'string' || diaEmSaoPaulo(r.em) !== hojeSaoPaulo()) {
+      // Descartar em silêncio era o mesmo defeito do outro lado: mudança que some sem aviso.
+      descartado = { ...r, dia: typeof r.em === 'string' ? diaEmSaoPaulo(r.em) : '' }
+      limparRascunho()
       return null
     }
     return r as Rascunho

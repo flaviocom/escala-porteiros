@@ -153,6 +153,24 @@ export interface Bloco {
    * Auditoria independente de 03/11/2026: sem isto, uma proposta do motor abaixo do mínimo passava.
    */
   pisoMinimo?: number
+  /**
+   * A FRONTEIRA DA FRENTE que valia quando o bloco foi gerado (03/11/2026): a próxima escala
+   * publicada de cada pessoa depois do fim, e quantas escalas cada uma já tinha nos meses que
+   * continuam no ar. Gravada porque, ao contrário da de trás, ela MUDA quando alguém publica outro
+   * período à frente — e sem ela o bloco deixaria de ser reproduzível (`npm run refazer`).
+   */
+  fronteiraDaFrente?: { proxima: Record<string, string>; porMes: Record<string, Record<string, number>> }
+  /**
+   * E a de TRÁS, pelo mesmo motivo (2ª auditoria de 03/11/2026): com períodos gerados em qualquer
+   * ordem, publicar depois um período ANTERIOR a este muda o "antes" dele. Gravada, o refazer usa a
+   * que valeu; ausente (blocos de antes disto), deriva dos outros blocos como sempre fez.
+   */
+  fronteiraDeTras?: { ultima: Record<string, string>; porMes: Record<string, Record<string, number>> }
+  /**
+   * Pedaço de um bloco cortado por uma geração posterior (cabeça ou cauda). Os turnos são os
+   * publicados, intocados — mas já não são o resultado INTEIRO de uma geração, então não se refazem.
+   */
+  recortado?: true
   elenco: string[]
   malha: Malha
   turnos: Turno[]

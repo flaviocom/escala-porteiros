@@ -45,20 +45,36 @@ export function montarBlocosParaPublicar(anteriores: Bloco[], blocoNovo: Bloco |
   const resultado: Bloco[] = []
 
   for (const b of anteriores) {
+    // Bloco que não encosta no período passa INTACTO — sem isto ele era remontado como "cauda" e
+    // trocava de id a cada geração anterior a ele (auditoria de 03/11/2026).
+    if (b.fim < blocoNovo.inicio || b.inicio > blocoNovo.fim) {
+      resultado.push(b)
+      continue
+    }
+
     // A CABEÇA: o que este bloco governa ANTES de o novo começar.
     const cabeca = b.turnos.filter((t) => diferencaEmDias(t.data, blocoNovo.inicio) > 0)
     if (b.inicio < blocoNovo.inicio && cabeca.length > 0) {
-      resultado.push({ ...b, fim: b.fim > vespera ? vespera : b.fim, turnos: cabeca })
+      resultado.push({ ...b, fim: b.fim > vespera ? vespera : b.fim, turnos: cabeca, recortado: true })
     }
 
     // A CAUDA: o que ele governa DEPOIS de o novo terminar. Sem isto, escala publicada some.
     const cauda = b.turnos.filter((t) => diferencaEmDias(blocoNovo.fim, t.data) > 0)
     if (b.fim > blocoNovo.fim && cauda.length > 0) {
+      /*
+        A emenda com o bloco novo só garante o piso DELE (a fronteira da frente do gerador). A cauda
+        herdava o piso do bloco inteiro e, com o bloco novo de piso menor, D10 a reprovava na vista
+        pública por uma promessa que ela não fez — auditoria de 03/11/2026. Declara-se o que vale.
+      */
+      const pisoNovo = blocoNovo.pisoAlcancado
       resultado.push({
         ...b,
         id: `${b.id}-cauda`,
         inicio: b.inicio < diaSeguinte ? diaSeguinte : b.inicio,
         turnos: cauda,
+        recortado: true,
+        pisoAlcancado: b.pisoAlcancado != null && pisoNovo != null ? Math.min(b.pisoAlcancado, pisoNovo) : b.pisoAlcancado,
+        ...(b.pisoMinimo != null ? { pisoMinimo: pisoNovo != null ? Math.min(b.pisoMinimo, pisoNovo) : b.pisoMinimo } : {}),
       })
     }
   }
@@ -228,13 +244,22 @@ export function conferirReversao(
  * publica ou não é domínio — a tela só pergunta e pinta. Aqui elas ficam, com teste, e a tela passa a
  * ter uma linha em vez de uma condição.
  */
-export function travaDeDataRetroativa(de: DataISO, hoje: DataISO): string | null {
-  if (diferencaEmDias(de, hoje) <= 0) return null
-  return (
-    `A data inicial (${de}) é anterior a hoje (${hoje}).` +
-    ' Gerar para trás reescreveria turnos que já foram vistos — e o passado divulgado não se' +
-    ' reescreve. Escolha hoje ou uma data à frente.'
-  )
+/*
+  🔴 DE "RECUSA" PARA "AJUSTA" — pedido do Flavio em 03/11/2026, textual:
+  *"mesmo que eu gerar do 1/11/2026, você não pode mexer no domingo. Você tem que mexer do próximo
+  dia em diante: substituir ou apenas criar novamente. (…) O que não pode ser mexido é no histórico
+  anterior."*
+
+  Antes, um início no passado era RECUSADO (a "trava de data retroativa"). A regra que ela protegia
+  continua — o passado divulgado não se reescreve —, mas o jeito mudou: o início é empurrado para
+  AMANHÃ, e tudo até hoje fica como está. Hoje também não se gera: o turno de hoje pode já estar
+  acontecendo, e ele disse "do próximo dia em diante". Quem emenda os blocos
+  (`montarBlocosParaPublicar`) corta o publicado na véspera do início, então o que vem antes fica
+  intacto e o que vem do início até o fim do período é substituído ou criado.
+*/
+export function inicioGeravel(de: DataISO, hoje: DataISO): { inicio: DataISO; ajustado: boolean } {
+  const amanha = somarDias(hoje, 1)
+  return diferencaEmDias(de, amanha) > 0 ? { inicio: amanha, ajustado: true } : { inicio: de, ajustado: false }
 }
 
 /** Publicar está impedido? Uma resposta só, para a tela não recompor o julgamento. */
@@ -271,7 +296,7 @@ export function publicacaoImpedida(
  * malha mudou. O que não pode é acontecer **sem ele saber quantos** — porque o site passa a
  * desmentir o que já está no ar, e quem percebe é o irmão que combinou o domingo com a família.
  *
- * ⚠️ Turno que já ACONTECEU continua impedido, e por outra trava: `travaDeDataRetroativa`.
+ * ⚠️ Turno que já ACONTECEU continua impedido, e por outra trava: `inicioGeravel` (o início é empurrado para amanhã).
  */
 export interface EscalaJaDivulgada {
   /** Turnos publicados que o bloco novo cobre e que mudariam de gente. */
@@ -323,14 +348,25 @@ export function conferirEscalaJaDivulgada(publicados: Bloco[], blocoNovo: Bloco 
  * Fica aqui, no domínio, e não em três lugares: a tela, a validação e o gerador precisam do MESMO
  * número, e foi fonte dupla que produziu metade dos defeitos deste projeto.
  */
-export function cotaMensalJaPublicada(publicados: Bloco[], inicioDoNovo: DataISO): Record<string, Record<string, number>> {
+export function cotaMensalJaPublicada(
+  publicados: Bloco[],
+  inicioDoNovo: DataISO,
+  /**
+   * Fim do bloco novo. Com ele, o que fica publicado DEPOIS do fim também conta — 03/11/2026: o
+   * dono gera qualquer período, e um período que termina no meio de um mês publicado divide esse
+   * mês com a parte que continua no ar. Ausente = só o que vem antes, como sempre foi.
+   */
+  fimDoNovo?: DataISO,
+): Record<string, Record<string, number>> {
   const fora: Record<string, Record<string, number>> = {}
   for (const b of publicados) {
     for (const t of b.turnos) {
-      // Só o que o bloco realmente governa, e só o que vem ANTES do bloco novo: o que ele cobre
+      // Só o que o bloco realmente governa, e só o que fica FORA do bloco novo: o que ele cobre
       // será reescrito, e contar duas vezes inventaria um estouro que não existe.
       if (!dentro(t.data, b.inicio, b.fim)) continue
-      if (diferencaEmDias(t.data, inicioDoNovo) <= 0) continue
+      const antes = diferencaEmDias(t.data, inicioDoNovo) > 0
+      const depois = fimDoNovo != null && diferencaEmDias(fimDoNovo, t.data) > 0
+      if (!antes && !depois) continue
       const mes = t.data.slice(0, 7)
       for (const id of t.pessoas) {
         fora[id] ??= {}
@@ -339,6 +375,43 @@ export function cotaMensalJaPublicada(publicados: Bloco[], inicioDoNovo: DataISO
     }
   }
   return fora
+}
+
+/**
+ * A PRÓXIMA ESCALA JÁ PUBLICADA de cada pessoa, depois do fim do bloco novo — 03/11/2026.
+ *
+ * O dono gera qualquer período: se ele termina antes do que está no ar, a parte de depois continua
+ * publicada e a escala nova ENCOSTA nela. Medido nos dados reais: gerando 04/11→30/11, o Donizete
+ * caía em 29/11 com 02/12 já publicado — 3 dias, abaixo do piso 4 do resto. O gerador olhava só
+ * para trás (`ultimaEscalaAnterior`); esta é a fronteira da frente.
+ */
+/** Só a parte DEPOIS do fim: o que o gerador grava no bloco, para o refazer reproduzir (03/11/2026). */
+export function cotaMensalPublicadaDepois(publicados: Bloco[], fimDoNovo: DataISO): Record<string, Record<string, number>> {
+  const fora: Record<string, Record<string, number>> = {}
+  for (const b of publicados) {
+    for (const t of b.turnos) {
+      if (!dentro(t.data, b.inicio, b.fim)) continue
+      if (diferencaEmDias(fimDoNovo, t.data) <= 0) continue
+      const mes = t.data.slice(0, 7)
+      for (const id of t.pessoas) {
+        fora[id] ??= {}
+        fora[id][mes] = (fora[id][mes] ?? 0) + 1
+      }
+    }
+  }
+  return fora
+}
+
+export function proximaEscalaPublicada(publicados: Bloco[], fimDoNovo: DataISO): Record<string, DataISO> {
+  const prox: Record<string, DataISO> = {}
+  for (const b of publicados) {
+    for (const t of b.turnos) {
+      if (!dentro(t.data, b.inicio, b.fim)) continue
+      if (diferencaEmDias(fimDoNovo, t.data) <= 0) continue
+      for (const id of t.pessoas) if (!prox[id] || t.data < prox[id]) prox[id] = t.data
+    }
+  }
+  return prox
 }
 
 /**

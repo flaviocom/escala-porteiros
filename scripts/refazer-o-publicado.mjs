@@ -62,6 +62,12 @@ for (const alvo of blocos) {
     isentos.push(`${alvo.id} (origem "${alvo.origem}" — não saiu deste gerador)`)
     continue
   }
+  // Pedaço de bloco cortado por geração posterior: os turnos são os publicados (o conferidor do
+  // passado prova que nada sumiu), mas não são mais o resultado inteiro de uma geração.
+  if (alvo.recortado) {
+    isentos.push(`${alvo.id} (recortado por uma geração posterior — turnos preservados, não refeitos)`)
+    continue
+  }
 
   // A fronteira que existia quando ele nasceu: os OUTROS blocos, antes do início dele.
   //
@@ -73,15 +79,23 @@ for (const alvo of blocos) {
   // A regra que sobra daqui: **entrada nova no gerador é entrada nova aqui, no mesmo passo.** As
   // duas são derivadas da mesma coisa — os outros blocos, olhando só para trás do início deste —,
   // então a promessa de reprodutibilidade continua de pé: nada foi guardado a mais no bloco.
+  //
+  // ⚠️ 03/11/2026: com períodos gerados em QUALQUER ordem, o "antes" também pode mudar depois. Bloco
+  // novo grava a fronteira de trás que valeu (`fronteiraDeTras`); só bloco antigo, sem ela, deriva.
   const fronteira = {}
-  for (const b of blocos) {
+  if (alvo.fronteiraDeTras) Object.assign(fronteira, alvo.fronteiraDeTras.ultima)
+  else for (const b of blocos) {
     if (b.id === alvo.id) continue
     for (const t of b.turnos) {
       if (diferencaEmDias(t.data, alvo.inicio) <= 0) continue
       for (const id of t.pessoas) if (!fronteira[id] || t.data > fronteira[id]) fronteira[id] = t.data
     }
   }
-  const cota = cotaMensalJaPublicada(blocos.filter((b) => b.id !== alvo.id), alvo.inicio)
+  // A fronteira da FRENTE (03/11/2026) NÃO se deriva dos outros blocos: ela muda quando alguém publica
+  // outro período à frente. O gerador grava no bloco a que valeu; é ela que se usa aqui.
+  const cota = alvo.fronteiraDeTras?.porMes ?? cotaMensalJaPublicada(blocos.filter((b) => b.id !== alvo.id), alvo.inicio)
+  const proxima = alvo.fronteiraDaFrente?.proxima ?? {}
+  const cotaDepois = alvo.fronteiraDaFrente?.porMes ?? {}
 
   const grade = construirGrade({
     inicio: alvo.inicio, fim: alvo.fim, malha: alvo.malha,
@@ -90,6 +104,7 @@ for (const alvo of blocos) {
   const r = gerar({
     inicio: alvo.inicio, fim: alvo.fim, grade, pessoas, elenco: alvo.elenco,
     malha: alvo.malha, ultimaEscalaAnterior: fronteira, escalasPorMesAnterior: cota,
+    proximaEscalaPosterior: proxima, escalasPorMesPosterior: cotaDepois,
     ...(alvo.semente == null ? {} : { semente: alvo.semente, candidatos: 3 }),
     // O mínimo exigido também é entrada do gerador (03/11/2026) — sem ele o refazer não reproduz.
     ...(alvo.pisoMinimo ? { pisoMinimo: alvo.pisoMinimo } : {}),

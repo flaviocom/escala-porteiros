@@ -62,6 +62,12 @@ export interface Contexto {
    */
   escalasPorMesAnterior?: Record<string, Record<string, number>>
   /**
+   * A próxima escala JÁ PUBLICADA de cada pessoa, depois do fim do bloco — a fronteira da frente
+   * (03/11/2026). Sem ela, um período que termina antes do que está no ar passava na validação
+   * mesmo com alguém colado na escala que continua publicada (troca manual ou proposta do motor).
+   */
+  proximaEscalaPosterior?: Record<string, DataISO>
+  /**
    * 🔴 A CONFIGURAÇÃO — entrou em 04/08/2026, por auditoria independente, e o motivo importa.
    *
    * Sem ela, uma regra só conseguia comparar o bloco **consigo mesmo**. Foi assim que D9 ficou
@@ -156,6 +162,9 @@ export function datasDaPessoa(ctx: Contexto, pessoaId: string, comAnterior = tru
     .map((t) => t.data)
   const anterior = ctx.ultimaEscalaAnterior[pessoaId]
   if (comAnterior && anterior) datas.push(anterior)
+  // As fronteiras andam juntas: quem considera a de trás considera também a da frente.
+  const posterior = ctx.proximaEscalaPosterior?.[pessoaId]
+  if (comAnterior && posterior) datas.push(posterior)
   return [...new Set(datas)].sort()
 }
 

@@ -71,6 +71,14 @@ export interface OpcoesGeracao {
    */
   pisoMinimo?: number
   /**
+   * A PRÓXIMA escala já publicada de cada pessoa, depois do fim deste bloco — a fronteira da frente
+   * (03/11/2026). Quando o período gerado termina antes do que está no ar, a escala nova não pode
+   * encostar na que continua publicada abaixo do piso. Ver `proximaEscalaPublicada`.
+   */
+  proximaEscalaPosterior?: Record<string, DataISO>
+  /** Escalas por mês já publicadas DEPOIS do fim — soma com `escalasPorMesAnterior` no teto mensal. */
+  escalasPorMesPosterior?: Record<string, Record<string, number>>
+  /**
    * Tamanho da lista restrita de candidatos (GRASP). Ausente ou 1 = guloso puro, como sempre foi.
    * Ver `docs/superpowers/specs/PESQUISA_2026-08-05-gerar-n-versoes.md`.
    */
@@ -198,9 +206,12 @@ function tentarComPiso(
     o contador nascia zerado, e quem já tinha 3 escalas em agosto num bloco publicado entrava no
     bloco novo como se tivesse zero.
   */
-  for (const [id, meses] of Object.entries(op.escalasPorMesAnterior ?? {})) {
-    if (!est.datas.has(id)) continue
-    for (const [m, n] of Object.entries(meses)) est.porMes.set(`${id}|${m}`, n)
+  // As duas pontas somam: o mês que começa antes do bloco e o que continua publicado depois dele.
+  for (const fonte of [op.escalasPorMesAnterior, op.escalasPorMesPosterior]) {
+    for (const [id, meses] of Object.entries(fonte ?? {})) {
+      if (!est.datas.has(id)) continue
+      for (const [m, n] of Object.entries(meses)) est.porMes.set(`${id}|${m}`, (est.porMes.get(`${id}|${m}`) ?? 0) + n)
+    }
   }
 
   const turnos = op.grade.map((t) => ({ ...t, pessoas: [] as string[] }))
@@ -224,6 +235,14 @@ function tentarComPiso(
         const gap = diferencaEmDias(ultima, turno.data)
         if (gap < piso) {
           barrados.push({ pessoa: p.nome, motivo: `${gap} dia(s) desde ${formatarBR(ultima)}, abaixo do piso ${piso}` })
+          return false
+        }
+      }
+      const proxima = op.proximaEscalaPosterior?.[p.id]
+      if (proxima) {
+        const gap = diferencaEmDias(turno.data, proxima)
+        if (gap < piso) {
+          barrados.push({ pessoa: p.nome, motivo: `${gap} dia(s) até ${formatarBR(proxima)}, que já está publicada, abaixo do piso ${piso}` })
           return false
         }
       }
@@ -358,6 +377,13 @@ export function gerar(op: OpcoesGeracao): Resultado {
         // O mínimo exigido viaja com o bloco: a proposta do motor nasce deste bloco e herda a
         // exigência, e a regra D10 a cobra dela também.
         ...(minimo > 1 ? { pisoMinimo: minimo } : {}),
+        // As fronteiras mudam quando alguém publica outro período na frente ou atrás: grava-se a que valeu.
+        ...(Object.keys(op.ultimaEscalaAnterior ?? {}).length || Object.keys(op.escalasPorMesAnterior ?? {}).length
+          ? { fronteiraDeTras: { ultima: { ...op.ultimaEscalaAnterior }, porMes: { ...op.escalasPorMesAnterior } } }
+          : {}),
+        ...(Object.keys(op.proximaEscalaPosterior ?? {}).length || Object.keys(op.escalasPorMesPosterior ?? {}).length
+          ? { fronteiraDaFrente: { proxima: { ...op.proximaEscalaPosterior }, porMes: { ...op.escalasPorMesPosterior } } }
+          : {}),
         elenco: [...op.elenco],
         malha: op.malha,
         // Gravada para que esta escala possa ser refeita exatamente igual, por qualquer pessoa.
