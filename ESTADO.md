@@ -2,7 +2,7 @@
 
 > **Onde o projeto está agora.** Documento **vivo**: sobrescrito, não acumulado.
 >
-> **Última atualização:** 04/09/2026 · **Fuso:** America/São_Paulo
+> **Última atualização:** 03/11/2026 · **Fuso:** America/São_Paulo
 >
 > **Cadeia de navegação, nesta ordem:**
 > **`ESTADO.md` (você está aqui)** → [`handoff mais recente`](docs/handoff/HANDOFF_2026-08-20.md) → [`BACKLOG.md`](BACKLOG.md)
@@ -46,6 +46,18 @@ credencial em aberto é a chave do motor, **opcional**; nada trava sem ela. **20
 virou dois — nasceu [`escala-geral`](https://github.com/flaviocom/escala-geral), motor genérico
 para vender, sem tocar neste repositório de produção. Detalhe completo do dia inteiro:
 [`HANDOFF_2026-08-20.md`](docs/handoff/HANDOFF_2026-08-20.md).
+
+## 03/11: distância mínima entre escalas virou campo da tela (no ar)
+
+O dono viu escalas a 1 dia de distância e pediu para ajustar o piso para 2. **Medido por fora**
+(mesmo gerador, dados publicados, Adilson com teto 1/mês): piso **4** em 10 períodos, média ~7
+dias — o "1 dia" não reproduziu; a mudança do Adilson está só no navegador dele, não publicada.
+**Entregue:** campo "Distância mínima entre escalas" na aba Gerar (`config.pisoMinimo`, ausente = 1):
+a busca para no mínimo e, se não couber, declara que não foi possível. Prova de mordida medida;
+testado ao vivo no site publicado sem publicar nada. **De quebra:** `vivo:gerar` estava vermelho
+porque o teste cravava setembro/2026 (virou passado) — datas agora relativas a hoje; gate inteiro
+verde. Commits `36de893` e `8ad8370`. Detalhe:
+[`docs/historico/SOLICITACOES/2026-11-03.md`](docs/historico/SOLICITACOES/2026-11-03.md).
 
 ## 22/08: diagnóstico e correções globais do método padrão-ouro, sem mudança de produto
 

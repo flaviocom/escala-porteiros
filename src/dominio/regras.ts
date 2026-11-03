@@ -613,23 +613,34 @@ const D10: Regra = {
   explicacao:
     'O intervalo mínimo que esta escala afirma ter garantido é conferido pessoa por pessoa. Serve para o número anunciado não ser maior do que a realidade.',
   avaliar(ctx) {
-    const piso = ctx.bloco.pisoAlcancado
-    if (piso == null)
+    /*
+      🔴 O MÍNIMO EXIGIDO TAMBÉM É COBRADO — auditoria independente de 03/11/2026. A proposta do
+      motor declara como piso o que MEDIU; sem isto, uma proposta a 1 dia passava com "piso 1" mesmo
+      com o dono tendo exigido 2. Vale o maior entre o declarado e o exigido no próprio bloco.
+    */
+    const declarado = ctx.bloco.pisoAlcancado
+    const exigido = ctx.bloco.pisoMinimo ?? null
+    const piso = Math.max(declarado ?? 0, exigido ?? 0)
+    if (piso === 0)
       return {
         id: D10.id, titulo: D10.titulo, familia: 'DURA', status: 'ok',
         medida: 'piso não declarado (bloco importado) — nada a conferir', violacoes: [],
       }
+    const deOnde = exigido != null && exigido >= (declarado ?? 0) ? 'a distância mínima exigida' : 'o piso que o bloco declara'
     const v: Violacao[] = []
     for (const p of pessoasDoBloco(ctx)) {
       const min = menorIntervalo(ctx, p.id)
       if (min != null && min < piso)
         v.push({
           pessoaId: p.id,
-          mensagem: `${p.nome} tem intervalo mínimo de ${min} dia(s), abaixo do piso de ${piso} que o bloco declara`,
+          mensagem: `${p.nome} tem intervalo mínimo de ${min} dia(s), abaixo de ${piso} — ${deOnde}`,
         })
     }
     return ok(
-      { id: D10.id, titulo: D10.titulo, familia: 'DURA', medida: `piso declarado: ${piso} dia(s)` },
+      {
+        id: D10.id, titulo: D10.titulo, familia: 'DURA',
+        medida: `piso declarado: ${declarado ?? '-'} dia(s)` + (exigido != null ? ` · mínimo exigido: ${exigido}` : ''),
+      },
       v,
     )
   },

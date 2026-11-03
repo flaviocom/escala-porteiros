@@ -308,6 +308,10 @@ export function conferirPorFora(
     const piso = bloco.pisoAlcancado
     if (piso != null && menor < piso)
       furos.push(`o bloco declara piso de ${piso} dia(s), e o menor intervalo real é ${menor} — ${noMinimo.length} pessoa(s): ${quem}`)
+    // A segunda régua também cobra o mínimo EXIGIDO (auditoria de 03/11/2026), não só o declarado.
+    const exigido = bloco.pisoMinimo
+    if (exigido != null && menor < exigido)
+      furos.push(`a distância mínima exigida é ${exigido} dia(s), e o menor intervalo real é ${menor} — ${noMinimo.length} pessoa(s): ${quem}`)
     registrar('O espaçamento declarado é o espaçamento real', furos,
       menor === Infinity
         ? 'ninguém com duas escalas'

@@ -11,6 +11,7 @@
  */
 import type { ArquivoBlocos, ArquivoPessoas, Bloco, Configuracao, Pessoa, Turno } from '../dominio/tipos'
 import { diferencaEmDias, ehDataValida, type DataISO } from '../dominio/datas'
+import { normalizarPisoMinimo } from '../dominio/tipos'
 import { definirPessoas, type Shift, type ShiftType } from '../types/scheduler'
 
 export interface DadosPublicados {
@@ -65,7 +66,7 @@ export function completarConfig(lido: ConfigLida | null | undefined): Configurac
     versao: c.versao ?? CONFIG_PADRAO.versao,
     capacidadePadrao: c.capacidadePadrao ?? CONFIG_PADRAO.capacidadePadrao,
     // Opcional: ausente continua ausente, e o gerador usa 1 — o comportamento de antes do campo.
-    ...(c.pisoMinimo != null ? { pisoMinimo: c.pisoMinimo } : {}),
+    ...(c.pisoMinimo != null ? { pisoMinimo: normalizarPisoMinimo(c.pisoMinimo) } : {}),
     malhaPadrao: c.malhaPadrao ?? CONFIG_PADRAO.malhaPadrao,
     santaCeia: c.santaCeia ?? CONFIG_PADRAO.santaCeia,
     identidade: {

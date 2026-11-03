@@ -101,7 +101,8 @@ export const AbaAjustar: React.FC<Props> = ({ bloco, pessoas, fronteira, aoAlter
           Duas réguas para a mesma pergunta, e a que o usuário vê era a frouxa. O piso vem do bloco,
           que é quem sabe qual promessa ele fez.
         */
-        const pisoDoBloco = bloco.pisoAlcancado ?? 3
+        // A mesma régua de D10: o maior entre o declarado e o mínimo exigido (auditoria de 03/11/2026).
+        const pisoDoBloco = Math.max(bloco.pisoAlcancado ?? 0, bloco.pisoMinimo ?? 0) || 3
         return {
           p,
           pode: true,

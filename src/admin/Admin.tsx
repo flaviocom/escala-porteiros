@@ -66,6 +66,41 @@ let gravacaoEmVoo: string | null = null
  */
 let motorEmVoo: ProgressoMotor | null = null
 
+/**
+ * 🔴 CAMPO DE NÚMERO INTEIRO QUE ACEITA FICAR VAZIO ENQUANTO SE DIGITA — auditoria de 03/11/2026.
+ *
+ * Os campos eram controlados direto pelo valor salvo: apagar o "1" era recusado (vazio vira 0), o
+ * React devolvia o "1", e digitar "2" virava "12" — pedir 2 dias de distância gravava 12. O texto
+ * digitado agora vive aqui; só um inteiro dentro dos limites chega a `aoMudar`, e ao sair do campo
+ * ele volta a mostrar o valor salvo.
+ */
+function CampoInteiro(props: {
+  id: string; valor: number; min: number; max: number; title: string; aoMudar: (n: number) => void
+}) {
+  const { id, valor, min, max, title, aoMudar } = props
+  const [texto, setTexto] = useState(String(valor))
+  // Valor mudou por fora (descartar rascunho, recarregar): o campo acompanha.
+  useEffect(() => { setTexto((t) => (Number(t) === valor ? t : String(valor))) }, [valor])
+  return (
+    <input
+      id={id}
+      name={id}
+      type="number"
+      min={min}
+      max={max}
+      value={texto}
+      title={title}
+      onChange={(e) => {
+        setTexto(e.target.value)
+        const n = Number(e.target.value)
+        if (e.target.value !== '' && Number.isInteger(n) && n >= min && n <= max) aoMudar(n)
+      }}
+      onBlur={() => setTexto(String(valor))}
+      className="w-20 rounded-xl border border-gray-300 px-3 py-2 text-sm"
+    />
+  )
+}
+
 // ===========================================================================
 // PORTA — login
 // ===========================================================================
@@ -1788,19 +1823,13 @@ const AbaGerar: React.FC<{
         */}
         <label className="mt-4 flex flex-wrap items-center gap-2 text-sm text-gray-700">
           <span className="font-semibold">Pessoas por turno:</span>
-          <input
+          <CampoInteiro
             id="capacidade-padrao"
-            name="capacidade-padrao"
-            type="number"
             min={1}
             max={20}
-            value={config.capacidadePadrao}
+            valor={config.capacidadePadrao}
             title="Quantas pessoas cada turno precisa. Vale para a próxima geração"
-            onChange={(e) => {
-              const n = Number(e.target.value)
-              if (Number.isInteger(n) && n >= 1 && n <= 20) aoMudarConfig({ ...config, capacidadePadrao: n })
-            }}
-            className="w-20 rounded-xl border border-gray-300 px-3 py-2 text-sm"
+            aoMudar={(n) => aoMudarConfig({ ...config, capacidadePadrao: n })}
           />
           <span className="text-xs text-gray-500">
             vale na próxima geração · hoje a escala no ar usa {dados.config.capacidadePadrao}
@@ -1814,19 +1843,13 @@ const AbaGerar: React.FC<{
         */}
         <label className="mt-4 flex flex-wrap items-center gap-2 text-sm text-gray-700">
           <span className="font-semibold">Distância mínima entre escalas:</span>
-          <input
+          <CampoInteiro
             id="piso-minimo"
-            name="piso-minimo"
-            type="number"
             min={1}
             max={30}
-            value={config.pisoMinimo ?? 1}
+            valor={config.pisoMinimo ?? 1}
             title="Menor número de dias aceito entre duas escalas da mesma pessoa. A escala busca sempre o maior possível; se não couber com este mínimo, ela avisa que não foi possível"
-            onChange={(e) => {
-              const n = Number(e.target.value)
-              if (Number.isInteger(n) && n >= 1 && n <= 30) aoMudarConfig({ ...config, pisoMinimo: n })
-            }}
-            className="w-20 rounded-xl border border-gray-300 px-3 py-2 text-sm"
+            aoMudar={(n) => aoMudarConfig({ ...config, pisoMinimo: n })}
           />
           <span className="text-xs text-gray-500">
             dia(s) · vale na próxima geração · se não couber, a tela avisa em vez de aproximar as escalas

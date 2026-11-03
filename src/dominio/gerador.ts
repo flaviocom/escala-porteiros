@@ -36,7 +36,7 @@
 import { diferencaEmDias, formatarBR, hojeSaoPaulo, mesDe, type DataISO } from './datas'
 import { podeAssumir } from './regras'
 import type { Bloco, Malha, Pessoa, Turno } from './tipos'
-import { ROTULO_TURNO } from './tipos'
+import { normalizarPisoMinimo, ROTULO_TURNO } from './tipos'
 
 export interface OpcoesGeracao {
   inicio: DataISO
@@ -304,6 +304,10 @@ function tentarComPiso(
   return { ok: true, turnos }
 }
 
+// `normalizarPisoMinimo` mora em `tipos.ts` (leve, sem regras) porque o carregador do site público
+// também a usa; reexportada aqui para quem já a procura no gerador.
+export { normalizarPisoMinimo }
+
 /**
  * Gera a escala, descobrindo o maior piso de distanciamento que cabe.
  */
@@ -330,7 +334,7 @@ export function gerar(op: OpcoesGeracao): Resultado {
     }
   }
 
-  const minimo = Math.max(1, Math.floor(op.pisoMinimo ?? 1))
+  const minimo = normalizarPisoMinimo(op.pisoMinimo)
   // O teto teórico é uma estimativa pela média; se o mínimo pedido passar dele, tenta-se o mínimo
   // mesmo assim — a média não prova que ele é impossível.
   const teto = Math.max(minimo, op.pisoMaximo ?? pisoTeorico(op.grade, op.elenco.length, op.inicio, op.fim))
@@ -351,6 +355,9 @@ export function gerar(op: OpcoesGeracao): Resultado {
         geradoEm: hojeSaoPaulo(),
         origem: 'algoritmo',
         pisoAlcancado: piso,
+        // O mínimo exigido viaja com o bloco: a proposta do motor nasce deste bloco e herda a
+        // exigência, e a regra D10 a cobra dela também.
+        ...(minimo > 1 ? { pisoMinimo: minimo } : {}),
         elenco: [...op.elenco],
         malha: op.malha,
         // Gravada para que esta escala possa ser refeita exatamente igual, por qualquer pessoa.

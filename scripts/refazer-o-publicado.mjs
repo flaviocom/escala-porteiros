@@ -91,6 +91,8 @@ for (const alvo of blocos) {
     inicio: alvo.inicio, fim: alvo.fim, grade, pessoas, elenco: alvo.elenco,
     malha: alvo.malha, ultimaEscalaAnterior: fronteira, escalasPorMesAnterior: cota,
     ...(alvo.semente == null ? {} : { semente: alvo.semente, candidatos: 3 }),
+    // O mínimo exigido também é entrada do gerador (03/11/2026) — sem ele o refazer não reproduz.
+    ...(alvo.pisoMinimo ? { pisoMinimo: alvo.pisoMinimo } : {}),
   })
 
   if (!r.ok) {

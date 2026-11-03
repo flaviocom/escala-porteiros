@@ -9,7 +9,8 @@
  * era invisível porque ninguém rodava os dois juntos.
  */
 import { describe, expect, it } from 'vitest'
-import { gerar, gerarVariasVersoes, indiceDeJain, pisoTeorico } from './gerador'
+import { gerar, gerarVariasVersoes, indiceDeJain, normalizarPisoMinimo, pisoTeorico } from './gerador'
+import { conferirPorFora } from './conferencia-independente'
 import { construirGrade, MALHA_ATUAL } from './malha'
 import { validar } from './validacao'
 import { menorIntervalo } from './regras'
@@ -418,5 +419,61 @@ describe('distância mínima (pisoMinimo)', () => {
     const lista = pessoas(16)
     const r = gerar({ ...SET_DEZ, grade: gradePadrao(), pessoas: lista, elenco: lista.map((p) => p.id), malha: MALHA_ATUAL, pisoMaximo: 3, pisoMinimo: 5 })
     expect(r.pisosTentados[0]).toBe(5)
+  })
+})
+
+/*
+  🔴 ACHADOS DA AUDITORIA INDEPENDENTE DE 03/11/2026 — cada um vira caso antes do conserto valer.
+*/
+describe('distância mínima — achados da auditoria', () => {
+  const MALHA_FDS = { regras: [{ diaSemana: 6, turnos: ['NOITE' as const] }, { diaSemana: 0, turnos: ['NOITE' as const] }] }
+  const tres = pessoas(3)
+  const apertado = (pisoMinimo?: unknown) => gerar({
+    inicio: '2026-09-05', fim: '2026-09-06',
+    grade: construirGrade({ inicio: '2026-09-05', fim: '2026-09-06', malha: MALHA_FDS, capacidadePadrao: 3 }),
+    pessoas: tres, elenco: tres.map((p) => p.id), malha: MALHA_FDS,
+    ...(pisoMinimo !== undefined ? { pisoMinimo: pisoMinimo as number } : {}),
+  })
+  const CFG_FDS: Configuracao = { ...CONFIG, malhaPadrao: MALHA_FDS }
+
+  it('S3/S4: valor inválido no config vira 1 — e o laço termina', () => {
+    for (const ruim of [NaN, Infinity, -Infinity, 'abc', 0, -3, null, 1e999]) expect(normalizarPisoMinimo(ruim)).toBe(1)
+    expect(normalizarPisoMinimo('2')).toBe(2)
+    expect(normalizarPisoMinimo(2.7)).toBe(2)
+    for (const ruim of [NaN, Infinity, 'abc']) {
+      const r = apertado(ruim)
+      if (!r.ok) throw new Error(r.motivo)
+      expect(r.pisosTentados.length).toBeGreaterThan(0)
+    }
+  })
+
+  it('o mínimo exigido viaja no bloco gerado', () => {
+    const lista = pessoas(16)
+    const r = gerar({ ...SET_DEZ, grade: gradePadrao(), pessoas: lista, elenco: lista.map((p) => p.id), malha: MALHA_ATUAL, pisoMinimo: 2 })
+    if (!r.ok) throw new Error(r.motivo)
+    expect(r.bloco.pisoMinimo).toBe(2)
+    const sem = apertado()
+    if (!sem.ok) throw new Error(sem.motivo)
+    expect(sem.bloco.pisoMinimo).toBeUndefined()
+  })
+
+  it('🔴 S1 INFRATOR: bloco que declara piso 1 mas EXIGE 2 é reprovado pelas DUAS réguas', () => {
+    const r = apertado()
+    if (!r.ok) throw new Error(r.motivo)
+    // É a forma da proposta do motor: declara o piso que mediu (1), herda a exigência do algoritmo.
+    const bloco = { ...r.bloco, origem: 'motor' as const, pisoMinimo: 2 }
+    const rel = validar({ bloco, pessoas: tres, ultimaEscalaAnterior: {}, config: CFG_FDS })
+    expect(rel.falhasDuras.map((f) => f.id)).toContain('D10')
+    const fora = conferirPorFora(bloco, tres, CFG_FDS, {}, {})
+    expect(fora.comFuro.flatMap((a) => a.furos).join(' | ')).toContain('distância mínima exigida é 2')
+  })
+
+  it('✅ S1 CONTROLE: o mesmo bloco SEM exigência passa nas duas', () => {
+    const r = apertado()
+    if (!r.ok) throw new Error(r.motivo)
+    const rel = validar({ bloco: r.bloco, pessoas: tres, ultimaEscalaAnterior: {}, config: CFG_FDS })
+    expect(rel.falhasDuras.map((f) => f.id)).not.toContain('D10')
+    const fora = conferirPorFora(r.bloco, tres, CFG_FDS, {}, {})
+    expect(fora.comFuro.flatMap((a) => a.furos).join(' | ')).not.toContain('distância mínima')
   })
 })

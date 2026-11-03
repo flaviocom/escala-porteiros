@@ -388,12 +388,12 @@ try {
   }
   const temAviso = async () => /em andamento/.test(await pagina.locator('body').innerText())
 
-  await pagina.locator('input[type="number"]').first().fill('4')
+  await pagina.locator('#capacidade-padrao').fill('4')
   await campoDe.fill(TRIMESTRE.ini)
   await pagina.waitForTimeout(900)
   await recarregar()
   const deVolta = await campoDe.inputValue()
-  const porTurno = await pagina.locator('input[type="number"]').first().inputValue()
+  const porTurno = await pagina.locator('#capacidade-padrao').inputValue()
   conferir('🔴 o que ele digitou SOBREVIVE ao recarregar',
     deVolta === TRIMESTRE.ini && porTurno === '4', `De=${deVolta} · por turno=${porTurno}`)
   conferir('🔴 e a tela AVISA que está mostrando rascunho, não o publicado', await temAviso(),
@@ -405,7 +405,7 @@ try {
   if (await e3.count()) { await e3.click(); await pagina.waitForTimeout(1600) }
   await pagina.getByRole('button', { name: /^Gerar escala/i }).first().click()
   await pagina.waitForTimeout(1100)
-  const semRascunho = !(await temAviso()) && (await pagina.locator('input[type="number"]').first().inputValue()) === '3'
+  const semRascunho = !(await temAviso()) && (await pagina.locator('#capacidade-padrao').inputValue()) === '3'
   conferir('🔴 "Descartar" devolve o publicado, e o aviso some', semRascunho,
     'sem o descarte ele ficaria preso ao rascunho')
 

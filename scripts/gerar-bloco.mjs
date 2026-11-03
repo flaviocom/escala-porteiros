@@ -165,6 +165,8 @@ const escolha = gerarVariasVersoes({
   elenco: pessoas.filter((p) => p.ativo).map((p) => p.id),
   malha: MALHA,
   ultimaEscalaAnterior: fronteira,
+  // A mesma distância mínima da tela — sem isto o script gerava abaixo dela (auditoria de 03/11/2026).
+  pisoMinimo: config.pisoMinimo,
 })
 const r = escolha.melhor
 

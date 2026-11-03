@@ -1145,3 +1145,14 @@ o dono no CHARMway-ERP (números próprios dedicados a este projeto; um chip = u
 número aparece não define de quem ele é"). Nada a construir agora — a entrada existe só para que
 ninguém redecida. Nenhum código de produto tocado. Diário fechado pela rotina noturna — detalhe em
 [`docs/historico/SOLICITACOES/2026-09-04.md`](docs/historico/SOLICITACOES/2026-09-04.md).
+
+## 03/11/2026 — distância mínima configurável (`pisoMinimo`) e `vivo:gerar` consertado
+
+Pedido do dono: escala com 1 dia de distância é pouco; ajustar o piso para 2. Medição por fora com o
+gerador do produto: piso 4 em 10 períodos com os dados publicados (o 1 não reproduziu). Entregue o
+campo "Distância mínima entre escalas" (`src/dominio/gerador.ts`, `src/dominio/tipos.ts`,
+`src/dados/carregar.ts`, `src/admin/Admin.tsx`), com teste INFRATOR + CONTROLE e mordida medida.
+`vivo:gerar` vermelho por data cravada no passado — datas relativas a hoje, 36/36. Commits
+`36de893`, `8ad8370`; auditoria independente em seguida. Skills acionadas: padrao-ouro, ponytail
+(mudança mínima), verificação ao vivo. Detalhe:
+[`docs/historico/SOLICITACOES/2026-11-03.md`](docs/historico/SOLICITACOES/2026-11-03.md).

@@ -146,6 +146,13 @@ export interface Bloco {
   origem: OrigemBloco
   /** Maior piso de distanciamento que coube. `null` quando desconhecido (bloco importado). */
   pisoAlcancado: number | null
+  /**
+   * A distância mínima que estava EXIGIDA quando este bloco foi gerado (`Configuracao.pisoMinimo`).
+   * Gravada no bloco, e não lida da configuração na hora de conferir, para que mudar o mínimo hoje
+   * não reprove blocos que já foram publicados com outro. Ausente = nenhuma exigência além do piso.
+   * Auditoria independente de 03/11/2026: sem isto, uma proposta do motor abaixo do mínimo passava.
+   */
+  pisoMinimo?: number
   elenco: string[]
   malha: Malha
   turnos: Turno[]
@@ -246,4 +253,14 @@ export interface Configuracao {
       plural: string
     }
   }
+}
+
+/**
+ * O mínimo vem de `config.json`, que pode ser editado à mão. Texto, `NaN` ou `Infinity` (um `1e999`
+ * no JSON) faziam o laço do piso não rodar ou nunca terminar — auditoria independente, 03/11/2026.
+ * Fora de [1, 365], ou não numérico, vira 1: o comportamento de quando o campo não existe.
+ */
+export function normalizarPisoMinimo(valor: unknown): number {
+  const n = Math.floor(Number(valor))
+  return Number.isFinite(n) && n >= 1 && n <= 365 ? n : 1
 }
