@@ -99,7 +99,7 @@ Fechados entre 06 e 07/08/2026, com prova. Detalhe completo, imutável:
 
 | # | Item | Estado |
 |---|---|---|
-| P2.0 | 🔴 **`vivo:gerar` vermelho ANTES da mudança de 03/11/2026.** Trava em `scripts/validar-gerar-amigavel.mjs:216` esperando o botão "gerar outra combinação" (30 s). Medido no código SEM o campo de distância mínima (`git stash` + build): reprova igual — logo é dívida anterior, não regressão do `pisoMinimo`. Os outros 14 `vivo:*` locais passaram | 🟠 ABERTO — o gate fica vermelho no passo `vivo:tudo` até consertar |
+| P2.0 | 🔴 **`vivo:gerar` vermelho ANTES da mudança de 03/11/2026.** Trava em `scripts/validar-gerar-amigavel.mjs:216` esperando o botão "gerar outra combinação" (30 s). Medido no código SEM o campo de distância mínima (`git stash` + build): reprova igual — logo é dívida anterior, não regressão do `pisoMinimo`. Os outros 14 `vivo:*` locais passaram | ✅ **FECHADO 03/11/2026** — a causa era a RÉGUA: o teste gerava setembro de 2026 cravado, e quando o mês virou passado a trava de data retroativa (correta) recusou a geração; sem escala, não havia botão. As 16 datas cravadas viraram relativas a hoje em São Paulo; 36/36 checagens |
 | P2.1 | `AGENTS.md` + `ESTADO.md` + `BACKLOG.md` na raiz | ✅ 04/08 |
 | P2.2 | `docs/pre-voo.json` e `docs/regimes-documentos.json` | ✅ 04/08 |
 | P2.3 | Pré-voo verde | ✅ 04/08 — exit 0 |

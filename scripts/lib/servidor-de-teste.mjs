@@ -78,7 +78,9 @@ function quemOcupa(porta) {
  * @param {number} op.porta    porta fixa (uma por script, para dois scripts não brigarem)
  * @param {'dev'|'preview'} op.modo  `dev` usa o código-fonte; `preview` serve o build de `docs/`
  */
-export async function subirServidor({ raiz, porta, modo = 'dev' }) {
+export async function subirServidor(op) {
+  const { raiz, porta, modo = 'dev' } = op || {}
+  if (!raiz || !porta) throw new Error('subirServidor: `raiz` e `porta` são obrigatórias')
   if (!(await portaLivre(porta))) {
     throw new Error(
       `a porta ${porta} JÁ ESTÁ OCUPADA.${quemOcupa(porta)}\n` +

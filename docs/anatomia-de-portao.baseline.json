@@ -1,0 +1,64 @@
+{
+  "_comentario": [
+    "DÍVIDA CONGELADA de anatomia de portão. Só pode DESCER.",
+    "Quem pagar uma lição em algum portão, roda --congelar e commita a linha-base menor.",
+    "Portão NOVO não entra aqui: ele nasce cumprindo as 7 lições, e é essa a razão do arquivo."
+  ],
+  "congelado_em": "2026-08-25",
+  "total": 29,
+  "divida": {
+    "scripts/portao-citacoes.mjs": [
+      "autoteste",
+      "controle",
+      "verde-enumera"
+    ],
+    "scripts/portao-datas.mjs": [
+      "autoteste",
+      "zero-nao-e-verde"
+    ],
+    "scripts/portao-generico-docs.mjs": [
+      "zero-nao-e-verde"
+    ],
+    "scripts/portao-generico.mjs": [
+      "zero-nao-e-verde"
+    ],
+    "scripts/portao-gerar-outra.mjs": [
+      "autoteste",
+      "controle"
+    ],
+    "scripts/portao-handoff-orfao.mjs": [
+      "autoteste",
+      "controle",
+      "zero-nao-e-verde"
+    ],
+    "scripts/portao-markdown-cru.mjs": [
+      "autoteste",
+      "controle",
+      "zero-nao-e-verde"
+    ],
+    "scripts/portao-ordem-do-gate.mjs": [
+      "autoteste",
+      "controle",
+      "zero-nao-e-verde"
+    ],
+    "scripts/portao-proximo-id.mjs": [
+      "autoteste",
+      "controle",
+      "verde-enumera"
+    ],
+    "scripts/portao-rotulos.mjs": [
+      "autoteste",
+      "controle"
+    ],
+    "scripts/portao-segredos.mjs": [
+      "autoteste",
+      "controle",
+      "verde-enumera",
+      "zero-nao-e-verde"
+    ],
+    "scripts/portao-tela-quebrada.mjs": [
+      "autoteste",
+      "controle"
+    ]
+  }
+}

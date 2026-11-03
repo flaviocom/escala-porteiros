@@ -19,6 +19,44 @@ import { subirServidor } from './lib/servidor-de-teste.mjs'
 const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..')
 const PORTA = 4293
 
+/*
+  🔴 DATAS RELATIVAS A HOJE, NUNCA CRAVADAS — 03/11/2026.
+
+  Este teste gerava setembro de 2026. Quando setembro virou passado, a trava de data retroativa
+  (`travaDeDataRetroativa`, correta) passou a recusar a geração: nada era gerado, o botão "gerar
+  outra combinação" nunca aparecia, e o portão ficou vermelho acusando a tela por um defeito da
+  régua. As datas de 2027 abaixo teriam o mesmo fim no ano seguinte. Agora tudo sai de
+  `hoje em São Paulo + N meses`.
+*/
+const hojeSP = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Sao_Paulo' }).format(new Date())
+const [anoHoje, mesHoje] = hojeSP.split('-').map(Number)
+const iso = (a, m, d) => `${a}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+// Aritmética de calendário pura, sem `Date`: nada aqui pode escorregar de fuso (`npm run datas`).
+const bissexto = (a) => (a % 4 === 0 && a % 100 !== 0) || a % 400 === 0
+const diasNoMes = (a, m) => [31, bissexto(a) ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][m - 1]
+/** Dia da semana (0 = domingo), algoritmo de Sakamoto. */
+const diaDaSemana = (a, m, d) => {
+  const t = [0, 3, 2, 5, 0, 3, 5, 1, 4, 6, 2, 4]
+  const y = m < 3 ? a - 1 : a
+  return (y + Math.floor(y / 4) - Math.floor(y / 100) + Math.floor(y / 400) + t[m - 1] + d) % 7
+}
+/** Primeiro e último dia do mês `n` meses à frente do atual. */
+const mesAFrente = (n) => {
+  const a = anoHoje + Math.floor((mesHoje - 1 + n) / 12), m = ((mesHoje - 1 + n) % 12) + 1
+  return { a, m, ini: iso(a, m, 1), fim: iso(a, m, diasNoMes(a, m)) }
+}
+const br = (d) => d.split('-').reverse().join('/')
+// Dois meses à frente: sempre no futuro e sempre depois do que já está publicado.
+const ALVO = mesAFrente(2)
+const TRIMESTRE = { ini: mesAFrente(3).ini, fim: mesAFrente(5).fim }
+// Uma quinta-feira à frente — a malha não tem culto às quintas.
+const QUINTA = (() => {
+  const { a, m } = mesAFrente(6)
+  let d = 1
+  while (diaDaSemana(a, m, d) !== 4) d++
+  return iso(a, m, d)
+})()
+
 const checagens = []
 const conferir = (nome, ok, detalhe = '') => checagens.push({ nome, ok, detalhe })
 
@@ -68,8 +106,8 @@ try {
   conferir('existe o painel de ausências na aba Gerar', painel > 0, painel ? 'presente' : 'AUSENTE')
 
   // Um período onde caiba escala, para o teste ter o que gerar.
-  await campoDe.fill('2026-09-01')
-  await campoAte.fill('2026-09-30')
+  await campoDe.fill(ALVO.ini)
+  await campoAte.fill(ALVO.fim)
   await pagina.waitForTimeout(400)
 
   const quem = pagina.locator('select').first()
@@ -82,13 +120,13 @@ try {
   //
   // Posição não é identidade. `getByLabel` quebra alto no dia em que o rótulo sumir (e o rótulo
   // sumindo é, ele mesmo, um defeito de acessibilidade que a gente quer ver quebrar).
-  await pagina.getByLabel('primeiro dia').fill('2026-09-01')
-  await pagina.getByLabel('último dia').fill('2026-09-30')
+  await pagina.getByLabel('primeiro dia').fill(ALVO.ini)
+  await pagina.getByLabel('último dia').fill(ALVO.fim)
   await pagina.getByRole('button', { name: /Marcar ausência/i }).click()
   await pagina.waitForTimeout(600)
 
-  const marcada = await pagina.getByText(new RegExp(`${nomeAusente}.*de 01/09/2026 a 30/09/2026`, 'i')).count()
-  conferir('a ausência aparece marcada no período', marcada > 0, `${nomeAusente}, 01/09 a 30/09`)
+  const marcada = await pagina.getByText(new RegExp(`${nomeAusente}.*de ${br(ALVO.ini)} a ${br(ALVO.fim)}`, 'i')).count()
+  conferir('a ausência aparece marcada no período', marcada > 0, `${nomeAusente}, ${br(ALVO.ini)} a ${br(ALVO.fim)}`)
 
   // ⚠️ `.first()` PEGAVA A ABA: "Gerar escala" é o nome da aba E do botão de ação. O clique caía na
   // aba, nada era gerado, e as checagens seguintes passavam no vazio — a da ausência chegou a dar
@@ -169,8 +207,8 @@ try {
   await pagina.getByRole('button', { name: /^Gerar escala/i }).first().click()
   await pagina.waitForTimeout(700)
   const deDepois = await pagina.locator('input[type="date"]').first().inputValue()
-  conferir('🔴 trocar de aba e voltar NÃO apaga o intervalo', deDepois === '2026-09-01',
-    `antes 2026-09-01 → depois ${deDepois}`)
+  conferir('🔴 trocar de aba e voltar NÃO apaga o intervalo', deDepois === ALVO.ini,
+    `antes ${ALVO.ini} → depois ${deDepois}`)
 
   // ── 1c. ESPELHO: Elenco e Gerar são a MESMA lista, não duas cópias ───────
   //
@@ -254,8 +292,8 @@ try {
   // do período VELHO. Publicar dali põe no ar uma escala que a tela não está descrevendo.
   await pagina.getByRole('button', { name: /^Gerar escala/i }).first().click()
   await pagina.waitForTimeout(700)
-  await campoDe.fill('2027-01-01')
-  await campoAte.fill('2027-03-31')
+  await campoDe.fill(TRIMESTRE.ini)
+  await campoAte.fill(TRIMESTRE.fim)
   await pagina.waitForTimeout(300)
   await pagina.getByRole('button', { name: /^Gerar escala$/ }).last().click()
   await pagina.getByText(/Piso alcançado|não foi possível cobrir/i).first().waitFor({ timeout: 90_000 }).catch(() => {})
@@ -263,9 +301,9 @@ try {
   // Sem esta primeira metade o teste passaria com a tela sempre vazia — provaria nada.
   conferir('há uma proposta na tela, para haver o que apagar', propostaNaTela, propostaNaTela ? 'proposta presente' : 'NADA foi gerado')
 
-  // 01/04/2027 é uma quinta-feira: a malha não tem culto nesse dia.
-  await campoDe.fill('2027-04-01')
-  await campoAte.fill('2027-04-01')
+  // `QUINTA` é uma quinta-feira à frente: a malha não tem culto nesse dia.
+  await campoDe.fill(QUINTA)
+  await campoAte.fill(QUINTA)
   await pagina.waitForTimeout(300)
   await pagina.getByRole('button', { name: /^Gerar escala$/ }).last().click()
   await pagina.waitForTimeout(1500)
@@ -288,8 +326,8 @@ try {
   // falso: quem seguisse o conselho só se afastaria da solução.
   await pagina.getByRole('button', { name: /^Gerar escala/i }).first().click()
   await pagina.waitForTimeout(700)
-  await campoDe.fill('2026-12-31')
-  await campoAte.fill('2026-01-01')
+  await campoDe.fill(ALVO.ini)
+  await campoAte.fill(iso(anoHoje - 1, 1, 1))
   await pagina.waitForTimeout(400)
   await pagina.getByRole('button', { name: /^Gerar escala$/ }).last().click()
   await pagina.waitForTimeout(1800)
@@ -351,13 +389,13 @@ try {
   const temAviso = async () => /em andamento/.test(await pagina.locator('body').innerText())
 
   await pagina.locator('input[type="number"]').first().fill('4')
-  await campoDe.fill('2027-03-01')
+  await campoDe.fill(TRIMESTRE.ini)
   await pagina.waitForTimeout(900)
   await recarregar()
   const deVolta = await campoDe.inputValue()
   const porTurno = await pagina.locator('input[type="number"]').first().inputValue()
   conferir('🔴 o que ele digitou SOBREVIVE ao recarregar',
-    deVolta === '2027-03-01' && porTurno === '4', `De=${deVolta} · por turno=${porTurno}`)
+    deVolta === TRIMESTRE.ini && porTurno === '4', `De=${deVolta} · por turno=${porTurno}`)
   conferir('🔴 e a tela AVISA que está mostrando rascunho, não o publicado', await temAviso(),
     'rascunho invisível seria pior que nenhum')
 
