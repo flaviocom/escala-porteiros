@@ -43,5 +43,6 @@
       "singular": "Irmão",
       "plural": "Irmãos"
     }
-  }
+  },
+  "pisoMinimo": 2
 }
