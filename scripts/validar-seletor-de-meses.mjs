@@ -92,7 +92,9 @@ try {
 
   // ------------------------------------------------------------------ 2. um mês → não pergunta
   {
-    const pg = await abrir('novembro')
+    // 🔴 03/11/2026: "novembro" passou a casar 2026 E 2027 (escala até 31/12/2027) — dois meses em
+    // vista, e a caixa aparecia com razão. "/11/2026" casa um mês só, em qualquer ano de escala.
+    const pg = await abrir('/11/2026')
     const baixados = []
     pg.on('download', (d) => baixados.push(d))
     await botaoEnviar(pg).click()

@@ -130,6 +130,12 @@ Nada de lá começa sem decisão do dono.
 
 ## P4 — Achados da auditoria independente, ainda abertos 🟠
 
+### P4.20 🆕 ABERTO 03/11/2026 — validar por TURNO, não por bloco (A3) · 🟡 A4, A6, B2–B4 declarados
+
+O bloco vigente tem 13 meses: mudar uma restrição sem regerar faria a aba Validação reprovar meses
+já cumpridos dele. Não bloqueia hoje (veredito de 03/11 aprova). Detalhe, achados e o que foi
+consertado: [`docs/historico/2026-11-03_AUDITORIA_PASSADO_E_ENSAIO.md`](docs/historico/2026-11-03_AUDITORIA_PASSADO_E_ENSAIO.md).
+
 > 🔴 **Quatro itens deste bloco estavam marcados como ABERTOS com o defeito já corrigido no
 > código** (medido em 06/08/2026). É a mesma classe do P7.7, ao contrário: lá o registro dizia
 > "fechado" sobre o que não tinha sido feito; aqui dizia "aberto" sobre o que estava pronto. O P4.6

@@ -15,7 +15,7 @@
  * A regra, uma só: **o bloco novo manda no período dele, e só nele.**
  */
 import { describe, expect, it } from 'vitest'
-import { conferirBuracoNaEscala, conferirEscalaJaDivulgada, conferirPassadoPreservado, conferirReversao, cotaMensalJaPublicada, montarBlocosParaPublicar, proximaEscalaPublicada, publicacaoImpedida, inicioGeravel, pisoEntregue } from './blocos'
+import { conferirBuracoNaEscala, conferirEscalaJaDivulgada, conferirPassadoPreservado, conferirReversao, cotaMensalJaPublicada, montarBlocosParaPublicar, proximaEscalaPublicada, publicacaoImpedida, inicioGeravel, pisoEntregue, blocoJaAconteceu } from './blocos'
 import { validar } from './validacao'
 import type { Configuracao, Pessoa } from './tipos'
 
@@ -628,5 +628,16 @@ describe('emenda com período qualquer (auditoria de 03/11/2026)', () => {
     expect(cabeca.turnos.map((t) => t.data)).toEqual(['2026-08-10'])
     expect(cabeca.recortado).toBe(true)
     expect(cabeca.fim).toBe('2026-11-03')
+  })
+})
+
+describe('blocoJaAconteceu — o passado não se reconfere com a regra de hoje (03/11/2026)', () => {
+  it('🔴 bloco que terminou ontem ou hoje JÁ aconteceu', () => {
+    expect(blocoJaAconteceu({ fim: '2026-11-02' }, '2026-11-03')).toBe(true)
+    expect(blocoJaAconteceu({ fim: '2026-11-03' }, '2026-11-03')).toBe(true)
+  })
+  it('✅ bloco que termina amanhã ou depois ainda vai acontecer — é julgado', () => {
+    expect(blocoJaAconteceu({ fim: '2026-11-04' }, '2026-11-03')).toBe(false)
+    expect(blocoJaAconteceu({ fim: '2027-12-31' }, '2026-11-03')).toBe(false)
   })
 })

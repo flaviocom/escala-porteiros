@@ -14,6 +14,8 @@
  */
 import { validar } from '../src/dominio/validacao.ts'
 import { conferirPorFora } from '../src/dominio/conferencia-independente.ts'
+import { blocoJaAconteceu } from '../src/dominio/blocos.ts'
+import { hojeSaoPaulo } from '../src/dominio/datas.ts'
 
 const SITE = 'https://flaviocom.github.io/escala-porteiros/'
 const baixar = async (c) => {
@@ -30,11 +32,24 @@ const pessoas = pessoasArq.pessoas
 console.log('⚖️  VEREDITO DO PUBLICADO — medido pela URL, não pelo disco\n')
 
 /* A fronteira do bloco vigente vem dos blocos ANTERIORES a ele — igual ao que a tela faz. */
-const vigente = blocos.blocos.find((b) => b.origem === 'algoritmo')
+//
+// 🔴 03/11/2026: era `find(origem === 'algoritmo')` — o PRIMEIRO bloco do algoritmo. Com o período
+// gerado por cima, o primeiro passou a ser o pedaço antigo (06/08→03/11), que já aconteceu e não se
+// reconfere com regra criada depois (`blocoJaAconteceu`). Vigente é o primeiro que ainda vai acontecer.
+const hoje = hojeSaoPaulo()
+const ordenados = [...blocos.blocos].sort((a, b) => (a.inicio < b.inicio ? -1 : 1))
+const vigente = ordenados.find((b) => !blocoJaAconteceu(b, hoje))
+// Sem bloco futuro, cair no último (já cumprido) seria julgar o passado com regra de hoje — o defeito
+// que este conserto existe para evitar. E escala nenhuma pela frente já é, por si, o alarme (A5).
+if (!vigente) {
+  console.log('🔴 NENHUMA ESCALA FUTURA PUBLICADA — a última terminou; é hora de gerar a próxima.')
+  process.exit(1)
+}
 const anteriores = blocos.blocos.filter((b) => b.id !== vigente.id)
 const ultimaEscalaAnterior = {}
 const escalasPorMesAnterior = {}
-for (const b of anteriores) for (const t of b.turnos) for (const id of t.pessoas) {
+// Só o que vem ANTES do vigente é fronteira de trás; o que vem depois é fronteira da frente.
+for (const b of anteriores) for (const t of b.turnos) if (t.data < vigente.inicio) for (const id of t.pessoas) {
   if (!ultimaEscalaAnterior[id] || t.data > ultimaEscalaAnterior[id]) ultimaEscalaAnterior[id] = t.data
   const m = t.data.slice(0, 7)
   ;(escalasPorMesAnterior[id] ??= {})[m] = (escalasPorMesAnterior[id][m] ?? 0) + 1

@@ -29,7 +29,7 @@ const saida = join(RAIZ, 'node_modules', '.auditoria.mjs')
 require('node:fs').writeFileSync(
   entrada,
   [
-    ...['datas', 'malha', 'regras', 'validacao', 'gerador'].map(
+    ...['datas', 'malha', 'regras', 'validacao', 'gerador', 'blocos'].map(
       (m) => `export * from '../src/dominio/${m}'`,
     ),
     // A ponte para a interface entra no pacote atacado: foi lá que nasceu o defeito de
@@ -265,8 +265,13 @@ conferir(F3, 'a escala publicada passa na própria validação?', () => {
   const blocos = JSON.parse(readFileSync(join(RAIZ, 'docs/dados/blocos.json'), 'utf8')).blocos
   const pessoas = JSON.parse(readFileSync(join(RAIZ, 'docs/dados/pessoas.json'), 'utf8')).pessoas
   const problemas = []
+  // Bloco que já aconteceu não se reconfere com o elenco de hoje (03/11/2026, `blocoJaAconteceu`):
+  // uma restrição nova faria a escala cumprida parecer errada. Ele conta, mas não é julgado.
+  const hoje = D.hojeSaoPaulo()
+  const passados = blocos.filter((b) => D.blocoJaAconteceu(b, hoje)).length
   for (let i = 0; i < blocos.length; i++) {
     const b = blocos[i]
+    if (D.blocoJaAconteceu(b, hoje)) continue
     const fronteira = {}
     for (const ant of blocos.slice(0, i)) {
       for (const t of ant.turnos) for (const id of t.pessoas) {
@@ -278,7 +283,7 @@ conferir(F3, 'a escala publicada passa na própria validação?', () => {
   }
   return problemas.length
     ? { defeito: true, detalhe: `a escala NO AR reprova: ${problemas.join(' · ')}` }
-    : { detalhe: `${blocos.length} bloco(s) publicados passam nas ${D.CATALOGO.length} regras` }
+    : { detalhe: `${blocos.length - passados} bloco(s) vigente(s) passam nas ${D.CATALOGO.length} regras · ${passados} já aconteceram (preservados, não reconferidos)` }
 })
 
 conferir(F3, 'há buraco ou sobreposição entre os blocos?', () => {

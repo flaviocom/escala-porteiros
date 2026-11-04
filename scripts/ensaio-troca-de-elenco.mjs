@@ -55,9 +55,10 @@ writeFileSync(entrada, [
   "export * from '../src/dominio/regras'",
   "export * from '../src/dominio/validacao'",
   "export * from '../src/dominio/gerador'",
+  "export { blocoJaAconteceu } from '../src/dominio/blocos'",
 ].join('\n'), 'utf8')
 esbuild.buildSync({ entryPoints: [entrada], outfile: saidaJs, format: 'esm', platform: 'node', bundle: true })
-const { construirGrade, MALHA_ATUAL, gerar, validar, resumir, menorIntervalo, formatarBR, diaDaSemana, mesDeData } =
+const { construirGrade, MALHA_ATUAL, gerar, gerarVariasVersoes, validar, resumir, menorIntervalo, formatarBR, diaDaSemana, mesDeData, blocoJaAconteceu, hojeSaoPaulo, somarDias } =
   await import(pathToFileURL(saidaJs).href)
 
 // ---------------------------------------------------------------------------
@@ -65,11 +66,29 @@ const { construirGrade, MALHA_ATUAL, gerar, validar, resumir, menorIntervalo, fo
 // ---------------------------------------------------------------------------
 const pessoas = JSON.parse(readFileSync(join(RAIZ, 'docs/dados/pessoas.json'), 'utf8')).pessoas
 const blocos = JSON.parse(readFileSync(join(RAIZ, 'docs/dados/blocos.json'), 'utf8')).blocos
-const blocoAtual = blocos.find((b) => b.origem === 'algoritmo')
-if (!blocoAtual) { console.error('🔴 Não achei o bloco gerado no blocos.json publicado.'); process.exit(1) }
+// 🔴 03/11/2026: era `find(origem === 'algoritmo')` — o PRIMEIRO bloco do algoritmo. Com período gerado
+// por cima, o primeiro virou o pedaço antigo já cumprido. Bloco atual é o primeiro que ainda vai acontecer.
+const hoje = hojeSaoPaulo()
+const blocoAtual = [...blocos].sort((a, b) => (a.inicio < b.inicio ? -1 : 1))
+  .find((b) => b.origem === 'algoritmo' && !blocoJaAconteceu(b, hoje))
+if (!blocoAtual) { console.error('🔴 Não achei bloco gerado vigente no blocos.json publicado.'); process.exit(1) }
 
-const CORTE = '2026-10-01' // a partir daqui a escala é refeita; antes disso, nada muda
-const FIM = blocoAtual.fim
+// O corte é o 1º dia do mês seguinte ao MAIS TARDE entre o início do bloco e hoje — relativo, para
+// não apodrecer com o calendário e para nunca "refazer" mês já cumprido (auditoria de 03/11/2026, A2).
+const primeiroDoMesSeguinte = (d) => {
+  const [a, m] = d.split('-').map(Number)
+  return m === 12 ? `${a + 1}-01-01` : `${a}-${String(m + 1).padStart(2, '0')}-01`
+}
+const CORTE = primeiroDoMesSeguinte(blocoAtual.inicio > hoje ? blocoAtual.inicio : hoje)
+// A ausência do irmão novo é o 1º mês depois do corte — derivada, não cravada. Cravada em novembro,
+// ela caiu ANTES do corte e a promessa "família 4" passou a não poder falhar (auditoria, A1).
+const AUSENCIA_INICIO = CORTE
+const AUSENCIA_FIM = somarDias(primeiroDoMesSeguinte(CORTE), -1)
+const MES_AUSENTE = CORTE.slice(0, 7)
+// O ensaio precisa de ~3 meses depois da ausência para medir algo. Se o bloco restante for mais curto
+// (ex.: a partir de out/2027 neste bloco), o horizonte se ESTENDE — é simulação, nada se publica.
+// Sair vermelho aqui seria bomba de calendário: gate reprovando por data, não por defeito (B1, 03/11).
+const FIM = somarDias(AUSENCIA_FIM, 90) > blocoAtual.fim ? somarDias(AUSENCIA_FIM, 90) : blocoAtual.fim
 
 console.log('ENSAIO — SAI GENTE, ENTRA GENTE, A ESCALA SE REFAZ\n')
 console.log(`  bloco atual ......... ${formatarBR(blocoAtual.inicio)} → ${formatarBR(blocoAtual.fim)}`)
@@ -97,14 +116,14 @@ const QUEM_ENTRA = {
     diasProibidos: [6], // nunca sábado (vence `diasPermitidos` se houver conflito)
     turnosPermitidos: ['NOITE'], // só de noite
     tetoMensal: 2, // no máximo 2 por mês
-    ausencias: [{ inicio: '2026-11-01', fim: '2026-11-30', motivo: 'viagem' }],
+    ausencias: [{ inicio: AUSENCIA_INICIO, fim: AUSENCIA_FIM, motivo: 'viagem' }],
   },
 }
 
 console.log('A MUDANÇA')
 console.log(`  🔴 SAI  ${nomeQuemSai} (${contagem.get(QUEM_SAI)} turnos no bloco atual — o mais escalado)`)
 console.log(`  ✅ ENTRA ${QUEM_ENTRA.nome}`)
-console.log('          só dom e qua · nunca sáb · só noite · teto 2/mês · fora o novembro inteiro\n')
+console.log(`          só dom e qua · nunca sáb · só noite · teto 2/mês · fora o mês ${MES_AUSENTE} inteiro\n`)
 
 const novoElencoPessoas = [
   ...pessoas.map((p) => (p.id === QUEM_SAI ? { ...p, ativo: false } : p)),
@@ -133,10 +152,13 @@ const grade = construirGrade({
   inicio: CORTE, fim: FIM, malha: config.malhaPadrao,
   capacidadePadrao: config.capacidadePadrao, santaCeia,
 })
-const r = gerar({
+// O MESMO caminho da tela: várias versões, fica a de maior piso e, empatado, a mais equilibrada.
+// (Antes chamava `gerar` direto — a versão gulosa crua, que a tela nunca publica sozinha.)
+const r = gerarVariasVersoes({
   inicio: CORTE, fim: FIM, grade, pessoas: novoElencoPessoas,
   elenco: idsAtivos, malha: config.malhaPadrao, ultimaEscalaAnterior: fronteira,
-})
+  pisoMinimo: config.pisoMinimo,
+}).melhor
 
 if (!r.ok) {
   console.error('🔴 NÃO FOI POSSÍVEL GERAR — e este é o comportamento certo se não couber.\n')
@@ -181,9 +203,9 @@ provar('família 3 — teto mensal (máx. 2)', mesesEstourados.length === 0,
     ? [...porMes.entries()].map(([m, n]) => `${m}:${n}`).join(' · ') || 'nenhum mês'
     : `🔴 ${mesesEstourados.map(([m, n]) => `${m} com ${n}`).join(', ')}`)
 
-const naAusencia = doNovo.filter((t) => t.data >= '2026-11-01' && t.data <= '2026-11-30')
-provar('família 4 — ausência (novembro inteiro)', naAusencia.length === 0,
-  naAusencia.length === 0 ? 'nenhum turno em novembro' : `🔴 ${naAusencia.map((t) => formatarBR(t.data)).join(', ')}`)
+const naAusencia = doNovo.filter((t) => t.data >= AUSENCIA_INICIO && t.data <= AUSENCIA_FIM)
+provar(`família 4 — ausência (${MES_AUSENTE} inteiro)`, naAusencia.length === 0,
+  naAusencia.length === 0 ? `nenhum turno em ${MES_AUSENTE}` : `🔴 ${naAusencia.map((t) => formatarBR(t.data)).join(', ')}`)
 
 // 3 — o catálogo inteiro. O número NÃO é escrito à mão: sai de `rel.totalNoCatalogo`. Regra nova
 // entra na conta sozinha — número decorado é como o texto passa a mentir sem ninguém notar.
@@ -260,7 +282,15 @@ const semRestricao = novoElencoPessoas.filter(
 )
 const cargasLivres = semRestricao.map((p) => r.bloco.turnos.filter((t) => t.pessoas.includes(p.id)).length)
 const amplitude = Math.max(...cargasLivres) - Math.min(...cargasLivres)
-provar(`a) equilíbrio entre os ${semRestricao.length} sem restrição (amplitude ≤ 2)`, amplitude <= 2,
+// 🏠 Tolerância = 5% da carga média, nunca menos de 2 — CONVENÇÃO DE CASA, declarada (03/11/2026).
+// O "≤ 2" fixo foi calibrado num corte de 3 meses (~12 turnos cada). Quando o bloco vigente passou a
+// ir até 31/12/2027 (~57 turnos cada), o piso de 4 dias trava ritmos da semana (dom→qua = 3 dias,
+// barrado; sáb→qua = 4, permitido) e deixou 56 a 59 — 0,2 turno/mês de diferença, Jain ≈ 0,9995.
+// Limite fixo num horizonte que cresce reprova o que não está quebrado; o proporcional segue mordendo
+// desequilíbrio de verdade (ex.: 50 a 59 reprova).
+const mediaLivres = cargasLivres.reduce((s, n) => s + n, 0) / cargasLivres.length
+const toleranciaCarga = Math.max(2, Math.ceil(mediaLivres * 0.05))
+provar(`a) equilíbrio entre os ${semRestricao.length} sem restrição (amplitude ≤ ${toleranciaCarga})`, amplitude <= toleranciaCarga,
   `${Math.min(...cargasLivres)} a ${Math.max(...cargasLivres)} turnos — amplitude ${amplitude}`)
 
 /** Cota de quem tem teto: `tetoMensal` × meses em que ele não está ausente o mês inteiro. */

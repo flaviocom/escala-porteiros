@@ -106,6 +106,23 @@ try {
   })
 
   await botao.click()
+  /*
+    🔴 03/11/2026: com a escala publicada indo até 31/12/2027, a busca "agosto" passou a mostrar
+    agosto de 2026 E de 2027 — dois meses em vista, e o produto (corretamente) abre a caixa de
+    escolha em vez de baixar. O script clicava e esperava download que nunca vinha. Agora ele faz o
+    que a pessoa faz: desmarca tudo, marca o mês pedido (pelo ANO também) e confirma.
+  */
+  const caixa = pagina.locator('dialog[open]')
+  if (MES !== 'tudo' && (await caixa.count())) {
+    const [ano, mes] = MES.split('-')
+    const nomes = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro']
+    await caixa.getByRole('button', { name: /^Nenhum$/ }).click()
+    const alvo = caixa.locator('label').filter({ hasText: new RegExp(`${nomes[Number(mes) - 1]}.*${ano}`, 'i') })
+    if ((await alvo.count()) !== 1) throw new Error(`a caixa de meses não tem exatamente um ${MES}`)
+    await alvo.locator('input[type="checkbox"]').check()
+    await caixa.getByRole('button', { name: /^Gerar 1 imagem/ }).click()
+    console.log(`  caixa de meses: só ${MES} marcado`)
+  }
   for (let i = 0; i < 60 && baixados.length === 0; i++) await pagina.waitForTimeout(500)
   if (!baixados.length) throw new Error('o clique nao gerou download nenhum')
   // Espera parar de chegar arquivo novo.

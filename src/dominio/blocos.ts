@@ -262,6 +262,19 @@ export function inicioGeravel(de: DataISO, hoje: DataISO): { inicio: DataISO; aj
   return diferencaEmDias(de, amanha) > 0 ? { inicio: amanha, ajustado: true } : { inicio: de, ajustado: false }
 }
 
+/*
+  🔴 ESCALA QUE JÁ ACONTECEU NÃO SE JULGA COM A REGRA DE HOJE — 03/11/2026.
+
+  O dono pôs o Adilson em "1 vez por mês" hoje. A aba pública de Validação reconferia TODOS os
+  blocos com o elenco atual — e passou a reprovar agosto a outubro, quando ele serviu 3 a 4 vezes
+  sob a regra que valia na época. É o passado julgado por regra posterior: a escala não estava
+  errada, e os irmãos veriam vermelho numa escala que já aconteceu. As restrições não guardam
+  histórico; o bloco que terminou até hoje é preservado como foi divulgado, e não é reconferido.
+*/
+export function blocoJaAconteceu(bloco: Pick<Bloco, 'fim'>, hoje: DataISO): boolean {
+  return diferencaEmDias(bloco.fim, hoje) >= 0
+}
+
 /** Publicar está impedido? Uma resposta só, para a tela não recompor o julgamento. */
 export function publicacaoImpedida(
   relatorio: { aprovada: boolean } | null,

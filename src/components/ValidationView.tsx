@@ -14,6 +14,8 @@ import { AlertTriangle, CheckCircle, ShieldCheck, XCircle } from 'lucide-react'
 import { clsx } from 'clsx'
 import type { DadosPublicados } from '../dados/carregar'
 import { validar, resumir } from '../dominio/validacao'
+import { blocoJaAconteceu } from '../dominio/blocos'
+import { hojeSaoPaulo } from '../dominio/datas'
 import type { Bloco } from '../dominio/tipos'
 
 interface ValidationViewProps {
@@ -36,10 +38,24 @@ export const ValidationView: React.FC<ValidationViewProps> = ({ dados }) => {
       return { bloco, relatorio: validar({ bloco, pessoas: dados.pessoas, ultimaEscalaAnterior, config: dados.config }) }
     })
   }, [dados])
+  // Escala que já aconteceu não se reconfere com as regras de hoje — ver `blocoJaAconteceu`.
+  const hoje = hojeSaoPaulo()
+  const passados = porBloco.filter(({ bloco }) => blocoJaAconteceu(bloco, hoje))
+  const vigentes = porBloco.filter(({ bloco }) => !blocoJaAconteceu(bloco, hoje))
 
   return (
     <div className="space-y-6">
-      {porBloco.map(({ bloco, relatorio }) => (
+      {passados.length > 0 && (
+        <div className="bg-surface-card rounded-radius-2xl shadow-card border border-border-default px-space-6 py-space-4">
+          <h3 className="text-text-base font-bold text-text-primary">Escala que já aconteceu</h3>
+          <p className="text-text-xs text-text-secondary mt-1">
+            {passados.map(({ bloco }) => periodoBR(bloco)).join(' · ')} — preservada exatamente como foi
+            divulgada. Não é conferida de novo com as regras de hoje: quem mudou de disponibilidade depois
+            não torna errado o que já foi cumprido.
+          </p>
+        </div>
+      )}
+      {vigentes.map(({ bloco, relatorio }) => (
         <div key={bloco.id} className="bg-surface-card rounded-radius-2xl shadow-card border border-border-default overflow-hidden">
           <div className="bg-surface-subtle px-space-6 py-space-4 border-b border-border-subtle flex items-center gap-space-3">
             <div
